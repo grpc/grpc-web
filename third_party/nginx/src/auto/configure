@@ -1,0 +1,121 @@
+#!/bin/sh
+
+# Copyright (C) Igor Sysoev
+# Copyright (C) Nginx, Inc.
+
+
+LC_ALL=C
+export LC_ALL
+
+NGX_ROOT=`dirname $0 | sed -e "s/auto$//" -e "s/\/$//" -e "s/^$/\./"`
+NGX_AUTO=$NGX_ROOT/auto
+
+. $NGX_AUTO/options
+. $NGX_AUTO/init
+. $NGX_AUTO/sources
+
+test -d $NGX_OBJS || mkdir -p $NGX_OBJS
+
+echo > $NGX_AUTO_HEADERS_H
+echo > $NGX_AUTOCONF_ERR
+
+echo "#define NGX_CONFIGURE \"$NGX_CONFIGURE\"" > $NGX_AUTO_CONFIG_H
+
+
+if [ $NGX_DEBUG = YES ]; then
+    have=NGX_DEBUG . $NGX_AUTO/have
+fi
+
+
+if test -z "$NGX_PLATFORM"; then
+    echo "checking for OS"
+
+    NGX_SYSTEM=`uname -s 2>/dev/null`
+    NGX_RELEASE=`uname -r 2>/dev/null`
+    NGX_MACHINE=`uname -m 2>/dev/null`
+
+    echo " + $NGX_SYSTEM $NGX_RELEASE $NGX_MACHINE"
+
+    NGX_PLATFORM="$NGX_SYSTEM:$NGX_RELEASE:$NGX_MACHINE";
+
+    case "$NGX_SYSTEM" in
+        MINGW32_*)
+            NGX_PLATFORM=win32
+        ;;
+    esac
+
+else
+    echo "building for $NGX_PLATFORM"
+    NGX_SYSTEM=$NGX_PLATFORM
+fi
+
+. $NGX_AUTO/cc/conf
+
+if [ "$NGX_PLATFORM" != win32 ]; then
+    . $NGX_AUTO/headers
+fi
+
+. $NGX_AUTO/os/conf
+
+if [ "$NGX_PLATFORM" != win32 ]; then
+    . $NGX_AUTO/unix
+fi
+
+. $NGX_AUTO/threads
+. $NGX_AUTO/modules
+. $NGX_AUTO/lib/conf
+
+case ".$NGX_PREFIX" in
+    .)
+        NGX_PREFIX=${NGX_PREFIX:-/usr/local/nginx}
+        have=NGX_PREFIX value="\"$NGX_PREFIX/\"" . $NGX_AUTO/define
+    ;;
+
+    .!)
+        NGX_PREFIX=
+    ;;
+
+    *)
+        have=NGX_PREFIX value="\"$NGX_PREFIX/\"" . $NGX_AUTO/define
+    ;;
+esac
+
+if [ ".$NGX_CONF_PREFIX" != "." ]; then
+    have=NGX_CONF_PREFIX value="\"$NGX_CONF_PREFIX/\"" . $NGX_AUTO/define
+fi
+
+have=NGX_SBIN_PATH value="\"$NGX_SBIN_PATH\"" . $NGX_AUTO/define
+have=NGX_CONF_PATH value="\"$NGX_CONF_PATH\"" . $NGX_AUTO/define
+have=NGX_PID_PATH value="\"$NGX_PID_PATH\"" . $NGX_AUTO/define
+have=NGX_LOCK_PATH value="\"$NGX_LOCK_PATH\"" . $NGX_AUTO/define
+have=NGX_ERROR_LOG_PATH value="\"$NGX_ERROR_LOG_PATH\"" . $NGX_AUTO/define
+
+have=NGX_HTTP_LOG_PATH value="\"$NGX_HTTP_LOG_PATH\"" . $NGX_AUTO/define
+have=NGX_HTTP_CLIENT_TEMP_PATH value="\"$NGX_HTTP_CLIENT_TEMP_PATH\""
+. $NGX_AUTO/define
+have=NGX_HTTP_PROXY_TEMP_PATH value="\"$NGX_HTTP_PROXY_TEMP_PATH\""
+. $NGX_AUTO/define
+have=NGX_HTTP_FASTCGI_TEMP_PATH value="\"$NGX_HTTP_FASTCGI_TEMP_PATH\""
+. $NGX_AUTO/define
+have=NGX_HTTP_UWSGI_TEMP_PATH value="\"$NGX_HTTP_UWSGI_TEMP_PATH\""
+. $NGX_AUTO/define
+have=NGX_HTTP_SCGI_TEMP_PATH value="\"$NGX_HTTP_SCGI_TEMP_PATH\""
+. $NGX_AUTO/define
+
+if [ "$NGX_ROOT" = "." ]; then
+    . $NGX_AUTO/make
+    . $NGX_AUTO/lib/make
+    . $NGX_AUTO/install
+fi
+
+# STUB
+. $NGX_AUTO/stubs
+
+have=NGX_USER value="\"$NGX_USER\"" . $NGX_AUTO/define
+have=NGX_GROUP value="\"$NGX_GROUP\"" . $NGX_AUTO/define
+
+if [ ".$NGX_BUILD" != "." ]; then
+    have=NGX_BUILD value="\"$NGX_BUILD\"" . $NGX_AUTO/define
+fi
+
+. $NGX_AUTO/summary
