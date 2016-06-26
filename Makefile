@@ -30,14 +30,16 @@ GRPC_GATEWAY_CC_FILES := $(wildcard net/grpc/gateway/*.cc) \
 	$(wildcard net/grpc/gateway/codec/*.cc) \
 	$(wildcard net/grpc/gateway/frontend/*.cc) \
 	$(wildcard net/grpc/gateway/runtime/*.cc) \
-	$(wildcard net/grpc/gateway/protos/*.cc)
+	net/grpc/gateway/protos/pair.pb.cc \
+	net/grpc/gateway/protos/status.pb.cc
 
 GRPC_GATEWAY_H_FILES := $(wildcard net/grpc/gateway/backend/*.h) \
         $(wildcard net/grpc/gateway/codec/*.h) \
         $(wildcard net/grpc/gateway/frontend/*.h) \
         $(wildcard net/grpc/gateway/runtime/*.h) \
-	$(wildcard net/grpc/gateway/protos/*.h) \
-        $(wildcard net/grpc/gateway/*.h)
+        $(wildcard net/grpc/gateway/*.h) \
+	net/grpc/gateway/protos/pair.pb.h \
+	net/grpc/gateway/protos/status.pb.h
 
 GRPC_GATEWAY_OBJ_FILES := $(addprefix objs/,$(patsubst net/grpc/gateway/%.cc,%.o,$(GRPC_GATEWAY_CC_FILES)))
 
