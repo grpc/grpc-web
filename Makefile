@@ -2,6 +2,8 @@ CC := g++
 ROOT_DIR := /github/grpc-web
 PROTOS_DIR := $(ROOT_DIR)/net/grpc/gateway/protos
 
+all: nginx
+
 protos: 
 	protoc --proto_path=$(PROTOS_DIR) $(PROTOS_DIR)/pair.proto --cpp_out=$(PROTOS_DIR)
 	protoc --proto_path=$(PROTOS_DIR) $(PROTOS_DIR)/status.proto --cpp_out=$(PROTOS_DIR)
@@ -9,6 +11,12 @@ protos:
 NGINX_DIR := third_party/nginx
 
 nginx_config:
+	cd $(NGINX_DIR)/src && auto/configure --with-http_ssl_module \
+	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR)" \
+	--with-ld-opt="-L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl -lrt" \
+	--add-module=$(ROOT_DIR)/net/grpc/gateway/nginx
+
+nginx_config_with_gateway:
 	cd $(NGINX_DIR)/src && auto/configure --with-http_ssl_module \
 	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR)" \
 	--with-ld-opt="-L $(ROOT_DIR)/objs -lgateway -L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl -lrt" \
@@ -48,7 +56,7 @@ CC_FLAGS := -pthread -std=c++11 -I. \
 	-I $(NGINX_DIR)/src/src/misc \
 	-I $(NGINX_DIR)/src/src/stream
 
-nginx: nginx_config protos grpc_gateway
+nginx: nginx_config protos grpc_gateway nginx_config_with_gateway
 	cd $(NGINX_DIR)/src && make
 
 grpc_gateway: $(GRPC_GATEWAY_OBJ_FILES)
