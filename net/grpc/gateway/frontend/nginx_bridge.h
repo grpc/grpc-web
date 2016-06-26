@@ -1,7 +1,7 @@
 #ifndef NET_GRPC_GATEWAY_FRONTEND_NGINX_BRIDGE_H_
 #define NET_GRPC_GATEWAY_FRONTEND_NGINX_BRIDGE_H_
 
-#include "third_party/nginx/src/src/core/ngx_core.h"
+#include <ngx_core.h>
 
 const ngx_str_t GRPC_WEB_CONTENT_TYPE_PROTO =
     ngx_string("application/x-protobuf");

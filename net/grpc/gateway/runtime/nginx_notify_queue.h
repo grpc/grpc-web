@@ -4,9 +4,9 @@
 #include <deque>
 #include <memory>
 
+#include <ngx_core.h>
 #include "net/grpc/gateway/runtime/tag.h"
 #include "third_party/grpc/include/grpc/support/sync.h"
-#include "third_party/nginx/src/src/core/ngx_core.h"
 
 namespace grpc {
 namespace gateway {

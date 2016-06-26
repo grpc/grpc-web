@@ -2,9 +2,9 @@
 
 #include <algorithm>
 
+#include <ngx_config.h>
+#include <ngx_event.h>
 #include "net/grpc/gateway/log.h"
-#include "third_party/nginx/src/src/core/ngx_config.h"
-#include "third_party/nginx/src/src/event/ngx_event.h"
 
 namespace grpc {
 namespace gateway {
@@ -18,9 +18,11 @@ void NginxNotifyQueue::NginxNotifyEventsCallback(ngx_event_t* event) {
   NginxNotifyQueue::Get().ProcessEvents(event);
 }
 
-NginxNotifyQueue::NginxNotifyQueue() : mutex_(), waiting_for_notify_(false) {}
+NginxNotifyQueue::NginxNotifyQueue() : mutex_(), waiting_for_notify_(false) {
+  gpr_mu_init(&mutex_);
+}
 
-NginxNotifyQueue::~NginxNotifyQueue() {}
+NginxNotifyQueue::~NginxNotifyQueue() { gpr_mu_destroy(&mutex_); }
 
 void NginxNotifyQueue::Add(std::unique_ptr<Tag> tag) {
   gpr_mu_lock(&mutex_);

@@ -23,7 +23,7 @@ extern "C" {
 
 typedef struct {
   // The pointer of the frontend instance which serves the request.
-  std::shared_ptr<::grpc::gateway::Frontend> frontend;
+  std::shared_ptr<grpc::gateway::Frontend> frontend;
 } grpc_gateway_request_context;
 
 // Interface between nginx and GRPC gateway. Starts with "grpc_gateway_" prefix.

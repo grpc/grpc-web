@@ -6,9 +6,9 @@
 #include <string>
 #include <vector>
 
-#include "net/grpc/gateway/portable_any.pb.h"
-#include "net/grpc/gateway/portable_pair.pb.h"
-#include "net/grpc/gateway/portable_status.pb.h"
+#include "google/protobuf/any.pb.h"
+#include "net/grpc/gateway/protos/pair.pb.h"
+#include "net/grpc/gateway/protos/status.pb.h"
 #include "net/grpc/gateway/runtime/constants.h"
 #include "third_party/grpc/include/grpc++/support/slice.h"
 

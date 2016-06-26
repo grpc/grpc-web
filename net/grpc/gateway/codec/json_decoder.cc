@@ -6,7 +6,6 @@
 #include "net/grpc/gateway/codec/base64.h"
 #include "net/grpc/gateway/log.h"
 #include "net/grpc/gateway/utils.h"
-#include "third_party/grpc/include/grpc/impl/codegen/slice.h"
 
 namespace grpc {
 namespace gateway {

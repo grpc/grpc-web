@@ -3,8 +3,6 @@
 #include <stdint.h>
 #include <cstring>
 
-#include "third_party/grpc/include/grpc/impl/codegen/slice.h"
-
 #define GRPC_BASE64_PAD_CHAR '='
 
 namespace grpc {

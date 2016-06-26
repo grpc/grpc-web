@@ -16,6 +16,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <ngx_core.h>
+#include <ngx_http.h>
 #include "net/grpc/gateway/frontend/nginx_bridge.h"
 #include "third_party/grpc/include/grpc/byte_buffer.h"
 #include "third_party/grpc/include/grpc/byte_buffer_reader.h"
@@ -24,8 +26,6 @@
 #include "third_party/grpc/include/grpc/support/slice.h"
 #include "third_party/grpc/include/grpc/support/thd.h"
 #include "third_party/grpc/include/grpc/support/time.h"
-#include "third_party/nginx/src/src/core/ngx_core.h"
-#include "third_party/nginx/src/src/http/ngx_http.h"
 
 // Tag for requests to GRPC backend. It contains the content and will be send
 // back to the grpc_event_callback once the GRPC event comes from the completion

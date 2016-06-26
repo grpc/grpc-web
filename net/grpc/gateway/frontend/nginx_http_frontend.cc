@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include <ngx_http.h>
 #include "net/grpc/gateway/frontend/nginx_bridge.h"
 #include "net/grpc/gateway/log.h"
 #include "net/grpc/gateway/runtime/constants.h"
@@ -9,7 +10,6 @@
 #include "net/grpc/gateway/runtime/runtime.h"
 #include "net/grpc/gateway/runtime/tag.h"
 #include "third_party/grpc/include/grpc/support/log.h"
-#include "third_party/nginx/src/src/http/ngx_http.h"
 
 #ifdef __cplusplus
 extern "C" {

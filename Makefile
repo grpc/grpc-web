@@ -1,5 +1,6 @@
 CC := g++
-PROTOS_DIR := net/grpc/gateway/protos
+ROOT_DIR := net/grpc/gateway
+PROTOS_DIR := $(ROOT_DIR)/protos
 
 protos:
         protoc $(PROTOS_DIR)/pair.proto --cpp_out=.
@@ -8,16 +9,26 @@ protos:
 NGINX_DIR := third_party/nginx
 
 nginx_config:
-	$(NGINX_DIR)/src/auto/configure --with-http_ssl_module
+	$(NGINX_DIR)/src/auto/configure --with-http_ssl_module \
+	--with-cc-opt="\
+	-I /usr/local/include \
+	-I $(ROOT_DIR) \
+	-I $(ROOT_DIR)/backend \
+	-I $(ROOT_DIR)/codec \
+	-I $(ROOT_DIR)/frontend \
+	-I $(ROOT_DIR)/runtime \
+	" \
+	--with-ld-opt="-L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl" \
+	--add-module=$(ROOT_DIR)/nginx
 
 NGINX_H_FILES := $(wildcard $(NGINX_DIR)/src/src/**/*.h) $(wildcard $(NGINX_DIR)/src/objs/**/*.h)
 NGINX_C_FILES := $(wildcard $(NGINX_DIR)/src/src/**/*.c)
 
-GRPC_GATEWAY_CC_FILES := $(wildcard net/grpc/gateway/backend/*.cc) \
+GRPC_GATEWAY_CC_FILES := $(wildcard net/grpc/gateway/*.cc) \
+	$(wildcard net/grpc/gateway/backend/*.cc) \
 	$(wildcard net/grpc/gateway/codec/*.cc) \
 	$(wildcard net/grpc/gateway/frontend/*.cc) \
-	$(wildcard net/grpc/gateway/runtime/*.cc) \
-	$(wildcard net/grpc/gateway/*.cc)
+	$(wildcard net/grpc/gateway/runtime/*.cc)
 
 GRPC_GATEWAY_H_FILES := $(wildcard net/grpc/gateway/backend/*.h) \
         $(wildcard net/grpc/gateway/codec/*.h) \
@@ -25,10 +36,11 @@ GRPC_GATEWAY_H_FILES := $(wildcard net/grpc/gateway/backend/*.h) \
         $(wildcard net/grpc/gateway/runtime/*.h) \
         $(wildcard net/grpc/gateway/*.h)
 
-GRPC_GATEWAY_OBJ_FILES := $(addprefix objs/,$(notdir $(GRPC_GATEWAY_CC_FILES:.cc=.o)))
+GRPC_GATEWAY_OBJ_FILES := $(addprefix objs/,$(patsubst $(ROOT_DIR)/%.cc,%.o,$(GRPC_GATEWAY_CC_FILES)))
 
-LD_FLAGS :=
-CC_FLAGS := -std=c++11 -I. \
+LD_FLAGS := -L/usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl
+CC_FLAGS := -pthread -std=c++11 -I. \
+	-I /usr/local/include \
 	-I $(NGINX_DIR)/src/src/os/unix \
 	-I $(NGINX_DIR)/src/objs \
 	-I $(NGINX_DIR)/src/src \
@@ -41,9 +53,10 @@ CC_FLAGS := -std=c++11 -I. \
 	-I $(NGINX_DIR)/src/src/misc \
 	-I $(NGINX_DIR)/src/src/stream
 
-#main: $(GRPC_GATEWAY_OBJ_FILES)
-#   $(CC) $(LD_FLAGS) -o $@ $^
+nginx: nginx_config
 
-grpc_gateway.o: protos
-	$(CC) $(CC_FLAGS) $(GRPC_GATEWAY_CC_FILES) $(GRPC_GATEWAY_H_FILES) -o $@
+grpc_gateway: $(GRPC_GATEWAY_OBJ_FILES)
 
+objs/%.o: $(ROOT_DIR)/%.cc
+	mkdir -p $(dir $@)
+	$(CC) -c $(CC_FLAGS) -o $@ $<
