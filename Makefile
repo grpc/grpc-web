@@ -1,25 +1,18 @@
 CC := g++
-ROOT_DIR := net/grpc/gateway
-PROTOS_DIR := $(ROOT_DIR)/protos
+ROOT_DIR := /github/grpc-web
+PROTOS_DIR := $(ROOT_DIR)/net/grpc/gateway/protos
 
-protos:
-        protoc $(PROTOS_DIR)/pair.proto --cpp_out=.
-        protoc $(PROTOS_DIR)/status.proto --cpp_out=.
+protos: 
+	protoc --proto_path=$(PROTOS_DIR) $(PROTOS_DIR)/pair.proto --cpp_out=$(PROTOS_DIR)
+	protoc --proto_path=$(PROTOS_DIR) $(PROTOS_DIR)/status.proto --cpp_out=$(PROTOS_DIR)
 
 NGINX_DIR := third_party/nginx
 
 nginx_config:
-	$(NGINX_DIR)/src/auto/configure --with-http_ssl_module \
-	--with-cc-opt="\
-	-I /usr/local/include \
-	-I $(ROOT_DIR) \
-	-I $(ROOT_DIR)/backend \
-	-I $(ROOT_DIR)/codec \
-	-I $(ROOT_DIR)/frontend \
-	-I $(ROOT_DIR)/runtime \
-	" \
-	--with-ld-opt="-L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl" \
-	--add-module=$(ROOT_DIR)/nginx
+	cd $(NGINX_DIR)/src && auto/configure --with-http_ssl_module \
+	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR)" \
+	--with-ld-opt="-L $(ROOT_DIR)/objs -lgateway -L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl -lrt" \
+	--add-module=$(ROOT_DIR)/net/grpc/gateway/nginx
 
 NGINX_H_FILES := $(wildcard $(NGINX_DIR)/src/src/**/*.h) $(wildcard $(NGINX_DIR)/src/objs/**/*.h)
 NGINX_C_FILES := $(wildcard $(NGINX_DIR)/src/src/**/*.c)
@@ -28,15 +21,17 @@ GRPC_GATEWAY_CC_FILES := $(wildcard net/grpc/gateway/*.cc) \
 	$(wildcard net/grpc/gateway/backend/*.cc) \
 	$(wildcard net/grpc/gateway/codec/*.cc) \
 	$(wildcard net/grpc/gateway/frontend/*.cc) \
-	$(wildcard net/grpc/gateway/runtime/*.cc)
+	$(wildcard net/grpc/gateway/runtime/*.cc) \
+	$(wildcard net/grpc/gateway/protos/*.cc)
 
 GRPC_GATEWAY_H_FILES := $(wildcard net/grpc/gateway/backend/*.h) \
         $(wildcard net/grpc/gateway/codec/*.h) \
         $(wildcard net/grpc/gateway/frontend/*.h) \
         $(wildcard net/grpc/gateway/runtime/*.h) \
+	$(wildcard net/grpc/gateway/protos/*.h) \
         $(wildcard net/grpc/gateway/*.h)
 
-GRPC_GATEWAY_OBJ_FILES := $(addprefix objs/,$(patsubst $(ROOT_DIR)/%.cc,%.o,$(GRPC_GATEWAY_CC_FILES)))
+GRPC_GATEWAY_OBJ_FILES := $(addprefix objs/,$(patsubst net/grpc/gateway/%.cc,%.o,$(GRPC_GATEWAY_CC_FILES)))
 
 LD_FLAGS := -L/usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl
 CC_FLAGS := -pthread -std=c++11 -I. \
@@ -53,10 +48,12 @@ CC_FLAGS := -pthread -std=c++11 -I. \
 	-I $(NGINX_DIR)/src/src/misc \
 	-I $(NGINX_DIR)/src/src/stream
 
-nginx: nginx_config
+nginx: nginx_config protos grpc_gateway
+	cd $(NGINX_DIR)/src && make
 
 grpc_gateway: $(GRPC_GATEWAY_OBJ_FILES)
+	ar crf $(ROOT_DIR)/objs/libgateway.a $(GRPC_GATEWAY_OBJ_FILES)
 
-objs/%.o: $(ROOT_DIR)/%.cc
+objs/%.o: $(ROOT_DIR)/net/grpc/gateway/%.cc
 	mkdir -p $(dir $@)
 	$(CC) -c $(CC_FLAGS) -o $@ $<
