@@ -12,12 +12,14 @@ NGINX_DIR := third_party/nginx
 
 nginx_config:
 	cd $(NGINX_DIR)/src && auto/configure --with-http_ssl_module \
+	--with-http_v2_module \
 	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR)" \
 	--with-ld-opt="-L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl -lrt" \
 	--add-module=$(ROOT_DIR)/net/grpc/gateway/nginx
 
 nginx_config_with_gateway:
 	cd $(NGINX_DIR)/src && auto/configure --with-http_ssl_module \
+	--with-http_v2_module \
 	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR)" \
 	--with-ld-opt="-L $(ROOT_DIR)/objs -lgateway -L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl -lrt" \
 	--add-module=$(ROOT_DIR)/net/grpc/gateway/nginx
@@ -30,14 +32,16 @@ GRPC_GATEWAY_CC_FILES := $(wildcard net/grpc/gateway/*.cc) \
 	$(wildcard net/grpc/gateway/codec/*.cc) \
 	$(wildcard net/grpc/gateway/frontend/*.cc) \
 	$(wildcard net/grpc/gateway/runtime/*.cc) \
-	$(wildcard net/grpc/gateway/protos/*.cc)
+	net/grpc/gateway/protos/pair.pb.cc \
+	net/grpc/gateway/protos/status.pb.cc
 
 GRPC_GATEWAY_H_FILES := $(wildcard net/grpc/gateway/backend/*.h) \
         $(wildcard net/grpc/gateway/codec/*.h) \
         $(wildcard net/grpc/gateway/frontend/*.h) \
         $(wildcard net/grpc/gateway/runtime/*.h) \
-	$(wildcard net/grpc/gateway/protos/*.h) \
-        $(wildcard net/grpc/gateway/*.h)
+        $(wildcard net/grpc/gateway/*.h) \
+	net/grpc/gateway/protos/pair.pb.h \
+	net/grpc/gateway/protos/status.pb.h
 
 GRPC_GATEWAY_OBJ_FILES := $(addprefix objs/,$(patsubst net/grpc/gateway/%.cc,%.o,$(GRPC_GATEWAY_CC_FILES)))
 
