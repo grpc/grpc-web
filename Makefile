@@ -13,15 +13,17 @@ NGINX_DIR := third_party/nginx
 nginx_config:
 	cd $(NGINX_DIR)/src && auto/configure --with-http_ssl_module \
 	--with-http_v2_module \
-	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR)" \
-	--with-ld-opt="-L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl -lrt" \
+	--with-cc-opt="-static -static-libgcc -I /usr/local/include -I $(ROOT_DIR)" \
+	--with-ld-opt="-static -L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl -lrt -lstdc++ -lm" \
+	--with-openssl=$(ROOT_DIR)/third_party/openssl \
 	--add-module=$(ROOT_DIR)/net/grpc/gateway/nginx
 
 nginx_config_with_gateway:
 	cd $(NGINX_DIR)/src && auto/configure --with-http_ssl_module \
 	--with-http_v2_module \
-	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR)" \
-	--with-ld-opt="-L $(ROOT_DIR)/objs -lgateway -L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl -lrt" \
+	--with-cc-opt="-static -static-libgcc -I /usr/local/include -I $(ROOT_DIR)" \
+	--with-ld-opt="-static -L $(ROOT_DIR)/objs -lgateway -L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl -lrt -lstdc++ -lm" \
+	--with-openssl=$(ROOT_DIR)/third_party/openssl \
 	--add-module=$(ROOT_DIR)/net/grpc/gateway/nginx
 
 NGINX_H_FILES := $(wildcard $(NGINX_DIR)/src/src/**/*.h) $(wildcard $(NGINX_DIR)/src/objs/**/*.h)
