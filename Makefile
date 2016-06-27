@@ -78,5 +78,5 @@ package: nginx
 	cp $(ROOT_DIR)/net/grpc/gateway/nginx/package/nginx.conf $(ROOT_DIR)/gConnector/conf
 	cp $(ROOT_DIR)/net/grpc/gateway/nginx/package/nginx.sh $(ROOT_DIR)/gConnector
 	cp $(ROOT_DIR)/third_party/nginx/src/objs/nginx $(ROOT_DIR)/gConnector
-	zip gConnector.zip gConnector
+	zip -r gConnector.zip gConnector/*
 	
