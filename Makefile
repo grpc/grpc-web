@@ -2,7 +2,7 @@ CC := g++
 ROOT_DIR := /github/grpc-web
 PROTOS_DIR := $(ROOT_DIR)/net/grpc/gateway/protos
 
-all: nginx
+all: package
 
 protos: 
 	protoc --proto_path=$(PROTOS_DIR) $(PROTOS_DIR)/pair.proto --cpp_out=$(PROTOS_DIR)
@@ -13,16 +13,16 @@ NGINX_DIR := third_party/nginx
 nginx_config:
 	cd $(NGINX_DIR)/src && auto/configure --with-http_ssl_module \
 	--with-http_v2_module \
-	--with-cc-opt="-static -static-libgcc -I /usr/local/include -I $(ROOT_DIR)" \
-	--with-ld-opt="-static -L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl -lrt -lstdc++ -lm" \
+	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR)" \
+	--with-ld-opt="-L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl -lrt" \
 	--with-openssl=$(ROOT_DIR)/third_party/openssl \
 	--add-module=$(ROOT_DIR)/net/grpc/gateway/nginx
 
 nginx_config_with_gateway:
 	cd $(NGINX_DIR)/src && auto/configure --with-http_ssl_module \
 	--with-http_v2_module \
-	--with-cc-opt="-static -static-libgcc -I /usr/local/include -I $(ROOT_DIR)" \
-	--with-ld-opt="-static -L $(ROOT_DIR)/objs -lgateway -L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl -lrt -lstdc++ -lm" \
+	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR)" \
+	--with-ld-opt="-L $(ROOT_DIR)/objs -lgateway -L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl -lrt" \
 	--with-openssl=$(ROOT_DIR)/third_party/openssl \
 	--add-module=$(ROOT_DIR)/net/grpc/gateway/nginx
 
@@ -71,3 +71,12 @@ grpc_gateway: $(GRPC_GATEWAY_OBJ_FILES)
 objs/%.o: $(ROOT_DIR)/net/grpc/gateway/%.cc
 	mkdir -p $(dir $@)
 	$(CC) -c $(CC_FLAGS) -o $@ $<
+
+package: nginx
+	mkdir -p $(ROOT_DIR)/gConnector/conf
+	cp $(ROOT_DIR)/third_party/nginx/src/conf/* $(ROOT_DIR)/gConnector/conf
+	cp $(ROOT_DIR)/net/grpc/gateway/nginx/package/nginx.conf $(ROOT_DIR)/gConnector/conf
+	cp $(ROOT_DIR)/net/grpc/gateway/nginx/package/nginx.sh $(ROOT_DIR)/gConnector
+	cp $(ROOT_DIR)/third_party/nginx/src/objs/nginx $(ROOT_DIR)/gConnector
+	zip gConnector.zip gConnector
+	
