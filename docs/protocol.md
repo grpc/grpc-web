@@ -14,7 +14,7 @@ This protocol is officially named as “Protobuf-RPC” following the convention
 It uses a fixed URL mapping for the RPC methods, and uses the Content-Type “application/x-protobuf” (MIME type) 
 for the request and response messages.
 
-## Specification (by example)
+## Specification
 
 ### URL
     /$rpc/google.pubsub.v1.Topics/CreateTopic
