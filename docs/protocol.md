@@ -27,10 +27,9 @@ By default, POST is used. Other methods are allowed, following standard HTTP sem
 
 ### HTTP Body
 
-Content-type is always "application/x-protobuf", which represents the protobuf message the RPC end-point generates or consumes.
+Content-type is always "application/x-protobuf", which represents the protobuf message that the RPC end-point generates or consumes.
 
-When the request or response is a streamed request or response, a protobuf "array" is defined as following for the entire
-response body.
+When the request or response is a streamed request or response, a protobuf "array" is defined as following for the entire body.
 
 ```
 syntax = "proto3";
@@ -61,7 +60,7 @@ Otherwise, base64 encoding of the request or response body is optional.
 
 200 for success responses. 
 
-TBD (a canonical mapping of google.rpc.Status code to HTTP status code).
+To be published: canonical mapping of google.rpc.Status code to HTTP status code.
 
 ### CORS
 
