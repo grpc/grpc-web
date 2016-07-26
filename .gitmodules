@@ -7,3 +7,6 @@
 [submodule "third_party/openssl"]
 	path = third_party/openssl
 	url = https://github.com/openssl/openssl.git
+[submodule "third_party/nginx"]
+	path = third_party/nginx
+	url = https://nginx.googlesource.com/nginx
