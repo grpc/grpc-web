@@ -45,6 +45,9 @@ const char kGrpcAcceptEncoding_AcceptAll[] = "identity,deflate,gzip";
 // The metadata name of content-type.
 const char kContentType[] = "content-type";
 
+// The metadata name of content-length.
+const char kContentLength[] = "content-length";
+
 }  // namespace gateway
 }  // namespace grpc
 #endif  // NET_GRPC_GATEWAY_RUNTIME_CONSTANTS_H_

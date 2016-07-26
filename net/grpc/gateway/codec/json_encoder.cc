@@ -41,7 +41,7 @@ void JsonEncoder::Encode(grpc::ByteBuffer* input, std::vector<Slice>* result) {
 }
 
 void JsonEncoder::EncodeStatus(const grpc::Status& status,
-                               const Trailers& trailers,
+                               const Trailers* trailers,
                                std::vector<Slice>* result) {
   if (is_first_message_) {
     gpr_slice prefix = gpr_slice_from_static_string(kJsonArrayStatusOnlyPrefix);
@@ -54,13 +54,16 @@ void JsonEncoder::EncodeStatus(const grpc::Status& status,
   google::rpc::Status status_proto;
   status_proto.set_code(status.error_code());
   status_proto.set_message(status.error_message());
-  for (auto& trailer : trailers) {
-    ::google::protobuf::Any* any = status_proto.add_details();
-    any->set_type_url(kTypeUrlPair);
-    Pair pair;
-    pair.set_first(trailer.first);
-    pair.set_second(trailer.second.data(), trailer.second.length());
-    pair.SerializeToString(any->mutable_value());
+  if (trailers != nullptr) {
+    for (auto& trailer : *trailers) {
+      ::google::protobuf::Any* any = status_proto.add_details();
+      any->set_type_url(kTypeUrlPair);
+      Pair pair;
+      pair.set_first(trailer.first);
+      pair.set_second(trailer.second.data(), trailer.second.length());
+      // TODO(fengli): Change to open source protobuf.
+      pair.SerializeToString(any->mutable_value());
+    }
   }
 
   std::string serialized_status_proto;

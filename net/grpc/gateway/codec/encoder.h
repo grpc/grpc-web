@@ -26,7 +26,7 @@ class Encoder {
 
   // Encodes a GRPC response status and trailers to the frontend protocol.
   virtual void EncodeStatus(const grpc::Status& status,
-                            const Trailers& trailers,
+                            const Trailers* trailers,
                             std::vector<Slice>* result) = 0;
 };
 

@@ -1,8 +1,9 @@
 #include "net/grpc/gateway/frontend/nginx_http_frontend.h"
 
+#include <ngx_http.h>
+
 #include <algorithm>
 
-#include <ngx_http.h>
 #include "net/grpc/gateway/frontend/nginx_bridge.h"
 #include "net/grpc/gateway/log.h"
 #include "net/grpc/gateway/runtime/constants.h"
@@ -15,7 +16,6 @@
 extern "C" {
 #endif
 
-static void do_nothing(void *ignored) {}
 static ngx_chain_t *ngx_chain_seek_to_last(ngx_chain_t *chain) {
   while (chain->next) {
     chain = chain->next;
@@ -50,9 +50,6 @@ ngx_int_t grpc_gateway_handler(ngx_http_request_t *r) {
   std::string backend_host(reinterpret_cast<char *>(r->host_start),
                            r->host_end - r->host_start);
   std::string backend_method(reinterpret_cast<char *>(r->uri.data), r->uri.len);
-  std::shared_ptr<grpc::gateway::Frontend> frontend =
-      grpc::gateway::Runtime::Get().CreateNginxFrontend(
-          r, backend_address, backend_host, backend_method);
 
   // Initiate nginx request context.
   grpc_gateway_request_context *context =
@@ -61,17 +58,28 @@ ngx_int_t grpc_gateway_handler(ngx_http_request_t *r) {
   if (context == nullptr) {
     return NGX_HTTP_INTERNAL_SERVER_ERROR;
   }
-  context->frontend = frontend;
+  context->frontend = grpc::gateway::Runtime::Get().CreateNginxFrontend(
+      r, backend_address, backend_host, backend_method);
   ngx_http_set_ctx(r, context, grpc_gateway_module);
-
-  frontend->Start();
-  return NGX_DONE;
+  context->frontend->Start();
+  return NGX_AGAIN;
 }
 
 void continue_read_request_body(ngx_http_request_t *r) {
   static_cast<grpc::gateway::NginxHttpFrontend *>(get_frontend(r))
       ->ContinueReadRequestBody();
 }
+
+void continue_write_response(ngx_http_request_t *r) {
+  if (r->stream != nullptr) {
+    if (ngx_http_output_filter(r, nullptr) == NGX_AGAIN) {
+      r->write_event_handler = continue_write_response;
+    } else {
+      r->write_event_handler = ngx_http_request_empty_handler;
+    }
+  }
+}
+
 #ifdef __cplusplus
 }
 #endif
@@ -98,7 +106,7 @@ NginxHttpFrontend::NginxHttpFrontend(std::shared_ptr<Backend> backend)
       is_response_init_metadata_received_(false),
       is_response_half_closed_received_(false),
       is_response_http_headers_sent_(false),
-      is_response_http_trailers_sent_(false) {}
+      is_response_status_sent_(false) {}
 
 NginxHttpFrontend::~NginxHttpFrontend() {}
 
@@ -109,7 +117,7 @@ void NginxHttpFrontend::Start() {
   ngx_int_t rc = ngx_http_read_client_request_body(http_request_,
                                                    continue_read_request_body);
   if (rc >= NGX_HTTP_BAD_REQUEST) {
-    DEBUG("ngx_http_read_client_request_body failed, rc = %d.", rc);
+    DEBUG("ngx_http_read_client_request_body failed, rc = %ld.", rc);
     SendErrorToClient(grpc::Status(grpc::StatusCode::INTERNAL,
                                    "Failed to read request body."));
     return;
@@ -117,6 +125,16 @@ void NginxHttpFrontend::Start() {
 }
 
 void NginxHttpFrontend::ContinueReadRequestBody() {
+  http_request_->read_event_handler = continue_read_request_body;
+  if (http_request_->stream == nullptr &&
+      (http_request_->connection->read->pending_eof ||
+       http_request_->connection->read->eof)) {
+    // FIN or RST from client received.
+    DEBUG("receive FIN from peer, close the HTTP connection.");
+    ngx_http_close_connection(http_request_->connection);
+    return;
+  }
+
   if (!http_request_->reading_body) {
     if (!is_request_half_closed_) {
       is_request_half_closed_ = true;
@@ -125,27 +143,43 @@ void NginxHttpFrontend::ContinueReadRequestBody() {
     }
     return;
   }
-  ngx_int_t rc = ngx_http_read_unbuffered_request_body(http_request_);
-  DEBUG("ngx_http_read_unbuffered_request_body = %i", rc);
-  if (rc == NGX_AGAIN) {
-    DEBUG("request has not been finished yet, request_length = %i",
-          http_request_->request_length);
-    if (!SendRequestToBackend()) {
-      DEBUG("no enough data to decode, continue when more data comes.");
-      http_request_->read_event_handler = continue_read_request_body;
-    } else {
+
+  while (true) {
+    ngx_int_t rc = ngx_http_read_unbuffered_request_body(http_request_);
+    DEBUG("ngx_http_read_unbuffered_request_body = %li", rc);
+    if (http_request_->request_body->bufs == nullptr) {
+      return;
+    }
+    if (rc == NGX_AGAIN) {
+      DEBUG("request has not been finished yet, request_length = %li",
+            http_request_->request_length);
+      bool sent = SendRequestToBackend();
+      if (is_response_status_sent_) {
+        return;
+      }
+      if (!sent) {
+        DEBUG("no enough data to decode, continue when more data comes.");
+        http_request_->read_event_handler = continue_read_request_body;
+        continue;
+      }
       DEBUG("message sent to backend, continue when finish sending.");
       http_request_->read_event_handler = ngx_http_request_empty_handler;
+      return;
     }
-    return;
-  }
-  if (rc == NGX_OK) {
-    if (!is_request_half_closed_) {
-      is_request_half_closed_ = true;
-      DEBUG(
-          "ngx_http_read_unbuffered_request_body returns NGX_OK, send request "
-          "half close.");
-      SendRequestToBackend();
+    if (rc == NGX_OK) {
+      if (!is_request_half_closed_) {
+        is_request_half_closed_ = true;
+        DEBUG(
+            "ngx_http_read_unbuffered_request_body returns NGX_OK, send "
+            "request "
+            "half close.");
+        SendRequestToBackend();
+        if (is_response_status_sent_) {
+          return;
+        }
+      }
+      http_request_->request_body->bufs = nullptr;
+      return;
     }
   }
 }
@@ -154,6 +188,7 @@ void NginxHttpFrontend::SendResponseMessageToClient(Response *response) {
   if (response->message() != nullptr) {
     std::vector<Slice> transcoded_message;
     ByteBuffer buffer(response->message()->data(), response->message()->size());
+    DEBUG("Sends response message, size: %li", buffer.Length());
     encoder_->Encode(&buffer, &transcoded_message);
     if (!transcoded_message.empty()) {
       ngx_chain_t *output = ngx_alloc_chain_link(http_request_->pool);
@@ -165,9 +200,12 @@ void NginxHttpFrontend::SendResponseMessageToClient(Response *response) {
       for (Slice &slice : transcoded_message) {
         ngx_buf_t *buffer =
             reinterpret_cast<ngx_buf_t *>(ngx_calloc_buf(http_request_->pool));
-        buffer->start = const_cast<uint8_t *>(slice.begin());
+        uint8_t *data = reinterpret_cast<uint8_t *>(
+            ngx_palloc(http_request_->pool, slice.size()));
+        memcpy(data, slice.begin(), slice.size());
+        buffer->start = data;
         buffer->pos = buffer->start;
-        buffer->end = const_cast<uint8_t *>(slice.end());
+        buffer->end = data + slice.size();
         buffer->last = buffer->end;
         buffer->temporary = 1;
         ngx_chain_t *last_chain = ngx_chain_seek_to_last(output);
@@ -181,44 +219,59 @@ void NginxHttpFrontend::SendResponseMessageToClient(Response *response) {
         }
       }
       ngx_chain_seek_to_last(output)->buf->flush = 1;
-      ngx_http_output_filter(http_request_, output);
+      if (ngx_http_output_filter(http_request_, output) == NGX_AGAIN &&
+          http_request_->stream != nullptr) {
+        http_request_->write_event_handler = continue_write_response;
+      }
     }
   }
 }
 
 void NginxHttpFrontend::SendResponseStatusToClient(Response *response) {
-  if (response->status() != nullptr) {
-    std::vector<Slice> trancoded_status;
-    encoder_->EncodeStatus(*response->status(), *response->trailers(),
-                           &trancoded_status);
-    if (trancoded_status.empty()) {
-      SendResponseTrailersToClient(response);
+  if (response->status() == nullptr) {
+    return;
+  }
+  if (is_response_status_sent_) {
+    return;
+  }
+  is_response_status_sent_ = true;
+
+  std::vector<Slice> trancoded_status;
+  encoder_->EncodeStatus(*response->status(), response->trailers(),
+                         &trancoded_status);
+  if (trancoded_status.empty()) {
+    SendResponseTrailersToClient(response);
+  }
+  ngx_chain_t *output = ngx_alloc_chain_link(http_request_->pool);
+  if (output == nullptr) {
+    ERROR("Failed to allocate response buffer for GRPC response message.");
+    ngx_abort();
+  }
+  output->buf = nullptr;
+  output->next = nullptr;
+  for (Slice &slice : trancoded_status) {
+    ngx_buf_t *buffer =
+        reinterpret_cast<ngx_buf_t *>(ngx_calloc_buf(http_request_->pool));
+    uint8_t *data = reinterpret_cast<uint8_t *>(
+        ngx_palloc(http_request_->pool, slice.size()));
+    memcpy(data, slice.begin(), slice.size());
+    buffer->start = data;
+    buffer->pos = buffer->start;
+    buffer->end = data + slice.size();
+    buffer->last = buffer->end;
+    buffer->temporary = 1;
+    ngx_chain_t *last_chain = ngx_chain_seek_to_last(output);
+    if (last_chain->buf == nullptr) {
+      last_chain->buf = buffer;
+      last_chain->next = nullptr;
+    } else {
+      last_chain->next = ngx_alloc_chain_link(http_request_->pool);
+      last_chain->next->buf = buffer;
+      last_chain->next->next = nullptr;
     }
-    ngx_chain_t *output = ngx_alloc_chain_link(http_request_->pool);
-    if (output == nullptr) {
-      ERROR("Failed to allocate response buffer for GRPC response message.");
-      ngx_abort();
-    }
-    output->buf = nullptr;
-    output->next = nullptr;
-    for (Slice &slice : trancoded_status) {
-      ngx_buf_t *buffer =
-          reinterpret_cast<ngx_buf_t *>(ngx_calloc_buf(http_request_->pool));
-      buffer->start = const_cast<uint8_t *>(slice.begin());
-      buffer->pos = buffer->start;
-      buffer->end = const_cast<uint8_t *>(slice.end());
-      buffer->last = buffer->end;
-      buffer->temporary = 1;
-      ngx_chain_t *last_chain = ngx_chain_seek_to_last(output);
-      if (last_chain->buf == nullptr) {
-        last_chain->buf = buffer;
-        last_chain->next = nullptr;
-      } else {
-        last_chain->next = ngx_alloc_chain_link(http_request_->pool);
-        last_chain->next->buf = buffer;
-        last_chain->next->next = nullptr;
-      }
-    }
+  }
+
+  if (output->buf != nullptr) {
     ngx_chain_t *last = ngx_chain_seek_to_last(output);
     if (last->buf == nullptr) {
       last->buf =
@@ -227,7 +280,10 @@ void NginxHttpFrontend::SendResponseStatusToClient(Response *response) {
     last->buf->flush = 1;
     last->buf->last_buf = 1;
     ngx_http_output_filter(http_request_, output);
+  } else {
+    ngx_http_send_special(http_request_, NGX_HTTP_LAST);
   }
+  ngx_http_finalize_request(http_request_, NGX_OK);
 }
 
 void NginxHttpFrontend::Send(std::unique_ptr<Response> response) {
@@ -267,10 +323,10 @@ Status NginxHttpFrontend::DecodeRequestBody() {
         buffers = buffers->next;
         continue;
       }
-      Slice slice(
-          gpr_slice_new(buffer->pos, buffer->last - buffer->pos, do_nothing),
-          Slice::STEAL_REF);
-      decoder_->Append(slice);
+      decoder_->Append(Slice(
+          gpr_slice_from_copied_buffer(reinterpret_cast<char *>(buffer->pos),
+                                       buffer->last - buffer->pos),
+          Slice::STEAL_REF));
       buffer->pos = buffer->last;
     }
     request_body->bufs = nullptr;
@@ -349,33 +405,33 @@ void NginxHttpFrontend::SendResponseHeadersToClient(Response *response) {
 
   http_request_->headers_out.status = NGX_HTTP_OK;
   if (response != nullptr && response->headers() != nullptr) {
+    for (auto &header : *response->headers()) {
+      if (header.first == kContentLength) {
+        continue;
+      }
+      AddHTTPHeader(http_request_, header.first, header.second);
+    }
     AddHTTPHeader(http_request_, kGrpcEncoding, kGrpcEncoding_Identity);
     AddHTTPHeader(http_request_, kContentType, kContentTypeGrpc);
     AddHTTPHeader(http_request_, kGrpcAcceptEncoding,
                   kGrpcAcceptEncoding_AcceptAll);
-    for (auto &header : *response->headers()) {
-      AddHTTPHeader(http_request_, header.first, header.second);
-    }
   }
   ngx_int_t rc = ngx_http_send_header(http_request_);
   if (rc != NGX_OK) {
-    ERROR("Failed to send HTTP response headers via nginx, rc = %d.", rc);
+    ERROR("Failed to send HTTP response headers via nginx, rc = %ld.", rc);
   }
 }
 
 void NginxHttpFrontend::SendResponseTrailersToClient(Response *response) {
-  if (is_response_http_trailers_sent_) {
-    return;
-  }
-  is_response_http_trailers_sent_ = true;
-
   http_request_->headers_out.status = NGX_HTTP_OK;
   if (response != nullptr && response->trailers() != nullptr) {
     AddHTTPTrailer(
         http_request_, kGrpcStatus,
         string_ref(std::to_string(response->status()->error_code())));
-    AddHTTPTrailer(http_request_, kGrpcMessage, "");
-
+    if (!response->status()->error_message().empty()) {
+      AddHTTPTrailer(http_request_, kGrpcMessage,
+                     response->status()->error_message());
+    }
     for (auto &trailer : *response->trailers()) {
       AddHTTPTrailer(http_request_, trailer.first, trailer.second);
     }
@@ -384,6 +440,11 @@ void NginxHttpFrontend::SendResponseTrailersToClient(Response *response) {
 
 void NginxHttpFrontend::SendErrorToClient(const grpc::Status &status) {
   SendResponseHeadersToClient(nullptr);
+
+  if (is_response_status_sent_) {
+    return;
+  }
+  is_response_status_sent_ = true;
 
   std::vector<Slice> result;
   encoder_->EncodeStatus(status, &result);
@@ -398,9 +459,12 @@ void NginxHttpFrontend::SendErrorToClient(const grpc::Status &status) {
   ngx_buf_t *buffer = nullptr;
   for (Slice &slice : result) {
     buffer = reinterpret_cast<ngx_buf_t *>(ngx_calloc_buf(http_request_->pool));
-    buffer->start = const_cast<uint8_t *>(slice.begin());
+    uint8_t *data = reinterpret_cast<uint8_t *>(
+        ngx_palloc(http_request_->pool, slice.size()));
+    memcpy(data, slice.begin(), slice.size());
+    buffer->start = data;
     buffer->pos = buffer->start;
-    buffer->end = const_cast<uint8_t *>(slice.end());
+    buffer->end = data + slice.size();
     buffer->last = buffer->end;
     buffer->temporary = true;
     ngx_chain_t *last_chain = ngx_chain_seek_to_last(output);
@@ -419,6 +483,7 @@ void NginxHttpFrontend::SendErrorToClient(const grpc::Status &status) {
     buffer->last_in_chain = true;
   }
   ngx_http_output_filter(http_request_, output);
+  ngx_http_finalize_request(http_request_, NGX_OK);
 }
 
 namespace {

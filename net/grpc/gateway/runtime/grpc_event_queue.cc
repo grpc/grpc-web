@@ -32,7 +32,7 @@ void GrpcEventQueue::ExecuteEventLoop(void* queue) {
   while (true) {
     grpc_event event = grpc_completion_queue_next(
         grpc_queue->queue_, gpr_inf_future(GPR_CLOCK_REALTIME), nullptr);
-    if (!event.success) {
+    if (event.type == grpc_completion_type::GRPC_QUEUE_SHUTDOWN) {
       INFO("GRPC event completion queue has been shutdown, exiting.");
       return;
     }

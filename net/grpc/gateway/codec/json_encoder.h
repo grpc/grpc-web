@@ -19,7 +19,7 @@ class JsonEncoder : public Encoder {
   JsonEncoder& operator=(const JsonEncoder&) = delete;
 
   void Encode(grpc::ByteBuffer* input, std::vector<Slice>* result) override;
-  void EncodeStatus(const grpc::Status& status, const Trailers& trailers,
+  void EncodeStatus(const grpc::Status& status, const Trailers* trailers,
                     std::vector<Slice>* result) override;
 
  private:

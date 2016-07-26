@@ -1,9 +1,10 @@
 #include "net/grpc/gateway/runtime/nginx_notify_queue.h"
 
-#include <algorithm>
-
 #include <ngx_config.h>
 #include <ngx_event.h>
+
+#include <algorithm>
+
 #include "net/grpc/gateway/log.h"
 
 namespace grpc {
@@ -36,7 +37,7 @@ void NginxNotifyQueue::Add(std::unique_ptr<Tag> tag) {
   ngx_int_t rc = ngx_notify(NginxNotifyEventsCallback);
   GPR_ASSERT(rc == NGX_OK);
   if (rc != NGX_OK) {
-    ERROR("ngx_notify failed, rc = %i", rc);
+    ERROR("ngx_notify failed, rc = %li", rc);
   }
   gpr_mu_unlock(&mutex_);
 }

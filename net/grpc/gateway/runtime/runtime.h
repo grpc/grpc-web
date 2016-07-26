@@ -1,11 +1,12 @@
 #ifndef NET_GRPC_GATEWAY_RUNTIME_RUNTIME_H_
 #define NET_GRPC_GATEWAY_RUNTIME_RUNTIME_H_
 
-#include <memory>
-
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <ngx_http.h>
+
+#include <memory>
+
 #include "net/grpc/gateway/codec/decoder.h"
 #include "net/grpc/gateway/codec/encoder.h"
 #include "net/grpc/gateway/frontend/frontend.h"

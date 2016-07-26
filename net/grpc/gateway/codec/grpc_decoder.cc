@@ -27,9 +27,11 @@ Status GrpcDecoder::Decode() {
         case kExpectingCompressedFlag: {
           if (c != CompressedFlag::kUncompressed &&
               c != CompressedFlag::kCompressed) {
+            // TODO(fengli): The following code is repeated 12 times. Extract it
+            // into a function or a macro.
             Status status(StatusCode::INVALID_ARGUMENT,
                           Format("Receives invalid compressed flag: %c.", c));
-            DEBUG(status.error_message().c_str());
+            DEBUG("%s", status.error_message().c_str());
             return status;
           }
           compressed_flag_ = c;
@@ -37,30 +39,30 @@ Status GrpcDecoder::Decode() {
           continue;
         }
         case kExpectingMessageLengthByte0: {
-          message_length_ = c & 0xFF000000;
+          message_length_ = c << 24;
           state_ = kExpectingMessageLengthByte1;
           continue;
         }
         case kExpectingMessageLengthByte1: {
-          message_length_ += c & 0x00FF0000;
+          message_length_ += c << 16;
           state_ = kExpectingMessageLengthByte2;
           continue;
         }
         case kExpectingMessageLengthByte2: {
-          message_length_ += c & 0x0000FF00;
+          message_length_ += c << 8;
           state_ = kExpectingMessageLengthByte3;
           continue;
         }
         case kExpectingMessageLengthByte3: {
-          message_length_ += c & 0x000000FF;
+          message_length_ += c;
           if (message_length_ == 0) {
             buffer_.reset(new Slice(gpr_empty_slice(), Slice::STEAL_REF));
-            results()->push_back(std::unique_ptr<ByteBuffer>(
-                new ByteBuffer(buffer_.release(), 1)));
+            results()->push_back(
+                std::unique_ptr<ByteBuffer>(new ByteBuffer(buffer_.get(), 1)));
             state_ = kExpectingCompressedFlag;
           } else {
-            gpr_slice slice = gpr_slice_malloc(message_length_);
-            buffer_.reset(new Slice(slice, Slice::STEAL_REF));
+            buffer_.reset(
+                new Slice(gpr_slice_malloc(message_length_), Slice::STEAL_REF));
             state_ = kExpectingMessageData;
           }
           continue;
@@ -87,11 +89,14 @@ Status GrpcDecoder::Decode() {
                 return Status(StatusCode::INTERNAL,
                               "Failed to uncompress the GRPC data frame.");
               }
-              gpr_slice slice_output = gpr_slice_buffer_take_first(&output);
               gpr_slice_unref(slice_input);
-              Slice s(slice_output, Slice::STEAL_REF);
-              results()->push_back(
-                  std::unique_ptr<ByteBuffer>(new ByteBuffer(&s, 1)));
+              std::vector<Slice> s;
+              while (output.count > 0) {
+                gpr_slice slice_output = gpr_slice_buffer_take_first(&output);
+                s.push_back(Slice(slice_output, Slice::STEAL_REF));
+              }
+              results()->push_back(std::unique_ptr<ByteBuffer>(
+                  new ByteBuffer(s.data(), s.size())));
             } else {
               results()->push_back(std::unique_ptr<ByteBuffer>(
                   new ByteBuffer(buffer_.get(), 1)));

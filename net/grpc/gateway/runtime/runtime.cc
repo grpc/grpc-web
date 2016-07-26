@@ -49,6 +49,7 @@ std::shared_ptr<Frontend> Runtime::CreateNginxFrontend(
     const string& backend_host, const string& backend_method) {
   std::shared_ptr<GrpcBackend> backend(new GrpcBackend());
   backend->set_address(backend_address);
+  backend->set_host(backend_host);
   backend->set_method(backend_method);
   NginxHttpFrontend* frontend = new NginxHttpFrontend(std::move(backend));
   frontend->set_http_request(http_request);
@@ -59,6 +60,10 @@ std::shared_ptr<Frontend> Runtime::CreateNginxFrontend(
 
 std::unique_ptr<Encoder> Runtime::CreateEncoder(
     ngx_http_request_t* http_request) {
+  if (http_request == nullptr ||
+      http_request->headers_in.content_type == nullptr) {
+    return nullptr;
+  }
   const char* content_type = reinterpret_cast<const char*>(
       http_request->headers_in.content_type->value.data);
   size_t content_type_length = http_request->headers_in.content_type->value.len;
@@ -82,6 +87,10 @@ std::unique_ptr<Encoder> Runtime::CreateEncoder(
 
 std::unique_ptr<Decoder> Runtime::CreateDecoder(
     ngx_http_request_t* http_request) {
+  if (http_request == nullptr ||
+      http_request->headers_in.content_type == nullptr) {
+    return nullptr;
+  }
   const char* content_type = reinterpret_cast<const char*>(
       http_request->headers_in.content_type->value.data);
   size_t content_type_length = http_request->headers_in.content_type->value.len;

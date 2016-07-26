@@ -51,7 +51,7 @@ std::unique_ptr<Slice> Base64::Encode(const Slice& input, uint8_t* buffer,
   if (encoded_size == 0) {
     if (input.size() > 0) {
       memcpy(buffer + *buffer_length, input.begin(), input.size());
-      buffer_length += input.size();
+      *buffer_length += input.size();
     }
     return nullptr;
   }
@@ -135,7 +135,7 @@ bool Base64::Decode(const std::vector<Slice>& input,
                     std::vector<Slice>* output) {
   for (const Slice& slice_in : input) {
     size_t base64_length = slice_in.size() + decode_buffer_length_;
-    size_t binary_length = base64_length * 3 / 4;
+    size_t binary_length = base64_length / 4 * 3;
     size_t base64_leftover_length = base64_length % 4;
 
     if (base64_length < 4) {
@@ -155,13 +155,12 @@ bool Base64::Decode(const std::vector<Slice>& input,
       // Decode the leftover.
       uint32_t leftover = 0;
       for (int i = 0; i < decode_buffer_length_; i++) {
-        leftover |= ((uint32_t)base64_bytes[decode_buffer_[i]]) << (3 - i) * 8;
+        leftover |= static_cast<uint32_t>(base64_bytes[decode_buffer_[i]])
+                    << (3 - i) * 6;
       }
-      for (int i = decode_buffer_length_; i < 4; i++) {
-        leftover |=
-            ((uint32_t)
-                 base64_bytes[*(slice_in.begin() + 3 - decode_buffer_length_)])
-            << (3 - i) * 8;
+      for (int i = 0; i < 4 - decode_buffer_length_; i++) {
+        leftover |= static_cast<uint32_t>(base64_bytes[*(slice_in.begin() + i)])
+                    << (3 - decode_buffer_length_ - i) * 6;
       }
       *result_offset = (unsigned char)(leftover >> 16);
       result_offset++;
@@ -172,7 +171,7 @@ bool Base64::Decode(const std::vector<Slice>& input,
     }
 
     size_t i = (4 - decode_buffer_length_) % 4;
-    while (i < base64_length - base64_leftover_length) {
+    while (i < slice_in.size() - base64_leftover_length) {
       if ((*(slice_in.begin() + i + 3)) == '=') {
         binary_length--;
       }
@@ -194,17 +193,17 @@ bool Base64::Decode(const std::vector<Slice>& input,
       i += 4;
     }
     GPR_SLICE_SET_LENGTH(slice_out, binary_length);
-    output->push_back(Slice(slice_out, Slice::ADD_REF));
+    output->push_back(Slice(slice_out, Slice::STEAL_REF));
 
     if (base64_leftover_length > 0) {
       memcpy(decode_buffer_, slice_in.end() - base64_leftover_length,
              base64_leftover_length);
-      decode_buffer_length_ = base64_leftover_length;
     }
+    decode_buffer_length_ = base64_leftover_length;
   }
 
   if (output->empty()) {
-    output->push_back(Slice(gpr_empty_slice(), Slice::ADD_REF));
+    output->push_back(Slice(gpr_empty_slice(), Slice::STEAL_REF));
   }
   return true;
 }

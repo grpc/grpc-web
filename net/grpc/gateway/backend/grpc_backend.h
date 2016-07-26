@@ -33,6 +33,9 @@ class GrpcBackend : public Backend {
   // Create a GRPC channel.
   grpc_channel* CreateChannel();
 
+  // Create a GRPC call.
+  grpc_call* CreateCall();
+
   void OnResponseInitialMetadata(bool result);
   void OnResponseMessage(bool result);
   void OnResponseStatus(bool result);
@@ -55,8 +58,10 @@ class GrpcBackend : public Backend {
   std::vector<grpc_metadata> request_initial_metadata_;
   // The GRPC response initial metadata.
   grpc_metadata_array response_initial_metadata_;
-  // The GRPC response message.
-  grpc_byte_buffer* response_message_;
+  // The GRPC request buffer.
+  grpc_byte_buffer* request_buffer_;
+  // The GRPC response buffer.
+  grpc_byte_buffer* response_buffer_;
   grpc_status_code status_code_;
   char* status_details_;
   size_t status_details_capacity_;

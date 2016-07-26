@@ -56,22 +56,25 @@ void ProtoEncoder::Encode(grpc::ByteBuffer* input, std::vector<Slice>* result) {
   }
   for (const Slice& input_slice : input_slices) {
     memcpy(p, input_slice.begin(), input_slice.size());
+    p += input_slice.size();
   }
   result->push_back(Slice(message_slice, Slice::STEAL_REF));
 }
 void ProtoEncoder::EncodeStatus(const grpc::Status& status,
-                                const Trailers& trailers,
+                                const Trailers* trailers,
                                 std::vector<Slice>* result) {
   google::rpc::Status status_proto;
   status_proto.set_code(status.error_code());
   status_proto.set_message(status.error_message());
-  for (auto& trailer : trailers) {
-    ::google::protobuf::Any* any = status_proto.add_details();
-    any->set_type_url(kTypeUrlPair);
-    Pair pair;
-    pair.set_first(trailer.first);
-    pair.set_second(trailer.second.data(), trailer.second.length());
-    pair.SerializeToString(any->mutable_value());
+  if (trailers != nullptr) {
+    for (auto& trailer : *trailers) {
+      ::google::protobuf::Any* any = status_proto.add_details();
+      any->set_type_url(kTypeUrlPair);
+      Pair pair;
+      pair.set_first(trailer.first);
+      pair.set_second(trailer.second.data(), trailer.second.length());
+      pair.SerializeToString(any->mutable_value());
+    }
   }
 
   std::string status_string;

@@ -35,7 +35,7 @@ Status ProtoDecoder::Decode() {
                 Format("Receives invalid character: %c when expecting "
                        "key/type byte of the proto message.",
                        c));
-            DEBUG(status.error_message().c_str());
+            DEBUG("%s", status.error_message().c_str());
             return status;
           }
           state_ = EXPECTING_MESSAGE_VARINT_LENGTH;
@@ -64,8 +64,8 @@ Status ProtoDecoder::Decode() {
           varint_value_--;
           if (varint_value_ == 0) {
             varint_bytes_ = 0;
-            results()->push_back(std::unique_ptr<ByteBuffer>(
-                new ByteBuffer(buffer_.release(), 1)));
+            results()->push_back(
+                std::unique_ptr<ByteBuffer>(new ByteBuffer(buffer_.get(), 1)));
             state_ = EXPECTING_MESSAGE_KEY_TYPE;
           }
           continue;
@@ -73,6 +73,7 @@ Status ProtoDecoder::Decode() {
       }
     }
   }
+  inputs()->clear();
   return Status::OK;
 }
 }  // namespace gateway

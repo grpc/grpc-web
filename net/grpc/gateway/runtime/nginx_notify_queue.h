@@ -1,10 +1,11 @@
 #ifndef NET_GRPC_GATEWAY_RUNTIME_NGINX_NOTIFY_QUEUE_H_
 #define NET_GRPC_GATEWAY_RUNTIME_NGINX_NOTIFY_QUEUE_H_
 
+#include <ngx_core.h>
+
 #include <deque>
 #include <memory>
 
-#include <ngx_core.h>
 #include "net/grpc/gateway/runtime/tag.h"
 #include "third_party/grpc/include/grpc/support/sync.h"
 

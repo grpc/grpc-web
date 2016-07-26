@@ -46,8 +46,8 @@ class NginxHttpFrontend : public Frontend {
  public:
   explicit NginxHttpFrontend(std::shared_ptr<Backend> backend);
   ~NginxHttpFrontend() override;
-  NginxHttpFrontend(const NginxHttpFrontend&) = delete;
-  NginxHttpFrontend& operator=(const NginxHttpFrontend&) = delete;
+  NginxHttpFrontend(const NginxHttpFrontend &) = delete;
+  NginxHttpFrontend &operator=(const NginxHttpFrontend &) = delete;
 
   void Start() override;
 
@@ -114,7 +114,7 @@ class NginxHttpFrontend : public Frontend {
   // True if the response headers have been sent back via nginx.
   bool is_response_http_headers_sent_;
   // True if the response trailers have been sent back via nginx.
-  bool is_response_http_trailers_sent_;
+  bool is_response_status_sent_;
 };
 
 }  // namespace gateway

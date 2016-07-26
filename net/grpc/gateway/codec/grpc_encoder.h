@@ -21,7 +21,7 @@ class GrpcEncoder : public Encoder {
 
   // Encodes the GRPC response status and trailers to raw GRPC wire format base
   // on HTTP2.
-  void EncodeStatus(const grpc::Status& status, const Trailers& trailers,
+  void EncodeStatus(const grpc::Status& status, const Trailers* trailers,
                     std::vector<Slice>* result) override;
 };
 }  // namespace gateway

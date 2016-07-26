@@ -15,7 +15,7 @@ class ProtoEncoder : public Encoder {
   ProtoEncoder& operator=(const ProtoEncoder&) = delete;
 
   void Encode(grpc::ByteBuffer* input, std::vector<Slice>* result) override;
-  void EncodeStatus(const grpc::Status& status, const Trailers& trailers,
+  void EncodeStatus(const grpc::Status& status, const Trailers* trailers,
                     std::vector<Slice>* result) override;
 };
 

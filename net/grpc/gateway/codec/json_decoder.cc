@@ -40,12 +40,14 @@ Status JsonDecoder::Decode() {
       switch (state_) {
         case EXPECTING_JSON_ARRAY_LEFT_BRACKET: {
           if (c != JSON_ARRAY_LEFT_BRACKET) {
+            // TODO(fengli): The following code is repeated 12 times. Extract it
+            // into a function or a macro.
             Status status(
                 StatusCode::INVALID_ARGUMENT,
                 Format("Receives invalid character: %c when expecting "
                        "left bracket of the JSON array.",
                        c));
-            DEBUG(status.error_message().c_str());
+            DEBUG("%s", status.error_message().c_str());
             return status;
           }
           state_ = EXPECTING_JSON_OBJECT_LEFT_BRACKET;
@@ -53,12 +55,14 @@ Status JsonDecoder::Decode() {
         }
         case EXPECTING_JSON_OBJECT_LEFT_BRACKET: {
           if (c != JSON_OBJECT_LEFT_BRACKET) {
+            // TODO(fengli): The following code is repeated 12 times. Extract it
+            // into a function or a macro.
             Status status(
                 StatusCode::INVALID_ARGUMENT,
                 Format("Receives invalid character: %c when expecting "
                        "left bracket of the JSON object.",
                        c));
-            DEBUG(status.error_message().c_str());
+            DEBUG("%s", status.error_message().c_str());
             return status;
           }
           state_ = EXPECTING_JSON_MESSAGE_TAG_LEFT_QUOTE;
@@ -66,12 +70,14 @@ Status JsonDecoder::Decode() {
         }
         case EXPECTING_JSON_MESSAGE_TAG_LEFT_QUOTE: {
           if (c != JSON_DOUBLE_QUOTE) {
+            // TODO(fengli): The following code is repeated 12 times. Extract it
+            // into a function or a macro.
             Status status(
                 StatusCode::INVALID_ARGUMENT,
                 Format("Receives invalid character: %c when expecting "
                        "left double quote of the JSON message tag.",
                        c));
-            DEBUG(status.error_message().c_str());
+            DEBUG("%s", status.error_message().c_str());
             return status;
           }
           state_ = EXPECTING_JSON_MESSAGE_TAG;
@@ -79,11 +85,13 @@ Status JsonDecoder::Decode() {
         }
         case EXPECTING_JSON_MESSAGE_TAG: {
           if (c != JSON_MESSAGE_TAG) {
+            // TODO(fengli): The following code is repeated 12 times. Extract it
+            // into a function or a macro.
             Status status(StatusCode::INVALID_ARGUMENT,
                           Format("Receives invalid character: %c when "
                                  "expecting the message tag.",
                                  c));
-            DEBUG(status.error_message().c_str());
+            DEBUG("%s", status.error_message().c_str());
             return status;
           }
           state_ = EXPECTING_JSON_MESSAGE_TAG_RIGHT_QUOTE;
@@ -91,12 +99,14 @@ Status JsonDecoder::Decode() {
         }
         case EXPECTING_JSON_MESSAGE_TAG_RIGHT_QUOTE: {
           if (c != JSON_DOUBLE_QUOTE) {
+            // TODO(fengli): The following code is repeated 12 times. Extract it
+            // into a function or a macro.
             Status status(
                 StatusCode::INVALID_ARGUMENT,
                 Format("Receives invalid character: %c when expecting "
                        "right double quote of the JSON message tag.",
                        c));
-            DEBUG(status.error_message().c_str());
+            DEBUG("%s", status.error_message().c_str());
             return status;
           }
           state_ = EXPECTING_JSON_MESSAGE_TAG_VALUE_DELIMITER;
@@ -104,12 +114,14 @@ Status JsonDecoder::Decode() {
         }
         case EXPECTING_JSON_MESSAGE_TAG_VALUE_DELIMITER: {
           if (c != JSON_TAG_VALUE_DELIMITER) {
+            // TODO(fengli): The following code is repeated 12 times. Extract it
+            // into a function or a macro.
             Status status(
                 StatusCode::INVALID_ARGUMENT,
                 Format("Receives invalid character: %c when expecting "
                        "colon after the JSON message tag.",
                        c));
-            DEBUG(status.error_message().c_str());
+            DEBUG("%s", status.error_message().c_str());
             return status;
           }
           state_ = EXPECTING_JSON_MESSAGE_VALUE_LEFT_QUOTE;
@@ -117,12 +129,14 @@ Status JsonDecoder::Decode() {
         }
         case EXPECTING_JSON_MESSAGE_VALUE_LEFT_QUOTE: {
           if (c != JSON_DOUBLE_QUOTE) {
+            // TODO(fengli): The following code is repeated 12 times. Extract it
+            // into a function or a macro.
             Status status(
                 StatusCode::INVALID_ARGUMENT,
                 Format("Receives invalid character: %c when expecting "
                        "double quote of the JSON message value.",
                        c));
-            DEBUG(status.error_message().c_str());
+            DEBUG("%s", status.error_message().c_str());
             return status;
           }
           start = i + 1;
@@ -138,12 +152,11 @@ Status JsonDecoder::Decode() {
               base64_buffer_.push_back(
                   Slice(gpr_empty_slice(), Slice::ADD_REF));
             } else {
-              Slice s(
-                  gpr_slice_new(reinterpret_cast<void*>(const_cast<uint8_t*>(
-                                    slice.begin() + start)),
-                                i - start, do_nothing),
-                  Slice::ADD_REF);
-              base64_buffer_.push_back(s);
+              base64_buffer_.push_back(Slice(
+                  gpr_slice_from_copied_buffer(
+                      reinterpret_cast<const char*>(slice.begin() + start),
+                      i - start),
+                  Slice::STEAL_REF));
             }
             std::vector<Slice> decoded;
             base64_.Decode(base64_buffer_, &decoded);
@@ -155,12 +168,14 @@ Status JsonDecoder::Decode() {
             continue;
           }
           if (!IsBase64Char(c)) {
+            // TODO(fengli): The following code is repeated 12 times. Extract it
+            // into a function or a macro.
             Status status(
                 StatusCode::INVALID_ARGUMENT,
                 Format("Receives invalid character: %c when expecting "
                        "base64 characters for the JSON message value.",
                        c));
-            DEBUG(status.error_message().c_str());
+            DEBUG("%s", status.error_message().c_str());
             return status;
           }
           if (start == -1) {
@@ -170,12 +185,14 @@ Status JsonDecoder::Decode() {
         }
         case EXPECTING_JSON_OBJECT_RIGHT_BRACKET: {
           if (c != JSON_OBJECT_RIGHT_BRACKET) {
+            // TODO(fengli): The following code is repeated 12 times. Extract it
+            // into a function or a macro.
             Status status(
                 StatusCode::INVALID_ARGUMENT,
                 Format("Receives invalid character: %c when expecting "
                        "right bracket of the JSON object.",
                        c));
-            DEBUG(status.error_message().c_str());
+            DEBUG("%s", status.error_message().c_str());
             return status;
           }
           state_ = EXPECTING_JSON_OBJECT_DELIMITER_OR_JSON_ARRAY_RIGHT_BRACKET;
@@ -190,32 +207,37 @@ Status JsonDecoder::Decode() {
             state_ = FINISH;
             continue;
           }
+          // TODO(fengli): The following code is repeated 12 times. Extract it
+          // into a function or a macro.
           Status status(StatusCode::INVALID_ARGUMENT,
                         Format("Receives invalid character: %c when expecting "
                                "right bracket of the JSON array.",
                                c));
-          DEBUG(status.error_message().c_str());
+          DEBUG("%s", status.error_message().c_str());
           return status;
         }
         case FINISH: {
+          //  TODO(fengli): The following code is repeated 12 times. Extract it
+          //  into a function or a macro.
           Status status(StatusCode::INVALID_ARGUMENT,
                         Format("Receives invalid character: %c when "
                                "the JSON array already completed.",
                                c));
-          DEBUG(status.error_message().c_str());
+          DEBUG("%s", status.error_message().c_str());
           return status;
         }
       }
     }
 
     if (start >= 0) {
-      Slice s(gpr_slice_new(reinterpret_cast<void*>(
-                                const_cast<uint8_t*>(slice.begin() + start)),
-                            slice.size() - start, do_nothing),
-              Slice::ADD_REF);
-      base64_buffer_.push_back(s);
+      base64_buffer_.push_back(
+          Slice(gpr_slice_from_copied_buffer(
+                    reinterpret_cast<const char*>(slice.begin() + start),
+                    slice.size() - start),
+                Slice::STEAL_REF));
     }
   }
+  inputs()->clear();
   return Status::OK;
 }
 }  // namespace gateway

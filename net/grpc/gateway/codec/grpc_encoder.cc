@@ -20,12 +20,13 @@ void GrpcEncoder::Encode(grpc::ByteBuffer* input, std::vector<Slice>* result) {
   *p++ = message_length & 0x000000FF;
   for (const Slice& input_slice : input_slices) {
     memcpy(p, input_slice.begin(), input_slice.size());
+    p += input_slice.size();
   }
   result->push_back(Slice(message_slice, Slice::STEAL_REF));
 }
 
 void GrpcEncoder::EncodeStatus(const grpc::Status& status,
-                               const Trailers& trailers,
+                               const Trailers* trailers,
                                std::vector<Slice>* result) {}
 }  // namespace gateway
 }  // namespace grpc
