@@ -22,7 +22,7 @@ nginx_config_with_gateway:
 	cd $(NGINX_DIR)/src && auto/configure --with-http_ssl_module \
 	--with-http_v2_module \
 	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR)" \
-	--with-ld-opt="-L $(ROOT_DIR)/objs -lgateway -L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl -lrt -ltcmalloc" \
+	--with-ld-opt="-L $(ROOT_DIR)/objs -lgateway -L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl -lrt -ltcmalloc -lstdc++ -lm" \
 	--with-openssl=$(ROOT_DIR)/third_party/openssl \
 	--add-module=$(ROOT_DIR)/net/grpc/gateway/nginx
 
