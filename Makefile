@@ -13,18 +13,16 @@ NGINX_DIR := third_party/nginx
 nginx_config:
 	cd $(NGINX_DIR)/src && auto/configure --with-http_ssl_module \
 	--with-http_v2_module \
-	--with-google_perftools_module \
 	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR)" \
-	--with-ld-opt="-L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl -lrt" \
+	--with-ld-opt="-L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl -lrt -ltcmalloc" \
 	--with-openssl=$(ROOT_DIR)/third_party/openssl \
 	--add-module=$(ROOT_DIR)/net/grpc/gateway/nginx
 
 nginx_config_with_gateway:
 	cd $(NGINX_DIR)/src && auto/configure --with-http_ssl_module \
 	--with-http_v2_module \
-	--with-google_perftools_module \
 	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR)" \
-	--with-ld-opt="-L $(ROOT_DIR)/objs -lgateway -L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl -lrt" \
+	--with-ld-opt="-L $(ROOT_DIR)/objs -lgateway -L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl -lrt -ltcmalloc" \
 	--with-openssl=$(ROOT_DIR)/third_party/openssl \
 	--add-module=$(ROOT_DIR)/net/grpc/gateway/nginx
 
