@@ -33,16 +33,20 @@ class Tag {
 };
 
 // Creates a tag which is bound to the specified function. The tag will keep a
-// shared_ptr to hold the target and keep it from being deleted. After the bound
+// shared_ptr to hold the object and keep it from being deleted. After the bound
 // function get invoked, the tag will be deleted, hence the reference count of
-// the target object get decreased by 1 and will be released if no other
-// shared_ptr hold it.
+// the object get decreased by 1 and will be released if no other shared_ptr
+// hold it.
 // The bound object must extend std::enable_shared_from_this.
-template <class C, class F>
-Tag* BindTo(C* object, F function) {
+// Note: the object and target can be different instance, in that case, the
+// object owns the target. For example, object can be a frontend instance and
+// target can be a backend object. The frontend object owns the backend object
+// and only the frontend object is used for reference count.
+template <class C, class T, class F>
+Tag* BindTo(C* object, T target, F function) {
   return new Tag(object->shared_from_this(),
                  std::function<void(bool)>(
-                     std::bind(function, object, std::placeholders::_1)));
+                     std::bind(function, target, std::placeholders::_1)));
 }
 }  // namespace gateway
 }  // namespace grpc

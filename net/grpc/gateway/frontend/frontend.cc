@@ -5,7 +5,7 @@
 namespace grpc {
 namespace gateway {
 
-Frontend::Frontend(std::shared_ptr<Backend> backend)
+Frontend::Frontend(std::unique_ptr<Backend> backend)
     : backend_(std::move(backend)) {
   backend_->set_frontend(this);
 }

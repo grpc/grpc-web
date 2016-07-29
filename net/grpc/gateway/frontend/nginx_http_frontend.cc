@@ -41,6 +41,14 @@ grpc::gateway::Frontend *get_frontend(ngx_http_request_t *r) {
   return context->frontend.get();
 }
 
+void grpc_gateway_request_cleanup_handler(void *data) {
+  grpc_gateway_request_context *context =
+      static_cast<grpc_gateway_request_context *>(data);
+  static_cast<grpc::gateway::NginxHttpFrontend *>(context->frontend.get())
+      ->set_http_request(nullptr);
+  context->frontend.reset();
+}
+
 ngx_int_t grpc_gateway_handler(ngx_http_request_t *r) {
   ngx_grpc_gateway_loc_conf_t *mlcf =
       static_cast<ngx_grpc_gateway_loc_conf_t *>(
@@ -61,6 +69,10 @@ ngx_int_t grpc_gateway_handler(ngx_http_request_t *r) {
   context->frontend = grpc::gateway::Runtime::Get().CreateNginxFrontend(
       r, backend_address, backend_host, backend_method);
   ngx_http_set_ctx(r, context, grpc_gateway_module);
+  ngx_pool_cleanup_t *http_cleanup =
+      ngx_pool_cleanup_add(r->pool, sizeof(grpc_gateway_request_context));
+  http_cleanup->data = context;
+  http_cleanup->handler = grpc_gateway_request_cleanup_handler;
   context->frontend->Start();
   return NGX_AGAIN;
 }
@@ -97,7 +109,7 @@ void AddHTTPTrailer(ngx_http_request_t *http_request, const string &name,
                     const string_ref &value);
 }  // namespace
 
-NginxHttpFrontend::NginxHttpFrontend(std::shared_ptr<Backend> backend)
+NginxHttpFrontend::NginxHttpFrontend(std::unique_ptr<Backend> backend)
     : Frontend(std::move(backend)),
       http_request_(nullptr),
       is_request_half_closed_(false),
@@ -111,6 +123,12 @@ NginxHttpFrontend::NginxHttpFrontend(std::shared_ptr<Backend> backend)
 NginxHttpFrontend::~NginxHttpFrontend() {}
 
 void NginxHttpFrontend::Start() {
+  if (!encoder_ || !decoder_) {
+    DEBUG("Bad request received.");
+    ngx_http_finalize_request(http_request_, NGX_HTTP_BAD_REQUEST);
+    return;
+  }
+
   backend()->Start();
   // Enable request streaming.
   http_request_->request_body_no_buffering = true;
@@ -125,6 +143,9 @@ void NginxHttpFrontend::Start() {
 }
 
 void NginxHttpFrontend::ContinueReadRequestBody() {
+  if (http_request_ == nullptr) {
+    return;
+  }
   http_request_->read_event_handler = continue_read_request_body;
   if (http_request_->stream == nullptr &&
       (http_request_->connection->read->pending_eof ||
@@ -373,16 +394,21 @@ bool NginxHttpFrontend::SendRequestToBackend() {
     return false;
   }
 
-  backend()->Send(std::move(request),
-                  BindTo(this, &NginxHttpFrontend::SendRequestToBackendDone));
+  backend()->Send(
+      std::move(request),
+      BindTo(this, this, &NginxHttpFrontend::SendRequestToBackendDone));
   return true;
 }
 
 void NginxHttpFrontend::SendRequestToBackendDone(bool result) {
+  if (http_request_ == nullptr) {
+    // Nginx HTTP request has been terminated, do nothing.
+    return;
+  }
+
   if (!result) {
-    DEBUG("Send GRPC request to backend failed.");
-    SendErrorToClient(grpc::Status(grpc::StatusCode::INTERNAL,
-                                   "Send GRPC request to backend failed."));
+    // GRPC failed, the status will come later, return here.
+    return;
   }
 
   if (!decoder_->results()->empty()) {
@@ -482,7 +508,9 @@ void NginxHttpFrontend::SendErrorToClient(const grpc::Status &status) {
     buffer->last_buf = true;
     buffer->last_in_chain = true;
   }
-  ngx_http_output_filter(http_request_, output);
+  if (output->buf != nullptr) {
+    ngx_http_output_filter(http_request_, output);
+  }
   ngx_http_finalize_request(http_request_, NGX_OK);
 }
 

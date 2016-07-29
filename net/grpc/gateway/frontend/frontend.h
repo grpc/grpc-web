@@ -11,7 +11,7 @@ namespace gateway {
 
 class Frontend : public std::enable_shared_from_this<Frontend> {
  public:
-  explicit Frontend(std::shared_ptr<Backend> backend);
+  explicit Frontend(std::unique_ptr<Backend> backend);
   virtual ~Frontend();
   Frontend(const Frontend&) = delete;
   Frontend& operator=(const Frontend&) = delete;
@@ -27,7 +27,7 @@ class Frontend : public std::enable_shared_from_this<Frontend> {
   std::shared_ptr<Frontend> shared_ptr() { return shared_from_this(); }
 
  private:
-  std::shared_ptr<Backend> backend_;
+  std::unique_ptr<Backend> backend_;
 };
 }  // namespace gateway
 }  // namespace grpc

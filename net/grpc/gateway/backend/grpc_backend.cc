@@ -74,7 +74,14 @@ GrpcBackend::~GrpcBackend() {
 grpc_channel* GrpcBackend::CreateChannel() {
   // TODO(fengli): Share the GRPC channel.
   BACKEND_DEBUG("Creating GRPC channel");
-  return grpc_insecure_channel_create(address_.c_str(), nullptr, nullptr);
+  grpc_channel_args args;
+  grpc_arg arg;
+  arg.type = GRPC_ARG_INTEGER;
+  arg.key = const_cast<char*>(GRPC_ARG_MAX_MESSAGE_LENGTH);
+  arg.value.integer = 100 * 1024 * 1024;
+  args.num_args = 1;
+  args.args = &arg;
+  return grpc_insecure_channel_create(address_.c_str(), &args, nullptr);
 }
 
 grpc_call* GrpcBackend::CreateCall() {
@@ -94,7 +101,8 @@ void GrpcBackend::Start() {
   ops[0].flags = 0;
   ops[0].reserved = nullptr;
   grpc_call_error error = grpc_call_start_batch(
-      call_, ops, 1, BindTo(this, &GrpcBackend::OnResponseInitialMetadata),
+      call_, ops, 1,
+      BindTo(frontend(), this, &GrpcBackend::OnResponseInitialMetadata),
       nullptr);
   if (error != GRPC_CALL_OK) {
     BACKEND_DEBUG("GRPC batch failed: %s",
@@ -127,7 +135,8 @@ void GrpcBackend::OnResponseInitialMetadata(bool result) {
   ops[0].flags = 0;
   ops[0].reserved = nullptr;
   grpc_call_error error = grpc_call_start_batch(
-      call_, ops, 1, BindTo(this, &GrpcBackend::OnResponseMessage), nullptr);
+      call_, ops, 1, BindTo(frontend(), this, &GrpcBackend::OnResponseMessage),
+      nullptr);
   if (error != GRPC_CALL_OK) {
     BACKEND_DEBUG("GRPC batch failed: %s",
                   GrpcCallErrorToString(error).c_str());
@@ -153,7 +162,8 @@ void GrpcBackend::OnResponseMessage(bool result) {
     ops[0].flags = 0;
     ops[0].reserved = nullptr;
     grpc_call_error error = grpc_call_start_batch(
-        call_, ops, 1, BindTo(this, &GrpcBackend::OnResponseStatus), nullptr);
+        call_, ops, 1, BindTo(frontend(), this, &GrpcBackend::OnResponseStatus),
+        nullptr);
     if (error != GRPC_CALL_OK) {
       BACKEND_DEBUG("GRPC batch failed: %s",
                     GrpcCallErrorToString(error).c_str());
@@ -169,6 +179,7 @@ void GrpcBackend::OnResponseMessage(bool result) {
   gpr_slice slice;
   while (grpc_byte_buffer_reader_next(&reader, &slice)) {
     message->push_back(Slice(slice, Slice::STEAL_REF));
+    gpr_slice_unref(slice);
   }
   grpc_byte_buffer_reader_destroy(&reader);
   response->set_message(std::move(message));
@@ -181,7 +192,8 @@ void GrpcBackend::OnResponseMessage(bool result) {
   ops[0].flags = 0;
   ops[0].reserved = nullptr;
   grpc_call_error error = grpc_call_start_batch(
-      call_, ops, 1, BindTo(this, &GrpcBackend::OnResponseMessage), nullptr);
+      call_, ops, 1, BindTo(frontend(), this, &GrpcBackend::OnResponseMessage),
+      nullptr);
   if (error != GRPC_CALL_OK) {
     BACKEND_DEBUG("GRPC batch failed: %s",
                   GrpcCallErrorToString(error).c_str());
@@ -246,6 +258,9 @@ void GrpcBackend::Send(std::unique_ptr<Request> request, Tag* on_done) {
       grpc_byte_buffer_destroy(request_buffer_);
     }
     request_buffer_ = grpc_raw_byte_buffer_create(slices.data(), slices.size());
+    for (auto& slice : slices) {
+      gpr_slice_unref(slice);
+    }
     op->data.send_message = request_buffer_;
     op->flags = 0;
     op->reserved = nullptr;

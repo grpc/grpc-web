@@ -125,7 +125,7 @@ bool Base64::Encode(const std::vector<Slice>& input,
     std::unique_ptr<Slice> encoded_slice =
         Encode(input[i], buffer, &buffer_length, (i == input.size() - 1));
     if (encoded_slice) {
-      output->push_back(*encoded_slice.release());
+      output->push_back(*encoded_slice);
     }
   }
   return true;

@@ -12,7 +12,7 @@ namespace gateway {
 
 class Frontend;
 
-class Backend : public std::enable_shared_from_this<Backend> {
+class Backend {
  public:
   Backend();
   virtual ~Backend();

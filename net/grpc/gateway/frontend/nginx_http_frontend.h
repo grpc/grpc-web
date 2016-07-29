@@ -44,7 +44,7 @@ namespace gateway {
 // The HTTP proxy based on Nginx.
 class NginxHttpFrontend : public Frontend {
  public:
-  explicit NginxHttpFrontend(std::shared_ptr<Backend> backend);
+  explicit NginxHttpFrontend(std::unique_ptr<Backend> backend);
   ~NginxHttpFrontend() override;
   NginxHttpFrontend(const NginxHttpFrontend &) = delete;
   NginxHttpFrontend &operator=(const NginxHttpFrontend &) = delete;

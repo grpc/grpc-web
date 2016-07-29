@@ -9,9 +9,6 @@
 
 namespace grpc {
 namespace gateway {
-namespace {
-static void do_nothing(void* ignored) {}
-}
 
 const char JSON_ARRAY_LEFT_BRACKET = '[';
 const char JSON_ARRAY_RIGHT_BRACKET = ']';
@@ -150,7 +147,7 @@ Status JsonDecoder::Decode() {
             }
             if (start == i) {
               base64_buffer_.push_back(
-                  Slice(gpr_empty_slice(), Slice::ADD_REF));
+                  Slice(gpr_empty_slice(), Slice::STEAL_REF));
             } else {
               base64_buffer_.push_back(Slice(
                   gpr_slice_from_copied_buffer(

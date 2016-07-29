@@ -86,17 +86,20 @@ Status GrpcDecoder::Decode() {
               if (grpc_msg_decompress(
                       grpc_compression_algorithm::GRPC_COMPRESS_GZIP, &input,
                       &output) != 1) {
+                gpr_slice_buffer_destroy(&input);
+                gpr_slice_buffer_destroy(&output);
                 return Status(StatusCode::INTERNAL,
                               "Failed to uncompress the GRPC data frame.");
               }
-              gpr_slice_unref(slice_input);
               std::vector<Slice> s;
               while (output.count > 0) {
-                gpr_slice slice_output = gpr_slice_buffer_take_first(&output);
-                s.push_back(Slice(slice_output, Slice::STEAL_REF));
+                s.push_back(Slice(gpr_slice_buffer_take_first(&output),
+                                  Slice::STEAL_REF));
               }
               results()->push_back(std::unique_ptr<ByteBuffer>(
                   new ByteBuffer(s.data(), s.size())));
+              gpr_slice_buffer_destroy(&input);
+              gpr_slice_buffer_destroy(&output);
             } else {
               results()->push_back(std::unique_ptr<ByteBuffer>(
                   new ByteBuffer(buffer_.get(), 1)));

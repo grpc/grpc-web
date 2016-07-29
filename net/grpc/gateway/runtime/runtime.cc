@@ -47,7 +47,7 @@ void Runtime::Shutdown() { grpc_event_queue_->Stop(); }
 std::shared_ptr<Frontend> Runtime::CreateNginxFrontend(
     ngx_http_request_t* http_request, const string& backend_address,
     const string& backend_host, const string& backend_method) {
-  std::shared_ptr<GrpcBackend> backend(new GrpcBackend());
+  std::unique_ptr<GrpcBackend> backend(new GrpcBackend());
   backend->set_address(backend_address);
   backend->set_host(backend_host);
   backend->set_method(backend_method);
