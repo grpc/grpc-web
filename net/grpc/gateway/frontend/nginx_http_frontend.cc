@@ -465,53 +465,7 @@ void NginxHttpFrontend::SendResponseTrailersToClient(Response *response) {
 }
 
 void NginxHttpFrontend::SendErrorToClient(const grpc::Status &status) {
-  SendResponseHeadersToClient(nullptr);
-
-  if (is_response_status_sent_) {
-    return;
-  }
-  is_response_status_sent_ = true;
-
-  std::vector<Slice> result;
-  encoder_->EncodeStatus(status, &result);
-
-  ngx_chain_t *output = ngx_alloc_chain_link(http_request_->pool);
-  if (output == nullptr) {
-    ERROR("Failed to allocate response buffer for GRPC response message.");
-    return;
-  }
-  output->buf = nullptr;
-  output->next = nullptr;
-  ngx_buf_t *buffer = nullptr;
-  for (Slice &slice : result) {
-    buffer = reinterpret_cast<ngx_buf_t *>(ngx_calloc_buf(http_request_->pool));
-    uint8_t *data = reinterpret_cast<uint8_t *>(
-        ngx_palloc(http_request_->pool, slice.size()));
-    memcpy(data, slice.begin(), slice.size());
-    buffer->start = data;
-    buffer->pos = buffer->start;
-    buffer->end = data + slice.size();
-    buffer->last = buffer->end;
-    buffer->temporary = true;
-    ngx_chain_t *last_chain = ngx_chain_seek_to_last(output);
-    if (last_chain->buf == nullptr) {
-      last_chain->buf = buffer;
-      last_chain->next = nullptr;
-    } else {
-      last_chain->next = ngx_alloc_chain_link(http_request_->pool);
-      last_chain->next->buf = buffer;
-      last_chain->next->next = nullptr;
-    }
-  }
-  if (buffer != nullptr) {
-    buffer->flush = true;
-    buffer->last_buf = true;
-    buffer->last_in_chain = true;
-  }
-  if (output->buf != nullptr) {
-    ngx_http_output_filter(http_request_, output);
-  }
-  ngx_http_finalize_request(http_request_, NGX_OK);
+  backend()->Cancel(status);
 }
 
 namespace {

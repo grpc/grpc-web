@@ -293,7 +293,9 @@ void GrpcBackend::Cancel(const Status& reason) {
 
   BACKEND_DEBUG("Canceling GRPC: %s", reason.error_message().c_str());
   cancel_reason_ = reason;
-  grpc_call_error error = grpc_call_cancel(call_, nullptr);
+  grpc_call_error error = grpc_call_cancel_with_status(
+      call_, static_cast<grpc_status_code>(cancel_reason_.error_code()),
+      cancel_reason_.error_message().c_str(), nullptr);
   if (error != GRPC_CALL_OK) {
     BACKEND_DEBUG("GRPC cancel failed: %s",
                   GrpcCallErrorToString(error).c_str());
