@@ -23,6 +23,8 @@ RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 40 --slave /
 COPY . /github/grpc-web
 RUN cd /github/grpc-web && git submodule update --init
 RUN cd /github/grpc-web/third_party/openssl && git checkout tags/OpenSSL_1_0_2h -f
+RUN cd /github/grpc-web/third_party/grpc && git checkout tags/objective-c-v1.0.0-pre1 -f
+RUN cd /github/grpc-web/third_party/protobuf && git checkout tags/v3.0.1-javalite -f
 RUN cd /github/grpc-web/third_party/protobuf && ./autogen.sh && ./configure && make && make install && ldconfig
 RUN cd /github/grpc-web/third_party/grpc &&  export EMBED_OPENSSL=false && git submodule update --init && make && make install
 RUN cd /github/grpc-web && make
