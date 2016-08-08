@@ -24,7 +24,9 @@ void GrpcEventQueue::Start() {
 }
 
 void GrpcEventQueue::Stop() {
-  // TODO(fengli): Implements Stop().
+  grpc_completion_queue_shutdown(queue_);
+  gpr_thd_join(thread_id_);
+  grpc_completion_queue_destroy(queue_);
 }
 
 void GrpcEventQueue::ExecuteEventLoop(void* queue) {

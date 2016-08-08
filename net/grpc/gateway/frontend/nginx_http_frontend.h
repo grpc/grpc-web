@@ -10,6 +10,7 @@
 #include "net/grpc/gateway/codec/decoder.h"
 #include "net/grpc/gateway/codec/encoder.h"
 #include "net/grpc/gateway/frontend/frontend.h"
+#include "net/grpc/gateway/runtime/constants.h"
 #include "third_party/grpc/include/grpc++/support/byte_buffer.h"
 #include "third_party/grpc/include/grpc++/support/string_ref.h"
 
@@ -65,6 +66,8 @@ class NginxHttpFrontend : public Frontend {
     decoder_ = std::move(decoder);
   }
 
+  void set_protocol(Protocol protocol) { protocol_ = protocol; }
+
  private:
   friend void ::continue_read_request_body(ngx_http_request_t *r);
 
@@ -101,6 +104,8 @@ class NginxHttpFrontend : public Frontend {
   ngx_http_request_t *http_request_;
   std::unique_ptr<Decoder> decoder_;
   std::unique_ptr<Encoder> encoder_;
+  // The frontend protocol of the current processing request.
+  Protocol protocol_;
   // True if already reach the end of the HTTP request from nginx.
   bool is_request_half_closed_;
   // True if the half close has been sent to the GRPC backend.

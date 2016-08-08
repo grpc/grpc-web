@@ -55,6 +55,7 @@ std::shared_ptr<Frontend> Runtime::CreateNginxFrontend(
   frontend->set_http_request(http_request);
   frontend->set_encoder(CreateEncoder(http_request));
   frontend->set_decoder(CreateDecoder(http_request));
+  frontend->set_protocol(DetectFrontendProtocol(http_request));
   return std::shared_ptr<Frontend>(frontend);
 }
 
@@ -119,6 +120,32 @@ std::unique_ptr<Decoder> Runtime::CreateDecoder(
     return std::unique_ptr<Decoder>(decoder);
   }
   return nullptr;
+}
+
+Protocol Runtime::DetectFrontendProtocol(ngx_http_request_t* http_request) {
+  if (http_request == nullptr ||
+      http_request->headers_in.content_type == nullptr) {
+    return UNKNOWN;
+  }
+  const char* content_type = reinterpret_cast<const char*>(
+      http_request->headers_in.content_type->value.data);
+  size_t content_type_length = http_request->headers_in.content_type->value.len;
+  if (content_type_length == kContentTypeProtoLength &&
+      strncasecmp(kContentTypeProto, content_type, kContentTypeProtoLength) ==
+          0) {
+    return PROTO_STREAM_BODY;
+  }
+  if (content_type_length == kContentTypeJsonLength &&
+      strncasecmp(kContentTypeJson, content_type, kContentTypeJsonLength) ==
+          0) {
+    return JSON_STREAM_BODY;
+  }
+  if (content_type_length == kContentTypeGrpcLength &&
+      strncasecmp(kContentTypeGrpc, content_type, kContentTypeGrpcLength) ==
+          0) {
+    return GRPC;
+  }
+  return UNKNOWN;
 }
 }  // namespace gateway
 }  // namespace grpc

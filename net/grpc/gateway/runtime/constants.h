@@ -48,6 +48,13 @@ const char kContentType[] = "content-type";
 // The metadata name of content-length.
 const char kContentLength[] = "content-length";
 
+// The frontend protocols supported by GRPC-Web gateway.
+enum Protocol {
+  UNKNOWN = 0,
+  GRPC,
+  JSON_STREAM_BODY,
+  PROTO_STREAM_BODY,
+};
 }  // namespace gateway
 }  // namespace grpc
 #endif  // NET_GRPC_GATEWAY_RUNTIME_CONSTANTS_H_

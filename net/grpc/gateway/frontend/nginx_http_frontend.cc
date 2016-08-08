@@ -112,6 +112,7 @@ void AddHTTPTrailer(ngx_http_request_t *http_request, const string &name,
 NginxHttpFrontend::NginxHttpFrontend(std::unique_ptr<Backend> backend)
     : Frontend(std::move(backend)),
       http_request_(nullptr),
+      protocol_(UNKNOWN),
       is_request_half_closed_(false),
       is_request_half_closed_sent_(false),
       is_request_init_metadata_sent_(false),
@@ -432,15 +433,28 @@ void NginxHttpFrontend::SendResponseHeadersToClient(Response *response) {
   http_request_->headers_out.status = NGX_HTTP_OK;
   if (response != nullptr && response->headers() != nullptr) {
     for (auto &header : *response->headers()) {
-      if (header.first == kContentLength) {
+      if (header.first == kContentLength || header.first == kContentType) {
         continue;
       }
       AddHTTPHeader(http_request_, header.first, header.second);
     }
-    AddHTTPHeader(http_request_, kGrpcEncoding, kGrpcEncoding_Identity);
-    AddHTTPHeader(http_request_, kContentType, kContentTypeGrpc);
-    AddHTTPHeader(http_request_, kGrpcAcceptEncoding,
-                  kGrpcAcceptEncoding_AcceptAll);
+  }
+  switch (protocol_) {
+    case GRPC:
+      AddHTTPHeader(http_request_, kGrpcEncoding, kGrpcEncoding_Identity);
+      AddHTTPHeader(http_request_, kContentType, kContentTypeGrpc);
+      AddHTTPHeader(http_request_, kGrpcAcceptEncoding,
+                    kGrpcAcceptEncoding_AcceptAll);
+      break;
+    case JSON_STREAM_BODY:
+      AddHTTPHeader(http_request_, kContentType, kContentTypeJson);
+      break;
+    case PROTO_STREAM_BODY:
+      AddHTTPHeader(http_request_, kContentType, kContentTypeProto);
+      break;
+    default: {
+      // Intended to skip.
+    }
   }
   ngx_int_t rc = ngx_http_send_header(http_request_);
   if (rc != NGX_OK) {
