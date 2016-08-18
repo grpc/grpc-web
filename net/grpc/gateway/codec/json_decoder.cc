@@ -164,7 +164,7 @@ Status JsonDecoder::Decode() {
             state_ = EXPECTING_JSON_OBJECT_RIGHT_BRACKET;
             continue;
           }
-          if (!IsBase64Char(c)) {
+          if (!Base64::IsBase64Char(c)) {
             // TODO(fengli): The following code is repeated 12 times. Extract it
             // into a function or a macro.
             Status status(

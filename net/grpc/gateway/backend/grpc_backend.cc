@@ -6,7 +6,6 @@
 #include <utility>
 #include <vector>
 
-#include "net/grpc/gateway/backend/grpc_utils.h"
 #include "net/grpc/gateway/frontend/frontend.h"
 #include "net/grpc/gateway/log.h"
 #include "net/grpc/gateway/runtime/runtime.h"
@@ -105,8 +104,7 @@ void GrpcBackend::Start() {
       BindTo(frontend(), this, &GrpcBackend::OnResponseInitialMetadata),
       nullptr);
   if (error != GRPC_CALL_OK) {
-    BACKEND_DEBUG("GRPC batch failed: %s",
-                  GrpcCallErrorToString(error).c_str());
+    BACKEND_DEBUG("GRPC batch failed: %s", grpc_call_error_to_string(error));
   }
 }
 
@@ -138,8 +136,7 @@ void GrpcBackend::OnResponseInitialMetadata(bool result) {
       call_, ops, 1, BindTo(frontend(), this, &GrpcBackend::OnResponseMessage),
       nullptr);
   if (error != GRPC_CALL_OK) {
-    BACKEND_DEBUG("GRPC batch failed: %s",
-                  GrpcCallErrorToString(error).c_str());
+    BACKEND_DEBUG("GRPC batch failed: %s", grpc_call_error_to_string(error));
   }
 }
 
@@ -165,8 +162,7 @@ void GrpcBackend::OnResponseMessage(bool result) {
         call_, ops, 1, BindTo(frontend(), this, &GrpcBackend::OnResponseStatus),
         nullptr);
     if (error != GRPC_CALL_OK) {
-      BACKEND_DEBUG("GRPC batch failed: %s",
-                    GrpcCallErrorToString(error).c_str());
+      BACKEND_DEBUG("GRPC batch failed: %s", grpc_call_error_to_string(error));
     }
     return;
   }
@@ -195,8 +191,7 @@ void GrpcBackend::OnResponseMessage(bool result) {
       call_, ops, 1, BindTo(frontend(), this, &GrpcBackend::OnResponseMessage),
       nullptr);
   if (error != GRPC_CALL_OK) {
-    BACKEND_DEBUG("GRPC batch failed: %s",
-                  GrpcCallErrorToString(error).c_str());
+    BACKEND_DEBUG("GRPC batch failed: %s", grpc_call_error_to_string(error));
   }
 }
 
@@ -279,7 +274,7 @@ void GrpcBackend::Send(std::unique_ptr<Request> request, Tag* on_done) {
     grpc_call_error error =
         grpc_call_start_batch(call_, ops, op - ops, on_done, nullptr);
     BACKEND_DEBUG("grpc_call_start_batch: %s",
-                  GrpcCallErrorToString(error).c_str());
+                  grpc_call_error_to_string(error));
   }
 }
 
@@ -297,8 +292,7 @@ void GrpcBackend::Cancel(const Status& reason) {
       call_, static_cast<grpc_status_code>(cancel_reason_.error_code()),
       cancel_reason_.error_message().c_str(), nullptr);
   if (error != GRPC_CALL_OK) {
-    BACKEND_DEBUG("GRPC cancel failed: %s",
-                  GrpcCallErrorToString(error).c_str());
+    BACKEND_DEBUG("GRPC cancel failed: %s", grpc_call_error_to_string(error));
   }
 }
 

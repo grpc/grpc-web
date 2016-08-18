@@ -9,8 +9,8 @@
 #include "net/grpc/gateway/codec/grpc_encoder.h"
 #include "net/grpc/gateway/codec/json_decoder.h"
 #include "net/grpc/gateway/codec/json_encoder.h"
-#include "net/grpc/gateway/codec/proto_decoder.h"
-#include "net/grpc/gateway/codec/proto_encoder.h"
+#include "net/grpc/gateway/codec/stream_body_decoder.h"
+#include "net/grpc/gateway/codec/stream_body_encoder.h"
 #include "net/grpc/gateway/frontend/nginx_http_frontend.h"
 #include "net/grpc/gateway/runtime/constants.h"
 #include "third_party/grpc/include/grpc++/support/config.h"
@@ -71,7 +71,7 @@ std::unique_ptr<Encoder> Runtime::CreateEncoder(
   if (content_type_length == kContentTypeProtoLength &&
       strncasecmp(kContentTypeProto, content_type, kContentTypeProtoLength) ==
           0) {
-    return std::unique_ptr<Encoder>(new ProtoEncoder());
+    return std::unique_ptr<Encoder>(new StreamBodyEncoder());
   }
   if (content_type_length == kContentTypeJsonLength &&
       strncasecmp(kContentTypeJson, content_type, kContentTypeJsonLength) ==
@@ -98,7 +98,7 @@ std::unique_ptr<Decoder> Runtime::CreateDecoder(
   if (content_type_length == kContentTypeProtoLength &&
       strncasecmp(kContentTypeProto, content_type, kContentTypeProtoLength) ==
           0) {
-    return std::unique_ptr<Decoder>(new ProtoDecoder());
+    return std::unique_ptr<Decoder>(new StreamBodyDecoder());
   }
   if (content_type_length == kContentTypeJsonLength &&
       strncasecmp(kContentTypeJson, content_type, kContentTypeJsonLength) ==
