@@ -3,14 +3,14 @@
 #include <stdint.h>
 #include <cstring>
 
-#define PAD '='
-
 namespace grpc {
 namespace gateway {
 namespace {
 
+const char kPad = '=';
+
 // Map from base64 encoded char to raw byte.
-const int8_t b64_bytes[] = {
+const int32_t b64_bytes[] = {
     -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,    //   0 -   9
     -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,    //  10 -  19
     -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,    //  20 -  29
@@ -23,14 +23,27 @@ const int8_t b64_bytes[] = {
     0x19, -1,   -1,   -1,   -1,   -1,   -1,   0x1A, 0x1B, 0x1C,  //  90 -  99
     0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26,  // 100 - 109
     0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30,  // 110 - 119
-    0x31, 0x32, 0x33, -1,   -1,   -1,   -1,   -1                 // 120 - 127
+    0x31, 0x32, 0x33, -1,   -1,   -1,   -1,   -1,   -1,   -1,    // 120 - 129
+    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,    // 130 - 139
+    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,    // 140 - 149
+    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,    // 150 - 159
+    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,    // 160 - 169
+    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,    // 170 - 179
+    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,    // 180 - 189
+    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,    // 190 - 199
+    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,    // 200 - 209
+    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,    // 210 - 219
+    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,    // 220 - 229
+    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,    // 230 - 239
+    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,    // 240 - 249
+    -1,   -1,   -1,   -1,   -1,   -1,                            // 250 - 255
 };
 
 const char b64_chars[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 }  // namespace
 
-bool Base64::IsBase64Char(char c) { return b64_bytes[c] != -1; }
+bool Base64::IsBase64Char(uint8_t c) { return b64_bytes[c] != -1; }
 
 Base64::Base64() : decode_buffer_{0}, decode_buffer_length_(0) {}
 
@@ -93,12 +106,12 @@ std::unique_ptr<Slice> Base64::Encode(const Slice& input_slice, uint8_t* buffer,
         *output++ =
             b64_chars[(((*input) & 0x03) << 4) | ((*(input + 1) >> 4) & 0x0F)];
         *output++ = b64_chars[(*(input + 1) & 0x0F) << 2];
-        *output++ = PAD;
+        *output++ = kPad;
       } else if (tail_size == 1) {
         *output++ = b64_chars[(*input >> 2) & 0x3F];
         *output++ = b64_chars[(*input & 0x03) << 4];
-        *output++ = PAD;
-        *output++ = PAD;
+        *output++ = kPad;
+        *output++ = kPad;
       }
       *buffer_length = 0;
     } else {
@@ -133,7 +146,8 @@ bool Base64::Decode(const std::vector<Slice>& input,
     size_t base64_leftover_length = base64_length % 4;
 
     if (base64_length < 4) {
-      // No enough data to decode, copy everything to decode buffer.
+      // No enough data to form a group for decoding, copy everything to decode
+      // buffer.
       if (slice_in.size() > 0) {
         memcpy(decode_buffer_ + decode_buffer_length_, slice_in.begin(),
                slice_in.size());
@@ -147,50 +161,32 @@ bool Base64::Decode(const std::vector<Slice>& input,
 
     if (decode_buffer_length_ > 0) {
       // Decode the leftover.
-      uint32_t leftover = 0;
-      for (int i = 0; i < decode_buffer_length_; i++) {
-        leftover |= static_cast<uint32_t>(b64_bytes[decode_buffer_[i]])
-                    << (3 - i) * 6;
+      memcpy(decode_buffer_ + decode_buffer_length_, slice_in.begin(),
+             4 - decode_buffer_length_);
+      int size = DecodeGroup(decode_buffer_, result_offset);
+      if (size == -1) {
+        return false;
       }
-      for (int i = 0; i < 4 - decode_buffer_length_; i++) {
-        leftover |= static_cast<uint32_t>(b64_bytes[*(slice_in.begin() + i)])
-                    << (3 - decode_buffer_length_ - i) * 6;
+      result_offset += size;
+      if (size != 3) {
+        binary_length -= (3 - size);
       }
-      *result_offset = (unsigned char)(leftover >> 16);
-      result_offset++;
-      *result_offset = (unsigned char)(leftover >> 8);
-      result_offset++;
-      *result_offset = (unsigned char)(leftover);
-      result_offset++;
     }
 
-    size_t i = (4 - decode_buffer_length_) % 4;
-    while (i < slice_in.size() - base64_leftover_length) {
-      if ((*(slice_in.begin() + i + 3)) == '=') {
-        binary_length--;
+    for (size_t i = (4 - decode_buffer_length_) % 4;
+         i < slice_in.size() - base64_leftover_length; i = i + 4) {
+      int size = DecodeGroup(slice_in.begin() + i, result_offset);
+      if (size == -1) {
+        return false;
       }
-      if ((*(slice_in.begin() + i + 2)) == '=') {
-        binary_length--;
+      result_offset += size;
+      if (size != 3) {
+        binary_length -= (3 - size);
       }
-
-      uint32_t packed =
-          (static_cast<uint32_t>(b64_bytes[(*(slice_in.begin() + i))]) << 18) |
-          (static_cast<uint32_t>(b64_bytes[(*(slice_in.begin() + i + 1))])
-           << 12) |
-          (static_cast<uint32_t>(b64_bytes[(*(slice_in.begin() + i + 2))])
-           << 6) |
-          (static_cast<uint32_t>(b64_bytes[(*(slice_in.begin() + i + 3))]));
-      *result_offset = (unsigned char)(packed >> 16);
-      result_offset++;
-      *result_offset = (unsigned char)(packed >> 8);
-      result_offset++;
-      *result_offset = (unsigned char)(packed);
-      result_offset++;
-      i += 4;
     }
+
     GPR_SLICE_SET_LENGTH(slice_out, binary_length);
     output->push_back(Slice(slice_out, Slice::STEAL_REF));
-
     if (base64_leftover_length > 0) {
       memcpy(decode_buffer_, slice_in.end() - base64_leftover_length,
              base64_leftover_length);
@@ -204,5 +200,30 @@ bool Base64::Decode(const std::vector<Slice>& input,
   return true;
 }
 
+int Base64::DecodeGroup(const uint8_t* input, uint8_t* output) {
+  int size = 3;
+  uint8_t byte0 = *input;
+  uint8_t byte1 = *(input + 1);
+  uint8_t byte2 = *(input + 2);
+  uint8_t byte3 = *(input + 3);
+  uint32_t packed = b64_bytes[byte0] << 18 | b64_bytes[byte1] << 12 |
+                    b64_bytes[byte2] << 6 | b64_bytes[byte3];
+
+  if ((packed & 0xFF000000) != 0 || byte0 == kPad || byte1 == kPad ||
+      (byte2 == kPad && byte3 != kPad)) {
+    return -1;
+  }
+  if (byte2 == kPad) {
+    size--;
+  }
+  if (byte3 == kPad) {
+    size--;
+  }
+
+  *output++ = static_cast<uint8_t>(packed >> 16);
+  *output++ = static_cast<uint8_t>(packed >> 8);
+  *output++ = static_cast<uint8_t>(packed);
+  return size;
+}
 }  // namespace gateway
 }  // namespace grpc
