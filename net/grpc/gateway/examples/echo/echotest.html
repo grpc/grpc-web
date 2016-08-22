@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+          "http://www.w3c.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>Echo Example Client</title>
+<meta charset="UTF-8">
+<script type="text/javascript">var CLOSURE_NO_DEPS = true;</script>
+<script type="text/javascript" src="../../../../../../echo_js_bin_dev.js">
+</script>
+<script type="text/javascript">
+  var statusCallback = function(status) {
+    var trailingMetadata = status.metadata;
+    console.log('Trailing metadata:');
+    for (key in trailingMetadata) {
+      console.log(key + ": " + trailingMetadata[key]);
+    }
+  };
+
+  function run_tests() {
+    var service = new proto.grpc.gateway.testing.EchoServiceClient(
+        'http://localhost:9091');
+
+    var unary_request = new proto.grpc.gateway.testing.EchoRequest();
+    unary_request.setMessage('foo_unary');
+
+    service.Echo(unary_request, {}, function(err, response) {
+      console.log('Unary echo response: ' + response.getMessage());
+    });
+
+    var empty = new proto.grpc.gateway.testing.Empty();
+    var call = service.NoOp(empty, {'Custom-Header-1':'initial'},
+                            function(err, response) {
+      console.log('NoOp done');
+    });
+    call.on('status', statusCallback);
+
+    var stream_request =
+      new proto.grpc.gateway.testing.ServerStreamingEchoRequest();
+    stream_request.setMessage('foo_stream');
+    stream_request.setMessageCount(5);
+    stream_request.setMessageInterval(200);
+
+    var stream = service.ServerStreamingEcho(stream_request,
+                                             {'Custom-Header-1':'initial'});
+    var i = 0;
+    stream.on('data', function(response) {
+      console.log('Server streaming response: '+response.getMessage()+
+                  ' '+(i++));
+    });
+    stream.on('status', statusCallback);
+  }
+</script>
+</head>
+
+<body onload="run_tests();">
+  <h1>Echo Test Example</h1>
+</body>
+</html>
