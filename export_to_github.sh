@@ -9,7 +9,7 @@ echo "g4 client path: $GOOGLE3"
 echo "git client: $GIT"
 cd $GIT
 rm -rf net && mkdir -p net/grpc/gateway
-cp "$GOOGLE3"/net/grpc/gateway/Makefile net/grpc/gateway
+cp "$GOOGLE3"/net/grpc/gateway/Makefile .
 cp "$GOOGLE3"/net/grpc/gateway/*.h net/grpc/gateway
 cp "$GOOGLE3"/net/grpc/gateway/*.cc net/grpc/gateway
 cp -r "$GOOGLE3"/net/grpc/gateway/backend net/grpc/gateway

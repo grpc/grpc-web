@@ -4,7 +4,7 @@ PROTOS_DIR := $(ROOT_DIR)/net/grpc/gateway/protos
 
 all: package
 
-protos: 
+protos:
 	protoc --proto_path=$(PROTOS_DIR) $(PROTOS_DIR)/pair.proto --cpp_out=$(PROTOS_DIR)
 	protoc --proto_path=$(PROTOS_DIR) $(PROTOS_DIR)/status.proto --cpp_out=$(PROTOS_DIR)
 
@@ -79,4 +79,3 @@ package: nginx
 	cp $(ROOT_DIR)/net/grpc/gateway/nginx/package/nginx.sh $(ROOT_DIR)/gConnector
 	cp $(ROOT_DIR)/third_party/nginx/src/objs/nginx $(ROOT_DIR)/gConnector
 	zip -r gConnector.zip gConnector/*
-	
