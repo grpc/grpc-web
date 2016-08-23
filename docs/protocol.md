@@ -56,6 +56,17 @@ message StreamBody {
 When streaming is involved, "Content-Transfer-Encoding: base64" has to be set for the base64-encoded response body. 
 Otherwise, base64 encoding of the request or response body is optional.
 
+#### StreamBody for Unary Messages
+
+Sometimes it is necessary to encode a non-streamed request or response with StreamBody, when the server-side proxy doesn’t have access to the descriptor (protobuf definition) of the server-side RPC method.
+
+For the request, when the grpc-web client encodes the request message with StreamBody, the client library needs set the C-T as following:
+* Content-Type: application/x-protobuf.goog.rpc.streambody  (case insensitive)
+  * X-protobuf is not a registered MIME type, so this is subject to change
+
+For a response, the server-side proxy may always wrap the response message(s) with StreamBody. The following C-T header is expected to be set to allow the client to decode the message correctly.
+* Content-Type: application/x-protobuf.goog.rpc.streambody
+
 ### Response Status
 
 200 for success responses. 
