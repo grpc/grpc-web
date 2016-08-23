@@ -14,6 +14,14 @@ nginx_config:
 	cd $(NGINX_DIR)/src && auto/configure --with-http_ssl_module \
 	--with-http_v2_module \
 	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR)" \
+	--with-ld-opt="-L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl -lrt" \
+	--with-openssl=$(ROOT_DIR)/third_party/openssl \
+	--add-module=$(ROOT_DIR)/net/grpc/gateway/nginx
+
+nginx_config_with_gateway:
+	cd $(NGINX_DIR)/src && auto/configure --with-http_ssl_module \
+	--with-http_v2_module \
+	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR)" \
 	--with-ld-opt="-L $(ROOT_DIR)/objs -lgateway -L /usr/local/lib -lgrpc++ -lgrpc -lprotobuf -lpthread -ldl -lrt -lstdc++ -lm" \
 	--with-openssl=$(ROOT_DIR)/third_party/openssl \
 	--add-module=$(ROOT_DIR)/net/grpc/gateway/nginx
@@ -54,7 +62,7 @@ CC_FLAGS := -pthread -std=c++11 -I. \
 	-I $(NGINX_DIR)/src/src/misc \
 	-I $(NGINX_DIR)/src/src/stream
 
-nginx: protos grpc_gateway nginx_config
+nginx: nginx_config protos grpc_gateway nginx_config_with_gateway
 	cd $(NGINX_DIR)/src && make
 
 grpc_gateway: $(GRPC_GATEWAY_OBJ_FILES)
