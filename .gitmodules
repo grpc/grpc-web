@@ -10,3 +10,6 @@
 [submodule "third_party/nginx/src"]
 	path = third_party/nginx/src
 	url = https://nginx.googlesource.com/nginx
+[submodule "third_party/closure-library"]
+	path = third_party/closure-library
+	url = https://github.com/google/closure-library.git
