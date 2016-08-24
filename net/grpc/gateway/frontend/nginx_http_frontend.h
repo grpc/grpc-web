@@ -33,8 +33,8 @@ ngx_int_t grpc_gateway_init_process(ngx_cycle_t *cycle);
 void grpc_gateway_exit_process(ngx_cycle_t *cycle);
 
 // Internal methods for nginx bridge.
-static void continue_read_request_body(ngx_http_request_t *r);
-static grpc::gateway::Frontend *get_frontend(ngx_http_request_t *r);
+void continue_read_request_body(ngx_http_request_t *r);
+grpc::gateway::Frontend *get_frontend(ngx_http_request_t *r);
 #ifdef __cplusplus
 }
 #endif

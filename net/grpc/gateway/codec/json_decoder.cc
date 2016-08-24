@@ -27,7 +27,7 @@ JsonDecoder::~JsonDecoder() {}
 Status JsonDecoder::Decode() {
   for (Slice& slice : *inputs()) {
     int start = -1;
-    for (int i = 0; i < slice.size(); i++) {
+    for (size_t i = 0; i < slice.size(); i++) {
       char c = *(slice.begin() + i);
       if (isblank(c)) {
         // Ignore blank characters.
@@ -145,7 +145,7 @@ Status JsonDecoder::Decode() {
             if (start == -1) {
               start = 0;
             }
-            if (start == i) {
+            if (static_cast<size_t>(start) == i) {
               base64_buffer_.push_back(
                   Slice(gpr_empty_slice(), Slice::STEAL_REF));
             } else {

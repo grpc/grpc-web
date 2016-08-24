@@ -38,7 +38,8 @@ StreamBodyEncoder::StreamBodyEncoder() {}
 
 StreamBodyEncoder::~StreamBodyEncoder() {}
 
-void StreamBodyEncoder::Encode(grpc::ByteBuffer* input, std::vector<Slice>* result) {
+void StreamBodyEncoder::Encode(grpc::ByteBuffer* input,
+                               std::vector<Slice>* result) {
   std::vector<Slice> input_slices;
   input->Dump(&input_slices);
   size_t message_length = input->Length();
@@ -47,7 +48,7 @@ void StreamBodyEncoder::Encode(grpc::ByteBuffer* input, std::vector<Slice>* resu
       gpr_slice_malloc(message_length + message_varint_length + 1);
   uint8_t* p = GPR_SLICE_START_PTR(message_slice);
   *p++ = MESSAGE_KEY_TYPE;
-  for (int i = 0; i < message_varint_length; i++) {
+  for (size_t i = 0; i < message_varint_length; i++) {
     *p = (message_length >> (i * 7)) & 0x7F;
     if (i != message_varint_length - 1) {
       *p |= 0x80;
@@ -61,8 +62,8 @@ void StreamBodyEncoder::Encode(grpc::ByteBuffer* input, std::vector<Slice>* resu
   result->push_back(Slice(message_slice, Slice::STEAL_REF));
 }
 void StreamBodyEncoder::EncodeStatus(const grpc::Status& status,
-                                const Trailers* trailers,
-                                std::vector<Slice>* result) {
+                                     const Trailers* trailers,
+                                     std::vector<Slice>* result) {
   google::rpc::Status status_proto;
   status_proto.set_code(status.error_code());
   status_proto.set_message(status.error_message());
@@ -85,7 +86,7 @@ void StreamBodyEncoder::EncodeStatus(const grpc::Status& status,
       gpr_slice_malloc(status_string_length + status_string_varint_length + 1);
   uint8_t* p = GPR_SLICE_START_PTR(status_slice);
   *p++ = STATUS_KEY_TYPE;
-  for (int i = 0; i < status_string_varint_length; i++) {
+  for (size_t i = 0; i < status_string_varint_length; i++) {
     *p = (status_string_length >> (i * 7)) & 0x7F;
     if (i != status_string_varint_length - 1) {
       *p |= 0x80;

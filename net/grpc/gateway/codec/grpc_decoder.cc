@@ -21,7 +21,7 @@ Status GrpcDecoder::Decode() {
       continue;
     }
 
-    for (int i = 0; i < slice.size(); i++) {
+    for (size_t i = 0; i < slice.size(); i++) {
       uint8_t c = *(slice.begin() + i);
       switch (state_) {
         case kExpectingCompressedFlag: {

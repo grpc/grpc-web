@@ -25,7 +25,7 @@ Status StreamBodyDecoder::Decode() {
       continue;
     }
 
-    for (int i = 0; i < slice.size(); i++) {
+    for (size_t i = 0; i < slice.size(); i++) {
       uint8_t c = *(slice.begin() + i);
       switch (state_) {
         case EXPECTING_MESSAGE_KEY_TYPE: {
