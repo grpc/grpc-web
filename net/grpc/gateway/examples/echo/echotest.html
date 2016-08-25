@@ -5,7 +5,7 @@
 <title>Echo Example Client</title>
 <meta charset="UTF-8">
 <script type="text/javascript">var CLOSURE_NO_DEPS = true;</script>
-<script type="text/javascript" src="../../../../../../echo_js_bin_dev.js">
+<script type="text/javascript" src="../../../../../echo_js_bin_dev.js">
 </script>
 <script type="text/javascript">
   var statusCallback = function(status) {
@@ -18,7 +18,7 @@
 
   function run_tests() {
     var service = new proto.grpc.gateway.testing.EchoServiceClient(
-        'http://localhost:9091');
+        'http://' + window.location.hostname + ':9091');
 
     var unary_request = new proto.grpc.gateway.testing.EchoRequest();
     unary_request.setMessage('foo_unary');

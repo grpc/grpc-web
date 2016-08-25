@@ -85,11 +85,25 @@ grpc.web.ClientBase.prototype.rpcCall = function(
   xhr.headers.addAll(metadata);
 
   if (this.mode_ == grpc.web.ClientBase.Mode.BINARY) {
+    var isB64EncodedResponse =
+        xhr.headers.get('X-Goog-Encode-Response-If-Executable') == 'base64';
+    if (isB64EncodedResponse) {
+      xhr.setWithCredentials(true);
+    }
     goog.events.listen(xhr, goog.net.EventType.COMPLETE, function(e) {
       var response = null;
       if (xhr.isSuccess()) {
-        response = deserializeFunc(
-            /** @type {?jspb.ByteSource} */ (xhr.getResponse()));
+        /** @type {?jspb.ByteSource} */ var byteSource;
+        if (isB64EncodedResponse &&
+            xhr.getResponseHeader('X-Goog-Safety-Encoding') == 'base64') {
+          // Convert the response's ArrayBuffer to a string, which should
+          // be a base64 encoded string.
+          byteSource = String.fromCharCode.apply(null,
+              new Uint8Array(/** @type {?ArrayBuffer} */ (xhr.getResponse())));
+        } else {
+          byteSource = /** @type {?jspb.ByteSource} */ (xhr.getResponse());
+        }
+        response = deserializeFunc(byteSource);
       }
       var err = null; // TODO: propagate error
       callback(err, response);

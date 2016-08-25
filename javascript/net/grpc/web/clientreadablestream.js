@@ -32,6 +32,12 @@ grpc.web.ClientReadableStream = function(
     xhrNodeReadableStream, deserializeFunc) {
   this.xhrNodeReadableStream_ = xhrNodeReadableStream;
   this.deserializeFunc_ = deserializeFunc;
+
+  /**
+   * @private
+   * @type {function(!Object)|null}
+   */
+  this.onStatusCallback_ = null;
 };
 
 
@@ -72,11 +78,13 @@ grpc.web.ClientReadableStream.prototype.on = function(
           metadata[first] = second;
         }
         status['metadata'] = metadata;
-        self.onStatusCallback(status);
+        if (self.onStatusCallback_) {
+          self.onStatusCallback_(status);
+        }
       }
     });
   } else if (eventType == 'status') {
-    this.onStatusCallback = callback;
+    this.onStatusCallback_ = callback;
   }
   return this;
 };

@@ -29,88 +29,86 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+ROOT_DIR = ../../../../..
 CXX = g++
-CPPFLAGS += -I/usr/local/include -I../../../../.. -pthread
+CPPFLAGS += -I/usr/local/include -I$(ROOT_DIR) -pthread
 CXXFLAGS += -std=c++11
-LDFLAGS += -L/usr/local/lib `pkg-config --libs grpc++ grpc`       \
+LDFLAGS += -L/usr/local/lib -lgrpc++ -lgrpc                       \
            -Wl,--no-as-needed -lgrpc++_reflection -Wl,--as-needed \
            -lprotobuf -lpthread -ldl
 PROTOC = protoc
+PROTOS_PATH = ../..
+CLOSUREBUILDER = closure/bin/build/closurebuilder.py
+EXAMPLES_PATH = net/grpc/gateway/examples/echo
+HTML_DIR = /var/www/html
+JS_IMPORT_STYLE = import_style=closure,binary
+JS_PATH = javascript/net/grpc/web
+OUT_DIR = ./out
+PROTOBUF_PATH = third_party/protobuf
 GRPC_CPP_PLUGIN = grpc_cpp_plugin
 GRPC_CPP_PLUGIN_PATH ?= `which $(GRPC_CPP_PLUGIN)`
+GRPC_WEB_PLUGIN_PATH = $(ROOT_DIR)/$(JS_PATH)/protoc-gen-grpc-web
 
-PROTOS_PATH = .
+all: echo_server client package
 
-vpath %.proto $(PROTOS_PATH)
-
-all: system-check echo_server
+package:
+	mkdir -p $(ROOT_DIR)/gConnector/conf
+	mkdir -p $(ROOT_DIR)/gConnector/$(EXAMPLES_PATH)
+	cp $(ROOT_DIR)/net/grpc/gateway/nginx/package/nginx.sh $(ROOT_DIR)/gConnector
+	cp $(ROOT_DIR)/third_party/nginx/src/objs/nginx $(ROOT_DIR)/gConnector
+	cp $(ROOT_DIR)/third_party/nginx/src/conf/* $(ROOT_DIR)/gConnector/conf
+	cp nginx.conf $(ROOT_DIR)/gConnector/conf
+	cp echo_server $(ROOT_DIR)/gConnector
+	cp echotest.html $(ROOT_DIR)/gConnector/$(EXAMPLES_PATH)
+	cp compiled.js $(ROOT_DIR)/gConnector
+	zip -r $(ROOT_DIR)/gConnector.zip $(ROOT_DIR)/gConnector/*
 
 echo_server: echo.pb.o echo.grpc.pb.o echo_server.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
-.PRECIOUS: %.grpc.pb.cc
-%.grpc.pb.cc: %.proto
-	$(PROTOC) -I $(PROTOS_PATH) --grpc_out=. \
+echo.grpc.pb.cc: echo.proto
+	$(PROTOC) -I . --grpc_out=. \
   --plugin=protoc-gen-grpc=$(GRPC_CPP_PLUGIN_PATH) $<
 
-.PRECIOUS: %.pb.cc
-%.pb.cc: %.proto
-	$(PROTOC) -I $(PROTOS_PATH) --cpp_out=. $<
+echo.pb.cc: echo.proto
+	$(PROTOC) -I . --cpp_out=. $<
+
+client: proto-js compiled-js
+
+compiled-js:
+	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/*_test.js || true
+	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/binary/*_test.js || true
+	$(ROOT_DIR)/third_party/closure-library/$(CLOSUREBUILDER) \
+  --root=$(ROOT_DIR)/javascript \
+  --root=$(ROOT_DIR)/net \
+  --root=$(ROOT_DIR)/third_party/closure-library \
+  --root=$(ROOT_DIR)/$(PROTOBUF_PATH)/js \
+  --namespace="proto.grpc.gateway.testing.EchoServiceClient" \
+  --output_mode=compiled \
+  --compiler_jar=$(ROOT_DIR)/closure-compiler.jar > compiled.js
+	cd $(ROOT_DIR)/$(PROTOBUF_PATH) && git checkout .
+
+proto-js:
+	mkdir -p $(OUT_DIR)
+	$(PROTOC) -I=$(ROOT_DIR)/$(PROTOBUF_PATH)/src/google/protobuf \
+  --js_out=$(JS_IMPORT_STYLE):$(OUT_DIR) \
+  $(ROOT_DIR)/$(PROTOBUF_PATH)/src/google/protobuf/any.proto
+	$(PROTOC) -I=$(PROTOS_PATH)/protos \
+  --js_out=$(JS_IMPORT_STYLE):$(OUT_DIR) \
+  $(PROTOS_PATH)/protos/status.proto
+	$(PROTOC) -I=$(PROTOS_PATH)/protos \
+  --js_out=$(JS_IMPORT_STYLE):$(OUT_DIR) \
+  $(PROTOS_PATH)/protos/pair.proto
+	$(PROTOC) -I=. --js_out=$(JS_IMPORT_STYLE):$(OUT_DIR) ./echo.proto
+	$(PROTOC) -I=. --plugin=protoc-gen-grpc-web=$(GRPC_WEB_PLUGIN_PATH) \
+  --grpc-web_out=out=$(OUT_DIR)/echo.grpc.pb.js,mode=base64:. ./echo.proto
+
+install:
+	mkdir -p $(HTML_DIR)/$(EXAMPLES_PATH)
+	cp ./echotest.html $(HTML_DIR)/$(EXAMPLES_PATH)/
+	cp compiled.js $(HTML_DIR)/echo_js_bin_dev.js
 
 clean:
-	rm -f *.o *.pb.cc *.pb.h echo_server
-
-
-# The following is to test your system and ensure a smoother experience.
-# They are by no means necessary to actually compile a grpc-enabled software.
-
-PROTOC_CMD = which $(PROTOC)
-PROTOC_CHECK_CMD = $(PROTOC) --version | grep -q libprotoc.3
-PLUGIN_CHECK_CMD = which $(GRPC_CPP_PLUGIN)
-HAS_PROTOC = $(shell $(PROTOC_CMD) > /dev/null && echo true || echo false)
-ifeq ($(HAS_PROTOC),true)
-HAS_VALID_PROTOC = $(shell $(PROTOC_CHECK_CMD) 2> /dev/null && echo true || \
-  echo false)
-endif
-HAS_PLUGIN = $(shell $(PLUGIN_CHECK_CMD) > /dev/null && echo true || echo false)
-
-SYSTEM_OK = false
-ifeq ($(HAS_VALID_PROTOC),true)
-ifeq ($(HAS_PLUGIN),true)
-SYSTEM_OK = true
-endif
-endif
-
-system-check:
-ifneq ($(HAS_VALID_PROTOC),true)
-	@echo " DEPENDENCY ERROR"
-	@echo
-	@echo "You don't have protoc 3.0.0 installed in your path."
-	@echo "Please install Google protocol buffers 3.0.0 and its compiler."
-	@echo "You can find it here:"
-	@echo
-	@echo "   https://github.com/google/protobuf/releases/tag/v3.0.0"
-	@echo
-	@echo "Here is what I get when trying to evaluate your version of protoc:"
-	@echo
-	-$(PROTOC) --version
-	@echo
-	@echo
-endif
-ifneq ($(HAS_PLUGIN),true)
-	@echo " DEPENDENCY ERROR"
-	@echo
-	@echo "You don't have the grpc c++ protobuf plugin installed in your path."
-	@echo "Please install grpc. You can find it here:"
-	@echo
-	@echo "   https://github.com/grpc/grpc"
-	@echo
-	@echo "Here is what I get when trying to detect if you have the plugin:"
-	@echo
-	-which $(GRPC_CPP_PLUGIN)
-	@echo
-	@echo
-endif
-ifneq ($(SYSTEM_OK),true)
-	@false
-endif
+	rm -f *.grpc.pb.cc *.grpc.pb.h *.grpc.pb.o *.pb.cc *.pb.h *.pb.o \
+  echo_server echo_server.o compiled.js
+	rm -rf $(OUT_DIR)

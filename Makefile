@@ -1,5 +1,5 @@
 CC := g++
-ROOT_DIR := /github/grpc-web
+ROOT_DIR := $(shell pwd)
 PROTOS_DIR := $(ROOT_DIR)/net/grpc/gateway/protos
 
 all: package
@@ -28,3 +28,18 @@ package: nginx
 	cp $(ROOT_DIR)/net/grpc/gateway/nginx/package/nginx.sh $(ROOT_DIR)/gConnector
 	cp $(ROOT_DIR)/third_party/nginx/src/objs/nginx $(ROOT_DIR)/gConnector
 	zip -r gConnector.zip gConnector/*
+
+plugin:
+	cd $(ROOT_DIR)/javascript/net/grpc/web && make
+
+example: nginx plugin
+	cd $(ROOT_DIR)/net/grpc/gateway/examples/echo && make
+
+install-example:
+	cd $(ROOT_DIR)/net/grpc/gateway/examples/echo && make install
+
+clean:
+	rm -rf objs gConnector third_party/nginx/src/objs third_party/openssl/.openssl
+	rm -f gConnector.zip $(PROTOS_DIR)/*.pb.cc $(PROTOS_DIR)/*.pb.h third_party/nginx/src/Makefile
+	cd $(ROOT_DIR)/net/grpc/gateway/examples/echo && make clean
+	cd $(ROOT_DIR)/javascript/net/grpc/web && make clean
