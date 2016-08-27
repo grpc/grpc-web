@@ -2,6 +2,7 @@
 #define NET_GRPC_GATEWAY_RUNTIME_NGINX_NOTIFY_QUEUE_H_
 
 #include <ngx_core.h>
+#include <ngx_event.h>
 
 #include <deque>
 #include <memory>
@@ -34,6 +35,7 @@ class NginxNotifyQueue {
   void ProcessEvents(ngx_event_t* event);
 
   gpr_mu mutex_;
+  ngx_event_t notify_;
   bool waiting_for_notify_;
   std::deque<std::unique_ptr<Tag>> queue_;
 };

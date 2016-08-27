@@ -21,6 +21,8 @@ void NginxNotifyQueue::NginxNotifyEventsCallback(ngx_event_t* event) {
 
 NginxNotifyQueue::NginxNotifyQueue() : mutex_(), waiting_for_notify_(false) {
   gpr_mu_init(&mutex_);
+  ngx_notify_init(&notify_, NginxNotifyEventsCallback,
+                  const_cast<ngx_cycle_t *>(ngx_cycle));
 }
 
 NginxNotifyQueue::~NginxNotifyQueue() { gpr_mu_destroy(&mutex_); }
@@ -34,7 +36,7 @@ void NginxNotifyQueue::Add(std::unique_ptr<Tag> tag) {
   }
 
   waiting_for_notify_ = true;
-  ngx_int_t rc = ngx_notify(NginxNotifyEventsCallback);
+  ngx_int_t rc = ngx_notify(&notify_);
   GPR_ASSERT(rc == NGX_OK);
   if (rc != NGX_OK) {
     ERROR("ngx_notify failed, rc = %li", rc);
