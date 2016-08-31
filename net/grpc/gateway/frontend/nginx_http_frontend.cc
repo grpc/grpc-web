@@ -153,6 +153,7 @@ void NginxHttpFrontend::ContinueReadRequestBody() {
        http_request_->connection->read->eof)) {
     // FIN or RST from client received.
     DEBUG("receive FIN from peer, close the HTTP connection.");
+    backend()->Cancel(grpc::Status::CANCELLED);
     ngx_http_close_connection(http_request_->connection);
     return;
   }
@@ -309,6 +310,11 @@ void NginxHttpFrontend::SendResponseStatusToClient(Response *response) {
 }
 
 void NginxHttpFrontend::Send(std::unique_ptr<Response> response) {
+  if (http_request_ == nullptr || http_request_->connection == nullptr ||
+      http_request_->connection->destroyed) {
+    // The HTTP request/connection has been terminated, do nothing.
+    return;
+  }
   SendResponseHeadersToClient(response.get());
   SendResponseMessageToClient(response.get());
   SendResponseStatusToClient(response.get());

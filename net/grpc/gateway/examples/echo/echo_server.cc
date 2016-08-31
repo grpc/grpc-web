@@ -79,6 +79,9 @@ class EchoServiceImpl final : public EchoService::Service {
       ServerWriter<ServerStreamingEchoResponse>* writer) override {
     CopyClientMetadataToResponse(context);
     for (int i = 0; i < request->message_count(); i++) {
+      if (context->IsCancelled()) {
+        return Status::CANCELLED;
+      }
       ServerStreamingEchoResponse response;
       response.set_message(request->message());
       usleep(request->message_interval() * 1000);

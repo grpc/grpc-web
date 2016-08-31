@@ -88,3 +88,10 @@ grpc.web.ClientReadableStream.prototype.on = function(
   }
   return this;
 };
+
+/**
+ * Close the stream.
+ */
+grpc.web.ClientReadableStream.prototype.cancel = function() {
+  this.xhrNodeReadableStream_.xhrReader_.xhr_.abort();
+};
