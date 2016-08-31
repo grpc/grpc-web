@@ -18,8 +18,7 @@ RUN cd /github/grpc-web && git submodule update --init
 RUN cd /github/grpc-web/third_party/closure-library && git checkout tags/v20160713 -f
 RUN cd /github/grpc-web/third_party/openssl && git checkout tags/OpenSSL_1_0_2h -f
 RUN cd /github/grpc-web/third_party/grpc && git checkout tags/v1.0.0 -f
-# TODO: switch to the latest tag after protobuf team released the gmock fix
-RUN cd /github/grpc-web/third_party/protobuf && git checkout master
+RUN cd /github/grpc-web/third_party/protobuf && git checkout master -f
 RUN cd /github/grpc-web/third_party/protobuf && ./autogen.sh && ./configure && make && make install && ldconfig
 RUN cd /github/grpc-web/third_party/grpc &&  export EMBED_OPENSSL=false && git submodule update --init && make && make install
 RUN cd /github/grpc-web && make
