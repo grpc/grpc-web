@@ -14,7 +14,6 @@ goog.provide('grpc.web.ClientBase');
 goog.require('goog.crypt.base64');
 goog.require('goog.events');
 goog.require('goog.net.XhrIo');
-goog.require('goog.net.streams.createXhrNodeReadableStream');
 goog.require('grpc.web.ClientReadableStream');
 
 
@@ -172,6 +171,5 @@ grpc.web.ClientBase.prototype.getXhr_ = function() {
  */
 grpc.web.ClientBase.prototype.getClientReadableStream_ = function(
     xhr, dfunc) {
-  var xhrStream = goog.net.streams.createXhrNodeReadableStream(xhr);
-  return new grpc.web.ClientReadableStream(xhrStream, dfunc);
+  return new grpc.web.ClientReadableStream(xhr, dfunc);
 }

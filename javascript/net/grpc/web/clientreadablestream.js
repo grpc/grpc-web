@@ -7,12 +7,14 @@
  *
  * This wraps the underlying goog.net.streams.NodeReadableStream
  *
- * @author stanleycheung@google.com (Stanley Cheung) 
+ * @author stanleycheung@google.com (Stanley Cheung)
  */
 goog.provide('grpc.web.ClientReadableStream');
 
 
+goog.require('goog.net.XhrIo');
 goog.require('goog.net.streams.NodeReadableStream');
+goog.require('goog.net.streams.createXhrNodeReadableStream');
 goog.require('proto.google.rpc.Status');
 goog.require('proto.grpc.gateway.Pair');
 
@@ -23,19 +25,36 @@ goog.require('proto.grpc.gateway.Pair');
  *
  * @constructor
  * @final
- * @param {?goog.net.streams.NodeReadableStream} xhrNodeReadableStream
- *   The XHR Node Readable Stream
+ * @param {!goog.net.XhrIo} xhr The XhrIo object
  * @param {function(?jspb.ByteSource):!jspb.Message} deserializeFunc
  *   The deserialize function for the proto
  */
 grpc.web.ClientReadableStream = function(
-    xhrNodeReadableStream, deserializeFunc) {
-  this.xhrNodeReadableStream_ = xhrNodeReadableStream;
+    xhr, deserializeFunc) {
+  /**
+   * @private
+   * @type {?goog.net.streams.NodeReadableStream} The XHR Node Readable
+   *   Stream
+   */
+  this.xhrNodeReadableStream_ =
+    goog.net.streams.createXhrNodeReadableStream(xhr);
+
+  /**
+   * @private
+   * @type {function(?jspb.ByteSource):!jspb.Message} The deserialize
+   *   function for the proto
+   */
   this.deserializeFunc_ = deserializeFunc;
 
   /**
    * @private
-   * @type {function(!Object)|null}
+   * @type {!goog.net.XhrIo} The XhrIo object
+   */
+  this.xhr_ = xhr;
+
+  /**
+   * @private
+   * @type {function(!Object)|null} The trailing metadata callback
    */
   this.onStatusCallback_ = null;
 };
@@ -93,5 +112,5 @@ grpc.web.ClientReadableStream.prototype.on = function(
  * Close the stream.
  */
 grpc.web.ClientReadableStream.prototype.cancel = function() {
-  this.xhrNodeReadableStream_.xhrReader_.xhr_.abort();
+  this.xhr_.abort();
 };

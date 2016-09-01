@@ -4,6 +4,7 @@ goog.setTestOnly('grpc.web.ClientBaseTest');
 goog.require('goog.net.streams.NodeReadableStream');
 goog.require('goog.net.streams.XhrNodeReadableStream');
 goog.require('goog.structs.Map');
+goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('grpc.web.ClientBase');
@@ -17,12 +18,31 @@ var xhrReader;
 var xhrStream;
 var request;
 var response;
+var propertyReplacer;
 
 
 /**
  * @type {Object} The NodeReadableStream EventType mapping
  */
 var EventType = goog.net.streams.NodeReadableStream.EventType;
+
+
+function setUp() {
+  xhrReader = getMockXhrStreamReaderInstance();
+  xhrStream = getMockXhrNodeReadableStreamInstance(xhrReader);
+
+  propertyReplacer = new goog.testing.PropertyReplacer();
+  propertyReplacer.replace(goog.net.streams,
+                           'createXhrNodeReadableStream',
+                           function (xhr) {
+                             return xhrStream;
+                           });
+}
+
+
+function tearDown() {
+  propertyReplacer.reset();
+}
 
 
 /**
@@ -176,7 +196,7 @@ function getMockClient() {
 
   // override with mock
   client.getClientReadableStream_ = function(x, c) {
-    return new grpc.web.ClientReadableStream(xhrStream,
+    return new grpc.web.ClientReadableStream(xhr,
                                              MockReply.deserializeBinary);
   }
 
