@@ -98,8 +98,11 @@ grpc.web.ClientBase.prototype.rpcCall = function(
             xhr.getResponseHeader('X-Goog-Safety-Encoding') == 'base64') {
           // Convert the response's ArrayBuffer to a string, which should
           // be a base64 encoded string.
-          byteSource = String.fromCharCode.apply(null,
-              new Uint8Array(/** @type {?ArrayBuffer} */ (xhr.getResponse())));
+          var bytes = new Uint8Array(/** @type {?ArrayBuffer} */ (xhr.getResponse()));
+          byteSource = '';
+          for (var i = 0; i < bytes.length; i++) {
+            byteSource += String.fromCharCode(bytes[i]);
+          }
         } else {
           byteSource = /** @type {?jspb.ByteSource} */ (xhr.getResponse());
         }
