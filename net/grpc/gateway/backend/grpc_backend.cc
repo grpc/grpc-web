@@ -64,23 +64,10 @@ GrpcBackend::~GrpcBackend() {
     BACKEND_DEBUG("Destroying GRPC call.");
     grpc_call_destroy(call_);
   }
-  if (channel_ != nullptr) {
-    BACKEND_DEBUG("Destroying GRPC channel.");
-    grpc_channel_destroy(channel_);
-  }
 }
 
 grpc_channel* GrpcBackend::CreateChannel() {
-  // TODO(fengli): Share the GRPC channel.
-  BACKEND_DEBUG("Creating GRPC channel");
-  grpc_channel_args args;
-  grpc_arg arg;
-  arg.type = GRPC_ARG_INTEGER;
-  arg.key = const_cast<char*>(GRPC_ARG_MAX_MESSAGE_LENGTH);
-  arg.value.integer = 100 * 1024 * 1024;
-  args.num_args = 1;
-  args.args = &arg;
-  return grpc_insecure_channel_create(address_.c_str(), &args, nullptr);
+  return Runtime::Get().GetBackendChannel(address_);
 }
 
 grpc_call* GrpcBackend::CreateCall() {

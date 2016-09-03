@@ -42,7 +42,13 @@ Runtime::~Runtime() {}
 
 void Runtime::Init() { grpc_event_queue_->Start(); }
 
-void Runtime::Shutdown() { grpc_event_queue_->Stop(); }
+void Runtime::Shutdown() {
+  grpc_event_queue_->Stop();
+  for (auto& entry : grpc_backend_channels_) {
+    grpc_channel_destroy(entry.second);
+  }
+  grpc_backend_channels_.clear();
+}
 
 std::shared_ptr<Frontend> Runtime::CreateNginxFrontend(
     ngx_http_request_t* http_request, const string& backend_address,
@@ -146,6 +152,25 @@ Protocol Runtime::DetectFrontendProtocol(ngx_http_request_t* http_request) {
     return GRPC;
   }
   return UNKNOWN;
+}
+
+grpc_channel* Runtime::GetBackendChannel(const std::string& backend_address) {
+  auto result = grpc_backend_channels_.find(backend_address);
+  if (result != grpc_backend_channels_.end()) {
+    return result->second;
+  }
+  grpc_channel_args args;
+  grpc_arg arg;
+  arg.type = GRPC_ARG_INTEGER;
+  arg.key = const_cast<char*>(GRPC_ARG_MAX_MESSAGE_LENGTH);
+  arg.value.integer = 100 * 1024 * 1024;
+  args.num_args = 1;
+  args.args = &arg;
+  grpc_channel* channel =
+      grpc_insecure_channel_create(backend_address.c_str(), &args, nullptr);
+  grpc_backend_channels_.insert(
+      std::pair<string, grpc_channel*>(backend_address, channel));
+  return channel;
 }
 }  // namespace gateway
 }  // namespace grpc

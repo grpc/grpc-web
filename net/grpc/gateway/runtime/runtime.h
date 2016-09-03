@@ -5,6 +5,7 @@
 #include <ngx_core.h>
 #include <ngx_http.h>
 
+#include <map>
 #include <memory>
 
 #include "net/grpc/gateway/codec/decoder.h"
@@ -47,6 +48,10 @@ class Runtime {
     return grpc_event_queue_->queue();
   }
 
+  // Returns the GRPC backend channel for the given backend address, creates new
+  // channel if needed.
+  grpc_channel *GetBackendChannel(const std::string &backend_address);
+
  private:
   Runtime();
 
@@ -62,6 +67,9 @@ class Runtime {
   Protocol DetectFrontendProtocol(ngx_http_request_t *http_request);
 
   std::unique_ptr<GrpcEventQueue> grpc_event_queue_;
+
+  // A shared map for GRPC backend channels. Indexed by the backend address.
+  std::map<std::string, grpc_channel *> grpc_backend_channels_;
 };
 
 }  // namespace gateway
