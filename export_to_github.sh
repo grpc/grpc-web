@@ -2,6 +2,7 @@
 # Exports the GRPC-Web source code from google3 to github.
 # Run it in your cloned GRPC-Web git repo.
 # $1 is the path of GRPC-Web's root path.
+
 GOOGLE3=$(g4 g4d "$1")
 GIT=$(git rev-parse --show-toplevel)
 echo "g4 client: $1"
