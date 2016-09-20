@@ -115,7 +115,7 @@ $ ./third_party/closure-library/closure/bin/build/closurebuilder.py \
   --root=./javascript \
   --root=./net \
   --root=./third_party/closure-library \
-  --root-./third_party/protobuf/js \
+  --root=./third_party/protobuf/js \
   --namespace="proto.grpc.gateway.testing.EchoServiceClient" \
   --output_mode=compiled \
   --compiler_jar=./closure-compiler.jar > compiled.js
