@@ -67,7 +67,7 @@ forward the request to the backend gRPC server listening on port `:9090`.
 
 To generate JS message classes from our `echo.proto`, you can run this:
 
-```
+```sh
 $ protoc -I=. --js_out=import_style=closure,binary:. ./echo.proto
 ```
 
@@ -87,7 +87,7 @@ net/grpc/gateway/protos/pair.proto
 To generate the client stub, you will first need the gRPC Web protoc plugin.
 To compile the plugin `protoc-gen-grpc-web`, you can run this:
 
-```
+```sh
 $ cd ~/grpc-web
 $ cd javascript/net/grpc/web
 $ make
@@ -95,9 +95,15 @@ $ make
 
 To generate the client stub JS file, you can now run this command:
 
-```
+```sh
 $ protoc -I=. --plugin=protoc-gen-grpc-web=<path to plugin> \
   --grpc-web_out=out=echo.grpc.pb.js,mode=base64:. ./echo.proto
+```
+
+Specifically, the format for the `--grpc-web_out` param is
+
+```sh
+--grpc-web_out=out=<filename>,mode=base64:<output dir>
 ```
 
 This will generate the client stub in the file `echo.grpc.pb.js`.
@@ -109,7 +115,7 @@ This will generate the client stub in the file `echo.grpc.pb.js`.
 Finally, we can compile all the relevant JS files into one single JS library
 that can be used in the browser, using the [Closure compiler][]
 
-```
+```sh
 $ cd ~/grpc-web
 $ ./third_party/closure-library/closure/bin/build/closurebuilder.py \
   --root=./javascript \
@@ -143,7 +149,7 @@ First, load the compiled JS library
 
 Then, you can create the service client.
 
-```
+```js
     var service = new proto.grpc.gateway.testing.EchoServiceClient(
         'http://localhost:9091');
 ```
@@ -151,7 +157,7 @@ Then, you can create the service client.
 
 Here's how you can call a simple unary RPC method:
 
-```
+```js
     var unary_request = new proto.grpc.gateway.testing.EchoRequest();
     unary_request.setMessage('foo_unary');
 
@@ -162,7 +168,7 @@ Here's how you can call a simple unary RPC method:
 
 Here's how you can call a server streaming RPC method:
 
-```
+```js
     var stream_request =
       new proto.grpc.gateway.testing.ServerStreamingEchoRequest();
     stream_request.setMessage('foo_stream');
