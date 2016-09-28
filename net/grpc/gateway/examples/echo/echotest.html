@@ -1,58 +1,105 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
-          "http://www.w3c.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<title>Echo Example Client</title>
 <meta charset="UTF-8">
-<script type="text/javascript">var CLOSURE_NO_DEPS = true;</script>
-<script type="text/javascript" src="../../../../../echo_js_bin_dev.js">
-</script>
+<title>Echo Example</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="http://getbootstrap.com/examples/jumbotron-narrow/jumbotron-narrow.css">
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script src="../../../../../echo_js_bin_dev.js"></script>
 <script type="text/javascript">
-  var statusCallback = function(status) {
-    var trailingMetadata = status.metadata;
-    console.log('Trailing metadata:');
-    for (key in trailingMetadata) {
-      console.log(key + ": " + trailingMetadata[key]);
-    }
-  };
+ const INTERVAL = 500; // ms
+ const MAX_STREAM_MESSAGES = 50;
+ var echoService;
 
-  function run_tests() {
-    var service = new proto.grpc.gateway.testing.EchoServiceClient(
-        'http://' + window.location.hostname + ':9091');
+ var addMessage = function(message, cssClass) {
+   $("#first").after(
+     $("<div/>").addClass("row").append(
+       $("<h2/>").append(
+         $("<span/>").addClass("label " + cssClass).text(message))));
+ };
 
-    var unary_request = new proto.grpc.gateway.testing.EchoRequest();
-    unary_request.setMessage('foo_unary');
+ var addLeftMessage = function(message) {
+   addMessage(message, "label-primary pull-left");
+ };
 
-    service.Echo(unary_request, {}, function(err, response) {
-      console.log('Unary echo response: ' + response.getMessage());
-    });
+ var addRightMessage = function(message) {
+   addMessage(message, "label-default pull-right");
+ };
 
-    var empty = new proto.grpc.gateway.testing.Empty();
-    var call = service.NoOp(empty, {'Custom-Header-1':'initial'},
-                            function(err, response) {
-      console.log('NoOp done');
-    });
-    call.on('status', statusCallback);
+ var echo = function(msg) {
+   addLeftMessage(msg);
+   var unaryRequest = new proto.grpc.gateway.testing.EchoRequest();
+   unaryRequest.setMessage(msg);
+   echoService.Echo(unaryRequest, {}, function(err, response) {
+     setTimeout(function () {
+       addRightMessage(response.getMessage());
+     }, INTERVAL);
+   });
+ };
 
-    var stream_request =
-      new proto.grpc.gateway.testing.ServerStreamingEchoRequest();
-    stream_request.setMessage('foo_stream');
-    stream_request.setMessageCount(5);
-    stream_request.setMessageInterval(200);
+ var repeatEcho = function(msg, count) {
+   addLeftMessage(msg);
+   if (count > MAX_STREAM_MESSAGES) count = MAX_STREAM_MESSAGES;
+   var streamRequest =
+     new proto.grpc.gateway.testing.ServerStreamingEchoRequest();
+   streamRequest.setMessage(msg);
+   streamRequest.setMessageCount(count);
+   streamRequest.setMessageInterval(INTERVAL);
 
-    var stream = service.ServerStreamingEcho(stream_request,
-                                             {'Custom-Header-1':'initial'});
-    var i = 0;
-    stream.on('data', function(response) {
-      console.log('Server streaming response: '+response.getMessage()+
-                  ' '+(i++));
-    });
-    stream.on('status', statusCallback);
-  }
+   var stream = echoService.ServerStreamingEcho(streamRequest);
+   stream.on('data', function(response) {
+     addRightMessage(response.getMessage());
+   });
+ };
+
+ var send = function(e) {
+   var msg = $("#msg").val().trim();
+   $("#msg").val(''); // clear the text box
+   if (!msg) return false;
+
+   if (msg.indexOf(' ') > 0) {
+     var count = msg.substr(0, msg.indexOf(' '));
+     if (/^\d+$/.test(count)) {
+       repeatEcho(msg.substr(msg.indexOf(' ') + 1), count);
+     } else {
+       echo(msg);
+     }
+   } else {
+     echo(msg);
+   }
+
+   return false;
+ };
+
+ $(document).ready(function() {
+   echoService = new proto.grpc.gateway.testing.EchoServiceClient(
+     'http://' + window.location.hostname + ':9091');
+
+   // event handlers
+   $("#send").click(send);
+   $("#msg").keyup(function (e) {
+     if (e.keyCode == 13) send(); // enter key
+     return false;
+   });
+
+   $("#msg").focus();
+ });
 </script>
 </head>
-
-<body onload="run_tests();">
-  <h1>Echo Test Example</h1>
+<body>
+  <div class="container">
+    <div class="row" id="first">
+      <div class="form-group">
+        <div class="input-group">
+          <input type="text" class="form-control" id="msg">
+          <span class="input-group-btn">
+            <button class="btn btn-primary" type="button" id="send">Send</button>
+          </span>
+        </div>
+        <p class="help-block">Example: "Hello", "4 Hello"</p>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

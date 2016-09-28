@@ -15,6 +15,7 @@ goog.provide('grpc.web.ClientReadableStream');
 goog.require('goog.net.XhrIo');
 goog.require('goog.net.streams.NodeReadableStream');
 goog.require('goog.net.streams.createXhrNodeReadableStream');
+goog.require('jspb.Message');
 goog.require('proto.google.rpc.Status');
 goog.require('proto.grpc.gateway.Pair');
 
