@@ -15,8 +15,14 @@ class StreamBodyEncoder : public Encoder {
   StreamBodyEncoder& operator=(const StreamBodyEncoder&) = delete;
 
   void Encode(grpc::ByteBuffer* input, std::vector<Slice>* result) override;
+  void Encode(grpc::ByteBuffer* input, std::vector<Slice>* result,
+              bool add_padding);
+
+  using Encoder::EncodeStatus;
   void EncodeStatus(const grpc::Status& status, const Trailers* trailers,
                     std::vector<Slice>* result) override;
+  void EncodeStatus(const grpc::Status& status, const Trailers* trailers,
+                    std::vector<Slice>* result, bool add_padding);
 };
 
 }  // namespace gateway

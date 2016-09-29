@@ -439,7 +439,8 @@ void NginxHttpFrontend::SendResponseHeadersToClient(Response *response) {
   http_request_->headers_out.status = NGX_HTTP_OK;
   if (response != nullptr && response->headers() != nullptr) {
     for (auto &header : *response->headers()) {
-      if (header.first == kContentLength || header.first == kContentType) {
+      if (header.first == kContentLength || header.first == kContentType ||
+          header.first == kContentTransferEncoding) {
         continue;
       }
       AddHTTPHeader(http_request_, header.first, header.second);
@@ -457,6 +458,11 @@ void NginxHttpFrontend::SendResponseHeadersToClient(Response *response) {
       break;
     case PROTO_STREAM_BODY:
       AddHTTPHeader(http_request_, kContentType, kContentTypeProto);
+      break;
+    case B64_STREAM_BODY:
+      AddHTTPHeader(http_request_, kContentType, kContentTypeProto);
+      AddHTTPHeader(http_request_, kContentTransferEncoding,
+                    kContentTransferEncoding_Base64);
       break;
     default: {
       // Intended to skip.

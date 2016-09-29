@@ -5,6 +5,8 @@
 #include <cstring>
 
 #include "net/grpc/gateway/backend/grpc_backend.h"
+#include "net/grpc/gateway/codec/b64_stream_body_decoder.h"
+#include "net/grpc/gateway/codec/b64_stream_body_encoder.h"
 #include "net/grpc/gateway/codec/grpc_decoder.h"
 #include "net/grpc/gateway/codec/grpc_encoder.h"
 #include "net/grpc/gateway/codec/json_decoder.h"
@@ -77,6 +79,13 @@ std::unique_ptr<Encoder> Runtime::CreateEncoder(
   if (content_type_length == kContentTypeProtoLength &&
       strncasecmp(kContentTypeProto, content_type, kContentTypeProtoLength) ==
           0) {
+    string_ref value = GetHTTPHeader(&http_request->headers_in.headers.part,
+                                     kContentTransferEncoding);
+    if (kContentTransferEncoding_Base64_Length == value.size() &&
+        strncasecmp(kContentTransferEncoding_Base64, value.data(),
+                    value.size()) == 0) {
+      return std::unique_ptr<Encoder>(new B64StreamBodyEncoder());
+    }
     return std::unique_ptr<Encoder>(new StreamBodyEncoder());
   }
   if (content_type_length == kContentTypeJsonLength &&
@@ -104,6 +113,13 @@ std::unique_ptr<Decoder> Runtime::CreateDecoder(
   if (content_type_length == kContentTypeProtoLength &&
       strncasecmp(kContentTypeProto, content_type, kContentTypeProtoLength) ==
           0) {
+    string_ref value = GetHTTPHeader(&http_request->headers_in.headers.part,
+                                     kContentTransferEncoding);
+    if (kContentTransferEncoding_Base64_Length == value.size() &&
+        strncasecmp(kContentTransferEncoding_Base64, value.data(),
+                    value.size()) == 0) {
+      return std::unique_ptr<Decoder>(new B64StreamBodyDecoder());
+    }
     return std::unique_ptr<Decoder>(new StreamBodyDecoder());
   }
   if (content_type_length == kContentTypeJsonLength &&
@@ -117,10 +133,12 @@ std::unique_ptr<Decoder> Runtime::CreateDecoder(
     GrpcDecoder* decoder = new GrpcDecoder();
     string_ref value =
         GetHTTPHeader(&http_request->headers_in.headers.part, kGrpcEncoding);
-    if (strncasecmp(kGrpcEncoding_Identity, value.data(), value.size()) == 0) {
+    if (kGrpcEncoding_Identity_Length == value.size() &&
+        strncasecmp(kGrpcEncoding_Identity, value.data(), value.size()) == 0) {
       decoder->set_compression_algorithm(GrpcDecoder::kIdentity);
-    } else if (strncasecmp(kGrpcEncoding_Gzip, value.data(), value.size()) ==
-               0) {
+    } else if (kGrpcEncoding_Gzip_Length == value.size() &&
+               strncasecmp(kGrpcEncoding_Gzip, value.data(), value.size()) ==
+                   0) {
       decoder->set_compression_algorithm(GrpcDecoder::kGzip);
     }
     return std::unique_ptr<Decoder>(decoder);
@@ -139,6 +157,13 @@ Protocol Runtime::DetectFrontendProtocol(ngx_http_request_t* http_request) {
   if (content_type_length == kContentTypeProtoLength &&
       strncasecmp(kContentTypeProto, content_type, kContentTypeProtoLength) ==
           0) {
+    string_ref value = GetHTTPHeader(&http_request->headers_in.headers.part,
+                                     kContentTransferEncoding);
+    if (kContentTransferEncoding_Base64_Length == value.size() &&
+        strncasecmp(kContentTransferEncoding_Base64, value.data(),
+                    value.size()) == 0) {
+      return B64_STREAM_BODY;
+    }
     return PROTO_STREAM_BODY;
   }
   if (content_type_length == kContentTypeJsonLength &&

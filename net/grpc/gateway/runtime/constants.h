@@ -32,9 +32,11 @@ const char kGrpcEncoding[] = "grpc-encoding";
 
 // The metadata value of grpc-encoding for identity.
 const char kGrpcEncoding_Identity[] = "identity";
+const size_t kGrpcEncoding_Identity_Length = sizeof(kGrpcEncoding_Identity) - 1;
 
 // The metadata value of grpc-encoding for gzip.
 const char kGrpcEncoding_Gzip[] = "gzip";
+const size_t kGrpcEncoding_Gzip_Length = sizeof(kGrpcEncoding_Gzip) - 1;
 
 // The metadata name of grpc-accept-encoding.
 const char kGrpcAcceptEncoding[] = "grpc-accept-encoding";
@@ -48,12 +50,21 @@ const char kContentType[] = "content-type";
 // The metadata name of content-length.
 const char kContentLength[] = "content-length";
 
+// The metadata name of content-transfer-encoding.
+const char kContentTransferEncoding[] = "content-transfer-encoding";
+
+// The metadata value of content-transfer-encoding for base64.
+const char kContentTransferEncoding_Base64[] = "base64";
+const size_t kContentTransferEncoding_Base64_Length =
+    sizeof(kContentTransferEncoding_Base64) - 1;
+
 // The frontend protocols supported by GRPC-Web gateway.
 enum Protocol {
   UNKNOWN = 0,
   GRPC,
   JSON_STREAM_BODY,
   PROTO_STREAM_BODY,
+  B64_STREAM_BODY,
 };
 }  // namespace gateway
 }  // namespace grpc

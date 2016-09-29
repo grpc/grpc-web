@@ -33,6 +33,10 @@ size_t get_varint_length(size_t length) {
 const uint8_t MESSAGE_KEY_TYPE = 0x0A;
 // key: 00010, type: 010
 const uint8_t STATUS_KEY_TYPE = 0x12;
+// key: 01111, type: 010
+const uint8_t NOOP_KEY_TYPE = 0x7A;
+const uint8_t PADDING_1[] = {NOOP_KEY_TYPE, 0x02, 0x00, 0x00};
+const uint8_t PADDING_2[] = {NOOP_KEY_TYPE, 0x00};
 
 StreamBodyEncoder::StreamBodyEncoder() {}
 
@@ -40,12 +44,25 @@ StreamBodyEncoder::~StreamBodyEncoder() {}
 
 void StreamBodyEncoder::Encode(grpc::ByteBuffer* input,
                                std::vector<Slice>* result) {
+  Encode(input, result, false);
+}
+
+void StreamBodyEncoder::Encode(grpc::ByteBuffer* input,
+                               std::vector<Slice>* result, bool add_padding) {
   std::vector<Slice> input_slices;
   input->Dump(&input_slices);
   size_t message_length = input->Length();
   size_t message_varint_length = get_varint_length(message_length);
-  gpr_slice message_slice =
-      gpr_slice_malloc(message_length + message_varint_length + 1);
+  size_t serialized_message_length = message_length + message_varint_length + 1;
+  size_t padding = 3 - serialized_message_length % 3;
+  size_t padding_size = 0;
+  if (padding == 1) {
+    padding_size = 4;
+  } else if (padding == 2) {
+    padding_size = 2;
+  }
+  gpr_slice message_slice = gpr_slice_malloc(serialized_message_length +
+                                             (add_padding ? padding_size : 0));
   uint8_t* p = GPR_SLICE_START_PTR(message_slice);
   *p++ = MESSAGE_KEY_TYPE;
   for (size_t i = 0; i < message_varint_length; i++) {
@@ -59,11 +76,26 @@ void StreamBodyEncoder::Encode(grpc::ByteBuffer* input,
     memcpy(p, input_slice.begin(), input_slice.size());
     p += input_slice.size();
   }
+  if (add_padding) {
+    if (padding == 1) {
+      memcpy(p, PADDING_1, 4);
+    } else if (padding == 2) {
+      memcpy(p, PADDING_2, 2);
+    }
+  }
   result->push_back(Slice(message_slice, Slice::STEAL_REF));
 }
+
 void StreamBodyEncoder::EncodeStatus(const grpc::Status& status,
                                      const Trailers* trailers,
                                      std::vector<Slice>* result) {
+  EncodeStatus(status, trailers, result, false);
+}
+
+void StreamBodyEncoder::EncodeStatus(const grpc::Status& status,
+                                     const Trailers* trailers,
+                                     std::vector<Slice>* result,
+                                     bool add_padding) {
   google::rpc::Status status_proto;
   status_proto.set_code(status.error_code());
   status_proto.set_message(status.error_message());
@@ -78,22 +110,40 @@ void StreamBodyEncoder::EncodeStatus(const grpc::Status& status,
     }
   }
 
-  std::string status_string;
-  status_proto.SerializeToString(&status_string);
-  size_t status_string_length = status_string.length();
-  size_t status_string_varint_length = get_varint_length(status_string_length);
+  std::string serialized_status_proto;
+  status_proto.SerializeToString(&serialized_status_proto);
+  size_t serialized_status_proto_length = serialized_status_proto.length();
+  size_t serialized_status_proto_varint_length =
+      get_varint_length(serialized_status_proto_length);
+  size_t status_slice_length = serialized_status_proto_length +
+                               serialized_status_proto_varint_length + 1;
+  size_t padding = 3 - status_slice_length % 3;
+  size_t padding_size = 0;
+  if (padding == 1) {
+    padding_size = 4;
+  } else if (padding == 2) {
+    padding_size = 2;
+  }
   gpr_slice status_slice =
-      gpr_slice_malloc(status_string_length + status_string_varint_length + 1);
+      gpr_slice_malloc(status_slice_length + (add_padding ? padding_size : 0));
   uint8_t* p = GPR_SLICE_START_PTR(status_slice);
   *p++ = STATUS_KEY_TYPE;
-  for (size_t i = 0; i < status_string_varint_length; i++) {
-    *p = (status_string_length >> (i * 7)) & 0x7F;
-    if (i != status_string_varint_length - 1) {
+  for (size_t i = 0; i < serialized_status_proto_varint_length; i++) {
+    *p = (serialized_status_proto_length >> (i * 7)) & 0x7F;
+    if (i != serialized_status_proto_varint_length - 1) {
       *p |= 0x80;
     }
     p++;
   }
-  memcpy(p, status_string.c_str(), status_string_length);
+  memcpy(p, serialized_status_proto.c_str(), serialized_status_proto_length);
+  p += serialized_status_proto_length;
+  if (add_padding) {
+    if (padding == 1) {
+      memcpy(p, PADDING_1, 4);
+    } else if (padding == 2) {
+      memcpy(p, PADDING_2, 2);
+    }
+  }
   result->push_back(Slice(status_slice, Slice::STEAL_REF));
 }
 
