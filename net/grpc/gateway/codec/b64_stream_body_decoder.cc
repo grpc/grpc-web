@@ -14,7 +14,7 @@ B64StreamBodyDecoder::B64StreamBodyDecoder() {}
 B64StreamBodyDecoder::~B64StreamBodyDecoder() {}
 
 Status B64StreamBodyDecoder::Decode() {
-  vector<Slice> buffer;
+  std::vector<Slice> buffer;
   if (!base64_.Decode(*inputs(), &buffer)) {
     return Status(StatusCode::INVALID_ARGUMENT, "Invalid base64 inputs.");
   }
