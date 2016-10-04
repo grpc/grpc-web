@@ -92,9 +92,9 @@ grpc.web.ClientReadableStream.prototype.on = function(
           var pair = proto.grpc.gateway.Pair.deserializeBinary(
               details[i].getValue());
           var first = new TextDecoder("utf-8").decode(
-              /** @type {!ArrayBufferView|undefined} */ (pair.getFirst()));
+              /** @type {!ArrayBufferView|undefined} */ (pair.getFirst_asU8()));
           var second = new TextDecoder("utf-8").decode(
-              /** @type {!ArrayBufferView|undefined} */ (pair.getSecond()));
+              /** @type {!ArrayBufferView|undefined} */ (pair.getSecond_asU8()));
           metadata[first] = second;
         }
         status['metadata'] = metadata;
