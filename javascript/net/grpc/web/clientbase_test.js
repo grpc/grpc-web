@@ -143,7 +143,7 @@ MockReply.deserializeBinary = function(message) {
  * Return a client instance
  */
 function getClientInstance() {
-  return new grpc.web.ClientBase();
+  return new grpc.web.ClientBase('BASE64');
 }
 
 
@@ -190,7 +190,7 @@ function getMockClient() {
   xhrStream = getMockXhrNodeReadableStreamInstance(xhrReader);
 
   // override with mock
-  client.getXhr_ = function() {
+  client.newXhr_ = function() {
     return xhr;
   };
 

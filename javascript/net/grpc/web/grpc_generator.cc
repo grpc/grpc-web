@@ -55,6 +55,7 @@ namespace {
 enum Mode {
   BINARY = 0,
   BASE64 = 1,
+  JSPB   = 2,
 };
 
 std::string GetMode(const Mode mode) {
@@ -63,6 +64,8 @@ std::string GetMode(const Mode mode) {
       return "BINARY";
     case BASE64:
       return "BASE64";
+    case JSPB:
+      return "JSPB";
   }
 }
 
@@ -123,7 +126,7 @@ void PrintServiceConstructor(Printer* printer,
       "/**\n"
       "* @constructor\n"
       "*/\n"
-      "proto.$package$.$service_name$Client = \n"
+      "proto.$package$.$service_name$Client =\n"
       "  function(hostname, credentials, options) {\n"
       "    /**\n"
       "     * @private {!grpc.web.ClientBase} the client\n"
@@ -150,7 +153,7 @@ void PrintUnaryCall(Printer* printer,
   printer->Print(
       vars,
       "/**\n"
-      " * @param {!proto.$in$} request The \n"
+      " * @param {!proto.$in$} request The\n"
       " *    request proto\n"
       " * @param {!Object<string, string>} metadata User defined\n"
       " *    call metadata\n"
@@ -165,7 +168,8 @@ void PrintUnaryCall(Printer* printer,
   printer->Print(
       vars,
       "function(request, metadata, callback) {\n");
-  if (vars["mode"] == GetMode(Mode::BINARY)) {
+  if (vars["mode"] == GetMode(Mode::BINARY) ||
+      vars["mode"] == GetMode(Mode::JSPB)) {
     printer->Print(
         vars,
         "var call = this.client_.rpcCall(this.hostname_ +\n"
@@ -177,12 +181,18 @@ void PrintUnaryCall(Printer* printer,
         "  '/$package$.$service_name$/$method_name$',\n");
   }
   printer->Indent();
-  printer->Print(
-      vars,
-      "request,\n"
-      "metadata,\n"
-      "proto.$out$.deserializeBinary,\n"
-      "callback);\n");
+  printer->Print(vars, "request,\n" "metadata,\n");
+
+  string deserializeFunc;
+  if (vars["mode"] == GetMode(Mode::BINARY) ||
+      vars["mode"] == GetMode(Mode::BASE64)) {
+    deserializeFunc = "deserializeBinary";
+  } else {
+    deserializeFunc = "deserialize";
+  }
+  printer->Print(vars, ("proto.$out$." + deserializeFunc + ",\n").c_str());
+  printer->Print("callback);\n");
+
   printer->Outdent();
   printer->Print("return call;\n");
   printer->Outdent();
@@ -208,7 +218,7 @@ void PrintServerStreamingCall(Printer* printer,
   printer->Indent();
   printer->Print(
       vars,
-      "this.hostname_ + \n"
+      "this.hostname_ +\n"
       "  '/$package$.$service_name$/$method_name$',\n"
       "request,\n"
       "metadata,\n"
@@ -263,8 +273,10 @@ class GrpcCodeGenerator : public CodeGenerator {
       vars["mode"] = GetMode(Mode::BINARY);
     } else if (mode == "base64") {
       vars["mode"] = GetMode(Mode::BASE64);
+    } else if (mode == "jspb") {
+      vars["mode"] = GetMode(Mode::JSPB);
     } else {
-      *error = "options: invalid mode value";
+      *error = "options: invalid mode - " + mode;
       return false;
     }
 
@@ -300,6 +312,7 @@ class GrpcCodeGenerator : public CodeGenerator {
         vars["in"] = method->input_type()->full_name();
         vars["out"] = method->output_type()->full_name();
 
+        // Client streaming is not supported yet
         if (!method->client_streaming()) {
           if (method->server_streaming()) {
             if (mode == "base64") {

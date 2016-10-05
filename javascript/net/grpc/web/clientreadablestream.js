@@ -27,7 +27,7 @@ goog.require('proto.grpc.gateway.Pair');
  * @constructor
  * @final
  * @param {!goog.net.XhrIo} xhr The XhrIo object
- * @param {function(?jspb.ByteSource):!jspb.Message} deserializeFunc
+ * @param {function(?):!jspb.Message} deserializeFunc
  *   The deserialize function for the proto
  */
 grpc.web.ClientReadableStream = function(
@@ -42,8 +42,7 @@ grpc.web.ClientReadableStream = function(
 
   /**
    * @private
-   * @type {function(?jspb.ByteSource):!jspb.Message} The deserialize
-   *   function for the proto
+   * @type {function(?):!jspb.Message} The deserialize function for the proto
    */
   this.deserializeFunc_ = deserializeFunc;
 
