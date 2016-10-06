@@ -250,7 +250,8 @@ function testSetHeaders() {
   assertElementsEquals([
     'value 1',
     'value 2',
-    'application/json',
+    'application/x-protobuf',
+    'base64',
   ], xhr.headers.getValues());
 }
 

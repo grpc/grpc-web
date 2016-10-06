@@ -42,8 +42,7 @@ grpc.web.ClientBase.Mode = {
   BINARY: 'BINARY',
 
   /**
-   * Serialize the proto as a json representation of the base64-encoded
-   * binary proto
+   * Serialize the proto as binary and base64-encode it
    */
   BASE64: 'BASE64',
 
@@ -63,9 +62,8 @@ grpc.web.ClientBase.prototype.serialize_ = function(request) {
   if (this.mode_ == grpc.web.ClientBase.Mode.BINARY) {
     return /** @type {*} */ (request).serializeBinary();
   } else if (this.mode_ == grpc.web.ClientBase.Mode.BASE64) {
-    var base64 = goog.crypt.base64.encodeByteArray(
-        /** @type {*} */ (request).serializeBinary());
-    return '[{"1":"' + base64 + '"}]';
+    return goog.crypt.base64.encodeByteArray(
+      /** @type {*} */ (request).serializeBinary());
   } else {
     return request.serialize();
   }
@@ -132,7 +130,8 @@ grpc.web.ClientBase.prototype.rpcCall = function(
       callback(err, response);
     });
 
-    xhr.headers.set('Content-Type', 'application/json');
+    xhr.headers.set('Content-Type', 'application/x-protobuf');
+    xhr.headers.set('Content-Transfer-Encoding', 'base64');
     xhr.send(method, 'POST', serialized);
     return stream;
   } else if (this.mode_ == grpc.web.ClientBase.Mode.JSPB) {
@@ -171,7 +170,8 @@ grpc.web.ClientBase.prototype.serverStreaming = function(
   xhr.headers.addAll(metadata);
 
   var serialized = this.serialize_(request);
-  xhr.headers.set('Content-Type', 'application/json');
+  xhr.headers.set('Content-Type', 'application/x-protobuf');
+  xhr.headers.set('Content-Transfer-Encoding', 'base64');
   xhr.send(method, 'POST', serialized);
 
   return stream;
