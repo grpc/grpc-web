@@ -22,7 +22,7 @@ RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.7 60 --slave /
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.6
 COPY . /github/grpc-web
 RUN cd /github/grpc-web && git submodule update --init
-RUN cd /github/grpc-web/third_party/closure-library && git checkout tags/v20160713 -f
+RUN cd /github/grpc-web/third_party/closure-library && git checkout tags/v20160911 -f
 RUN cd /github/grpc-web/third_party/openssl && git checkout tags/OpenSSL_1_0_2h -f
 RUN cd /github/grpc-web/third_party/grpc && git checkout tags/v1.0.0 -f
 RUN cd /github/grpc-web/third_party/protobuf && git checkout tags/v3.0.2 -f

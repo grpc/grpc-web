@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
   zip
 COPY . /github/grpc-web
 RUN cd /github/grpc-web && git submodule update --init
-RUN cd /github/grpc-web/third_party/closure-library && git checkout tags/v20160713 -f
+RUN cd /github/grpc-web/third_party/closure-library && git checkout tags/v20160911 -f
 RUN cd /github/grpc-web/third_party/openssl && git checkout tags/OpenSSL_1_0_2h -f
 RUN cd /github/grpc-web/third_party/grpc && git checkout tags/v1.0.0 -f
 RUN cd /github/grpc-web/third_party/protobuf && git checkout tags/v3.0.2 -f
