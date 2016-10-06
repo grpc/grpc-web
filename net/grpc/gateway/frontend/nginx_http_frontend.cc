@@ -132,7 +132,11 @@ void NginxHttpFrontend::Start() {
 
   backend()->Start();
   // Enable request streaming.
-  http_request_->request_body_no_buffering = true;
+  if (protocol_ == Protocol::B64_PROTO || protocol_ == Protocol::PROTO) {
+    http_request_->request_body_no_buffering = false;
+  } else {
+    http_request_->request_body_no_buffering = true;
+  }
   ngx_int_t rc = ngx_http_read_client_request_body(http_request_,
                                                    continue_read_request_body);
   if (rc >= NGX_HTTP_BAD_REQUEST) {
@@ -347,21 +351,35 @@ Status NginxHttpFrontend::DecodeRequestBody() {
   if (buffers != nullptr) {
     while (buffers) {
       ngx_buf_t *buffer = buffers->buf;
-      if (buffer->pos >= buffer->last) {
-        buffers = buffers->next;
-        continue;
+      if (buffer->in_file) {
+        if (buffer->file_pos >= buffer->file_last) {
+          buffers = buffers->next;
+          continue;
+        }
+        gpr_slice slice =
+            gpr_slice_malloc(buffer->file_last - buffer->file_pos);
+        ssize_t size = ngx_read_file(buffer->file, GPR_SLICE_START_PTR(slice),
+                                     GPR_SLICE_LENGTH(slice), 0);
+        GPR_ASSERT(size >= 0 &&
+                   static_cast<size_t>(size) == GPR_SLICE_LENGTH(slice));
+        decoder_->Append(Slice(slice, Slice::STEAL_REF));
+        buffer->file_pos = buffer->file_last;
+      } else {
+        if (buffer->pos >= buffer->last) {
+          buffers = buffers->next;
+          continue;
+        }
+        decoder_->Append(Slice(
+            gpr_slice_from_copied_buffer(reinterpret_cast<char *>(buffer->pos),
+                                         buffer->last - buffer->pos),
+            Slice::STEAL_REF));
+        buffer->pos = buffer->last;
       }
-      decoder_->Append(Slice(
-          gpr_slice_from_copied_buffer(reinterpret_cast<char *>(buffer->pos),
-                                       buffer->last - buffer->pos),
-          Slice::STEAL_REF));
-      buffer->pos = buffer->last;
     }
     request_body->bufs = nullptr;
     request_body->busy = nullptr;
-    return decoder_->Decode();
   }
-  return Status::OK;
+  return decoder_->Decode();
 }
 
 void NginxHttpFrontend::AddRequestMessage(
@@ -456,11 +474,13 @@ void NginxHttpFrontend::SendResponseHeadersToClient(Response *response) {
     case JSON_STREAM_BODY:
       AddHTTPHeader(http_request_, kContentType, kContentTypeJson);
       break;
+    case PROTO:
     case PROTO_STREAM_BODY:
-      AddHTTPHeader(http_request_, kContentType, kContentTypeProto);
+      AddHTTPHeader(http_request_, kContentType, kContentTypeStreamBody);
       break;
+    case B64_PROTO:
     case B64_STREAM_BODY:
-      AddHTTPHeader(http_request_, kContentType, kContentTypeProto);
+      AddHTTPHeader(http_request_, kContentType, kContentTypeStreamBody);
       AddHTTPHeader(http_request_, kContentTransferEncoding,
                     kContentTransferEncoding_Base64);
       break;

@@ -10,6 +10,12 @@ namespace gateway {
 const char kContentTypeProto[] = "application/x-protobuf";
 const size_t kContentTypeProtoLength = sizeof(kContentTypeProto) - 1;
 
+// The content type of protocol buffers based wire format with stream body
+// envelope.
+const char kContentTypeStreamBody[] =
+    "application/x-protobuf.google.rpc.streambody";
+const size_t kContentTypeStreamBodyLength = sizeof(kContentTypeStreamBody) - 1;
+
 // The content type of JSON based wire format for GRPC web.
 const char kContentTypeJson[] = "application/json";
 const size_t kContentTypeJsonLength = sizeof(kContentTypeJson) - 1;
@@ -65,6 +71,8 @@ enum Protocol {
   JSON_STREAM_BODY,
   PROTO_STREAM_BODY,
   B64_STREAM_BODY,
+  PROTO,
+  B64_PROTO,
 };
 }  // namespace gateway
 }  // namespace grpc
