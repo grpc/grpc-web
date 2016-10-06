@@ -183,7 +183,7 @@ void PrintUnaryCall(Printer* printer,
   printer->Indent();
   printer->Print(vars, "request,\n" "metadata,\n");
 
-  string deserializeFunc;
+  std::string deserializeFunc;
   if (vars["mode"] == GetMode(Mode::BINARY) ||
       vars["mode"] == GetMode(Mode::BASE64)) {
     deserializeFunc = "deserializeBinary";
