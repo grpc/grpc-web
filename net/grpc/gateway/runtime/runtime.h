@@ -41,7 +41,8 @@ class Runtime {
   // Nginx.
   std::shared_ptr<Frontend> CreateNginxFrontend(
       ngx_http_request_t *http_request, const string &backend_address,
-      const string &host, const string &backend_method);
+      const string &host, const string &backend_method,
+      const string &channel_reuse);
 
   // Returns the GRPC completion queue.
   grpc_completion_queue *grpc_event_queue() {
@@ -50,7 +51,8 @@ class Runtime {
 
   // Returns the GRPC backend channel for the given backend address, creates new
   // channel if needed.
-  grpc_channel *GetBackendChannel(const std::string &backend_address);
+  grpc_channel *GetBackendChannel(const std::string &backend_address,
+                                  bool use_shared_channel_pool);
 
  private:
   Runtime();

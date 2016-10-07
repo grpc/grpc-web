@@ -56,11 +56,15 @@ void Runtime::Shutdown() {
 
 std::shared_ptr<Frontend> Runtime::CreateNginxFrontend(
     ngx_http_request_t* http_request, const string& backend_address,
-    const string& backend_host, const string& backend_method) {
+    const string& backend_host, const string& backend_method,
+    const string& channel_reuse) {
   std::unique_ptr<GrpcBackend> backend(new GrpcBackend());
   backend->set_address(backend_address);
   backend->set_host(backend_host);
   backend->set_method(backend_method);
+  if (channel_reuse == "on") {
+    backend->set_use_shared_channel_pool(true);
+  }
   NginxHttpFrontend* frontend = new NginxHttpFrontend(std::move(backend));
   frontend->set_http_request(http_request);
   frontend->set_encoder(CreateEncoder(http_request));
@@ -217,10 +221,13 @@ Protocol Runtime::DetectFrontendProtocol(ngx_http_request_t* http_request) {
   return UNKNOWN;
 }
 
-grpc_channel* Runtime::GetBackendChannel(const std::string& backend_address) {
-  auto result = grpc_backend_channels_.find(backend_address);
-  if (result != grpc_backend_channels_.end()) {
-    return result->second;
+grpc_channel* Runtime::GetBackendChannel(const std::string& backend_address,
+                                         bool use_shared_channel_pool) {
+  if (use_shared_channel_pool) {
+    auto result = grpc_backend_channels_.find(backend_address);
+    if (result != grpc_backend_channels_.end()) {
+      return result->second;
+    }
   }
   grpc_channel_args args;
   grpc_arg arg;
@@ -231,8 +238,10 @@ grpc_channel* Runtime::GetBackendChannel(const std::string& backend_address) {
   args.args = &arg;
   grpc_channel* channel =
       grpc_insecure_channel_create(backend_address.c_str(), &args, nullptr);
-  grpc_backend_channels_.insert(
-      std::pair<string, grpc_channel*>(backend_address, channel));
+  if (use_shared_channel_pool) {
+    grpc_backend_channels_.insert(
+        std::pair<string, grpc_channel*>(backend_address, channel));
+  }
   return channel;
 }
 }  // namespace gateway

@@ -28,6 +28,9 @@ class GrpcBackend : public Backend {
   void set_address(string address) { address_ = address; }
   void set_host(string host) { host_ = host; }
   void set_method(string method) { method_ = method; }
+  void set_use_shared_channel_pool(bool use_shared_channel_pool) {
+    use_shared_channel_pool_ = use_shared_channel_pool;
+  }
 
  private:
   // Create a GRPC channel.
@@ -48,6 +51,8 @@ class GrpcBackend : public Backend {
   string host_;
   // The HTTP method of the request.
   string method_;
+  // True if the shared channel pool should be used.
+  bool use_shared_channel_pool_;
   // The GRPC channel.
   grpc_channel* channel_;
   // The GRPC call.

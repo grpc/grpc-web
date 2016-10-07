@@ -34,7 +34,8 @@ namespace grpc {
 namespace gateway {
 
 GrpcBackend::GrpcBackend()
-    : channel_(nullptr),
+    : use_shared_channel_pool_(false),
+      channel_(nullptr),
       call_(nullptr),
       request_buffer_(nullptr),
       response_buffer_(nullptr),
@@ -64,10 +65,14 @@ GrpcBackend::~GrpcBackend() {
     BACKEND_DEBUG("Destroying GRPC call.");
     grpc_call_destroy(call_);
   }
+  if (!use_shared_channel_pool_ && channel_ != nullptr) {
+    BACKEND_DEBUG("Destroying GRPC channel.");
+    grpc_channel_destroy(channel_);
+  }
 }
 
 grpc_channel* GrpcBackend::CreateChannel() {
-  return Runtime::Get().GetBackendChannel(address_);
+  return Runtime::Get().GetBackendChannel(address_, use_shared_channel_pool_);
 }
 
 grpc_call* GrpcBackend::CreateCall() {

@@ -58,6 +58,9 @@ ngx_int_t grpc_gateway_handler(ngx_http_request_t *r) {
   std::string backend_host(reinterpret_cast<char *>(r->host_start),
                            r->host_end - r->host_start);
   std::string backend_method(reinterpret_cast<char *>(r->uri.data), r->uri.len);
+  std::string channel_reuse(
+      reinterpret_cast<char *>(mlcf->grpc_channel_reuse.data),
+      mlcf->grpc_channel_reuse.len);
 
   // Initiate nginx request context.
   grpc_gateway_request_context *context =
@@ -67,7 +70,7 @@ ngx_int_t grpc_gateway_handler(ngx_http_request_t *r) {
     return NGX_HTTP_INTERNAL_SERVER_ERROR;
   }
   context->frontend = grpc::gateway::Runtime::Get().CreateNginxFrontend(
-      r, backend_address, backend_host, backend_method);
+      r, backend_address, backend_host, backend_method, channel_reuse);
   ngx_http_set_ctx(r, context, grpc_gateway_module);
   ngx_pool_cleanup_t *http_cleanup =
       ngx_pool_cleanup_add(r->pool, sizeof(grpc_gateway_request_context));
