@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Echo Example</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="http://getbootstrap.com/examples/jumbotron-narrow/jumbotron-narrow.css">
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script src="../../../../../echo_js_bin_dev.js"></script>
+<script type="text/javascript">
+ const INTERVAL = 500; // ms
+ const MAX_STREAM_MESSAGES = 50;
+ var echoService;
+
+ var addMessage = function(message, cssClass) {
+   $("#first").after(
+     $("<div/>").addClass("row").append(
+       $("<h2/>").append(
+         $("<span/>").addClass("label " + cssClass).text(message))));
+ };
+
+ var addLeftMessage = function(message) {
+   addMessage(message, "label-primary pull-left");
+ };
+
+ var addRightMessage = function(message) {
+   addMessage(message, "label-default pull-right");
+ };
+
+ var echo = function(msg) {
+   addLeftMessage(msg);
+   var unaryRequest = new proto.grpc.gateway.testing.EchoRequest();
+   unaryRequest.setMessage(msg);
+   echoService.Echo(unaryRequest, {}, function(err, response) {
+     setTimeout(function () {
+       addRightMessage(response.getMessage());
+     }, INTERVAL);
+   });
+ };
+
+ var repeatEcho = function(msg, count) {
+   addLeftMessage(msg);
+   if (count > MAX_STREAM_MESSAGES) count = MAX_STREAM_MESSAGES;
+   var streamRequest =
+     new proto.grpc.gateway.testing.ServerStreamingEchoRequest();
+   streamRequest.setMessage(msg);
+   streamRequest.setMessageCount(count);
+   streamRequest.setMessageInterval(INTERVAL);
+
+   var stream = echoService.ServerStreamingEcho(streamRequest);
+   stream.on('data', function(response) {
+     addRightMessage(response.getMessage());
+   });
+ };
+
+ var send = function(e) {
+   var msg = $("#msg").val().trim();
+   $("#msg").val(''); // clear the text box
+   if (!msg) return false;
+
+   if (msg.indexOf(' ') > 0) {
+     var count = msg.substr(0, msg.indexOf(' '));
+     if (/^\d+$/.test(count)) {
+       repeatEcho(msg.substr(msg.indexOf(' ') + 1), count);
+     } else {
+       echo(msg);
+     }
+   } else {
+     echo(msg);
+   }
+
+   return false;
+ };
+
+ $(document).ready(function() {
+   echoService = new proto.grpc.gateway.testing.EchoServiceClient(
+     'http://' + window.location.hostname + ':9091');
+
+   // event handlers
+   $("#send").click(send);
+   $("#msg").keyup(function (e) {
+     if (e.keyCode == 13) send(); // enter key
+     return false;
+   });
+
+   $("#msg").focus();
+ });
+</script>
+</head>
+<body>
+  <div class="container">
+    <div class="row" id="first">
+      <div class="form-group">
+        <div class="input-group">
+          <input type="text" class="form-control" id="msg">
+          <span class="input-group-btn">
+            <button class="btn btn-primary" type="button" id="send">Send</button>
+          </span>
+        </div>
+        <p class="help-block">Example: "Hello", "4 Hello"</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
