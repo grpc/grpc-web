@@ -1,0 +1,18 @@
+ngx_addon_name=grpc_gateway_module
+HTTP_MODULES="$HTTP_MODULES grpc_gateway_module"
+ROOT_DIR=$(cd $ngx_addon_dir/../../../..; pwd)
+
+GRPC_GATEWAY_CXX="$(cd $ROOT_DIR; find $ROOT_DIR/net/grpc/gateway \
+  -path $ROOT_DIR/net/grpc/gateway/examples -prune -o \
+  -name "*.cc" ! -name "*test.cc" -print \
+  | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g')"
+
+GRPC_GATEWAY_C="$ROOT_DIR/net/grpc/gateway/nginx/grpc_gateway_module.c"
+
+GRPC_GATEWAY_DEPS="$(cd $ROOT_DIR; find $ROOT_DIR/net/grpc/gateway \
+  -path $ROOT_DIR/net/grpc/gateway/examples -prune -o \
+  -name "*.h" ! -name "*test.h" -print \
+  | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g')"
+
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS $GRPC_GATEWAY_CXX $GRPC_GATEWAY_C"
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS $GRPC_GATEWAY_DEPS"
