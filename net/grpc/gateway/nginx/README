@@ -1,0 +1,2 @@
+Nginx specific GRPC gateway to translate requests from browser and HTTP/1.1 
+clients to a GRPC server.

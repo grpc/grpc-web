@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package grpc.gateway;
+
+// Couples together a pair of values.
+message Pair {
+  bytes first = 1;
+  bytes second = 2;
+}
