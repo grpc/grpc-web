@@ -29,13 +29,20 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+OS := $(shell uname)
 ROOT_DIR = ../../../../..
 CXX = g++
 CPPFLAGS += -I/usr/local/include -I$(ROOT_DIR) -pthread
 CXXFLAGS += -std=c++11
+ifeq ($(OS), Darwin)
+LDFLAGS += -L/usr/local/lib -lgrpc++ -lgrpc \
+           -lgrpc++_reflection              \
+           -lprotobuf -lpthread -ldl
+else
 LDFLAGS += -L/usr/local/lib -lgrpc++ -lgrpc                       \
            -Wl,--no-as-needed -lgrpc++_reflection -Wl,--as-needed \
            -lprotobuf -lpthread -ldl
+endif
 PROTOC = protoc
 PROTOS_PATH = ../..
 CLOSUREBUILDER = closure/bin/build/closurebuilder.py
