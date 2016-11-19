@@ -1,4 +1,4 @@
-FROM ubuntu:14.04
+FROM debian:stretch
 RUN apt-get update && apt-get install -y \
   autoconf \
   automake \
@@ -10,7 +10,6 @@ RUN apt-get update && apt-get install -y \
   libpcre3-dev \
   libssl-dev \
   make \
-  python-software-properties \
   software-properties-common \
   zip
 COPY . /github/grpc-web
