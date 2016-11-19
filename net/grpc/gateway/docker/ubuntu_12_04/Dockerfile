@@ -26,10 +26,6 @@ RUN update-alternatives \
   --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 40 \
   --slave /usr/bin/g++ g++ /usr/bin/g++-4.6
 COPY . /github/grpc-web
-RUN cd /github/grpc-web/third_party/protobuf && \
-  ./autogen.sh && \
-  ./configure && \
-  make -j
 RUN cd /github/grpc-web/third_party/grpc && \
   make -j
 RUN cd /github/grpc-web && \
