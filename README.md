@@ -13,10 +13,6 @@ official protocol spec for supporting Web clients. Stay tuned!
 
 For questions, please file an issue or contact varuntalwar@google.com.
 
-The official [protocol spec](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md) for grpc-web is currently [under review](https://github.com/grpc/grpc/issues/8682).
-
-
-
 ## Build
 
 gRPC-Web supports build on following platforms:

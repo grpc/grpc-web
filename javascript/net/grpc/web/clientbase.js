@@ -76,7 +76,7 @@ grpc.web.ClientBase.prototype.serialize_ = function(request) {
  * @param {!Object<string, string>} metadata User defined call metadata
  * @param {function(?):!jspb.Message} deserializeFunc
  *   The deserialize function for the proto
- * @param {function(?Object, (?Object|undefined))} callback A callback
+ * @param {function(?string, (?Object|undefined))} callback A callback
  * function which takes (error, response)
  * @return {!grpc.web.ClientReadableStream|undefined} The Client Readable
  *   Stream
@@ -97,6 +97,7 @@ grpc.web.ClientBase.prototype.rpcCall = function(
     }
     goog.events.listen(xhr, goog.net.EventType.COMPLETE, function(e) {
       var response = null;
+      var err = null;  // TODO: propagate error for ByteSource response
       if (xhr.isSuccess()) {
         /** @type {?jspb.ByteSource} */ var byteSource;
         if (isB64EncodedResponse &&
@@ -112,9 +113,17 @@ grpc.web.ClientBase.prototype.rpcCall = function(
         } else {
           byteSource = /** @type {?jspb.ByteSource} */ (xhr.getResponse());
         }
-        response = deserializeFunc(byteSource);
+        if (xhr.isSuccess()) {
+          response = deserializeFunc(byteSource);
+        }
+      } else if (xhr.getResponse() instanceof ArrayBuffer) {
+        var bytes = new Uint8Array(
+            /** @type {?ArrayBuffer} */ (xhr.getResponse()));
+        err = '';
+        for (var i = 0; i < bytes.length; i++) {
+          err += String.fromCharCode(bytes[i]);
+        }
       }
-      var err = null; // TODO: propagate error
       callback(err, response);
     });
 
@@ -138,7 +147,6 @@ grpc.web.ClientBase.prototype.rpcCall = function(
     goog.events.listen(xhr, goog.net.EventType.COMPLETE, function(e) {
       var response = null;
       if (xhr.isSuccess()) {
-        console.log('xhr.getResponseText(): ', xhr.getResponseText());
         response = deserializeFunc(xhr.getResponseText());
       }
       var err = null; // TODO: propagate error
