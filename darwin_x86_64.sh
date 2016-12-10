@@ -2,7 +2,7 @@
 make clean
 cd third_party/protobuf \
   && ./autogen.sh \
-  && ./configure 
+  && ./configure \
   && make install -j8 \
   && cd ../..
 cd third_party/grpc \
