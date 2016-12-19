@@ -29,11 +29,17 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+OS := $(shell uname)
 CXX = g++
 CPPFLAGS += -I/usr/local/include -pthread
 CXXFLAGS += -std=c++11
+ifeq ($(OS), Darwin)
+LDFLAGS += -L/usr/local/lib -lprotoc \
+  -lprotobuf -lpthread -ldl
+else
 LDFLAGS += -L/usr/local/lib -Wl,--no-as-needed -lprotoc \
   -lprotobuf -lpthread -ldl
+endif
 
 all: protoc-gen-grpc-web
 
