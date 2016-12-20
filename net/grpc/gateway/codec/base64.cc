@@ -68,60 +68,81 @@ std::unique_ptr<Slice> Base64::Encode(const Slice& input_slice, uint8_t* buffer,
 
   gpr_slice output_slice = gpr_slice_malloc(encoded_size);
   uint8_t* output = GPR_SLICE_START_PTR(output_slice);
-
-  // Encodes the first group, together with the buffer.
   const uint8_t* input = input_slice.begin();
-  if (*buffer_length == 1) {
-    *output++ = b64_chars[(buffer[0] >> 2) & 0x3F];
-    *output++ = b64_chars[((buffer[0] & 0x03) << 4) | (((*input) >> 4) & 0x0F)];
-    *output++ =
-        b64_chars[(((*input) & 0x0F) << 2) | ((*(input + 1) >> 6) & 0x03)];
-    *output++ = b64_chars[*(input + 1) & 0x3F];
-    input += 2;
-  } else if (*buffer_length == 2) {
-    *output++ = b64_chars[(buffer[0] >> 2) & 0x3F];
-    *output++ =
-        b64_chars[((buffer[0] & 0x03) << 4) | ((buffer[1] >> 4) & 0x0F)];
-    *output++ = b64_chars[((buffer[1] & 0x0F) << 2) | (((*input) >> 6) & 0x03)];
-    *output++ = b64_chars[(*input) & 0x3F];
-    input += 1;
-  }
 
-  // Encodes the other groups, besides the tail.
-  while (input < input_slice.end() - tail_size) {
-    *output++ = b64_chars[((*input) >> 2) & 0x3F];
-    *output++ =
-        b64_chars[(((*input) & 0x03) << 4) | ((*(input + 1) >> 4) & 0x0F)];
-    *output++ =
-        b64_chars[((*(input + 1) & 0x0F) << 2) | ((*(input + 2) >> 6) & 0x03)];
-    *output++ = b64_chars[*(input + 2) & 0x3F];
-    input += 3;
-  }
-
-  // Encodes the tail group if current slice is the last one.
-  if (tail_size > 0) {
-    if (is_last) {
-      if (tail_size == 2) {
-        *output++ = b64_chars[((*input) >> 2) & 0x3F];
-        *output++ =
-            b64_chars[(((*input) & 0x03) << 4) | ((*(input + 1) >> 4) & 0x0F)];
-        *output++ = b64_chars[(*(input + 1) & 0x0F) << 2];
-        *output++ = kPad;
-      } else if (tail_size == 1) {
-        *output++ = b64_chars[(*input >> 2) & 0x3F];
-        *output++ = b64_chars[(*input & 0x03) << 4];
-        *output++ = kPad;
-        *output++ = kPad;
-      }
-      *buffer_length = 0;
+  // trailers only.
+  if (data_size == 1) {
+    if (*buffer_length == 0) {
+      Encode1CharGroup(*input, output);
     } else {
-      memcpy(buffer, input, tail_size);
-      *buffer_length = tail_size;
+      Encode1CharGroup(buffer[0], output);
     }
-  } else {
     *buffer_length = 0;
+  } else if (data_size == 2) {
+    if (*buffer_length == 0) {
+      Encode2CharGroup(*input, *(input + 1), output);
+    } else if (*buffer_length == 1) {
+      Encode2CharGroup(buffer[0], *input, output);
+    } else if (*buffer_length == 2) {
+      Encode2CharGroup(buffer[0], buffer[1], output);
+    }
+    *buffer_length = 0;
+  } else if (data_size > 2) {
+    // Encodes the first group, together with the buffer.
+    if (*buffer_length == 1) {
+      Encode3CharGroup(buffer[0], *input, *(input + 1), output);
+      output += 4;
+      input += 2;
+    } else if (*buffer_length == 2) {
+      Encode3CharGroup(buffer[0], buffer[1], *input, output);
+      output += 4;
+      input += 1;
+    }
+    // Encodes the other groups, besides the tail.
+    while (input < input_slice.end() - tail_size) {
+      Encode3CharGroup(*input, *(input + 1), *(input + 2), output);
+      output += 4;
+      input += 3;
+    }
+    // Encodes the tail group if current slice is the last one.
+    if (tail_size > 0) {
+      if (is_last) {
+        if (tail_size == 2) {
+          Encode2CharGroup(*input, *(input + 1), output);
+        } else if (tail_size == 1) {
+          Encode1CharGroup(*input, output);
+        }
+        *buffer_length = 0;
+      } else {
+        memcpy(buffer, input, tail_size);
+        *buffer_length = tail_size;
+      }
+    } else {
+      *buffer_length = 0;
+    }
   }
   return std::unique_ptr<Slice>(new Slice(output_slice, Slice::STEAL_REF));
+}
+
+void Base64::Encode1CharGroup(uint8_t input_0, uint8_t* output) {
+  *output++ = b64_chars[(input_0 >> 2) & 0x3F];
+  *output++ = b64_chars[(input_0 & 0x03) << 4];
+  *output++ = kPad;
+  *output++ = kPad;
+}
+void Base64::Encode2CharGroup(uint8_t input_0, uint8_t input_1,
+                              uint8_t* output) {
+  *output++ = b64_chars[(input_0 >> 2) & 0x3F];
+  *output++ = b64_chars[((input_0 & 0x03) << 4) | ((input_1 >> 4) & 0x0F)];
+  *output++ = b64_chars[(input_1 & 0x0F) << 2];
+  *output++ = kPad;
+}
+void Base64::Encode3CharGroup(uint8_t input_0, uint8_t input_1, uint8_t input_2,
+                              uint8_t* output) {
+  *output++ = b64_chars[(input_0 >> 2) & 0x3F];
+  *output++ = b64_chars[((input_0 & 0x03) << 4) | ((input_1 >> 4) & 0x0F)];
+  *output++ = b64_chars[((input_1 & 0x0F) << 2) | ((input_2 >> 6) & 0x03)];
+  *output++ = b64_chars[input_2 & 0x3F];
 }
 
 bool Base64::Encode(const std::vector<Slice>& input,

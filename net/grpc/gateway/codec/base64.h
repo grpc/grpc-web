@@ -35,6 +35,11 @@ class Base64 {
   std::unique_ptr<Slice> Encode(const Slice& input, uint8_t* buffer,
                                 size_t* buffer_length, bool is_last);
 
+  void Encode1CharGroup(uint8_t input_0, uint8_t* output);
+  void Encode2CharGroup(uint8_t input_0, uint8_t input_1, uint8_t* output);
+  void Encode3CharGroup(uint8_t input_0, uint8_t input_1, uint8_t input_2,
+                        uint8_t* output);
+
   // Decodes a base64 group. The input must be a pointer to uint8_t array with
   // at least 4 elements. The output must be a pointer to uint8_t array with
   // at least 3 elements. Returns the decoded data size if decode success, else
