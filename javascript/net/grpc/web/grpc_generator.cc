@@ -53,19 +53,19 @@ namespace web {
 namespace {
 
 enum Mode {
-  BINARY = 0,
-  BASE64 = 1,
-  JSPB   = 2,
+  OP = 0,       // first party google3 one platform services
+  GATEWAY = 1,  // open-source gRPC Gateway, currently nginx
+  OPJSPB = 2,   // first party google3 one platform services with JSPB
 };
 
 std::string GetMode(const Mode mode) {
   switch (mode) {
-    case BINARY:
-      return "BINARY";
-    case BASE64:
-      return "BASE64";
-    case JSPB:
-      return "JSPB";
+    case OP:
+      return "OP";
+    case GATEWAY:
+      return "Gateway";
+    case OPJSPB:
+      return "OPJspb";
   }
 }
 
@@ -129,9 +129,9 @@ void PrintServiceConstructor(Printer* printer,
       "proto.$package$.$service_name$Client =\n"
       "  function(hostname, credentials, options) {\n"
       "    /**\n"
-      "     * @private {!grpc.web.ClientBase} the client\n"
+      "     * @private {!grpc.web.$mode$ClientBase} the client\n"
       "     */\n"
-      "    this.client_ = new grpc.web.ClientBase('$mode$');\n\n"
+      "    this.client_ = new grpc.web.$mode$ClientBase();\n\n"
       "    /**\n"
       "     * @private {!string} the hostname\n"
       "     */\n"
@@ -168,8 +168,8 @@ void PrintUnaryCall(Printer* printer,
   printer->Print(
       vars,
       "function(request, metadata, callback) {\n");
-  if (vars["mode"] == GetMode(Mode::BINARY) ||
-      vars["mode"] == GetMode(Mode::JSPB)) {
+  if (vars["mode"] == GetMode(Mode::OP) ||
+      vars["mode"] == GetMode(Mode::OPJSPB)) {
     printer->Print(
         vars,
         "var call = this.client_.rpcCall(this.hostname_ +\n"
@@ -184,8 +184,8 @@ void PrintUnaryCall(Printer* printer,
   printer->Print(vars, "request,\n" "metadata,\n");
 
   std::string deserializeFunc;
-  if (vars["mode"] == GetMode(Mode::BINARY) ||
-      vars["mode"] == GetMode(Mode::BASE64)) {
+  if (vars["mode"] == GetMode(Mode::OP) ||
+      vars["mode"] == GetMode(Mode::GATEWAY)) {
     deserializeFunc = "deserializeBinary";
   } else {
     deserializeFunc = "deserialize";
@@ -270,11 +270,11 @@ class GrpcCodeGenerator : public CodeGenerator {
     std::map<std::string, std::string> vars;
     vars["package"] = file->package();
     if (mode == "binary") {
-      vars["mode"] = GetMode(Mode::BINARY);
+      vars["mode"] = GetMode(Mode::OP);
     } else if (mode == "base64") {
-      vars["mode"] = GetMode(Mode::BASE64);
+      vars["mode"] = GetMode(Mode::GATEWAY);
     } else if (mode == "jspb") {
-      vars["mode"] = GetMode(Mode::JSPB);
+      vars["mode"] = GetMode(Mode::OPJSPB);
     } else {
       *error = "options: invalid mode - " + mode;
       return false;
@@ -294,7 +294,7 @@ class GrpcCodeGenerator : public CodeGenerator {
     }
     printer.Print("\n\n");
 
-    printer.Print("goog.require('grpc.web.ClientBase');\n\n\n\n");
+    printer.Print(vars, "goog.require('grpc.web.$mode$ClientBase');\n\n\n\n");
     PrintMessagesDeps(&printer, file);
 
     for (int service_index = 0;
