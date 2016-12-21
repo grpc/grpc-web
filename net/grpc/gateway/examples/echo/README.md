@@ -34,7 +34,7 @@ $ cd third_party/grpc && git submodule update --init && EMBED_OPENSSL=false make
 $ cd third_party/protobuf
 $ sudo make install                       # install protobuf
 $ cd ../..
-# sudo EMBED_OPENSSL=false make install   # install gRPC
+$ sudo EMBED_OPENSSL=false make install   # install gRPC
 ```
 
 * Download the Closure compiler
