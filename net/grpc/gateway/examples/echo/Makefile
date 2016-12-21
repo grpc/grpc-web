@@ -33,8 +33,7 @@ ROOT_DIR = ../../../../..
 CXX = g++
 CPPFLAGS += -I/usr/local/include -I$(ROOT_DIR) -pthread
 CXXFLAGS += -std=c++11
-LDFLAGS += -L/usr/local/lib -lgrpc++ -lgrpc                       \
-           -Wl,--no-as-needed -lgrpc++_reflection -Wl,--as-needed \
+LDFLAGS += -L/usr/local/lib -lgrpc++ -lgrpc -lgrpc++_reflection \
            -lprotobuf -lpthread -ldl
 PROTOC = protoc
 PROTOS_PATH = ../..
