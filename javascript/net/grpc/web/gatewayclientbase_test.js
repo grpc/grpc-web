@@ -7,8 +7,8 @@ goog.require('goog.structs.Map');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
-goog.require('grpc.web.ClientBase');
 goog.require('grpc.web.ClientReadableStream');
+goog.require('grpc.web.GatewayClientBase');
 
 
 var client;
@@ -143,7 +143,7 @@ MockReply.deserializeBinary = function(message) {
  * Return a client instance
  */
 function getClientInstance() {
-  return new grpc.web.ClientBase('BASE64');
+  return new grpc.web.GatewayClientBase();
 }
 
 
@@ -205,7 +205,7 @@ function getMockClient() {
 
 function testConstructor() {
   client = getClientInstance();
-  assertTrue(client instanceof grpc.web.ClientBase);
+  assertTrue(client instanceof grpc.web.GatewayClientBase);
 }
 
 function testBasicRpcCall() {
