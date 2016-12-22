@@ -1,4 +1,4 @@
-/*
+/**
  *
  * Copyright 2016, Google Inc.
  * All rights reserved.
@@ -52,13 +52,15 @@ namespace grpc {
 namespace web {
 namespace {
 
+using std::string;
+
 enum Mode {
   OP = 0,       // first party google3 one platform services
   GATEWAY = 1,  // open-source gRPC Gateway, currently nginx
   OPJSPB = 2,   // first party google3 one platform services with JSPB
 };
 
-std::string GetMode(const Mode mode) {
+string GetModeVar(const Mode mode) {
   switch (mode) {
     case OP:
       return "OP";
@@ -69,11 +71,17 @@ std::string GetMode(const Mode mode) {
   }
 }
 
+string GetDeserializeMethodName(const string& mode_var) {
+  if (mode_var == GetModeVar(Mode::OPJSPB)) {
+    return "deserialize";
+  }
+  return "deserializeBinary";
+}
+
 /* Finds all message types used in all services in the file, and returns them
  * as a map of fully qualified message type name to message descriptor */
-std::map<std::string, const Descriptor *> GetAllMessages(
-    const FileDescriptor *file) {
-  std::map<std::string, const Descriptor *> message_types;
+std::map<string, const Descriptor*> GetAllMessages(const FileDescriptor* file) {
+  std::map<string, const Descriptor*> message_types;
   for (int service_index = 0;
        service_index < file->service_count();
        ++service_index) {
@@ -93,10 +101,9 @@ std::map<std::string, const Descriptor *> GetAllMessages(
 }
 
 void PrintMessagesDeps(Printer* printer, const FileDescriptor* file) {
-  std::map<std::string, const Descriptor *> messages = GetAllMessages(file);
-  std::map<std::string, std::string> vars;
-  for (std::map<std::string, const Descriptor *>::iterator it =
-           messages.begin();
+  std::map<string, const Descriptor*> messages = GetAllMessages(file);
+  std::map<string, string> vars;
+  for (std::map<string, const Descriptor*>::iterator it = messages.begin();
        it != messages.end(); it++) {
     vars["full_name"] = it->first;
     printer->Print(
@@ -106,9 +113,7 @@ void PrintMessagesDeps(Printer* printer, const FileDescriptor* file) {
   printer->Print("\n\n\n");
 }
 
-
-void PrintFileHeader(Printer* printer,
-                     std::map<std::string, std::string> vars) {
+void PrintFileHeader(Printer* printer, const std::map<string, string>& vars) {
   printer->Print(
       vars,
       "/**\n"
@@ -120,7 +125,7 @@ void PrintFileHeader(Printer* printer,
 }
 
 void PrintServiceConstructor(Printer* printer,
-                             std::map<std::string, std::string> vars) {
+                             const std::map<string, string>& vars) {
   printer->Print(
       vars,
       "/**\n"
@@ -148,8 +153,7 @@ void PrintServiceConstructor(Printer* printer,
       "  };\n\n");
 }
 
-void PrintUnaryCall(Printer* printer,
-                    std::map<std::string, std::string> vars) {
+void PrintUnaryCall(Printer* printer, std::map<string, string> vars) {
   printer->Print(
       vars,
       "/**\n"
@@ -165,32 +169,22 @@ void PrintUnaryCall(Printer* printer,
       " */\n"
       "proto.$package$.$service_name$Client.prototype.$method_name$ =\n");
   printer->Indent();
-  printer->Print(
-      vars,
-      "function(request, metadata, callback) {\n");
-  if (vars["mode"] == GetMode(Mode::OP) ||
-      vars["mode"] == GetMode(Mode::OPJSPB)) {
-    printer->Print(
-        vars,
-        "var call = this.client_.rpcCall(this.hostname_ +\n"
-        "  '/$$rpc/$package$.$service_name$/$method_name$',\n");
+  printer->Print(vars,
+                 "function(request, metadata, callback) {\n"
+                 "var call = this.client_.rpcCall(this.hostname_ +\n");
+  if (vars["mode"] == GetModeVar(Mode::OP) ||
+      vars["mode"] == GetModeVar(Mode::OPJSPB)) {
+    printer->Print(vars,
+                   "  '/$$rpc/$package$.$service_name$/$method_name$',\n");
   } else {
-    printer->Print(
-        vars,
-        "var call = this.client_.rpcCall(this.hostname_ +\n"
-        "  '/$package$.$service_name$/$method_name$',\n");
+    printer->Print(vars, "  '/$package$.$service_name$/$method_name$',\n");
   }
+
   printer->Indent();
   printer->Print(vars, "request,\n" "metadata,\n");
 
-  std::string deserializeFunc;
-  if (vars["mode"] == GetMode(Mode::OP) ||
-      vars["mode"] == GetMode(Mode::GATEWAY)) {
-    deserializeFunc = "deserializeBinary";
-  } else {
-    deserializeFunc = "deserialize";
-  }
-  printer->Print(vars, ("proto.$out$." + deserializeFunc + ",\n").c_str());
+  string deserializeMethod = GetDeserializeMethodName(vars["mode"]);
+  printer->Print(vars, ("proto.$out$." + deserializeMethod + ",\n").c_str());
   printer->Print("callback);\n");
 
   printer->Outdent();
@@ -199,8 +193,7 @@ void PrintUnaryCall(Printer* printer,
   printer->Print("};\n\n\n");
 }
 
-void PrintServerStreamingCall(Printer* printer,
-                              std::map<std::string, std::string> vars) {
+void PrintServerStreamingCall(Printer* printer, std::map<string, string> vars) {
   printer->Print(
       vars,
       "/**\n"
@@ -214,15 +207,24 @@ void PrintServerStreamingCall(Printer* printer,
   printer->Indent();
   printer->Print(
       "function(request, metadata) {\n"
-      "var stream = this.client_.serverStreaming(\n");
+      "var stream = this.client_.serverStreaming(this.hostname_ +\n");
   printer->Indent();
-  printer->Print(
-      vars,
-      "this.hostname_ +\n"
-      "  '/$package$.$service_name$/$method_name$',\n"
-      "request,\n"
-      "metadata,\n"
-      "proto.$out$.deserializeBinary);\n\n");
+  if (vars["mode"] == GetModeVar(Mode::OP) ||
+      vars["mode"] == GetModeVar(Mode::OPJSPB)) {
+    printer->Print(vars,
+                   "  '/$$rpc/$package$.$service_name$/$method_name$',\n");
+  } else {
+    printer->Print(vars, "  '/$package$.$service_name$/$method_name$',\n");
+  }
+
+  printer->Indent();
+  printer->Print(vars,
+                 "request,\n"
+                 "metadata,\n");
+
+  string deserializeMethod = GetDeserializeMethodName(vars["mode"]);
+  printer->Print(vars, ("proto.$out$." + deserializeMethod + ");\n\n").c_str());
+
   printer->Outdent();
   printer->Print("return stream;\n");
   printer->Outdent();
@@ -234,20 +236,18 @@ class GrpcCodeGenerator : public CodeGenerator {
   GrpcCodeGenerator() {}
   ~GrpcCodeGenerator() override {}
 
-  bool Generate(const FileDescriptor* file,
-                const std::string& parameter,
-                GeneratorContext* context,
-                std::string* error) const {
+  bool Generate(const FileDescriptor* file, const string& parameter,
+                GeneratorContext* context, string* error) const override {
     if (!file->service_count()) {
       // No services, nothing to do.
       return true;
     }
 
-    std::vector<std::pair<std::string, std::string> > options;
+    std::vector<std::pair<string, string> > options;
     ParseGeneratorParameter(parameter, &options);
 
-    std::string file_name;
-    std::string mode;
+    string file_name;
+    string mode;
     for (int i = 0; i < options.size(); ++i) {
       if (options[i].first == "out") {
         file_name = options[i].second;
@@ -267,14 +267,14 @@ class GrpcCodeGenerator : public CodeGenerator {
       return false;
     }
 
-    std::map<std::string, std::string> vars;
+    std::map<string, string> vars;
     vars["package"] = file->package();
     if (mode == "binary") {
-      vars["mode"] = GetMode(Mode::OP);
+      vars["mode"] = GetModeVar(Mode::OP);
     } else if (mode == "base64") {
-      vars["mode"] = GetMode(Mode::GATEWAY);
+      vars["mode"] = GetModeVar(Mode::GATEWAY);
     } else if (mode == "jspb") {
-      vars["mode"] = GetMode(Mode::OPJSPB);
+      vars["mode"] = GetModeVar(Mode::OPJSPB);
     } else {
       *error = "options: invalid mode - " + mode;
       return false;
@@ -315,7 +315,7 @@ class GrpcCodeGenerator : public CodeGenerator {
         // Client streaming is not supported yet
         if (!method->client_streaming()) {
           if (method->server_streaming()) {
-            if (mode == "base64") {
+            if (mode == "base64" || mode == "jspb") {
               PrintServerStreamingCall(&printer, vars);
             }
           } else {
