@@ -27,19 +27,14 @@ $ git clone git@github.com:grpc/grpc-web.git
 $ cd grpc-web && git submodule update --init
 ```
 
-* Install Protobuf
-
-```sh
-$ cd third_party/protobuf && ./autogen.sh && ./configure && make
-$ sudo make install
-$ sudo ldconfig
-```
-
 * Install gRPC
 
 ```sh
 $ cd third_party/grpc && git submodule update --init && EMBED_OPENSSL=false make
-$ sudo EMBED_OPENSSL=false make install
+$ cd third_party/protobuf
+$ sudo make install                       # install protobuf
+$ cd ../..
+$ sudo EMBED_OPENSSL=false make install   # install gRPC
 ```
 
 * Download the Closure compiler

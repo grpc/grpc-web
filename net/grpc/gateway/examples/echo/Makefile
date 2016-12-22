@@ -33,8 +33,7 @@ ROOT_DIR = ../../../../..
 CXX = g++
 CPPFLAGS += -I/usr/local/include -I$(ROOT_DIR) -pthread
 CXXFLAGS += -std=c++11
-LDFLAGS += -L/usr/local/lib -lgrpc++ -lgrpc                       \
-           -Wl,--no-as-needed -lgrpc++_reflection -Wl,--as-needed \
+LDFLAGS += -L/usr/local/lib -lgrpc++ -lgrpc -lgrpc++_reflection \
            -lprotobuf -lpthread -ldl
 PROTOC = protoc
 PROTOS_PATH = ../..
@@ -44,7 +43,7 @@ HTML_DIR = /var/www/html
 JS_IMPORT_STYLE = import_style=closure,binary
 JS_PATH = javascript/net/grpc/web
 OUT_DIR = ./out
-PROTOBUF_PATH = third_party/protobuf
+PROTOBUF_PATH = third_party/grpc/third_party/protobuf
 GRPC_CPP_PLUGIN = grpc_cpp_plugin
 GRPC_CPP_PLUGIN_PATH ?= `which $(GRPC_CPP_PLUGIN)`
 GRPC_WEB_PLUGIN_PATH = $(ROOT_DIR)/$(JS_PATH)/protoc-gen-grpc-web
