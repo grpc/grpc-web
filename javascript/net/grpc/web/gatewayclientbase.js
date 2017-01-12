@@ -39,7 +39,7 @@ grpc.web.GatewayClientBase.prototype.serialize_ = function(request) {
  * @param {!Object<string, string>} metadata User defined call metadata
  * @param {function(?):!jspb.Message} deserializeFunc
  *   The deserialize function for the proto
- * @param {function(?string, (?Object|undefined))} callback A callback
+ * @param {function(?string, ?Object=)} callback A callback
  * function which takes (error, response)
  * @return {!grpc.web.ClientReadableStream|undefined} The Client Readable
  *   Stream

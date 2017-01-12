@@ -161,7 +161,7 @@ void PrintUnaryCall(Printer* printer, std::map<string, string> vars) {
       " *    request proto\n"
       " * @param {!Object<string, string>} metadata User defined\n"
       " *    call metadata\n"
-      " * @param {function(?string, (?Object|undefined))} callback "
+      " * @param {function(?string, ?Object=)} callback "
       "The callback\n"
       " *    function(error, response)\n"
       " * @return {!grpc.web.ClientReadableStream|undefined} The XHR Node\n"
