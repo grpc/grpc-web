@@ -3,7 +3,7 @@
 gRPC-Web provides a Javascript client library that enables browser clients to
 access a gRPC server.
 
-The current release is an alpha release, mainly for early adopters to provide
+The current release is a Pre-Alpha release, mainly for early adopters to provide
 feedback on the JS API (both gRPC and Protobuf). The JS client library
 and the gateway that connects the client to the server are subject to change
 and will be upgraded frequently.
