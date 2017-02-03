@@ -55,9 +55,10 @@ namespace {
 using std::string;
 
 enum Mode {
-  OP = 0,       // first party google3 one platform services
-  GATEWAY = 1,  // open-source gRPC Gateway, currently nginx
-  OPJSPB = 2,   // first party google3 one platform services with JSPB
+  OP = 0,          // first party google3 one platform services
+  GATEWAY = 1,     // open-source gRPC Gateway, currently nginx
+  OPJSPB = 2,      // first party google3 one platform services with JSPB
+  FRAMEWORKS = 3,  // first party google3 AF services with AF data add-ons
 };
 
 string GetModeVar(const Mode mode) {
@@ -68,6 +69,8 @@ string GetModeVar(const Mode mode) {
       return "Gateway";
     case OPJSPB:
       return "OPJspb";
+    case FRAMEWORKS:
+      return "Frameworks";
   }
 }
 
@@ -136,7 +139,7 @@ void PrintServiceConstructor(Printer* printer,
       "    /**\n"
       "     * @private {!grpc.web.$mode$ClientBase} the client\n"
       "     */\n"
-      "    this.client_ = new grpc.web.$mode$ClientBase();\n\n"
+      "    this.client_ = new grpc.web.$mode$ClientBase(options);\n\n"
       "    /**\n"
       "     * @private {!string} the hostname\n"
       "     */\n"
@@ -275,6 +278,8 @@ class GrpcCodeGenerator : public CodeGenerator {
       vars["mode"] = GetModeVar(Mode::GATEWAY);
     } else if (mode == "jspb") {
       vars["mode"] = GetModeVar(Mode::OPJSPB);
+    } else if (mode == "frameworks") {
+      vars["mode"] = GetModeVar(Mode::FRAMEWORKS);
     } else {
       *error = "options: invalid mode - " + mode;
       return false;
