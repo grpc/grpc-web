@@ -11,8 +11,8 @@ void GrpcEncoder::Encode(grpc::ByteBuffer* input, std::vector<Slice>* result) {
   std::vector<Slice> input_slices;
   input->Dump(&input_slices);
   uint32_t message_length = input->Length();
-  gpr_slice message_slice = gpr_slice_malloc(message_length + 5);
-  uint8_t* p = GPR_SLICE_START_PTR(message_slice);
+  grpc_slice message_slice = grpc_slice_malloc(message_length + 5);
+  uint8_t* p = GRPC_SLICE_START_PTR(message_slice);
   *p++ = 0;  // no compression.
   *p++ = (message_length & 0xFF000000) >> 24;
   *p++ = (message_length & 0x00FF0000) >> 16;
