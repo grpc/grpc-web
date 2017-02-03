@@ -16,9 +16,10 @@ goog.require('grpc.web.ClientReadableStream');
 
 /**
  * Base class for gRPC web client (gRPC Gateway)
+ * @param {?Object=} opt_options
  * @constructor
  */
-grpc.web.GatewayClientBase = function() {
+grpc.web.GatewayClientBase = function(opt_options) {
 };
 
 
