@@ -66,8 +66,8 @@ std::unique_ptr<Slice> Base64::Encode(const Slice& input_slice, uint8_t* buffer,
     return nullptr;
   }
 
-  gpr_slice output_slice = gpr_slice_malloc(encoded_size);
-  uint8_t* output = GPR_SLICE_START_PTR(output_slice);
+  grpc_slice output_slice = grpc_slice_malloc(encoded_size);
+  uint8_t* output = GRPC_SLICE_START_PTR(output_slice);
   const uint8_t* input = input_slice.begin();
 
   // trailers only.
@@ -177,8 +177,8 @@ bool Base64::Decode(const std::vector<Slice>& input,
       continue;
     }
 
-    gpr_slice slice_out = gpr_slice_malloc(binary_length);
-    uint8_t* result_offset = GPR_SLICE_START_PTR(slice_out);
+    grpc_slice slice_out = grpc_slice_malloc(binary_length);
+    uint8_t* result_offset = GRPC_SLICE_START_PTR(slice_out);
 
     if (decode_buffer_length_ > 0) {
       // Decode the leftover.
@@ -206,7 +206,7 @@ bool Base64::Decode(const std::vector<Slice>& input,
       }
     }
 
-    GPR_SLICE_SET_LENGTH(slice_out, binary_length);
+    GRPC_SLICE_SET_LENGTH(slice_out, binary_length);
     output->push_back(Slice(slice_out, Slice::STEAL_REF));
     if (base64_leftover_length > 0) {
       memcpy(decode_buffer_, slice_in.end() - base64_leftover_length,

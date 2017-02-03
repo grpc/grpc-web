@@ -14,8 +14,8 @@
 #include "third_party/grpc/include/grpc/byte_buffer.h"
 #include "third_party/grpc/include/grpc/byte_buffer_reader.h"
 #include "third_party/grpc/include/grpc/grpc.h"
+#include "third_party/grpc/include/grpc/slice.h"
 #include "third_party/grpc/include/grpc/support/alloc.h"
-#include "third_party/grpc/include/grpc/support/slice.h"
 #include "third_party/grpc/include/grpc/support/time.h"
 
 #define BACKEND_PREFIX "[addr: %s, host: %s, method: %s] "
@@ -164,10 +164,10 @@ void GrpcBackend::OnResponseMessage(bool result) {
 
   grpc_byte_buffer_reader reader;
   grpc_byte_buffer_reader_init(&reader, response_buffer_);
-  gpr_slice slice;
+  grpc_slice slice;
   while (grpc_byte_buffer_reader_next(&reader, &slice)) {
     message->push_back(Slice(slice, Slice::STEAL_REF));
-    gpr_slice_unref(slice);
+    grpc_slice_unref(slice);
   }
   grpc_byte_buffer_reader_destroy(&reader);
   response->set_message(std::move(message));
@@ -233,11 +233,11 @@ void GrpcBackend::Send(std::unique_ptr<Request> request, Tag* on_done) {
 
   if (request->message() != nullptr) {
     op->op = GRPC_OP_SEND_MESSAGE;
-    std::vector<gpr_slice> slices;
+    std::vector<grpc_slice> slices;
     for (auto& piece : *request->message()) {
-      // TODO(fengli): Once I get an API to access the gpr_slice in a Slice, the
-      // copy can be eliminated.
-      slices.push_back(gpr_slice_from_copied_buffer(
+      // TODO(fengli): Once I get an API to access the grpc_slice in a Slice,
+      // the copy can be eliminated.
+      slices.push_back(grpc_slice_from_copied_buffer(
           reinterpret_cast<const char*>(piece.begin()), piece.size()));
     }
 
@@ -246,7 +246,7 @@ void GrpcBackend::Send(std::unique_ptr<Request> request, Tag* on_done) {
     }
     request_buffer_ = grpc_raw_byte_buffer_create(slices.data(), slices.size());
     for (auto& slice : slices) {
-      gpr_slice_unref(slice);
+      grpc_slice_unref(slice);
     }
     op->data.send_message = request_buffer_;
     op->flags = 0;
