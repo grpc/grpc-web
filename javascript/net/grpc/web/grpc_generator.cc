@@ -132,28 +132,32 @@ void PrintServiceConstructor(Printer* printer,
   printer->Print(
       vars,
       "/**\n"
-      "* @constructor\n"
-      "*/\n"
+      " * @param {string} hostname\n"
+      " * @param {?Object} credentials\n"
+      " * @constructor\n"
+      " * @struct\n"
+      " * @final\n"
+      " */\n"
       "proto.$package$.$service_name$Client =\n"
-      "  function(hostname, credentials, options) {\n"
-      "    /**\n"
-      "     * @private {!grpc.web.$mode$ClientBase} the client\n"
-      "     */\n"
-      "    this.client_ = new grpc.web.$mode$ClientBase(options);\n\n"
-      "    /**\n"
-      "     * @private {!string} the hostname\n"
-      "     */\n"
-      "    this.hostname_ = hostname;\n\n\n"
-      "    /**\n"
-      "     * @private {?Object} the credentials to be used to connect\n"
-      "     *    to the server\n"
-      "     */\n"
-      "    this.credentials_ = credentials;\n\n"
-      "    /**\n"
-      "     * @private {?Object} options for the client\n"
-      "     */\n"
-      "    this.options_ = options;\n"
-      "  };\n\n");
+      "    function(hostname, credentials, options) {\n"
+      "  /**\n"
+      "   * @private @const {!grpc.web.$mode$ClientBase} The client\n"
+      "   */\n"
+      "  this.client_ = new grpc.web.$mode$ClientBase(options);\n\n"
+      "  /**\n"
+      "   * @private @const {string} The hostname\n"
+      "   */\n"
+      "  this.hostname_ = hostname;\n\n"
+      "  /**\n"
+      "   * @private @const {?Object} The credentials to be used to connect\n"
+      "   *    to the server\n"
+      "   */\n"
+      "  this.credentials_ = credentials;\n\n"
+      "  /**\n"
+      "   * @private @const {?Object} Options for the client\n"
+      "   */\n"
+      "  this.options_ = options;\n"
+      "};\n\n");
 }
 
 void PrintUnaryCall(Printer* printer, std::map<string, string> vars) {
@@ -161,29 +165,30 @@ void PrintUnaryCall(Printer* printer, std::map<string, string> vars) {
       vars,
       "/**\n"
       " * @param {!proto.$in$} request The\n"
-      " *    request proto\n"
+      " *     request proto\n"
       " * @param {!Object<string, string>} metadata User defined\n"
-      " *    call metadata\n"
+      " *     call metadata\n"
       " * @param {function(?string, ?Object=)} callback "
       "The callback\n"
-      " *    function(error, response)\n"
+      " *     function(error, response)\n"
       " * @return {!grpc.web.ClientReadableStream|undefined} The XHR Node\n"
-      " *   Readable Stream\n"
+      " *     Readable Stream\n"
       " */\n"
       "proto.$package$.$service_name$Client.prototype.$method_name$ =\n");
   printer->Indent();
   printer->Print(vars,
-                 "function(request, metadata, callback) {\n"
-                 "var call = this.client_.rpcCall(this.hostname_ +\n");
+                 "  function(request, metadata, callback) {\n"
+                 "return this.client_.rpcCall(this.hostname_ +\n");
+  printer->Indent();
+  printer->Indent();
   if (vars["mode"] == GetModeVar(Mode::OP) ||
       vars["mode"] == GetModeVar(Mode::OPJSPB)) {
     printer->Print(vars,
-                   "  '/$$rpc/$package$.$service_name$/$method_name$',\n");
+                   "'/$$rpc/$package$.$service_name$/$method_name$',\n");
   } else {
-    printer->Print(vars, "  '/$package$.$service_name$/$method_name$',\n");
+    printer->Print(vars, "'/$package$.$service_name$/$method_name$',\n");
   }
 
-  printer->Indent();
   printer->Print(vars, "request,\n" "metadata,\n");
 
   string deserializeMethod = GetDeserializeMethodName(vars["mode"]);
@@ -191,7 +196,7 @@ void PrintUnaryCall(Printer* printer, std::map<string, string> vars) {
   printer->Print("callback);\n");
 
   printer->Outdent();
-  printer->Print("return call;\n");
+  printer->Outdent();
   printer->Outdent();
   printer->Print("};\n\n\n");
 }
@@ -202,34 +207,34 @@ void PrintServerStreamingCall(Printer* printer, std::map<string, string> vars) {
       "/**\n"
       " * @param {!proto.$in$} request The request proto\n"
       " * @param {!Object<string, string>} metadata User defined\n"
-      " *    call metadata\n"
+      " *     call metadata\n"
       " * @return {!grpc.web.ClientReadableStream} The XHR Node\n"
-      " *   Readable Stream\n"
+      " *     Readable Stream\n"
       " */\n"
       "proto.$package$.$service_name$Client.prototype.$method_name$ =\n");
   printer->Indent();
   printer->Print(
-      "function(request, metadata) {\n"
-      "var stream = this.client_.serverStreaming(this.hostname_ +\n");
+      "  function(request, metadata) {\n"
+      "return this.client_.serverStreaming(this.hostname_ +\n");
+  printer->Indent();
   printer->Indent();
   if (vars["mode"] == GetModeVar(Mode::OP) ||
       vars["mode"] == GetModeVar(Mode::OPJSPB)) {
     printer->Print(vars,
-                   "  '/$$rpc/$package$.$service_name$/$method_name$',\n");
+                   "'/$$rpc/$package$.$service_name$/$method_name$',\n");
   } else {
-    printer->Print(vars, "  '/$package$.$service_name$/$method_name$',\n");
+    printer->Print(vars, "'/$package$.$service_name$/$method_name$',\n");
   }
 
-  printer->Indent();
   printer->Print(vars,
                  "request,\n"
                  "metadata,\n");
 
   string deserializeMethod = GetDeserializeMethodName(vars["mode"]);
-  printer->Print(vars, ("proto.$out$." + deserializeMethod + ");\n\n").c_str());
+  printer->Print(vars, ("proto.$out$." + deserializeMethod + ");\n").c_str());
 
   printer->Outdent();
-  printer->Print("return stream;\n");
+  printer->Outdent();
   printer->Outdent();
   printer->Print("};\n\n\n");
 }
@@ -297,9 +302,9 @@ class GrpcCodeGenerator : public CodeGenerator {
           vars,
           "goog.provide('proto.$package$.$service_name$Client');\n");
     }
-    printer.Print("\n\n");
+    printer.Print("\n");
 
-    printer.Print(vars, "goog.require('grpc.web.$mode$ClientBase');\n\n\n\n");
+    printer.Print(vars, "goog.require('grpc.web.$mode$ClientBase');\n");
     PrintMessagesDeps(&printer, file);
 
     for (int service_index = 0;
