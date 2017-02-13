@@ -16,8 +16,6 @@ goog.require('goog.net.XhrIo');
 goog.require('goog.net.streams.NodeReadableStream');
 goog.require('goog.net.streams.createXhrNodeReadableStream');
 goog.require('jspb.Message');
-goog.require('proto.google.rpc.Status');
-goog.require('proto.grpc.gateway.Pair');
 
 
 /**
@@ -28,10 +26,11 @@ goog.require('proto.grpc.gateway.Pair');
  * @final
  * @param {!goog.net.XhrIo} xhr The XhrIo object
  * @param {function(?):!jspb.Message} deserializeFunc
+ * @param {function(!string):!Object} parseRpcStatusFunc
  *   The deserialize function for the proto
  */
 grpc.web.ClientReadableStream = function(
-    xhr, deserializeFunc) {
+    xhr, deserializeFunc, parseRpcStatusFunc) {
   /**
    * @private
    * @type {?goog.net.streams.NodeReadableStream} The XHR Node Readable
@@ -57,6 +56,12 @@ grpc.web.ClientReadableStream = function(
    * @type {function(!Object)|null} The trailing metadata callback
    */
   this.onStatusCallback_ = null;
+
+  /**
+   * @private
+   * @type {function(!string):!Object} A function to parse the Rpc Status response
+   */
+  this.parseRpcStatusFunc_ = parseRpcStatusFunc;
 };
 
 
@@ -74,32 +79,12 @@ grpc.web.ClientReadableStream.prototype.on = function(
   if (eventType == 'data') {
     this.xhrNodeReadableStream_.on('data', function(data) {
       if ('1' in data) {
-        var base64_message = data['1'];
-        var response = self.deserializeFunc_(base64_message);
+        var response = self.deserializeFunc_(data['1']);
         callback(response);
       }
-      if ('2' in data) {
-        var base64_message = data['2'];
-        var _status =
-          proto.google.rpc.Status.deserializeBinary(base64_message);
-        var status = {};
-        var metadata = {};
-        status['code'] = _status.getCode();
-        status['details'] = _status.getMessage();
-        var details = _status.getDetailsList();
-        for (var i = 0; i < details.length; i++) {
-          var pair = proto.grpc.gateway.Pair.deserializeBinary(
-              details[i].getValue());
-          var first = new TextDecoder("utf-8").decode(
-              /** @type {!ArrayBufferView|undefined} */ (pair.getFirst_asU8()));
-          var second = new TextDecoder("utf-8").decode(
-              /** @type {!ArrayBufferView|undefined} */ (pair.getSecond_asU8()));
-          metadata[first] = second;
-        }
-        status['metadata'] = metadata;
-        if (self.onStatusCallback_) {
-          self.onStatusCallback_(status);
-        }
+      if ('2' in data && self.onStatusCallback_) {
+        var status = self.parseRpcStatusFunc_(data['2']);
+        self.onStatusCallback_(status);
       }
     });
   } else if (eventType == 'status') {
@@ -107,6 +92,7 @@ grpc.web.ClientReadableStream.prototype.on = function(
   }
   return this;
 };
+
 
 /**
  * Close the stream.
