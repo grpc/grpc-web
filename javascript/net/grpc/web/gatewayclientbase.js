@@ -8,9 +8,13 @@
 goog.provide('grpc.web.GatewayClientBase');
 
 
+goog.require('goog.crypt');
 goog.require('goog.crypt.base64');
 goog.require('goog.net.XhrIo');
 goog.require('grpc.web.ClientReadableStream');
+goog.require('grpc.web.Status');
+goog.require('proto.google.rpc.Status');
+goog.require('proto.grpc.gateway.Pair');
 
 
 
@@ -40,7 +44,7 @@ grpc.web.GatewayClientBase.prototype.serialize_ = function(request) {
  * @param {!Object<string, string>} metadata User defined call metadata
  * @param {function(?):!jspb.Message} deserializeFunc
  *   The deserialize function for the proto
- * @param {function(?string, ?Object=)} callback A callback
+ * @param {function(?Object=, ?Object=)} callback A callback
  * function which takes (error, response)
  * @return {!grpc.web.ClientReadableStream|undefined} The Client Readable
  *   Stream
@@ -55,8 +59,16 @@ grpc.web.GatewayClientBase.prototype.rpcCall = function(
   var stream = this.getClientReadableStream_(xhr, deserializeFunc);
 
   stream.on('data', function(response) {
-    var err = null; // TODO: propagate error
-    callback(err, response);
+    callback(null, response);
+  });
+
+  stream.on('status', function(status) {
+    if (status.code != grpc.web.Status.StatusCode.OK) {
+      callback({
+        'code': status.code,
+        'message': status.details
+      }, null);
+    }
   });
 
   xhr.headers.set('Content-Type', 'application/x-protobuf');
@@ -110,5 +122,34 @@ grpc.web.GatewayClientBase.prototype.newXhr_ = function() {
  */
 grpc.web.GatewayClientBase.prototype.getClientReadableStream_ = function(
     xhr, deserializeFunc) {
-  return new grpc.web.ClientReadableStream(xhr, deserializeFunc);
+  return new grpc.web.ClientReadableStream(xhr, deserializeFunc,
+    grpc.web.GatewayClientBase.parseRpcStatusFunc_);
+};
+
+
+/**
+ * @private
+ * @static
+ * @param {!string} data Data returned from underlying stream
+ * @return {!Object} status The Rpc Status details
+ */
+grpc.web.GatewayClientBase.parseRpcStatusFunc_ = function(data) {
+  var rpcStatus =
+    proto.google.rpc.Status.deserializeBinary(data);
+  var status = {};
+  var metadata = {};
+  status['code'] = rpcStatus.getCode();
+  status['details'] = rpcStatus.getMessage();
+  var details = rpcStatus.getDetailsList();
+  for (var i = 0; i < details.length; i++) {
+    var pair = proto.grpc.gateway.Pair.deserializeBinary(
+      details[i].getValue());
+    var first = goog.crypt.utf8ByteArrayToString(
+      pair.getFirst_asU8());
+    var second = goog.crypt.utf8ByteArrayToString(
+      pair.getSecond_asU8());
+    metadata[first] = second;
+  }
+  status['metadata'] = metadata;
+  return status;
 };

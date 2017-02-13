@@ -32,9 +32,13 @@
    var unaryRequest = new proto.grpc.gateway.testing.EchoRequest();
    unaryRequest.setMessage(msg);
    echoService.Echo(unaryRequest, {}, function(err, response) {
-     setTimeout(function () {
-       addRightMessage(response.getMessage());
-     }, INTERVAL);
+     if (err) {
+       addRightMessage('Error code: '+err.code+' "'+err.message+'"');
+     } else {
+       setTimeout(function () {
+         addRightMessage(response.getMessage());
+       }, INTERVAL);
+     }
    });
  };
 
@@ -50,6 +54,11 @@
    var stream = echoService.ServerStreamingEcho(streamRequest);
    stream.on('data', function(response) {
      addRightMessage(response.getMessage());
+   });
+   stream.on('status', function(status) {
+     if (status.code != grpc.web.Status.StatusCode.OK) {
+       addRightMessage('Error code: '+status.code+' "'+status.details+'"');
+     }
    });
  };
 
