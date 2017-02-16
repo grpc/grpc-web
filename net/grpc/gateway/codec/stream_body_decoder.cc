@@ -5,7 +5,7 @@
 
 #include "net/grpc/gateway/log.h"
 #include "net/grpc/gateway/utils.h"
-#include "third_party/grpc/include/grpc/slice.h"
+#include "third_party/grpc/include/grpc/support/slice.h"
 #include "third_party/grpc/include/grpc/support/string_util.h"
 
 namespace grpc {
@@ -52,7 +52,7 @@ Status StreamBodyDecoder::Decode() {
                   new ByteBuffer(buffer_.release(), 1)));
               state_ = EXPECTING_MESSAGE_KEY_TYPE;
             } else {
-              grpc_slice slice = grpc_slice_malloc(varint_value_);
+              gpr_slice slice = gpr_slice_malloc(varint_value_);
               buffer_.reset(new Slice(slice, Slice::STEAL_REF));
               state_ = EXPECTING_MESSAGE_DATA;
             }
