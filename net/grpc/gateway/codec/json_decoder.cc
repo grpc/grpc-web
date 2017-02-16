@@ -149,7 +149,7 @@ Status JsonDecoder::Decode() {
                   Slice(gpr_empty_slice(), Slice::STEAL_REF));
             } else {
               base64_buffer_.push_back(Slice(
-                  grpc_slice_from_copied_buffer(
+                  gpr_slice_from_copied_buffer(
                       reinterpret_cast<const char*>(slice.begin() + start),
                       i - start),
                   Slice::STEAL_REF));
@@ -227,7 +227,7 @@ Status JsonDecoder::Decode() {
 
     if (start >= 0) {
       base64_buffer_.push_back(
-          Slice(grpc_slice_from_copied_buffer(
+          Slice(gpr_slice_from_copied_buffer(
                     reinterpret_cast<const char*>(slice.begin() + start),
                     slice.size() - start),
                 Slice::STEAL_REF));
