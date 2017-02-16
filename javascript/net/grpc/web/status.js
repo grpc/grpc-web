@@ -11,7 +11,7 @@ goog.provide('grpc.web.Status');
 /**
  * gRPC Status Codes
  * See: https://github.com/grpc/grpc/blob/master/include/grpc%2B%2B/impl/codegen/status_code_enum.h
- * @enum {int}
+ * @enum {number}
  */
 grpc.web.Status.StatusCode = {
   // Not an error; returned on success.
@@ -124,8 +124,8 @@ grpc.web.Status.StatusCode = {
 
 /**
  * Convert HTTP Status code to gRPC Status code
- * @param {int} http_status HTTP Status Code
- * @return {int} gRPC Status Code
+ * @param {number} http_status HTTP Status Code
+ * @return {number} gRPC Status Code
  */
 grpc.web.Status.HttpStatusToGrpcStatus = function(http_status) {
   switch (http_status) {
