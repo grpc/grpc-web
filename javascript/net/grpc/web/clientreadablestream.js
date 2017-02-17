@@ -53,6 +53,12 @@ grpc.web.ClientReadableStream = function(
 
   /**
    * @private
+   * @type {function(!Object)|null} The data callback
+   */
+  this.onDataCallback_ = null;
+
+  /**
+   * @private
    * @type {function(!Object)|null} The trailing metadata callback
    */
   this.onStatusCallback_ = null;
@@ -62,6 +68,20 @@ grpc.web.ClientReadableStream = function(
    * @type {function(!string):!Object} A function to parse the Rpc Status response
    */
   this.parseRpcStatusFunc_ = parseRpcStatusFunc;
+
+
+  // Add the callback to the underlying stream
+  var self = this;
+  this.xhrNodeReadableStream_.on('data', function(data) {
+    if ('1' in data && self.onDataCallback_) {
+      var response = self.deserializeFunc_(data['1']);
+      self.onDataCallback_(response);
+    }
+    if ('2' in data && self.onStatusCallback_) {
+      var status = self.parseRpcStatusFunc_(data['2']);
+      self.onStatusCallback_(status);
+    }
+  });
 };
 
 
@@ -75,18 +95,8 @@ grpc.web.ClientReadableStream = function(
  */
 grpc.web.ClientReadableStream.prototype.on = function(
     eventType, callback) {
-  var self = this;
   if (eventType == 'data') {
-    this.xhrNodeReadableStream_.on('data', function(data) {
-      if ('1' in data) {
-        var response = self.deserializeFunc_(data['1']);
-        callback(response);
-      }
-      if ('2' in data && self.onStatusCallback_) {
-        var status = self.parseRpcStatusFunc_(data['2']);
-        self.onStatusCallback_(status);
-      }
-    });
+    this.onDataCallback_ = callback;
   } else if (eventType == 'status') {
     this.onStatusCallback_ = callback;
   }
