@@ -6,6 +6,7 @@ PROTO_SRC := $(ROOT_DIR)/third_party/grpc/third_party/protobuf/src
 PROTO_LIB := $(PROTO_SRC)/.libs
 PROTOC := $(PROTO_SRC)/protoc
 GRPC_INC := $(ROOT_DIR)/third_party/grpc/include
+GRPC_SRC := $(ROOT_DIR)/third_party/grpc
 GRPC_LIB := $(ROOT_DIR)/third_party/grpc/libs/opt
 
 all: clean package package_static
@@ -41,7 +42,7 @@ nginx_config:
 	--with-http_ssl_module \
 	--with-http_v2_module \
 	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR) -I $(PROTO_SRC) \
--I $(GRPC_INC)" \
+-I $(GRPC_INC) -I $(GRPC_SRC)" \
 	--with-ld-opt="$(NGINX_LD_OPT)" \
 	--with-openssl="$(ROOT_DIR)/third_party/openssl" \
 	--add-module="$(ROOT_DIR)/net/grpc/gateway/nginx"
@@ -52,7 +53,7 @@ nginx_config_static:
 	--with-http_ssl_module \
 	--with-http_v2_module \
 	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR) -I $(PROTO_SRC) \
--I $(GRPC_INC)" \
+-I $(GRPC_INC) -I $(GRPC_SRC)" \
 	--with-ld-opt="$(NGINX_STATIC_LD_OPT)" \
 	--with-openssl="$(ROOT_DIR)/third_party/openssl" \
 	--add-module="$(ROOT_DIR)/net/grpc/gateway/nginx"
