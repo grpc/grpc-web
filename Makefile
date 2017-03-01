@@ -41,7 +41,7 @@ nginx_config:
 	--with-http_ssl_module \
 	--with-http_v2_module \
 	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR) -I $(PROTO_SRC) \
--I $(GRPC_INC)" \
+-I $(GRPC_INC) -D_FILE_OFFSET_BITS=64" \
 	--with-ld-opt="$(NGINX_LD_OPT)" \
 	--with-openssl="$(ROOT_DIR)/third_party/openssl" \
 	--add-module="$(ROOT_DIR)/net/grpc/gateway/nginx"
@@ -52,7 +52,7 @@ nginx_config_static:
 	--with-http_ssl_module \
 	--with-http_v2_module \
 	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR) -I $(PROTO_SRC) \
--I $(GRPC_INC)" \
+-I $(GRPC_INC) -D_FILE_OFFSET_BITS=64" \
 	--with-ld-opt="$(NGINX_STATIC_LD_OPT)" \
 	--with-openssl="$(ROOT_DIR)/third_party/openssl" \
 	--add-module="$(ROOT_DIR)/net/grpc/gateway/nginx"
