@@ -1,0 +1,107 @@
+#include "net/grpc/gateway/codec/grpc_web_encoder.h"
+
+#include <cstdint>
+#include <cstring>
+#include <vector>
+
+#include "net/grpc/gateway/runtime/types.h"
+#include "third_party/grpc/include/grpc++/support/byte_buffer.h"
+#include "third_party/grpc/include/grpc++/support/slice.h"
+
+namespace grpc {
+namespace gateway {
+namespace {
+
+const char kGrpcStatus[] = "grpc-status: %i\r\n";
+const char kGrpcMessage[] = "grpc-message: %s\r\n";
+const char kGrpcTrailer[] = "%s: %s\r\n";
+
+// GRPC Web message frame.
+const uint8_t GRPC_WEB_FH_DATA = 0b0u;
+// GRPC Web trailer frame.
+const uint8_t GRPC_WEB_FH_TRAILER = 0b10000000u;
+
+// Creates a new GRPC data frame with the given flags and length.
+// @param flags supplies the GRPC data frame flags.
+// @param length supplies the GRPC data frame length.
+// @param output the buffer to store the encoded data, it's size must be 5.
+void NewFrame(uint8_t flags, uint64_t length, uint8_t* output) {
+  output[0] = flags;
+  output[1] = static_cast<uint8_t>(length >> 24);
+  output[2] = static_cast<uint8_t>(length >> 16);
+  output[3] = static_cast<uint8_t>(length >> 8);
+  output[4] = static_cast<uint8_t>(length);
+}
+}  // namespace
+
+GrpcWebEncoder::GrpcWebEncoder() {}
+
+GrpcWebEncoder::~GrpcWebEncoder() {}
+
+void GrpcWebEncoder::Encode(grpc::ByteBuffer* input,
+                            std::vector<Slice>* result) {
+  uint8_t header[5];
+  NewFrame(GRPC_WEB_FH_DATA, input->Length(), header);
+  result->push_back(
+      Slice(gpr_slice_from_copied_buffer(reinterpret_cast<char*>(header), 5),
+            Slice::STEAL_REF));
+  std::vector<Slice> buffer;
+  // TODO(fengli): Optimize if needed. Today we cannot dump data to the result
+  // directly since it will clear the target.
+  input->Dump(&buffer);
+  for (Slice& s : buffer) {
+    result->push_back(s);
+  }
+}
+
+void GrpcWebEncoder::EncodeStatus(const grpc::Status& status,
+                                  const Trailers* trailers,
+                                  std::vector<Slice>* result) {
+  std::vector<Slice> buffer;
+  uint64_t length = 0;
+
+  // Encodes GRPC status.
+  size_t grpc_status_size =
+      snprintf(nullptr, 0, kGrpcStatus, status.error_code());
+  grpc_slice grpc_status = grpc_slice_malloc(grpc_status_size + 1);
+  snprintf(reinterpret_cast<char*>(GPR_SLICE_START_PTR(grpc_status)),
+           grpc_status_size + 1, kGrpcStatus, status.error_code());
+  GPR_SLICE_SET_LENGTH(grpc_status, grpc_status_size);
+  buffer.push_back(Slice(grpc_status, Slice::STEAL_REF));
+  length += grpc_status_size;
+
+  // Encodes GRPC message.
+  if (!status.error_message().empty()) {
+    size_t grpc_message_size =
+        snprintf(nullptr, 0, kGrpcMessage, status.error_message().c_str());
+    grpc_slice grpc_message = grpc_slice_malloc(grpc_message_size + 1);
+    snprintf(reinterpret_cast<char*>(GPR_SLICE_START_PTR(grpc_message)),
+             grpc_message_size + 1, kGrpcMessage,
+             status.error_message().c_str());
+    GPR_SLICE_SET_LENGTH(grpc_message, grpc_message_size);
+    buffer.push_back(Slice(grpc_message, Slice::STEAL_REF));
+    length += grpc_message_size;
+  }
+
+  // Encodes GRPC trailers.
+  for (auto& trailer : *trailers) {
+    size_t grpc_trailer_size = snprintf(
+        nullptr, 0, kGrpcTrailer, trailer.first.c_str(), trailer.second.data());
+    grpc_slice grpc_trailer = grpc_slice_malloc(grpc_trailer_size + 1);
+    snprintf(reinterpret_cast<char*>(GPR_SLICE_START_PTR(grpc_trailer)),
+             grpc_trailer_size + 1, kGrpcTrailer, trailer.first.c_str(),
+             trailer.second.data());
+    GPR_SLICE_SET_LENGTH(grpc_trailer, grpc_trailer_size);
+    buffer.push_back(Slice(grpc_trailer, Slice::STEAL_REF));
+    length += grpc_trailer_size;
+  }
+
+  // Encodes GRPC trailer frame.
+  grpc_slice header = grpc_slice_malloc(5);
+  NewFrame(GRPC_WEB_FH_TRAILER, length, GPR_SLICE_START_PTR(header));
+  result->push_back(Slice(header, Slice::STEAL_REF));
+  result->insert(result->end(), buffer.begin(), buffer.end());
+}
+
+}  // namespace gateway
+}  // namespace grpc

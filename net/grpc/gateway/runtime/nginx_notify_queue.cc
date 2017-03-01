@@ -1,8 +1,5 @@
 #include "net/grpc/gateway/runtime/nginx_notify_queue.h"
 
-#include <ngx_config.h>
-#include <ngx_event.h>
-
 #include <algorithm>
 
 #include "net/grpc/gateway/log.h"

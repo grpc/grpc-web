@@ -146,7 +146,7 @@ Status JsonDecoder::Decode() {
             }
             if (static_cast<size_t>(start) == i) {
               base64_buffer_.push_back(
-                  Slice(gpr_empty_slice(), Slice::STEAL_REF));
+                  Slice(grpc_empty_slice(), Slice::STEAL_REF));
             } else {
               base64_buffer_.push_back(Slice(
                   grpc_slice_from_copied_buffer(

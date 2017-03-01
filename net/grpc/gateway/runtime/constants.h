@@ -24,6 +24,15 @@ const size_t kContentTypeJsonLength = sizeof(kContentTypeJson) - 1;
 const char kContentTypeGrpc[] = "application/grpc";
 const size_t kContentTypeGrpcLength = sizeof(kContentTypeGrpc) - 1;
 
+// The content type of GRPC Web.
+const char kContentTypeGrpcWeb[] = "application/grpc-web";
+const size_t kContentTypeGrpcWebLength = sizeof(kContentTypeGrpcWeb) - 1;
+
+// The content type of GRPC Web Text.
+const char kContentTypeGrpcWebText[] = "application/grpc-web-text";
+const size_t kContentTypeGrpcWebTextLength =
+    sizeof(kContentTypeGrpcWebText) - 1;
+
 // The type url of google.rpc.Pair.
 const char kTypeUrlPair[] = "type.googleapis.com/google.rpc.Pair";
 
@@ -64,10 +73,22 @@ const char kContentTransferEncoding_Base64[] = "base64";
 const size_t kContentTransferEncoding_Base64_Length =
     sizeof(kContentTransferEncoding_Base64) - 1;
 
+const char kXAcceptContentTransferEncoding[] =
+    "x-accept-content-transfer-encoding";
+const size_t kXAcceptContentTransferEncodingLength =
+    sizeof(kXAcceptContentTransferEncoding) - 1;
+const char kXAcceptContentTransferEncoding_Base64[] = "base64";
+
+const char kXAcceptResponseStreaming[] = "x-accept-response-streaming";
+const size_t kXAcceptResponseStreamingLength =
+    sizeof(kXAcceptResponseStreaming) - 1;
+const char kXAcceptResponseStreaming_True[] = "true";
+
 // The frontend protocols supported by GRPC-Web gateway.
 enum Protocol {
   UNKNOWN = 0,
   GRPC,
+  GRPC_WEB,
   JSON_STREAM_BODY,
   PROTO_STREAM_BODY,
   B64_STREAM_BODY,

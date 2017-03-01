@@ -4,6 +4,7 @@
 #include "net/grpc/gateway/utils.h"
 extern "C" {
 #include "third_party/grpc/src/core/lib/compression/message_compress.h"
+#include "third_party/grpc/src/core/lib/iomgr/exec_ctx.h"
 }
 
 namespace grpc {
@@ -16,6 +17,7 @@ GrpcDecoder::GrpcDecoder()
 GrpcDecoder::~GrpcDecoder() {}
 
 Status GrpcDecoder::Decode() {
+  grpc_exec_ctx exec_ctx = GRPC_EXEC_CTX_INIT;
   for (const Slice& slice : *inputs()) {
     if (slice.size() == 0) {
       continue;
@@ -32,6 +34,7 @@ Status GrpcDecoder::Decode() {
             Status status(StatusCode::INVALID_ARGUMENT,
                           Format("Receives invalid compressed flag: %c.", c));
             DEBUG("%s", status.error_message().c_str());
+            grpc_exec_ctx_finish(&exec_ctx);
             return status;
           }
           compressed_flag_ = c;
@@ -56,7 +59,7 @@ Status GrpcDecoder::Decode() {
         case kExpectingMessageLengthByte3: {
           message_length_ += c;
           if (message_length_ == 0) {
-            buffer_.reset(new Slice(gpr_empty_slice(), Slice::STEAL_REF));
+            buffer_.reset(new Slice(grpc_empty_slice(), Slice::STEAL_REF));
             results()->push_back(
                 std::unique_ptr<ByteBuffer>(new ByteBuffer(buffer_.get(), 1)));
             state_ = kExpectingCompressedFlag;
@@ -84,10 +87,11 @@ Status GrpcDecoder::Decode() {
               grpc_slice_buffer output;
               grpc_slice_buffer_init(&output);
               if (grpc_msg_decompress(
-                      grpc_compression_algorithm::GRPC_COMPRESS_GZIP, &input,
-                      &output) != 1) {
+                      &exec_ctx, grpc_compression_algorithm::GRPC_COMPRESS_GZIP,
+                      &input, &output) != 1) {
                 grpc_slice_buffer_destroy(&input);
                 grpc_slice_buffer_destroy(&output);
+                grpc_exec_ctx_finish(&exec_ctx);
                 return Status(StatusCode::INTERNAL,
                               "Failed to uncompress the GRPC data frame.");
               }
@@ -113,6 +117,7 @@ Status GrpcDecoder::Decode() {
     }
   }
   inputs()->clear();
+  grpc_exec_ctx_finish(&exec_ctx);
   return Status::OK;
 }
 }  // namespace gateway
