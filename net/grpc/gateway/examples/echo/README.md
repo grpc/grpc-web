@@ -38,10 +38,12 @@ $ cd grpc-web && git submodule update --init
 ```sh
 $ cd third_party/grpc
 $ git submodule update --init
+$ cd third_party/protobuf
+$ ./autogen.sh && ./configure && make
+$ sudo make install                       # install protobuf
+$ cd ../..
 $ EMBED_OPENSSL=false make
 $ sudo EMBED_OPENSSL=false make install   # install gRPC
-$ cd third_party/protobuf
-$ sudo make install                       # install protobuf
 ```
 
 On MacOS Sierra, when running `make` from the `third_party/grpc` directory,
@@ -50,10 +52,12 @@ you might have to add one more environment variable.
 ```sh
 $ cd third_party/grpc
 $ git submodule update --init
+$ cd third_party/protobuf
+$ ./autogen.sh && ./configure && make
+$ sudo make install                       # install protobuf
+$ cd ../..
 $ EMBED_OPENSSL=false CPPFLAGS=-DOSATOMIC_USE_INLINED=1 make
 $ sudo EMBED_OPENSSL=false CPPFLAGS=-DOSATOMIC_USE_INLINED=1 make install  # install gRPC
-$ cd third_party/protobuf
-$ sudo make install                       # install protobuf
 ```
 
 * Download the Closure compiler

@@ -61,9 +61,9 @@ void StreamBodyEncoder::Encode(grpc::ByteBuffer* input,
   } else if (padding == 2) {
     padding_size = 2;
   }
-  grpc_slice message_slice = grpc_slice_malloc(
-      serialized_message_length + (add_padding ? padding_size : 0));
-  uint8_t* p = GRPC_SLICE_START_PTR(message_slice);
+  gpr_slice message_slice = gpr_slice_malloc(serialized_message_length +
+                                             (add_padding ? padding_size : 0));
+  uint8_t* p = GPR_SLICE_START_PTR(message_slice);
   *p++ = MESSAGE_KEY_TYPE;
   for (size_t i = 0; i < message_varint_length; i++) {
     *p = (message_length >> (i * 7)) & 0x7F;
@@ -124,9 +124,9 @@ void StreamBodyEncoder::EncodeStatus(const grpc::Status& status,
   } else if (padding == 2) {
     padding_size = 2;
   }
-  grpc_slice status_slice =
-      grpc_slice_malloc(status_slice_length + (add_padding ? padding_size : 0));
-  uint8_t* p = GRPC_SLICE_START_PTR(status_slice);
+  gpr_slice status_slice =
+      gpr_slice_malloc(status_slice_length + (add_padding ? padding_size : 0));
+  uint8_t* p = GPR_SLICE_START_PTR(status_slice);
   *p++ = STATUS_KEY_TYPE;
   for (size_t i = 0; i < serialized_status_proto_varint_length; i++) {
     *p = (serialized_status_proto_length >> (i * 7)) & 0x7F;
