@@ -216,7 +216,7 @@ bool Base64::Decode(const std::vector<Slice>& input,
   }
 
   if (output->empty()) {
-    output->push_back(Slice(gpr_empty_slice(), Slice::STEAL_REF));
+    output->push_back(Slice(grpc_empty_slice(), Slice::STEAL_REF));
   }
   return true;
 }

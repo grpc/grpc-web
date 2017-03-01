@@ -68,8 +68,7 @@ class GrpcBackend : public Backend {
   // The GRPC response buffer.
   grpc_byte_buffer* response_buffer_;
   grpc_status_code status_code_;
-  char* status_details_;
-  size_t status_details_capacity_;
+  grpc_slice status_details_;
   grpc_metadata_array response_trailing_metadata_;
   // True if the GRPC call has been cancelled by client.
   bool is_cancelled_;

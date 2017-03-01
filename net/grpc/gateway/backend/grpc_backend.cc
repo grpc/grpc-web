@@ -10,7 +10,6 @@
 #include "net/grpc/gateway/log.h"
 #include "net/grpc/gateway/runtime/runtime.h"
 #include "net/grpc/gateway/runtime/types.h"
-#include "third_party/grpc/include/grpc++/support/string_ref.h"
 #include "third_party/grpc/include/grpc/byte_buffer.h"
 #include "third_party/grpc/include/grpc/byte_buffer_reader.h"
 #include "third_party/grpc/include/grpc/grpc.h"
@@ -40,8 +39,7 @@ GrpcBackend::GrpcBackend()
       request_buffer_(nullptr),
       response_buffer_(nullptr),
       status_code_(grpc_status_code::GRPC_STATUS_OK),
-      status_details_(nullptr),
-      status_details_capacity_(0),
+      status_details_(grpc_empty_slice()),
       is_cancelled_(false) {
   BACKEND_DEBUG("Creating GRPC backend proxy.");
   grpc_metadata_array_init(&response_initial_metadata_);
@@ -58,9 +56,7 @@ GrpcBackend::~GrpcBackend() {
   if (response_buffer_ != nullptr) {
     grpc_byte_buffer_destroy(response_buffer_);
   }
-  if (status_details_ != nullptr) {
-    gpr_free(status_details_);
-  }
+  grpc_slice_unref(status_details_);
   if (call_ != nullptr) {
     BACKEND_DEBUG("Destroying GRPC call.");
     grpc_call_destroy(call_);
@@ -77,9 +73,14 @@ grpc_channel* GrpcBackend::CreateChannel() {
 
 grpc_call* GrpcBackend::CreateCall() {
   BACKEND_DEBUG("Creating GRPC call.");
-  return grpc_channel_create_call(
-      channel_, nullptr, 0, Runtime::Get().grpc_event_queue(), method_.c_str(),
-      host_.c_str(), gpr_inf_future(GPR_CLOCK_REALTIME), nullptr);
+  grpc_slice method_slice = grpc_slice_from_copied_string(method_.c_str());
+  grpc_slice host_slice = grpc_slice_from_static_string(host_.c_str());
+  grpc_call* call = grpc_channel_create_call(
+      channel_, nullptr, 0, Runtime::Get().grpc_event_queue(), method_slice,
+      host_.empty() ? nullptr : &host_slice, gpr_inf_future(GPR_CLOCK_REALTIME),
+      nullptr);
+  grpc_slice_unref(method_slice);
+  return call;
 }
 
 void GrpcBackend::Start() {
@@ -88,7 +89,8 @@ void GrpcBackend::Start() {
   // Receives GRPC response initial metadata.
   grpc_op ops[1];
   ops[0].op = GRPC_OP_RECV_INITIAL_METADATA;
-  ops[0].data.recv_initial_metadata = &response_initial_metadata_;
+  ops[0].data.recv_initial_metadata.recv_initial_metadata =
+      &response_initial_metadata_;
   ops[0].flags = 0;
   ops[0].reserved = nullptr;
   grpc_call_error error = grpc_call_start_batch(
@@ -111,9 +113,13 @@ void GrpcBackend::OnResponseInitialMetadata(bool result) {
   std::unique_ptr<Headers> response_headers(new Headers());
   for (size_t i = 0; i < response_initial_metadata_.count; i++) {
     grpc_metadata* metadata = response_initial_metadata_.metadata + i;
-    response_headers->push_back(
-        Header(std::string(metadata->key),
-               string_ref(metadata->value, metadata->value_length)));
+    response_headers->push_back(Header(
+        std::string(
+            reinterpret_cast<char*>(GRPC_SLICE_START_PTR(metadata->key)),
+            GRPC_SLICE_LENGTH(metadata->key)),
+        string_ref(
+            reinterpret_cast<char*>(GRPC_SLICE_START_PTR(metadata->value)),
+            GRPC_SLICE_LENGTH(metadata->value))));
   }
   response->set_headers(std::move(response_headers));
   frontend()->Send(std::move(response));
@@ -121,7 +127,7 @@ void GrpcBackend::OnResponseInitialMetadata(bool result) {
   // Receives next GRPC response message.
   grpc_op ops[1];
   ops[0].op = GRPC_OP_RECV_MESSAGE;
-  ops[0].data.recv_message = &response_buffer_;
+  ops[0].data.recv_message.recv_message = &response_buffer_;
   ops[0].flags = 0;
   ops[0].reserved = nullptr;
   grpc_call_error error = grpc_call_start_batch(
@@ -144,8 +150,6 @@ void GrpcBackend::OnResponseMessage(bool result) {
     ops[0].op = GRPC_OP_RECV_STATUS_ON_CLIENT;
     ops[0].data.recv_status_on_client.status = &status_code_;
     ops[0].data.recv_status_on_client.status_details = &status_details_;
-    ops[0].data.recv_status_on_client.status_details_capacity =
-        &status_details_capacity_;
     ops[0].data.recv_status_on_client.trailing_metadata =
         &response_trailing_metadata_;
     ops[0].flags = 0;
@@ -176,7 +180,7 @@ void GrpcBackend::OnResponseMessage(bool result) {
   // Receives next GRPC response message.
   grpc_op ops[1];
   ops[0].op = GRPC_OP_RECV_MESSAGE;
-  ops[0].data.recv_message = &response_buffer_;
+  ops[0].data.recv_message.recv_message = &response_buffer_;
   ops[0].flags = 0;
   ops[0].reserved = nullptr;
   grpc_call_error error = grpc_call_start_batch(
@@ -194,15 +198,25 @@ void GrpcBackend::OnResponseStatus(bool result) {
   }
 
   std::unique_ptr<Response> response(new Response());
+  grpc::string status_details;
+  if (!GRPC_SLICE_IS_EMPTY(status_details_)) {
+    status_details = grpc::string(
+        reinterpret_cast<char*>(GRPC_SLICE_START_PTR(status_details_)),
+        GRPC_SLICE_LENGTH(status_details_));
+  }
   response->set_status(std::unique_ptr<grpc::Status>(new grpc::Status(
-      static_cast<grpc::StatusCode>(status_code_), status_details_)));
+      static_cast<grpc::StatusCode>(status_code_), status_details)));
 
   std::unique_ptr<Trailers> response_trailers(new Trailers());
   for (size_t i = 0; i < response_trailing_metadata_.count; i++) {
     grpc_metadata* metadata = response_trailing_metadata_.metadata + i;
-    response_trailers->push_back(
-        Trailer(std::string(metadata->key),
-                string_ref(metadata->value, metadata->value_length)));
+    response_trailers->push_back(Trailer(
+        std::string(
+            reinterpret_cast<char*>(GRPC_SLICE_START_PTR(metadata->key)),
+            GRPC_SLICE_LENGTH(metadata->key)),
+        string_ref(
+            reinterpret_cast<char*>(GRPC_SLICE_START_PTR(metadata->value)),
+            GRPC_SLICE_LENGTH(metadata->value))));
   }
   response->set_trailers(std::move(response_trailers));
   frontend()->Send(std::move(response));
@@ -216,10 +230,14 @@ void GrpcBackend::Send(std::unique_ptr<Request> request, Tag* on_done) {
     for (Header& header : *request->headers()) {
       std::transform(header.first.begin(), header.first.end(),
                      header.first.begin(), ::tolower);
+      if (header.first == kGrpcAcceptEncoding) {
+        continue;
+      }
       grpc_metadata initial_metadata;
-      initial_metadata.key = header.first.c_str();
-      initial_metadata.value = header.second.data();
-      initial_metadata.value_length = header.second.size();
+      initial_metadata.key = grpc_slice_intern(
+          grpc_slice_from_copied_string(header.first.c_str()));
+      initial_metadata.value = grpc_slice_from_copied_buffer(
+          header.second.data(), header.second.size());
       initial_metadata.flags = 0;
       request_initial_metadata_.push_back(initial_metadata);
     }
@@ -248,7 +266,7 @@ void GrpcBackend::Send(std::unique_ptr<Request> request, Tag* on_done) {
     for (auto& slice : slices) {
       gpr_slice_unref(slice);
     }
-    op->data.send_message = request_buffer_;
+    op->data.send_message.send_message = request_buffer_;
     op->flags = 0;
     op->reserved = nullptr;
     op++;

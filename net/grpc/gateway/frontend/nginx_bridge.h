@@ -1,7 +1,7 @@
 #ifndef NET_GRPC_GATEWAY_FRONTEND_NGINX_BRIDGE_H_
 #define NET_GRPC_GATEWAY_FRONTEND_NGINX_BRIDGE_H_
 
-#include <ngx_core.h>
+#include "net/grpc/gateway/nginx_includes.h"
 
 typedef struct ngx_grpc_gateway_loc_conf_s ngx_grpc_gateway_loc_conf_t;
 struct ngx_grpc_gateway_loc_conf_s {

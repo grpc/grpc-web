@@ -10,6 +10,8 @@
 #include "net/grpc/gateway/codec/b64_stream_body_encoder.h"
 #include "net/grpc/gateway/codec/grpc_decoder.h"
 #include "net/grpc/gateway/codec/grpc_encoder.h"
+#include "net/grpc/gateway/codec/grpc_web_decoder.h"
+#include "net/grpc/gateway/codec/grpc_web_encoder.h"
 #include "net/grpc/gateway/codec/json_decoder.h"
 #include "net/grpc/gateway/codec/json_encoder.h"
 #include "net/grpc/gateway/codec/proto_decoder.h"
@@ -82,6 +84,11 @@ std::unique_ptr<Encoder> Runtime::CreateEncoder(
   const char* content_type = reinterpret_cast<const char*>(
       http_request->headers_in.content_type->value.data);
   size_t content_type_length = http_request->headers_in.content_type->value.len;
+  if (content_type_length == kContentTypeGrpcWebLength &&
+      strncasecmp(kContentTypeGrpcWeb, content_type, kContentTypeGrpcLength) ==
+          0) {
+    return std::unique_ptr<Encoder>(new GrpcWebEncoder());
+  }
   if (content_type_length == kContentTypeStreamBodyLength &&
       strncasecmp(kContentTypeStreamBody, content_type,
                   kContentTypeStreamBodyLength) == 0) {
@@ -128,6 +135,11 @@ std::unique_ptr<Decoder> Runtime::CreateDecoder(
   const char* content_type = reinterpret_cast<const char*>(
       http_request->headers_in.content_type->value.data);
   size_t content_type_length = http_request->headers_in.content_type->value.len;
+  if (content_type_length == kContentTypeGrpcWebLength &&
+      strncasecmp(kContentTypeGrpcWeb, content_type, kContentTypeGrpcLength) ==
+          0) {
+    return std::unique_ptr<Decoder>(new GrpcWebDecoder());
+  }
   if (content_type_length == kContentTypeProtoLength &&
       strncasecmp(kContentTypeProto, content_type, kContentTypeProtoLength) ==
           0) {
@@ -217,6 +229,11 @@ Protocol Runtime::DetectFrontendProtocol(ngx_http_request_t* http_request) {
       strncasecmp(kContentTypeGrpc, content_type, kContentTypeGrpcLength) ==
           0) {
     return GRPC;
+  }
+  if (content_type_length == kContentTypeGrpcWebLength &&
+      strncasecmp(kContentTypeGrpcWeb, content_type,
+                  kContentTypeGrpcWebLength) == 0) {
+    return GRPC_WEB;
   }
   return UNKNOWN;
 }

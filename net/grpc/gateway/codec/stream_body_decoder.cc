@@ -47,7 +47,7 @@ Status StreamBodyDecoder::Decode() {
           if ((c & 0x80) == 0) {
             varint_bytes_ = 0;
             if (varint_value_ == 0) {
-              buffer_.reset(new Slice(gpr_empty_slice(), Slice::STEAL_REF));
+              buffer_.reset(new Slice(grpc_empty_slice(), Slice::STEAL_REF));
               results()->push_back(std::unique_ptr<ByteBuffer>(
                   new ByteBuffer(buffer_.release(), 1)));
               state_ = EXPECTING_MESSAGE_KEY_TYPE;
