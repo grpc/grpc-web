@@ -7,7 +7,7 @@
 #include "net/grpc/gateway/protos/status.pb.h"
 #include "net/grpc/gateway/runtime/constants.h"
 #include "third_party/grpc/include/grpc++/support/config.h"
-#include "third_party/grpc/include/grpc/support/slice.h"
+#include "third_party/grpc/include/grpc/slice.h"
 
 namespace grpc {
 namespace gateway {
@@ -29,14 +29,14 @@ void JsonEncoder::Encode(grpc::ByteBuffer* input, std::vector<Slice>* result) {
   input->Dump(&input_slices);
   if (is_first_message_) {
     is_first_message_ = false;
-    gpr_slice s = gpr_slice_from_static_string(kJsonArrayFirstMessagePrefix);
+    grpc_slice s = grpc_slice_from_static_string(kJsonArrayFirstMessagePrefix);
     result->push_back(Slice(s, Slice::STEAL_REF));
   } else {
-    gpr_slice s = gpr_slice_from_static_string(kJsonArrayMessagePrefix);
+    grpc_slice s = grpc_slice_from_static_string(kJsonArrayMessagePrefix);
     result->push_back(Slice(s, Slice::STEAL_REF));
   }
   base64_.Encode(input_slices, result);
-  gpr_slice s = gpr_slice_from_static_string(kDoubleQuote);
+  grpc_slice s = grpc_slice_from_static_string(kDoubleQuote);
   result->push_back(Slice(s, Slice::STEAL_REF));
 }
 
@@ -44,10 +44,11 @@ void JsonEncoder::EncodeStatus(const grpc::Status& status,
                                const Trailers* trailers,
                                std::vector<Slice>* result) {
   if (is_first_message_) {
-    gpr_slice prefix = gpr_slice_from_static_string(kJsonArrayStatusOnlyPrefix);
+    grpc_slice prefix =
+        grpc_slice_from_static_string(kJsonArrayStatusOnlyPrefix);
     result->push_back(Slice(prefix, Slice::STEAL_REF));
   } else {
-    gpr_slice prefix = gpr_slice_from_static_string(kJsonArrayStatusPrefix);
+    grpc_slice prefix = grpc_slice_from_static_string(kJsonArrayStatusPrefix);
     result->push_back(Slice(prefix, Slice::STEAL_REF));
   }
   std::vector<Slice> input_slices;
@@ -68,11 +69,11 @@ void JsonEncoder::EncodeStatus(const grpc::Status& status,
 
   std::string serialized_status_proto;
   status_proto.SerializeToString(&serialized_status_proto);
-  gpr_slice status_slice =
-      gpr_slice_from_copied_string(serialized_status_proto.c_str());
+  grpc_slice status_slice =
+      grpc_slice_from_copied_string(serialized_status_proto.c_str());
   input_slices.push_back(Slice(status_slice, Slice::STEAL_REF));
   base64_.Encode(input_slices, result);
-  gpr_slice surfix = gpr_slice_from_static_string(kJsonArrayStatusSurfix);
+  grpc_slice surfix = grpc_slice_from_static_string(kJsonArrayStatusSurfix);
   result->push_back(Slice(surfix, Slice::STEAL_REF));
 }
 }  // namespace gateway

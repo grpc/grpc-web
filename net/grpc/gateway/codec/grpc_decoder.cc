@@ -64,8 +64,8 @@ Status GrpcDecoder::Decode() {
                 std::unique_ptr<ByteBuffer>(new ByteBuffer(buffer_.get(), 1)));
             state_ = kExpectingCompressedFlag;
           } else {
-            buffer_.reset(
-                new Slice(gpr_slice_malloc(message_length_), Slice::STEAL_REF));
+            buffer_.reset(new Slice(grpc_slice_malloc(message_length_),
+                                    Slice::STEAL_REF));
             state_ = kExpectingMessageData;
           }
           continue;
@@ -77,15 +77,15 @@ Status GrpcDecoder::Decode() {
           if (message_length_ == 0) {
             if (compressed_flag_ == CompressedFlag::kCompressed &&
                 compression_algorithm() == kGzip) {
-              gpr_slice_buffer input;
-              gpr_slice_buffer_init(&input);
+              grpc_slice_buffer input;
+              grpc_slice_buffer_init(&input);
               // TODO(fengli): Remove the additional copy.
-              gpr_slice slice_input = gpr_slice_from_copied_buffer(
+              grpc_slice slice_input = grpc_slice_from_copied_buffer(
                   reinterpret_cast<const char*>(buffer_->begin()),
                   buffer_->size());
-              gpr_slice_buffer_add(&input, slice_input);
-              gpr_slice_buffer output;
-              gpr_slice_buffer_init(&output);
+              grpc_slice_buffer_add(&input, slice_input);
+              grpc_slice_buffer output;
+              grpc_slice_buffer_init(&output);
               if (grpc_msg_decompress(
                       &exec_ctx, grpc_compression_algorithm::GRPC_COMPRESS_GZIP,
                       &input, &output) != 1) {
@@ -97,13 +97,13 @@ Status GrpcDecoder::Decode() {
               }
               std::vector<Slice> s;
               while (output.count > 0) {
-                s.push_back(Slice(gpr_slice_buffer_take_first(&output),
+                s.push_back(Slice(grpc_slice_buffer_take_first(&output),
                                   Slice::STEAL_REF));
               }
               results()->push_back(std::unique_ptr<ByteBuffer>(
                   new ByteBuffer(s.data(), s.size())));
-              gpr_slice_buffer_destroy(&input);
-              gpr_slice_buffer_destroy(&output);
+              grpc_slice_buffer_destroy(&input);
+              grpc_slice_buffer_destroy(&output);
             } else {
               results()->push_back(std::unique_ptr<ByteBuffer>(
                   new ByteBuffer(buffer_.get(), 1)));
