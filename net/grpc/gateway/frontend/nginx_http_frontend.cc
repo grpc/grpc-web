@@ -49,6 +49,15 @@ void grpc_gateway_request_cleanup_handler(void *data) {
 }
 
 ngx_int_t grpc_gateway_handler(ngx_http_request_t *r) {
+  if (r->headers_in.content_type &&
+      strncasecmp(
+          grpc::gateway::kContentTypeGrpc,
+          reinterpret_cast<char *>(r->headers_in.content_type->value.data),
+          r->headers_in.content_type->value.len) != 0 &&
+      r->method != NGX_HTTP_POST) {
+    // Only POST method is allowed for GRPC-Web.
+    return NGX_HTTP_NOT_ALLOWED;
+  }
   ngx_grpc_gateway_loc_conf_t *mlcf =
       static_cast<ngx_grpc_gateway_loc_conf_t *>(
           ngx_http_get_module_loc_conf(r, grpc_gateway_module));
@@ -347,12 +356,12 @@ Status NginxHttpFrontend::DecodeRequestBody() {
           buffers = buffers->next;
           continue;
         }
-        gpr_slice slice =
-            gpr_slice_malloc(buffer->file_last - buffer->file_pos);
-        ssize_t size = ngx_read_file(buffer->file, GPR_SLICE_START_PTR(slice),
-                                     GPR_SLICE_LENGTH(slice), 0);
+        grpc_slice slice =
+            grpc_slice_malloc(buffer->file_last - buffer->file_pos);
+        ssize_t size = ngx_read_file(buffer->file, GRPC_SLICE_START_PTR(slice),
+                                     GRPC_SLICE_LENGTH(slice), 0);
         GPR_ASSERT(size >= 0 &&
-                   static_cast<size_t>(size) == GPR_SLICE_LENGTH(slice));
+                   static_cast<size_t>(size) == GRPC_SLICE_LENGTH(slice));
         decoder_->Append(Slice(slice, Slice::STEAL_REF));
         buffer->file_pos = buffer->file_last;
       } else {
@@ -361,8 +370,8 @@ Status NginxHttpFrontend::DecodeRequestBody() {
           continue;
         }
         decoder_->Append(Slice(
-            gpr_slice_from_copied_buffer(reinterpret_cast<char *>(buffer->pos),
-                                         buffer->last - buffer->pos),
+            grpc_slice_from_copied_buffer(reinterpret_cast<char *>(buffer->pos),
+                                          buffer->last - buffer->pos),
             Slice::STEAL_REF));
         buffer->pos = buffer->last;
       }
@@ -490,7 +499,7 @@ void NginxHttpFrontend::SendResponseHeadersToClient(Response *response) {
 
 void NginxHttpFrontend::SendResponseTrailersToClient(Response *response) {
   http_request_->headers_out.status = NGX_HTTP_OK;
-  if (response != nullptr && response->trailers() != nullptr) {
+  if (response != nullptr) {
     AddHTTPTrailer(
         http_request_, kGrpcStatus,
         string_ref(std::to_string(response->status()->error_code())));
@@ -498,8 +507,10 @@ void NginxHttpFrontend::SendResponseTrailersToClient(Response *response) {
       AddHTTPTrailer(http_request_, kGrpcMessage,
                      response->status()->error_message());
     }
-    for (auto &trailer : *response->trailers()) {
-      AddHTTPTrailer(http_request_, trailer.first, trailer.second);
+    if (response->trailers()) {
+      for (auto &trailer : *response->trailers()) {
+        AddHTTPTrailer(http_request_, trailer.first, trailer.second);
+      }
     }
   }
 }
