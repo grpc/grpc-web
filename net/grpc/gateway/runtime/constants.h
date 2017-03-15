@@ -78,11 +78,15 @@ const char kXAcceptContentTransferEncoding[] =
 const size_t kXAcceptContentTransferEncodingLength =
     sizeof(kXAcceptContentTransferEncoding) - 1;
 const char kXAcceptContentTransferEncoding_Base64[] = "base64";
+const size_t kXAcceptContentTransferEncoding_Base64_Length =
+    sizeof(kXAcceptContentTransferEncoding_Base64) - 1;
 
 const char kXAcceptResponseStreaming[] = "x-accept-response-streaming";
 const size_t kXAcceptResponseStreamingLength =
     sizeof(kXAcceptResponseStreaming) - 1;
 const char kXAcceptResponseStreaming_True[] = "true";
+const size_t kXAcceptResponseStreaming_True_Length =
+    sizeof(kXAcceptResponseStreaming_True) - 1;
 
 // The frontend protocols supported by GRPC-Web gateway.
 enum Protocol {
@@ -91,7 +95,7 @@ enum Protocol {
   GRPC_WEB,
   JSON_STREAM_BODY,
   PROTO_STREAM_BODY,
-  B64_STREAM_BODY,
+  B64_PROTO_STREAM_BODY,
   PROTO,
   B64_PROTO,
 };
