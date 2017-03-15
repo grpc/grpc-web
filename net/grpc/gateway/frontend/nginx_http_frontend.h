@@ -66,7 +66,11 @@ class NginxHttpFrontend : public Frontend {
     decoder_ = std::move(decoder);
   }
 
-  void set_protocol(Protocol protocol) { protocol_ = protocol; }
+  void set_request_protocol(Protocol protocol) { request_protocol_ = protocol; }
+
+  void set_response_protocol(Protocol protocol) {
+    response_protocol_ = protocol;
+  }
 
  private:
   friend void ::continue_read_request_body(ngx_http_request_t *r);
@@ -105,7 +109,9 @@ class NginxHttpFrontend : public Frontend {
   std::unique_ptr<Decoder> decoder_;
   std::unique_ptr<Encoder> encoder_;
   // The frontend protocol of the current processing request.
-  Protocol protocol_;
+  Protocol request_protocol_;
+  // The frontend protocol of the current processing response.
+  Protocol response_protocol_;
   // True if already reach the end of the HTTP request from nginx.
   bool is_request_half_closed_;
   // True if the half close has been sent to the GRPC backend.

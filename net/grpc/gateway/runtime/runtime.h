@@ -56,14 +56,19 @@ class Runtime {
 
   // Creates an encoder for the given content type. This method doesn't take the
   // ownership of http_request parameter and it cannot be nullptr.
-  std::unique_ptr<Encoder> CreateEncoder(ngx_http_request_t *http_request);
+  std::unique_ptr<Encoder> CreateEncoder(Protocol protocol,
+                                         ngx_http_request_t *http_request);
 
   // Creates a decoder for the given content type. This method doesn't take the
   // ownership of http_request parameter and it cannot be nullptr.
-  std::unique_ptr<Decoder> CreateDecoder(ngx_http_request_t *http_request);
+  std::unique_ptr<Decoder> CreateDecoder(Protocol protocol,
+                                         ngx_http_request_t *http_request);
 
-  // Detects the frontend protocol.
-  Protocol DetectFrontendProtocol(ngx_http_request_t *http_request);
+  // Detects the frontend request protocol.
+  Protocol DetectRequestProtocol(ngx_http_request_t *http_request);
+
+  // Detects the frontend response protocol.
+  Protocol DetectResponseProtocol(ngx_http_request_t *http_request);
 
   std::unique_ptr<GrpcEventQueue> grpc_event_queue_;
 

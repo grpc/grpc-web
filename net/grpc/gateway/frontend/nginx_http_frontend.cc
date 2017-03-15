@@ -113,7 +113,8 @@ namespace gateway {
 NginxHttpFrontend::NginxHttpFrontend(std::unique_ptr<Backend> backend)
     : Frontend(std::move(backend)),
       http_request_(nullptr),
-      protocol_(UNKNOWN),
+      request_protocol_(UNKNOWN),
+      response_protocol_(UNKNOWN),
       is_request_half_closed_(false),
       is_request_half_closed_sent_(false),
       is_request_init_metadata_sent_(false),
@@ -131,7 +132,8 @@ void NginxHttpFrontend::Start() {
 
   backend()->Start();
   // Enable request streaming.
-  if (protocol_ == Protocol::B64_PROTO || protocol_ == Protocol::PROTO) {
+  if (request_protocol_ == Protocol::B64_PROTO ||
+      request_protocol_ == Protocol::PROTO) {
     http_request_->request_body_no_buffering = false;
   } else {
     http_request_->request_body_no_buffering = true;
@@ -263,7 +265,7 @@ void NginxHttpFrontend::SendResponseStatusToClient(Response *response) {
   is_response_status_sent_ = true;
 
   std::vector<Slice> trancoded_status;
-  if (protocol_ == Protocol::GRPC) {
+  if (request_protocol_ == Protocol::GRPC) {
     SendResponseTrailersToClient(response);
   } else {
     encoder_->EncodeStatus(*response->status(), response->trailers(),
@@ -464,7 +466,7 @@ void NginxHttpFrontend::SendResponseHeadersToClient(Response *response) {
       AddHTTPHeader(http_request_, header.first, header.second);
     }
   }
-  switch (protocol_) {
+  switch (response_protocol_) {
     case GRPC:
       AddHTTPHeader(http_request_, kGrpcEncoding, kGrpcEncoding_Identity);
       AddHTTPHeader(http_request_, kContentType, kContentTypeGrpc);
@@ -478,11 +480,17 @@ void NginxHttpFrontend::SendResponseHeadersToClient(Response *response) {
       AddHTTPHeader(http_request_, kContentType, kContentTypeJson);
       break;
     case PROTO:
+      AddHTTPHeader(http_request_, kContentType, kContentTypeProto);
+      break;
     case PROTO_STREAM_BODY:
       AddHTTPHeader(http_request_, kContentType, kContentTypeStreamBody);
       break;
     case B64_PROTO:
-    case B64_STREAM_BODY:
+      AddHTTPHeader(http_request_, kContentType, kContentTypeProto);
+      AddHTTPHeader(http_request_, kContentTransferEncoding,
+                    kContentTransferEncoding_Base64);
+      break;
+    case B64_PROTO_STREAM_BODY:
       AddHTTPHeader(http_request_, kContentType, kContentTypeStreamBody);
       AddHTTPHeader(http_request_, kContentTransferEncoding,
                     kContentTransferEncoding_Base64);
