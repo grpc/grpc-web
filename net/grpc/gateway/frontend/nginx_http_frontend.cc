@@ -501,7 +501,8 @@ void NginxHttpFrontend::SendResponseHeadersToClient(Response *response) {
   }
   ngx_int_t rc = ngx_http_send_header(http_request_);
   if (rc != NGX_OK) {
-    ERROR("Failed to send HTTP response headers via nginx, rc = %ld.", rc);
+    ERROR("Failed to send HTTP response headers via nginx, rc = %" PRIdPTR ".",
+          rc);
   }
 }
 
