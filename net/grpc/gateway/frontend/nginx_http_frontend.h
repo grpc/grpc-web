@@ -10,6 +10,7 @@
 #include "net/grpc/gateway/codec/decoder.h"
 #include "net/grpc/gateway/codec/encoder.h"
 #include "net/grpc/gateway/frontend/frontend.h"
+#include "net/grpc/gateway/nginx_includes.h"
 #include "net/grpc/gateway/runtime/constants.h"
 #include "third_party/grpc/include/grpc++/support/byte_buffer.h"
 #include "third_party/grpc/include/grpc++/support/string_ref.h"
@@ -17,10 +18,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "third_party/nginx/src/src/core/ngx_config.h"
-#include "third_party/nginx/src/src/core/ngx_core.h"
-#include "third_party/nginx/src/src/http/ngx_http.h"
 
 typedef struct {
   // The pointer of the frontend instance which serves the request.
