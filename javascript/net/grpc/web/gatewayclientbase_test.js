@@ -7,6 +7,7 @@ goog.require('goog.structs.Map');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
+goog.require('grpc.web.AbstractClientBase');
 goog.require('grpc.web.ClientReadableStream');
 goog.require('grpc.web.GatewayClientBase');
 
@@ -112,6 +113,9 @@ function MockRequest() {
 
   // mocked API
 
+  this.serialize = function() {
+    return [];
+  };
   this.serializeBinary = function() {
     return [];
   };
@@ -128,7 +132,19 @@ function MockRequest() {
  */
 MockReply = function(opt_data) {
   this.opt_data = opt_data;
-}
+};
+
+
+/**
+ * Mock deserialize method
+ * @param {?string} message The string
+ * @return {!jspb.Message} the response proto
+ */
+MockReply.deserialize = function(message) {
+  return new MockReply([]);
+};
+
+
 /**
  * Mock deserializeBinary method
  * @param {?jspb.ByteSource} message The byte array
@@ -136,8 +152,13 @@ MockReply = function(opt_data) {
  */
 MockReply.deserializeBinary = function(message) {
   return new MockReply([]);
-}
+};
 
+var methodInfo = new grpc.web.AbstractClientBase.MethodInfo(
+  MockReply,
+  function(req) { return req.serializeBinary(); },
+  MockReply.deserializeBinary
+);
 
 /**
  * Return a client instance
@@ -195,10 +216,10 @@ function getMockClient() {
   };
 
   // override with mock
-  client.getClientReadableStream_ = function(x, c) {
+  client.createClientReadableStream_ = function(x, c) {
     return new grpc.web.ClientReadableStream(xhr,
                                              MockReply.deserializeBinary);
-  }
+  };
 
   return client;
 }
@@ -220,7 +241,7 @@ function testBasicRpcCall() {
   };
 
   client.rpcCall('testMethod', request, {},
-                 MockReply.deserializeBinary, callback);
+                 methodInfo, callback);
 
   // callback should not have been invoked at this point
   assertFalse(delivered);
@@ -242,7 +263,7 @@ function testSetHeaders() {
   };
 
   client.rpcCall('testMethod', request, metadata,
-                 MockReply.deserializeBinary, callback);
+                 methodInfo, callback);
 
   // callback should not have been invoked at this point
   assertFalse(delivered);
@@ -252,6 +273,7 @@ function testSetHeaders() {
     'value 2',
     'application/x-protobuf',
     'base64',
+    'true',
   ], xhr.headers.getValues());
 }
 
@@ -267,7 +289,7 @@ function testRpcCallCallback() {
   };
 
   client.rpcCall('testMethod', request, {},
-                 MockReply.deserializeBinary, callback);
+                 methodInfo, callback);
 
   // simulate server sending a response for this rpc call
   xhrReader.onData([{'1':'a'}]);
@@ -293,7 +315,7 @@ function testRpcCallResponse() {
   };
 
   client.rpcCall('testMethod', request, {},
-                 MockReply.deserializeBinary, callback);
+                 methodInfo, callback);
 
   xhrReader.onData([{'1': 'v1'}]);
 
@@ -309,7 +331,7 @@ function testBasicServerStreaming() {
   var delivered = 0;
 
   var call = client.serverStreaming('testMethod', request, {},
-                                    MockReply.deserializeBinary);
+                                    methodInfo);
 
   assertTrue(call instanceof grpc.web.ClientReadableStream);
 
@@ -330,7 +352,7 @@ function testServerStreamingAddOnDataCallback() {
   };
 
   var call = client.serverStreaming('testMethod', request, {},
-                                    MockReply.deserializeBinary);
+                                    methodInfo);
 
   assertTrue(call instanceof grpc.web.ClientReadableStream);
   assertEquals(0, delivered);
@@ -354,7 +376,7 @@ function testServerStreamingCallback() {
   };
 
   var call = client.serverStreaming('testMethod', request, {},
-                                    MockReply.deserializeBinary);
+                                    methodInfo);
 
   assertTrue(call instanceof grpc.web.ClientReadableStream);
   assertEquals(0, delivered);
@@ -385,7 +407,7 @@ function testServerStreamingResponse() {
   };
 
   var call = client.serverStreaming('testMethod', request, {},
-                                    MockReply.deserializeBinary);
+                                    methodInfo);
 
   assertTrue(call instanceof grpc.web.ClientReadableStream);
   assertEquals(0, delivered);
@@ -411,7 +433,7 @@ function testServerStreamingResponseMultipleMessages() {
   };
 
   var call = client.serverStreaming('testMethod', request, {},
-                                    MockReply.deserializeBinary);
+                                    methodInfo);
 
   assertTrue(call instanceof grpc.web.ClientReadableStream);
   assertEquals(0, delivered);

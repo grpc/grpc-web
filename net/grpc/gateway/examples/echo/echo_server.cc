@@ -54,10 +54,15 @@ using grpc::gateway::testing::ServerStreamingEchoResponse;
 class EchoServiceImpl final : public EchoService::Service {
   void CopyClientMetadataToResponse(ServerContext* context) {
     for (auto& client_metadata : context->client_metadata()) {
-      context->AddInitialMetadata(client_metadata.first.data(),
-                                  client_metadata.second.data());
-      context->AddTrailingMetadata(client_metadata.first.data(),
-                                   client_metadata.second.data());
+      context->AddInitialMetadata(std::string(client_metadata.first.data(),
+                                              client_metadata.first.length()),
+                                  std::string(client_metadata.second.data(),
+                                              client_metadata.second.length()));
+      context->AddTrailingMetadata(
+          std::string(client_metadata.first.data(),
+                      client_metadata.first.length()),
+          std::string(client_metadata.second.data(),
+                      client_metadata.second.length()));
     }
   }
 

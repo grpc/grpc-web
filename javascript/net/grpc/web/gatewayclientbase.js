@@ -9,10 +9,11 @@ goog.provide('grpc.web.GatewayClientBase');
 
 
 goog.require('goog.crypt');
-goog.require('goog.crypt.base64');
 goog.require('goog.net.XhrIo');
+goog.require('grpc.web.AbstractClientBase');
 goog.require('grpc.web.ClientReadableStream');
 goog.require('grpc.web.Status');
+goog.require('grpc.web.StatusCode');
 goog.require('proto.google.rpc.Status');
 goog.require('proto.grpc.gateway.Pair');
 
@@ -22,48 +23,32 @@ goog.require('proto.grpc.gateway.Pair');
  * Base class for gRPC web client (gRPC Gateway)
  * @param {?Object=} opt_options
  * @constructor
+ * @implements {grpc.web.AbstractClientBase}
  */
 grpc.web.GatewayClientBase = function(opt_options) {
 };
 
 
 /**
- * @param {?jspb.Message} request The request proto
- * @return {string} serialized proto in string form
- * @private
- */
-grpc.web.GatewayClientBase.prototype.serialize_ = function(request) {
-  return goog.crypt.base64.encodeByteArray(
-    /** @type {*} */ (request).serializeBinary());
-};
-
-
-/**
- * @param {!string} method The method to invoke
- * @param {!jspb.Message} request The request proto
- * @param {!Object<string, string>} metadata User defined call metadata
- * @param {function(?):!jspb.Message} deserializeFunc
- *   The deserialize function for the proto
- * @param {function(?Object=, ?Object=)} callback A callback
- * function which takes (error, response)
- * @return {!grpc.web.ClientReadableStream|undefined} The Client Readable
- *   Stream
+ * @override
  */
 grpc.web.GatewayClientBase.prototype.rpcCall = function(
-    method, request, metadata, deserializeFunc, callback) {
+    method, request, metadata, methodInfo, callback) {
   var xhr = this.newXhr_();
-  var serialized = this.serialize_(request);
+  var serialized = methodInfo.requestSerializeFn(request);
 
   xhr.headers.addAll(metadata);
 
-  var stream = this.getClientReadableStream_(xhr, deserializeFunc);
+  var stream = this.createClientReadableStream_(
+      xhr,
+      methodInfo.responseDeserializeFn);
 
   stream.on('data', function(response) {
     callback(null, response);
   });
 
   stream.on('status', function(status) {
-    if (status.code != grpc.web.Status.StatusCode.OK) {
+    if (status.code != grpc.web.StatusCode.OK) {
       callback({
         'code': status.code,
         'message': status.details
@@ -72,32 +57,33 @@ grpc.web.GatewayClientBase.prototype.rpcCall = function(
   });
 
   xhr.headers.set('Content-Type', 'application/x-protobuf');
-  xhr.headers.set('Content-Transfer-Encoding', 'base64');
+  xhr.headers.set('X-Accept-Content-Transfer-Encoding', 'base64');
+  xhr.headers.set('X-Accept-Response-Streaming', 'true');
+
   xhr.send(method, 'POST', serialized);
   return stream;
 };
 
 
 /**
- * @param {!string} method The method to invoke
- * @param {!jspb.Message} request The request proto
- * @param {!Object<string, string>} metadata User defined call metadata
- * @param {function(?):!jspb.Message} deserializeFunc
- *   The deserialize function for the proto
- * @return {!grpc.web.ClientReadableStream} The Client Readable Stream
+ * @override
  */
 grpc.web.GatewayClientBase.prototype.serverStreaming = function(
-    method, request, metadata, deserializeFunc) {
+    method, request, metadata, methodInfo) {
   var xhr = this.newXhr_();
-  var stream = this.getClientReadableStream_(xhr, deserializeFunc);
+  var serialized = methodInfo.requestSerializeFn(request);
 
   xhr.headers.addAll(metadata);
 
-  var serialized = this.serialize_(request);
-  xhr.headers.set('Content-Type', 'application/x-protobuf');
-  xhr.headers.set('Content-Transfer-Encoding', 'base64');
-  xhr.send(method, 'POST', serialized);
+  var stream = this.createClientReadableStream_(
+      xhr,
+      methodInfo.responseDeserializeFn);
 
+  xhr.headers.set('Content-Type', 'application/x-protobuf');
+  xhr.headers.set('X-Accept-Content-Transfer-Encoding', 'base64');
+  xhr.headers.set('X-Accept-Response-Streaming', 'true');
+
+  xhr.send(method, 'POST', serialized);
   return stream;
 };
 
@@ -114,32 +100,29 @@ grpc.web.GatewayClientBase.prototype.newXhr_ = function() {
 
 
 /**
+ * @template RESPONSE
  * @private
  * @param {!goog.net.XhrIo} xhr The XhrIo object
- * @param {function(?):!jspb.Message} deserializeFunc
+ * @param {function(?):!RESPONSE} responseDeserializeFn
  *   The deserialize function for the proto
- * @return {!grpc.web.ClientReadableStream} The Client Readable Stream
+ * @return {!grpc.web.ClientReadableStream<RESPONSE>} The Client Readable Stream
  */
-grpc.web.GatewayClientBase.prototype.getClientReadableStream_ = function(
-    xhr, deserializeFunc) {
-  return new grpc.web.ClientReadableStream(xhr, deserializeFunc,
-    grpc.web.GatewayClientBase.parseRpcStatusFunc_);
+grpc.web.GatewayClientBase.prototype.createClientReadableStream_ = function(
+    xhr, responseDeserializeFn) {
+  return new grpc.web.ClientReadableStream(xhr, responseDeserializeFn,
+      grpc.web.GatewayClientBase.parseRpcStatus_);
 };
 
 
 /**
  * @private
  * @static
- * @param {!string} data Data returned from underlying stream
- * @return {!Object} status The Rpc Status details
+ * @param {!Uint8Array} data Data returned from underlying stream
+ * @return {!grpc.web.Status} status The Rpc Status details
  */
-grpc.web.GatewayClientBase.parseRpcStatusFunc_ = function(data) {
-  var rpcStatus =
-    proto.google.rpc.Status.deserializeBinary(data);
-  var status = {};
+grpc.web.GatewayClientBase.parseRpcStatus_ = function(data) {
+  var rpcStatus = proto.google.rpc.Status.deserializeBinary(data);
   var metadata = {};
-  status['code'] = rpcStatus.getCode();
-  status['details'] = rpcStatus.getMessage();
   var details = rpcStatus.getDetailsList();
   for (var i = 0; i < details.length; i++) {
     var pair = proto.grpc.gateway.Pair.deserializeBinary(
@@ -150,6 +133,10 @@ grpc.web.GatewayClientBase.parseRpcStatusFunc_ = function(data) {
       pair.getSecond_asU8());
     metadata[first] = second;
   }
-  status['metadata'] = metadata;
+  var status = {
+    code: rpcStatus.getCode(),
+    details: rpcStatus.getMessage(),
+    metadata: metadata
+  };
   return status;
 };

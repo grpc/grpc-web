@@ -15,35 +15,38 @@ goog.provide('grpc.web.ClientReadableStream');
 goog.require('goog.net.XhrIo');
 goog.require('goog.net.streams.NodeReadableStream');
 goog.require('goog.net.streams.createXhrNodeReadableStream');
-goog.require('jspb.Message');
+goog.require('grpc.web.Status');
+
 
 
 /**
  * A stream that the client can read from. Used for calls that are streaming
  * from the server side.
  *
+ * @template RESPONSE
  * @constructor
  * @final
  * @param {!goog.net.XhrIo} xhr The XhrIo object
- * @param {function(?):!jspb.Message} deserializeFunc
- * @param {function(!string):!Object} parseRpcStatusFunc
+ * @param {function(?):!RESPONSE} responseDeserializeFn
  *   The deserialize function for the proto
+ * @param {function(?):!grpc.web.Status}
+ *   rpcStatusParseFn A function to parse the Rpc status response
  */
 grpc.web.ClientReadableStream = function(
-    xhr, deserializeFunc, parseRpcStatusFunc) {
+    xhr, responseDeserializeFn, rpcStatusParseFn) {
   /**
    * @private
    * @type {?goog.net.streams.NodeReadableStream} The XHR Node Readable
    *   Stream
    */
   this.xhrNodeReadableStream_ =
-    goog.net.streams.createXhrNodeReadableStream(xhr);
+      goog.net.streams.createXhrNodeReadableStream(xhr);
 
   /**
    * @private
-   * @type {function(?):!jspb.Message} The deserialize function for the proto
+   * @type {function(?):!RESPONSE} The deserialize function for the proto
    */
-  this.deserializeFunc_ = deserializeFunc;
+  this.responseDeserializeFn_ = responseDeserializeFn;
 
   /**
    * @private
@@ -53,32 +56,34 @@ grpc.web.ClientReadableStream = function(
 
   /**
    * @private
-   * @type {function(!Object)|null} The data callback
+   * @type {function(!RESPONSE)|null} The data callback
    */
   this.onDataCallback_ = null;
 
   /**
    * @private
-   * @type {function(!Object)|null} The trailing metadata callback
+   * @type {function(!grpc.web.Status)|null}
+   *   The status callback
    */
   this.onStatusCallback_ = null;
 
   /**
    * @private
-   * @type {function(!string):!Object} A function to parse the Rpc Status response
+   * @type {function(?):!grpc.web.Status}
+   *   A function to parse the Rpc Status response
    */
-  this.parseRpcStatusFunc_ = parseRpcStatusFunc;
+  this.rpcStatusParseFn_ = rpcStatusParseFn;
 
 
   // Add the callback to the underlying stream
   var self = this;
   this.xhrNodeReadableStream_.on('data', function(data) {
     if ('1' in data && self.onDataCallback_) {
-      var response = self.deserializeFunc_(data['1']);
+      var response = self.responseDeserializeFn_(data['1']);
       self.onDataCallback_(response);
     }
     if ('2' in data && self.onStatusCallback_) {
-      var status = self.parseRpcStatusFunc_(data['2']);
+      var status = self.rpcStatusParseFn_(data['2']);
       self.onStatusCallback_(status);
     }
   });
@@ -89,12 +94,13 @@ grpc.web.ClientReadableStream = function(
  * Register a callback to handle I/O events.
  *
  * @param {string} eventType The event type
- * @param {function(!Object=)} callback The call back to handle the event with
+ * @param {function(?)} callback The call back to handle the event with
  * an optional input object
  * @return {!grpc.web.ClientReadableStream} this object
  */
 grpc.web.ClientReadableStream.prototype.on = function(
     eventType, callback) {
+  // TODO(stanleycheung): change eventType to @enum type
   if (eventType == 'data') {
     this.onDataCallback_ = callback;
   } else if (eventType == 'status') {
