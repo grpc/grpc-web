@@ -6,6 +6,18 @@
  * @author stanleycheung@google.com (Stanley Cheung)
  */
 goog.provide('grpc.web.Status');
+goog.provide('grpc.web.StatusCode');
+
+
+
+/**
+ * @typedef {{
+ *   code: number,
+ *   details: string,
+ *   metadata: (!Object<string, string>|undefined)
+ * }}
+ */
+grpc.web.Status;
 
 
 /**
@@ -13,7 +25,7 @@ goog.provide('grpc.web.Status');
  * See: https://github.com/grpc/grpc/blob/master/include/grpc%2B%2B/impl/codegen/status_code_enum.h
  * @enum {number}
  */
-grpc.web.Status.StatusCode = {
+grpc.web.StatusCode = {
   // Not an error; returned on success.
   OK: 0,
 
@@ -127,36 +139,36 @@ grpc.web.Status.StatusCode = {
  * @param {number} http_status HTTP Status Code
  * @return {number} gRPC Status Code
  */
-grpc.web.Status.HttpStatusToGrpcStatus = function(http_status) {
+grpc.web.StatusCode.fromHttpStatus = function(http_status) {
   switch (http_status) {
     case 200:
-      return grpc.web.Status.StatusCode.OK;
+      return grpc.web.StatusCode.OK;
     case 400:
-      return grpc.web.Status.StatusCode.INVALID_ARGUMENT;
+      return grpc.web.StatusCode.INVALID_ARGUMENT;
     case 401:
-      return grpc.web.Status.StatusCode.UNAUTHENTICATED;
+      return grpc.web.StatusCode.UNAUTHENTICATED;
     case 403:
-      return grpc.web.Status.StatusCode.PERMISSION_DENIED;
+      return grpc.web.StatusCode.PERMISSION_DENIED;
     case 404:
-      return grpc.web.Status.StatusCode.NOT_FOUND;
+      return grpc.web.StatusCode.NOT_FOUND;
     case 409:
-      return grpc.web.Status.StatusCode.ABORTED;
+      return grpc.web.StatusCode.ABORTED;
     case 412:
-      return grpc.web.Status.StatusCode.FAILED_PRECONDITION;
+      return grpc.web.StatusCode.FAILED_PRECONDITION;
     case 429:
-      return grpc.web.Status.StatusCode.RESOURCE_EXHAUSTED;
+      return grpc.web.StatusCode.RESOURCE_EXHAUSTED;
     case 499:
-      return grpc.web.Status.StatusCode.CANCELLED;
+      return grpc.web.StatusCode.CANCELLED;
     case 500:
-      return grpc.web.Status.StatusCode.UNKNOWN;
+      return grpc.web.StatusCode.UNKNOWN;
     case 501:
-      return grpc.web.Status.StatusCode.UNIMPLEMENTED;
+      return grpc.web.StatusCode.UNIMPLEMENTED;
     case 503:
-      return grpc.web.Status.StatusCode.UNAVAILABLE;
+      return grpc.web.StatusCode.UNAVAILABLE;
     case 504:
-      return grpc.web.Status.StatusCode.DEADLINE_EXCEEDED;
+      return grpc.web.StatusCode.DEADLINE_EXCEEDED;
     /* everything else is unknown */
     default:
-      return grpc.web.Status.StatusCode.UNKNOWN;
+      return grpc.web.StatusCode.UNKNOWN;
   }
 };

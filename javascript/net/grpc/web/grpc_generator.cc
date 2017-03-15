@@ -81,6 +81,21 @@ string GetDeserializeMethodName(const string& mode_var) {
   return "deserializeBinary";
 }
 
+string GetSerializeMethodName(const string& mode_var) {
+  if (mode_var == GetModeVar(Mode::OPJSPB)) {
+    return "serialize";
+  }
+  return "serializeBinary";
+}
+
+string LowercaseFirstLetter(string s) {
+  if (s.empty()) {
+    return s;
+  }
+  s[0] = ::tolower(s[0]);
+  return s;
+}
+
 /* Finds all message types used in all services in the file, and returns them
  * as a map of fully qualified message type name to message descriptor */
 std::map<string, const Descriptor*> GetAllMessages(const FileDescriptor* file) {
@@ -157,10 +172,42 @@ void PrintServiceConstructor(Printer* printer,
       "   * @private @const {?Object} Options for the client\n"
       "   */\n"
       "  this.options_ = options;\n"
-      "};\n\n");
+      "};\n\n\n");
+}
+
+void PrintMethodInfo(Printer* printer, std::map<string, string> vars) {
+  printer->Print(
+      vars,
+      "/**\n"
+      " * @const\n"
+      " * @type {!grpc.web.AbstractClientBase.MethodInfo<\n"
+      " *   !proto.$in$,\n"
+      " *   !proto.$out$>}\n"
+      " */\n"
+      "const methodInfo_$method_name$ = "
+      "new grpc.web.AbstractClientBase.MethodInfo(\n");
+  printer->Indent();
+  printer->Print(
+      vars,
+      "proto.$out$,\n"
+      "/** @param {!proto.$in$} request */\n"
+      "function(request) {\n");
+  printer->Print(
+      ("  return request." + GetSerializeMethodName(vars["mode"]) +
+       "();\n").c_str());
+  printer->Print("},\n");
+  printer->Print(
+      vars,
+      ("proto.$out$." + GetDeserializeMethodName(vars["mode"]) +
+       "\n").c_str());
+  printer->Outdent();
+  printer->Print(
+      vars,
+      ");\n\n\n");
 }
 
 void PrintUnaryCall(Printer* printer, std::map<string, string> vars) {
+  PrintMethodInfo(printer, vars);
   printer->Print(
       vars,
       "/**\n"
@@ -168,13 +215,13 @@ void PrintUnaryCall(Printer* printer, std::map<string, string> vars) {
       " *     request proto\n"
       " * @param {!Object<string, string>} metadata User defined\n"
       " *     call metadata\n"
-      " * @param {function(?Object=, ?Object=)} callback "
-      "The callback\n"
-      " *     function(error, response)\n"
-      " * @return {!grpc.web.ClientReadableStream|undefined} The XHR Node\n"
-      " *     Readable Stream\n"
+      " * @param {function(?grpc.web.Error,"
+      " ?proto.$out$)}\n"
+      " *     callback The callback function(error, response)\n"
+      " * @return {!grpc.web.ClientReadableStream<!proto.$out$>|undefined}\n"
+      " *     The XHR Node Readable Stream\n"
       " */\n"
-      "proto.$package$.$service_name$Client.prototype.$method_name$ =\n");
+      "proto.$package$.$service_name$Client.prototype.$js_method_name$ =\n");
   printer->Indent();
   printer->Print(vars,
                  "  function(request, metadata, callback) {\n"
@@ -188,13 +235,12 @@ void PrintUnaryCall(Printer* printer, std::map<string, string> vars) {
   } else {
     printer->Print(vars, "'/$package$.$service_name$/$method_name$',\n");
   }
-
-  printer->Print(vars, "request,\n" "metadata,\n");
-
-  string deserializeMethod = GetDeserializeMethodName(vars["mode"]);
-  printer->Print(vars, ("proto.$out$." + deserializeMethod + ",\n").c_str());
-  printer->Print("callback);\n");
-
+  printer->Print(
+      vars,
+      "request,\n"
+      "metadata,\n"
+      "methodInfo_$method_name$,\n"
+      "callback);\n");
   printer->Outdent();
   printer->Outdent();
   printer->Outdent();
@@ -202,16 +248,17 @@ void PrintUnaryCall(Printer* printer, std::map<string, string> vars) {
 }
 
 void PrintServerStreamingCall(Printer* printer, std::map<string, string> vars) {
+  PrintMethodInfo(printer, vars);
   printer->Print(
       vars,
       "/**\n"
       " * @param {!proto.$in$} request The request proto\n"
       " * @param {!Object<string, string>} metadata User defined\n"
       " *     call metadata\n"
-      " * @return {!grpc.web.ClientReadableStream} The XHR Node\n"
-      " *     Readable Stream\n"
+      " * @return {!grpc.web.ClientReadableStream<!proto.$out$>}\n"
+      " *     The XHR Node Readable Stream\n"
       " */\n"
-      "proto.$package$.$service_name$Client.prototype.$method_name$ =\n");
+      "proto.$package$.$service_name$Client.prototype.$js_method_name$ =\n");
   printer->Indent();
   printer->Print(
       "  function(request, metadata) {\n"
@@ -225,14 +272,11 @@ void PrintServerStreamingCall(Printer* printer, std::map<string, string> vars) {
   } else {
     printer->Print(vars, "'/$package$.$service_name$/$method_name$',\n");
   }
-
-  printer->Print(vars,
-                 "request,\n"
-                 "metadata,\n");
-
-  string deserializeMethod = GetDeserializeMethodName(vars["mode"]);
-  printer->Print(vars, ("proto.$out$." + deserializeMethod + ");\n").c_str());
-
+  printer->Print(
+      vars,
+      "request,\n"
+      "metadata,\n"
+      "methodInfo_$method_name$);\n");
   printer->Outdent();
   printer->Outdent();
   printer->Outdent();
@@ -305,7 +349,10 @@ class GrpcCodeGenerator : public CodeGenerator {
     printer.Print("\n");
 
     printer.Print(vars, "goog.require('grpc.web.$mode$ClientBase');\n");
+    printer.Print(vars, "goog.require('grpc.web.AbstractClientBase');\n");
+    printer.Print(vars, "goog.require('grpc.web.ClientReadableStream');\n");
     PrintMessagesDeps(&printer, file);
+    printer.Print("goog.scope(function() {\n\n");
 
     for (int service_index = 0;
          service_index < file->service_count();
@@ -318,6 +365,7 @@ class GrpcCodeGenerator : public CodeGenerator {
            method_index < service->method_count();
            ++method_index) {
         const MethodDescriptor* method = service->method(method_index);
+        vars["js_method_name"] = LowercaseFirstLetter(method->name());
         vars["method_name"] = method->name();
         vars["in"] = method->input_type()->full_name();
         vars["out"] = method->output_type()->full_name();
@@ -335,6 +383,7 @@ class GrpcCodeGenerator : public CodeGenerator {
       }
     }
 
+    printer.Print("}); // goog.scope\n\n");
     return true;
   }
 };

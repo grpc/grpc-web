@@ -31,7 +31,7 @@
    addLeftMessage(msg);
    var unaryRequest = new proto.grpc.gateway.testing.EchoRequest();
    unaryRequest.setMessage(msg);
-   echoService.Echo(unaryRequest, {}, function(err, response) {
+   echoService.echo(unaryRequest, {}, function(err, response) {
      if (err) {
        addRightMessage('Error code: '+err.code+' "'+err.message+'"');
      } else {
@@ -51,12 +51,12 @@
    streamRequest.setMessageCount(count);
    streamRequest.setMessageInterval(INTERVAL);
 
-   var stream = echoService.ServerStreamingEcho(streamRequest);
+   var stream = echoService.serverStreamingEcho(streamRequest);
    stream.on('data', function(response) {
      addRightMessage(response.getMessage());
    });
    stream.on('status', function(status) {
-     if (status.code != grpc.web.Status.StatusCode.OK) {
+     if (status.code != grpc.web.StatusCode.OK) {
        addRightMessage('Error code: '+status.code+' "'+status.details+'"');
      }
    });
