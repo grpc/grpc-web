@@ -14,7 +14,6 @@ namespace {
 
 const char kGrpcStatus[] = "grpc-status: %i\r\n";
 const char kGrpcMessage[] = "grpc-message: %s\r\n";
-const char kGrpcTrailer[] = "%s: %s\r\n";
 
 // GRPC Web message frame.
 const uint8_t GRPC_WEB_FH_DATA = 0b0u;
@@ -85,13 +84,16 @@ void GrpcWebEncoder::EncodeStatus(const grpc::Status& status,
 
   // Encodes GRPC trailers.
   for (auto& trailer : *trailers) {
-    size_t grpc_trailer_size = snprintf(
-        nullptr, 0, kGrpcTrailer, trailer.first.c_str(), trailer.second.data());
-    grpc_slice grpc_trailer = grpc_slice_malloc(grpc_trailer_size + 1);
-    snprintf(reinterpret_cast<char*>(GPR_SLICE_START_PTR(grpc_trailer)),
-             grpc_trailer_size + 1, kGrpcTrailer, trailer.first.c_str(),
-             trailer.second.data());
-    GPR_SLICE_SET_LENGTH(grpc_trailer, grpc_trailer_size);
+    size_t grpc_trailer_size = trailer.first.size() + trailer.second.size() + 4;
+    grpc_slice grpc_trailer = grpc_slice_malloc(grpc_trailer_size);
+    uint8_t* p = GPR_SLICE_START_PTR(grpc_trailer);
+    memcpy(p, trailer.first.c_str(), trailer.first.size());
+    p += trailer.first.size();
+    memcpy(p, ": ", 2);
+    p += 2;
+    memcpy(p, trailer.second.data(), trailer.second.size());
+    p += trailer.second.size();
+    memcpy(p, "\r\n", 2);
     buffer.push_back(Slice(grpc_trailer, Slice::STEAL_REF));
     length += grpc_trailer_size;
   }
