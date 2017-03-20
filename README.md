@@ -15,7 +15,7 @@ For questions, please file an issue or contact varuntalwar@google.com.
 
 ## Build
 
-gRPC-Web supports building on following platforms:
+gRPC-Web supports building on following the platforms:
 
 ### Ubuntu 12.04
 1. Install docker.
