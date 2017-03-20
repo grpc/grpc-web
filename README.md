@@ -24,13 +24,13 @@ gRPC-Web supports building on following platforms:
   gConnector.zip and gConnector_static.zip.
 
 ### Ubuntu 14.04
-  1. Install docker.
-  2. run `./ubuntu\_14\_04.sh`
-  3. build result is available in net/grpc/gateway/docker/ubuntu\_14\_04 folder as
+1. Install docker.
+2. run `./ubuntu\_14\_04.sh`
+3. build result is available in net/grpc/gateway/docker/ubuntu\_14\_04 folder as
   gConnector.zip and gConnector_static.zip.
  
 ### Mac OS X
-  1. Install brew.
-  2. `brew install autoconf automake libtool pcre`
-  3. run `./darwin\_x86\_64.sh`
-  4. build result is available in the root folder as gConnector.zip and gConnector_static.zip.
+1. Install brew.
+2. `brew install autoconf automake libtool pcre`
+3. run `./darwin\_x86\_64.sh`
+4. build result is available in the root folder as gConnector.zip and gConnector_static.zip.
