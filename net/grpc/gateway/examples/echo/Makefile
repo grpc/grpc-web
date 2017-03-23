@@ -109,5 +109,5 @@ install:
 
 clean:
 	rm -f *.grpc.pb.cc *.grpc.pb.h *.grpc.pb.o *.pb.cc *.pb.h *.pb.o \
-  echo_server echo_server.o compiled.js
+  echo_server echo_server.o echo_service_impl.o compiled.js
 	rm -rf $(OUT_DIR)
