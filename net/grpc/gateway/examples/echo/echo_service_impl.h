@@ -1,3 +1,6 @@
+#ifndef NET_GRPC_GATEWAY_EXAMPLES_ECHO_ECHO_SERVICE_IMPL_H_
+#define NET_GRPC_GATEWAY_EXAMPLES_ECHO_ECHO_SERVICE_IMPL_H_
+
 /*
  *
  * Copyright 2016, Google Inc.
@@ -36,23 +39,36 @@
 #include <string>
 
 #include "net/grpc/gateway/examples/echo/echo.grpc.pb.h"
-#include "net/grpc/gateway/examples/echo/echo_service_impl.h"
 
-using grpc::Server;
-using grpc::ServerBuilder;
+class EchoServiceImpl final :
+    public grpc::gateway::testing::EchoService::Service {
+ public:
+  EchoServiceImpl();
+  ~EchoServiceImpl() override;
 
-void RunServer() {
-  std::string server_address("0.0.0.0:9090");
-  EchoServiceImpl service;
-  ServerBuilder builder;
-  builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
-  builder.RegisterService(&service);
-  std::unique_ptr<Server> server(builder.BuildAndStart());
-  server->Wait();
-}
+  void CopyClientMetadataToResponse(grpc::ServerContext* context);
+  grpc::Status Echo(
+      grpc::ServerContext* context,
+      const grpc::gateway::testing::EchoRequest* request,
+      grpc::gateway::testing::EchoResponse* response) override;
+  grpc::Status EchoAbort(
+      grpc::ServerContext* context,
+      const grpc::gateway::testing::EchoRequest* request,
+      grpc::gateway::testing::EchoResponse* response) override;
+  grpc::Status NoOp(
+      grpc::ServerContext* context,
+      const grpc::gateway::testing::Empty* request,
+      grpc::gateway::testing::Empty* response) override;
+  grpc::Status ServerStreamingEcho(
+      grpc::ServerContext* context,
+      const grpc::gateway::testing::ServerStreamingEchoRequest* request,
+      grpc::ServerWriter<
+      grpc::gateway::testing::ServerStreamingEchoResponse>* writer) override;
+  grpc::Status ServerStreamingEchoAbort(
+      grpc::ServerContext* context,
+      const grpc::gateway::testing::ServerStreamingEchoRequest* request,
+      grpc::ServerWriter<
+      grpc::gateway::testing::ServerStreamingEchoResponse>* writer) override;
+};
 
-int main(int argc, char** argv) {
-  RunServer();
-
-  return 0;
-}
+#endif  // NET_GRPC_GATEWAY_EXAMPLES_ECHO_ECHO_SERVICE_IMPL_H_

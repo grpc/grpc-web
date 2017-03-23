@@ -52,6 +52,10 @@ service EchoService {
   // The server returns the client message as-is.
   rpc Echo(EchoRequest) returns (EchoResponse);
 
+  // Sends back abort status.
+  rpc EchoAbort(EchoRequest) returns (EchoResponse) {
+  };
+
   // One empty request, ZERO processing, followed by one empty response
   // (minimum effort to do message serialization).
   rpc NoOp(Empty) returns (Empty);
@@ -60,6 +64,12 @@ service EchoService {
   // The server will return the same client message repeatedly.
   rpc ServerStreamingEcho(ServerStreamingEchoRequest)
       returns (stream ServerStreamingEchoResponse);
+
+  // One request followed by a sequence of responses (streamed download).
+  // The server abort directly.
+  rpc ServerStreamingEchoAbort(ServerStreamingEchoRequest)
+      returns (stream ServerStreamingEchoResponse) {
+  }
 
   // A sequence of requests followed by one response (streamed upload).
   // The server returns the total number of messages as the result.

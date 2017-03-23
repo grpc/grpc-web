@@ -62,7 +62,7 @@ package:
 	cp compiled.js $(ROOT_DIR)/gConnector
 	zip -r $(ROOT_DIR)/gConnector.zip $(ROOT_DIR)/gConnector/*
 
-echo_server: echo.pb.o echo.grpc.pb.o echo_server.o
+echo_server: echo.pb.o echo.grpc.pb.o echo_server.o echo_service_impl.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 echo.grpc.pb.cc: echo.proto
