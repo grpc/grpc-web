@@ -1,43 +1,24 @@
-goog.provide('grpc.web.ClientBaseTest');
-goog.setTestOnly('grpc.web.ClientBaseTest');
+goog.provide('grpc.web.GatewayClientBaseTest');
+goog.setTestOnly('grpc.web.GatewayClientBaseTest');
 
-goog.require('goog.net.streams.NodeReadableStream');
-goog.require('goog.net.streams.XhrNodeReadableStream');
 goog.require('goog.structs.Map');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
-goog.require('grpc.web.AbstractClientBase');
-goog.require('grpc.web.ClientReadableStream');
 goog.require('grpc.web.GatewayClientBase');
 
 
-var client;
-var callback;
-var xhr;
-var xhrReader;
-var xhrStream;
-var request;
-var response;
 var propertyReplacer;
-
-
-/**
- * @type {Object} The NodeReadableStream EventType mapping
- */
-var EventType = goog.net.streams.NodeReadableStream.EventType;
+var dataCallback;
 
 
 function setUp() {
-  xhrReader = getMockXhrStreamReaderInstance();
-  xhrStream = getMockXhrNodeReadableStreamInstance(xhrReader);
-
   propertyReplacer = new goog.testing.PropertyReplacer();
-  propertyReplacer.replace(goog.net.streams,
-                           'createXhrNodeReadableStream',
-                           function (xhr) {
-                             return xhrStream;
-                           });
+  propertyReplacer.replace(
+    goog.net.streams, 'createXhrNodeReadableStream',
+    function(xhr) {
+      return new MockXhrNodeReadableStream();
+    });
 }
 
 
@@ -46,404 +27,225 @@ function tearDown() {
 }
 
 
-/**
- * Constructs a duck-type XhrStreamReader to simulate xhr events.
- * @constructor
- * @struct
- * @final
- */
-function MockXhrStreamReader() {
-
-  // mocked API
-
-  this.setStatusHandler = function(handler) {
-    this.statusHandler_ = handler;
-  };
-
-  this.setDataHandler = function(handler) {
-    this.dataHandler_ = handler;
-  };
-
-  this.getStatus = function() {
-    return this.status_;
-  };
-
-  // simulated events
-
-  this.onData = function(messages) {
-    this.dataHandler_(messages);
-  };
-
-  this.onStatus = function(status) {
-    this.status_ = status;
-    this.statusHandler_();
-  };
-}
+// { code: 3, message: 'TestErrorMsg' }
+var RPC_STATUS_BYTES =
+  [8, 3, 18, 12, 84, 101, 115, 116, 69, 114, 114, 111, 114, 77, 115, 103];
+var REQUEST_BYTES = [1,2,3];
+var FAKE_METHOD = "fake-method";
+var DATA_BYTES = "woof";
+var PROTO_FIELD_VALUE = "meow";
+var EXPECTED_HEADERS = [
+  "Content-Type",
+  "X-Accept-Content-Transfer-Encoding",
+  "X-Accept-Response-Streaming",
+];
+var EXPECTED_HEADER_VALUES = [
+  "application/x-protobuf",
+  "base64",
+  "true",
+];
 
 
 /**
- * Construct a mock Xhr object
  * @constructor
- * @struct
- * @final
+ * @param {?Object} mockValues Set of mock values
+ * Mock XhrIO object to test the outgoing values
  */
-function MockXhr() {
-
-  // mocked API
-
+MockXhr = function(mockValues) {
+  if (!('withMetadata' in mockValues)) {
+    mockValues.headersCount = 3;
+    mockValues.expectedHeaders = EXPECTED_HEADERS;
+    mockValues.expectedHeaderValues = EXPECTED_HEADER_VALUES;
+  } else {
+    var expectedHeadersWithMetadata = EXPECTED_HEADERS.slice(0);
+    var expectedHeaderValuesWithMetadata = EXPECTED_HEADER_VALUES.slice(0);
+    expectedHeadersWithMetadata.push("header1");
+    expectedHeaderValuesWithMetadata.push("value1");
+    mockValues.headersCount = 4;
+    mockValues.expectedHeaders = expectedHeadersWithMetadata;
+    mockValues.expectedHeaderValues = expectedHeaderValuesWithMetadata;
+  }
+  this.mockValues = mockValues;
   this.headers = new goog.structs.Map();
-
-  this.isActive = function() {
-    return false;
-  };
-
-  this.send = function(url, method, content) {
-    // doesn't need to do anything in test
-  };
-}
+};
 
 
 /**
- * Construct a mock Request proto object
+ * @param {string} url
+ * @param {string=} opt_method
+ * @param {string=} opt_content
+ * @param {string=} opt_headers
+ */
+MockXhr.prototype.send = function(url, opt_method, opt_content, opt_headers) {
+  assertEquals(FAKE_METHOD, url);
+  assertEquals("POST", opt_method);
+  assertElementsEquals(REQUEST_BYTES, opt_content);
+
+  var headerKeys = this.headers.getKeys();
+  var headerValues = this.headers.getValues();
+  headerKeys.sort();
+  headerValues.sort();
+  assertEquals(this.mockValues.headersCount, this.headers.getCount());
+  assertElementsEquals(this.mockValues.expectedHeaders, headerKeys);
+  assertElementsEquals(this.mockValues.expectedHeaderValues, headerValues);
+};
+
+
+/**
  * @constructor
- * @struct
- * @final
+ * Mock XHR Node Readable Stream object
  */
-function MockRequest() {
-
-  // mocked API
-
-  this.serialize = function() {
-    return [];
-  };
-  this.serializeBinary = function() {
-    return [];
-  };
-}
+MockXhrNodeReadableStream = function() {};
 
 
 /**
- * Construct a mock Response proto object
- * @constructor
- * @struct
- * @final
- * @param {?Array=} opt_data The array of field values passed to the
- *   proto constructor
+ * @param {string} eventType
+ * @param {function(?)} callback
  */
-MockReply = function(opt_data) {
-  this.opt_data = opt_data;
+MockXhrNodeReadableStream.prototype.on = function(eventType, callback) {
+  dataCallback = callback;
 };
 
 
-/**
- * Mock deserialize method
- * @param {?string} message The string
- * @return {!jspb.Message} the response proto
- */
-MockReply.deserialize = function(message) {
-  return new MockReply([]);
-};
-
-
-/**
- * Mock deserializeBinary method
- * @param {?jspb.ByteSource} message The byte array
- * @return {!jspb.Message} the response proto
- */
-MockReply.deserializeBinary = function(message) {
-  return new MockReply([]);
-};
-
-var methodInfo = new grpc.web.AbstractClientBase.MethodInfo(
-  MockReply,
-  function(req) { return req.serializeBinary(); },
-  MockReply.deserializeBinary
-);
-
-/**
- * Return a client instance
- */
-function getClientInstance() {
-  return new grpc.web.GatewayClientBase();
-}
-
-
-/**
- * Return a mock Xhr instance
- */
-function getMockXhrInstance() {
-  return new MockXhr();
-}
-
-
-/**
- * Return a mock Request instance
- */
-function getMockRequestInstance() {
-  return new MockRequest();
-}
-
-
-/**
- * Return a mock Xhr Stream Reader instance
- */
-function getMockXhrStreamReaderInstance() {
-  return new MockXhrStreamReader();
-}
-
-
-/**
- * Return a mock Xhr Node Readable Stream instance
- * @param {!MockXhrStreamReader} xhrReader mock xhrReader instance
- */
-function getMockXhrNodeReadableStreamInstance(xhrReader) {
-  return new goog.net.streams.XhrNodeReadableStream(xhrReader);
-}
-
-
-/**
- * Return the mock grpc web Client
- */
-function getMockClient() {
-  client = getClientInstance();
-  xhr = getMockXhrInstance();
-  xhrReader = getMockXhrStreamReaderInstance();
-  xhrStream = getMockXhrNodeReadableStreamInstance(xhrReader);
-
-  // override with mock
+function testRpcResponse() {
+  var client = new grpc.web.GatewayClientBase();
   client.newXhr_ = function() {
-    return xhr;
+    return new MockXhr({});
   };
-
-  // override with mock
-  client.createClientReadableStream_ = function(x, c) {
-    return new grpc.web.ClientReadableStream(xhr,
-                                             MockReply.deserializeBinary);
-  };
-
-  return client;
-}
-
-function testConstructor() {
-  client = getClientInstance();
-  assertTrue(client instanceof grpc.web.GatewayClientBase);
-}
-
-function testBasicRpcCall() {
-  client = getMockClient();
-  request = getMockRequestInstance();
-
-  var delivered = false;
-
-  callback = function(err, r) {
-    delivered = true;
-    response = r;
-  };
-
-  client.rpcCall('testMethod', request, {},
-                 methodInfo, callback);
-
-  // callback should not have been invoked at this point
-  assertFalse(delivered);
-}
-
-function testSetHeaders() {
-  client = getMockClient();
-  request = getMockRequestInstance();
-  var metadata = {
-    'header1': 'value 1',
-    'header2': 'value 2',
-  };
-
-  var delivered = false;
-
-  callback = function(err, r) {
-    delivered = true;
-    response = r;
-  };
-
-  client.rpcCall('testMethod', request, metadata,
-                 methodInfo, callback);
-
-  // callback should not have been invoked at this point
-  assertFalse(delivered);
-  // Verify that headers were set on mock XhrIo.
-  assertElementsEquals([
-    'value 1',
-    'value 2',
-    'application/x-protobuf',
-    'base64',
-    'true',
-  ], xhr.headers.getValues());
-}
-
-function testRpcCallCallback() {
-  client = getMockClient();
-  request = getMockRequestInstance();
-
-  var delivered = false;
-
-  callback = function(err, r) {
-    delivered = true;
-    response = r;
-  };
-
-  client.rpcCall('testMethod', request, {},
-                 methodInfo, callback);
-
-  // simulate server sending a response for this rpc call
-  xhrReader.onData([{'1':'a'}]);
-
-  // verify the callback is called
-  assertTrue(delivered);
-
-  // make sure the callback is called with the response proto
-  // already deserialized
-  assertTrue(response instanceof MockReply);
+  client.rpcCall(FAKE_METHOD, {}, {}, {
+    requestSerializeFn : function(request) {
+      return REQUEST_BYTES;
+    },
+    responseDeserializeFn : function(bytes) {
+      assertEquals(DATA_BYTES, bytes);
+      return {"field1": PROTO_FIELD_VALUE};
+    }
+  }, function(error, response) {
+    assertNull(error);
+    assertEquals(PROTO_FIELD_VALUE, response.field1);
+  });
+  dataCallback({"1": DATA_BYTES});
 }
 
 
-function testRpcCallResponse() {
-  client = getMockClient();
-  request = getMockRequestInstance();
-
-  var delivered = false;
-
-  callback = function(err, r) {
-    delivered = true;
-    response = r;
+function testRpcError() {
+  var client = new grpc.web.GatewayClientBase();
+  client.newXhr_ = function() {
+    return new MockXhr({});
   };
-
-  client.rpcCall('testMethod', request, {},
-                 methodInfo, callback);
-
-  xhrReader.onData([{'1': 'v1'}]);
-
-  assertTrue(delivered);
-  assertTrue(response instanceof MockReply);
+  client.rpcCall(FAKE_METHOD, {}, {}, {
+    requestSerializeFn : function(request) {
+      return REQUEST_BYTES;
+    },
+    responseDeserializeFn : function(bytes) {
+      return {};
+    }
+  }, function(error, response) {
+    assertNull(response);
+    assertEquals(3, error.code);
+    assertEquals("TestErrorMsg", error.message);
+  });
+  dataCallback({"2": RPC_STATUS_BYTES});
 }
 
 
-function testBasicServerStreaming() {
-  client = getMockClient();
-  request = getMockRequestInstance();
-
-  var delivered = 0;
-
-  var call = client.serverStreaming('testMethod', request, {},
-                                    methodInfo);
-
-  assertTrue(call instanceof grpc.web.ClientReadableStream);
-
-  // no callback has been attached yet
-  assertEquals(0, delivered);
+function testRpcMetadata() {
+  var client = new grpc.web.GatewayClientBase();
+  client.newXhr_ = function() {
+    return new MockXhr({
+      withMetadata: true,
+    });
+  };
+  client.rpcCall(FAKE_METHOD, {}, {"header1":"value1"}, {
+    requestSerializeFn : function(request) {
+      return REQUEST_BYTES;
+    },
+    responseDeserializeFn : function(bytes) {
+      assertEquals(DATA_BYTES, bytes);
+      return {"field1": PROTO_FIELD_VALUE};
+    }
+  }, function(error, response) {
+    assertNull(error);
+    assertEquals(PROTO_FIELD_VALUE, response.field1);
+  });
+  dataCallback({"1": DATA_BYTES});
 }
 
 
-function testServerStreamingAddOnDataCallback() {
-  client = getMockClient();
-  request = getMockRequestInstance();
-
-  var delivered = 0;
-
-  callback = function(r) {
-    delivered++;
-    response = r;
+function testStreamingResponse() {
+  var client = new grpc.web.GatewayClientBase();
+  var numCalled = 0;
+  client.newXhr_ = function() {
+    return new MockXhr({});
   };
-
-  var call = client.serverStreaming('testMethod', request, {},
-                                    methodInfo);
-
-  assertTrue(call instanceof grpc.web.ClientReadableStream);
-  assertEquals(0, delivered);
-
-  call.on(EventType.DATA, callback);
-
-  // callback should still not have been called at this point
-  assertEquals(0, delivered);
+  var stream = client.serverStreaming(FAKE_METHOD, {}, {}, {
+    requestSerializeFn : function(request) {
+      return REQUEST_BYTES;
+    },
+    responseDeserializeFn : function(bytes) {
+      assertEquals(DATA_BYTES, bytes);
+      return {"field1": PROTO_FIELD_VALUE};
+    }
+  });
+  stream.on('data', function(response) {
+    numCalled++;
+    assertEquals(PROTO_FIELD_VALUE, response.field1);
+  });
+  assertEquals(0, numCalled);
+  dataCallback({"1": DATA_BYTES});
+  dataCallback({"1": DATA_BYTES});
+  assertEquals(2, numCalled);
 }
 
 
-function testServerStreamingCallback() {
-  client = getMockClient();
-  request = getMockRequestInstance();
-
-  var delivered = 0;
-
-  callback = function(r) {
-    delivered++;
-    response = r;
+function testStreamingError() {
+  var client = new grpc.web.GatewayClientBase();
+  var numCalled = 0;
+  client.newXhr_ = function() {
+    return new MockXhr({});
   };
-
-  var call = client.serverStreaming('testMethod', request, {},
-                                    methodInfo);
-
-  assertTrue(call instanceof grpc.web.ClientReadableStream);
-  assertEquals(0, delivered);
-
-  call.on(EventType.DATA, callback);
-
-  // simulate server streaming 1 message
-  xhrReader.onData([{'1': 'v'}]);
-
-  // verify the callback is called
-  assertEquals(1, delivered);
-
-  // make sure the callback is called with the response proto
-  // already deserialized
-  assertTrue(response instanceof MockReply);
+  var stream = client.serverStreaming(FAKE_METHOD, {}, {}, {
+    requestSerializeFn : function(request) {
+      return REQUEST_BYTES;
+    },
+    responseDeserializeFn : function(bytes) {
+      return {};
+    }
+  });
+  stream.on('data', function(response) {
+    numCalled++;
+  });
+  stream.on('status', function(status) {
+    assertEquals(3, status.code);
+    assertEquals("TestErrorMsg", status.details);
+  });
+  dataCallback({"2": RPC_STATUS_BYTES});
+  assertEquals(0, numCalled);
 }
 
 
-function testServerStreamingResponse() {
-  client = getMockClient();
-  request = getMockRequestInstance();
-
-  var delivered = 0;
-
-  callback = function(r) {
-    delivered++;
-    response = r;
+function testStreamingMetadata() {
+  var client = new grpc.web.GatewayClientBase();
+  var numCalled = 0;
+  client.newXhr_ = function() {
+    return new MockXhr({
+      withMetadata: true,
+    });
   };
-
-  var call = client.serverStreaming('testMethod', request, {},
-                                    methodInfo);
-
-  assertTrue(call instanceof grpc.web.ClientReadableStream);
-  assertEquals(0, delivered);
-
-  call.on(EventType.DATA, callback);
-
-  xhrReader.onData([{'1': 'v1'}]);
-
-  assertEquals(1, delivered);
-  assertTrue(response instanceof MockReply);
-}
-
-
-function testServerStreamingResponseMultipleMessages() {
-  client = getMockClient();
-  request = getMockRequestInstance();
-
-  var delivered = 0;
-
-  callback = function(r) {
-    delivered++;
-    response = r;
-  };
-
-  var call = client.serverStreaming('testMethod', request, {},
-                                    methodInfo);
-
-  assertTrue(call instanceof grpc.web.ClientReadableStream);
-  assertEquals(0, delivered);
-
-  call.on(EventType.DATA, callback);
-
-  // simulate the server sending multiple messages
-  xhrReader.onData([{'1': 'v1'},{'1': 'v3'}]);
-
-  // verify 2 messages got delivered
-  assertEquals(2, delivered);
-  assertTrue(response instanceof MockReply);
+  var stream = client.serverStreaming(FAKE_METHOD, {}, {"header1":"value1"}, {
+    requestSerializeFn : function(request) {
+      return REQUEST_BYTES;
+    },
+    responseDeserializeFn : function(bytes) {
+      assertEquals(DATA_BYTES, bytes);
+      return {"field1": PROTO_FIELD_VALUE};
+    }
+  });
+  stream.on('data', function(response) {
+    numCalled++;
+    assertEquals(PROTO_FIELD_VALUE, response.field1);
+  });
+  dataCallback({"1": DATA_BYTES});
+  dataCallback({"1": DATA_BYTES});
+  assertEquals(2, numCalled);
 }
