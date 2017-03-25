@@ -1,8 +1,10 @@
 #ifndef NET_GRPC_GATEWAY_NGINX_UTILS_H_
 #define NET_GRPC_GATEWAY_NGINX_UTILS_H_
 
-#include "net/grpc/gateway/log.h"
+//NOTE: Required on top in order to include ngx_config.h libc defines
 #include "net/grpc/gateway/nginx_includes.h"
+
+#include "net/grpc/gateway/log.h"
 #include "third_party/grpc/include/grpc++/support/string_ref.h"
 
 namespace grpc {
