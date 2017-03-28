@@ -1,6 +1,9 @@
 #ifndef NET_GRPC_GATEWAY_FRONTEND_NGINX_HTTP_FRONTEND_H_
 #define NET_GRPC_GATEWAY_FRONTEND_NGINX_HTTP_FRONTEND_H_
 
+//NOTE: Required on top in order to include ngx_config.h libc defines
+#include "net/grpc/gateway/nginx_includes.h"
+
 #include <algorithm>
 #include <functional>
 #include <map>
@@ -10,7 +13,6 @@
 #include "net/grpc/gateway/codec/decoder.h"
 #include "net/grpc/gateway/codec/encoder.h"
 #include "net/grpc/gateway/frontend/frontend.h"
-#include "net/grpc/gateway/nginx_includes.h"
 #include "net/grpc/gateway/runtime/constants.h"
 #include "third_party/grpc/include/grpc++/support/byte_buffer.h"
 #include "third_party/grpc/include/grpc++/support/string_ref.h"
