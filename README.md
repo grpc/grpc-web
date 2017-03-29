@@ -33,4 +33,5 @@ gRPC-Web supports building on following the platforms:
 1. Install brew.
 2. `brew install autoconf automake libtool pcre`
 3. run `./darwin\_x86\_64.sh`
-4. build result is available in the root folder as gConnector.zip and gConnector_static.zip.
+4. build result is available in the root folder as gConnector.zip and
+  gConnector_static.zip.
