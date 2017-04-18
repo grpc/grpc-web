@@ -373,9 +373,7 @@ class GrpcCodeGenerator : public CodeGenerator {
         // Client streaming is not supported yet
         if (!method->client_streaming()) {
           if (method->server_streaming()) {
-            if (mode == "base64" || mode == "jspb") {
-              PrintServerStreamingCall(&printer, vars);
-            }
+            PrintServerStreamingCall(&printer, vars);
           } else {
             PrintUnaryCall(&printer, vars);
           }
