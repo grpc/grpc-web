@@ -5,7 +5,7 @@
 
 #include "google/protobuf/any.pb.h"
 #include "net/grpc/gateway/protos/pair.pb.h"
-#include "net/grpc/gateway/protos/status.pb.h"
+#include "net/grpc/gateway/protos/stream_body.pb.h"
 #include "net/grpc/gateway/runtime/constants.h"
 #include "net/grpc/gateway/runtime/types.h"
 #include "third_party/grpc/include/grpc++/support/byte_buffer.h"

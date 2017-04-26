@@ -1,4 +1,3 @@
-// (== page rpc ==)
 syntax = "proto3";
 
 package google.rpc;
@@ -71,4 +70,10 @@ message Status {
   // A list of messages that carry the error details.  There will be a
   // common set of message types for APIs to use.
   repeated google.protobuf.Any details = 3;
+}
+
+message StreamBody {
+  repeated bytes message = 1;
+  google.rpc.Status status = 2;
+  repeated bytes noop = 15;
 }

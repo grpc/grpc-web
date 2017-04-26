@@ -79,7 +79,7 @@ For dependencies that we will need later, you will also need to generate
 message JS files for the following protos:
 ```
 third_party/protobuf/src/google/protobuf/any.proto
-net/grpc/gateway/protos/status.proto
+net/grpc/gateway/protos/stream_body.proto
 net/grpc/gateway/protos/pair.proto
 ```
 
