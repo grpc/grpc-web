@@ -1,7 +1,7 @@
 #ifndef NET_GRPC_GATEWAY_RUNTIME_NGINX_NOTIFY_QUEUE_H_
 #define NET_GRPC_GATEWAY_RUNTIME_NGINX_NOTIFY_QUEUE_H_
 
-//NOTE: Required on top in order to include ngx_config.h libc defines
+// NOTE: Required on top in order to include ngx_config.h libc defines
 #include "net/grpc/gateway/nginx_includes.h"
 
 #include <deque>

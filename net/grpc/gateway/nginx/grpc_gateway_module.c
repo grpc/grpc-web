@@ -4,11 +4,13 @@
 //   location / {
 //     grpc_pass <host>:<port>
 //     grpc_channel_reuse on|off
+//     grpc_client_liveness_detection_interval <ms>
 //   }
 // Example:
 //   location / {
 //     grpc_pass localhost:8090
 //     grpc_channel_reuse on
+//     grpc_client_liveness_detection_interval 60000
 //   }
 
 #include <stdbool.h>
@@ -22,8 +24,8 @@
 #include "third_party/grpc/include/grpc/byte_buffer.h"
 #include "third_party/grpc/include/grpc/byte_buffer_reader.h"
 #include "third_party/grpc/include/grpc/grpc.h"
-#include "third_party/grpc/include/grpc/status.h"
 #include "third_party/grpc/include/grpc/slice.h"
+#include "third_party/grpc/include/grpc/status.h"
 #include "third_party/grpc/include/grpc/support/thd.h"
 #include "third_party/grpc/include/grpc/support/time.h"
 
@@ -63,8 +65,15 @@ static char *grpc_gateway_merge_loc_conf(ngx_conf_t *cf, void *parent,
 static ngx_command_t grpc_gateway_commands[] = {
     {ngx_string("grpc_pass"), NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1, grpc_gateway,
      NGX_HTTP_LOC_CONF_OFFSET, 0, NULL},
-    {ngx_string("grpc_channel_reuse"), NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
-     grpc_gateway, NGX_HTTP_LOC_CONF_OFFSET, 0, NULL},
+    {ngx_string("grpc_channel_reuse"), NGX_HTTP_LOC_CONF | NGX_CONF_FLAG,
+     ngx_conf_set_flag_slot, NGX_HTTP_LOC_CONF_OFFSET,
+     offsetof(ngx_grpc_gateway_loc_conf_t, grpc_channel_reuse), NULL},
+    {ngx_string("grpc_client_liveness_detection_interval"),
+     NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1, ngx_conf_set_msec_slot,
+     NGX_HTTP_LOC_CONF_OFFSET,
+     offsetof(ngx_grpc_gateway_loc_conf_t,
+              grpc_client_liveness_detection_interval),
+     NULL},
     ngx_null_command};
 
 // Module context for grpc_gateway module.
@@ -99,8 +108,8 @@ ngx_module_t grpc_gateway_module = {
 
 char *grpc_gateway(ngx_conf_t *cf, ngx_command_t *cmd, void *conf) {
   ngx_conf_set_str_slot(cf, cmd, conf);
-  ngx_http_core_loc_conf_t *clcf;
-  clcf = ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
+  ngx_http_core_loc_conf_t *clcf =
+      ngx_http_conf_get_module_loc_conf(cf, ngx_http_core_module);
   clcf->handler = grpc_gateway_handler;
   return NGX_CONF_OK;
 }
@@ -111,6 +120,8 @@ void *grpc_gateway_create_loc_conf(ngx_conf_t *cf) {
   if (conf == NULL) {
     return NGX_CONF_ERROR;
   }
+  conf->grpc_channel_reuse = NGX_CONF_UNSET;
+  conf->grpc_client_liveness_detection_interval = NGX_CONF_UNSET_MSEC;
   return conf;
 }
 
@@ -118,8 +129,9 @@ char *grpc_gateway_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child) {
   ngx_grpc_gateway_loc_conf_t *conf = child;
   ngx_grpc_gateway_loc_conf_t *p = parent;
 
-  ngx_conf_merge_str_value(conf->grpc_channel_reuse, p->grpc_channel_reuse,
-                           "on");
+  ngx_conf_merge_msec_value(conf->grpc_client_liveness_detection_interval,
+                            p->grpc_client_liveness_detection_interval, 0);
+  ngx_conf_merge_value(conf->grpc_channel_reuse, p->grpc_channel_reuse, 1);
   ngx_conf_merge_str_value(conf->grpc_pass, p->grpc_pass, "");
   return NGX_CONF_OK;
 }

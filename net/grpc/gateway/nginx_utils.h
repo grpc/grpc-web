@@ -1,7 +1,7 @@
 #ifndef NET_GRPC_GATEWAY_NGINX_UTILS_H_
 #define NET_GRPC_GATEWAY_NGINX_UTILS_H_
 
-//NOTE: Required on top in order to include ngx_config.h libc defines
+// NOTE: Required on top in order to include ngx_config.h libc defines
 #include "net/grpc/gateway/nginx_includes.h"
 
 #include "net/grpc/gateway/log.h"

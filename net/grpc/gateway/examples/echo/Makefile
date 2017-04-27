@@ -94,7 +94,7 @@ proto-js:
   $(ROOT_DIR)/$(PROTOBUF_PATH)/src/google/protobuf/any.proto
 	$(PROTOC) -I=$(PROTOS_PATH)/protos \
   --js_out=$(JS_IMPORT_STYLE):$(OUT_DIR) \
-  $(PROTOS_PATH)/protos/status.proto
+  $(PROTOS_PATH)/protos/stream_body.proto
 	$(PROTOC) -I=$(PROTOS_PATH)/protos \
   --js_out=$(JS_IMPORT_STYLE):$(OUT_DIR) \
   $(PROTOS_PATH)/protos/pair.proto

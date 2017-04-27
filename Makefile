@@ -18,7 +18,7 @@ protos:
 --cpp_out="$(GRPC_GATEWAY_PROTOS)"
 	cd "$(ROOT_DIR)" && LD_LIBRARY_PATH="$(PROTO_LIB):$(GRPC_LIB)" "$(PROTOC)" \
 --proto_path="$(GRPC_GATEWAY_PROTOS)" \
---proto_path="$(PROTO_SRC)" "$(GRPC_GATEWAY_PROTOS)/status.proto" \
+--proto_path="$(PROTO_SRC)" "$(GRPC_GATEWAY_PROTOS)/stream_body.proto" \
 --cpp_out="$(GRPC_GATEWAY_PROTOS)"
 
 NGINX_DIR := third_party/nginx

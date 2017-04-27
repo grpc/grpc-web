@@ -1,7 +1,7 @@
 #ifndef NET_GRPC_GATEWAY_FRONTEND_NGINX_HTTP_FRONTEND_H_
 #define NET_GRPC_GATEWAY_FRONTEND_NGINX_HTTP_FRONTEND_H_
 
-//NOTE: Required on top in order to include ngx_config.h libc defines
+// NOTE: Required on top in order to include ngx_config.h libc defines
 #include "net/grpc/gateway/nginx_includes.h"
 
 #include <algorithm>
@@ -34,6 +34,9 @@ void grpc_gateway_exit_process(ngx_cycle_t *cycle);
 // Internal methods for nginx bridge.
 void continue_read_request_body(ngx_http_request_t *r);
 grpc::gateway::Frontend *get_frontend(ngx_http_request_t *r);
+
+// Client liveness detection event handler.
+void client_liveness_detection_handler(ngx_event_t *event);
 #ifdef __cplusplus
 }
 #endif
@@ -71,6 +74,13 @@ class NginxHttpFrontend : public Frontend {
     response_protocol_ = protocol;
   }
 
+  void set_client_liveness_detection_interval(
+      ngx_msec_t client_liveness_detection_interval) {
+    client_liveness_detection_interval_ = client_liveness_detection_interval;
+  }
+
+  void OnClientLivenessDetectionEvent(ngx_event_t *event);
+
  private:
   friend void ::continue_read_request_body(ngx_http_request_t *r);
 
@@ -104,6 +114,10 @@ class NginxHttpFrontend : public Frontend {
 
   void SendErrorToClient(const grpc::Status &status);
 
+  void WriteToNginxResponse(uint8_t *data, size_t size);
+
+  void StopClientLivenessDetection();
+
   ngx_http_request_t *http_request_;
   std::unique_ptr<Decoder> decoder_;
   std::unique_ptr<Encoder> encoder_;
@@ -121,6 +135,12 @@ class NginxHttpFrontend : public Frontend {
   bool is_response_http_headers_sent_;
   // True if the response trailers have been sent back via nginx.
   bool is_response_status_sent_;
+  // A timer for client liveness detection.
+  ngx_event_t *client_liveness_detection_timer_;
+  // The client liveness detection interval in millisecond.
+  ngx_msec_t client_liveness_detection_interval_;
+  // A dummy connection wraps the client liveness detection timer.
+  ngx_connection_t *client_liveness_detection_timer_connection_;
 };
 
 }  // namespace gateway

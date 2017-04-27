@@ -1,7 +1,7 @@
 #ifndef NET_GRPC_GATEWAY_RUNTIME_RUNTIME_H_
 #define NET_GRPC_GATEWAY_RUNTIME_RUNTIME_H_
 
-//NOTE: Required on top in order to include ngx_config.h libc defines
+// NOTE: Required on top in order to include ngx_config.h libc defines
 #include "net/grpc/gateway/nginx_includes.h"
 
 #include <map>
@@ -41,7 +41,8 @@ class Runtime {
   std::shared_ptr<Frontend> CreateNginxFrontend(
       ngx_http_request_t *http_request, const string &backend_address,
       const string &host, const string &backend_method,
-      const string &channel_reuse);
+      const ngx_flag_t &channel_reuse,
+      const ngx_msec_t &client_liveness_detection_interval);
 
   // Returns the GRPC completion queue.
   grpc_completion_queue *grpc_event_queue() {

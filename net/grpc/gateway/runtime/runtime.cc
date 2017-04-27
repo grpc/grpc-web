@@ -61,7 +61,6 @@ bool IsResponseB64(ngx_http_request_t* http_request) {
   }
   return false;
 }
-
 }  // namespace
 
 Runtime::Runtime() {
@@ -84,12 +83,13 @@ void Runtime::Shutdown() {
 std::shared_ptr<Frontend> Runtime::CreateNginxFrontend(
     ngx_http_request_t* http_request, const string& backend_address,
     const string& backend_host, const string& backend_method,
-    const string& channel_reuse) {
+    const ngx_flag_t& channel_reuse,
+    const ngx_msec_t& client_liveness_detection_interval) {
   std::unique_ptr<GrpcBackend> backend(new GrpcBackend());
   backend->set_address(backend_address);
   backend->set_host(backend_host);
   backend->set_method(backend_method);
-  if (channel_reuse == "on") {
+  if (channel_reuse) {
     backend->set_use_shared_channel_pool(true);
   }
   NginxHttpFrontend* frontend = new NginxHttpFrontend(std::move(backend));
@@ -100,6 +100,8 @@ std::shared_ptr<Frontend> Runtime::CreateNginxFrontend(
   Protocol response_protocol = DetectResponseProtocol(http_request);
   frontend->set_response_protocol(response_protocol);
   frontend->set_encoder(CreateEncoder(response_protocol, http_request));
+  frontend->set_client_liveness_detection_interval(
+      client_liveness_detection_interval);
 
   return std::shared_ptr<Frontend>(frontend);
 }
