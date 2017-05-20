@@ -5,11 +5,17 @@ access a gRPC server.
 
 The current release is a Pre-Alpha release, mainly for early adopters to provide
 feedback on the JS API (both gRPC and Protobuf). The JS client library
-and the gateway that connects the client to the server are subject to change
-and will be upgraded frequently.
+has been used inside Google (Alphabet) with Closure compiler and its TypeScript generator (not yet open-sourced).
+The use of Closure compiler may or may not fit your JS development environment. 
 
-We expect to ship a beta version in Q1/2017, which will implement an
-official protocol spec for supporting Web clients. Stay tuned!
+The gateway that connects the client to the server uses Nginx. However,
+Nginx still doesn't support HTTP/2 (to backends) as of Q2/2017, and therefore the gateway
+can't be used as a reverse proxy (for load balancing). We plan to add gRPC-Web support
+to [Envoy](https://github.com/lyft/envoy) soon. We also expect gRPC-Web to be supported
+in language-specific frameworks, such as Go, Java, Node, which will eliminate the need
+to deploy a gateway.
+
+We expect to ship an alpha version in Q3/2017. Stay tuned! [Sign-up form](https://docs.google.com/forms/d/15iRDHoP-VBenc4hWgKn7bk7IirJLgs0uh88nw1vi_Hc/viewform?edit_requested=true).
 
 For questions, please file an issue or contact varuntalwar@google.com.
 
