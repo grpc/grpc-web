@@ -1,0 +1,14 @@
+language: generic
+sudo: required
+
+services:
+  - docker
+
+matrix:
+  fast_finish: true
+
+script: ./ubuntu_14_04.sh
+
+branches:
+  only:
+    - master
