@@ -27,6 +27,6 @@ RUN update-alternatives \
   --slave /usr/bin/g++ g++ /usr/bin/g++-4.6
 COPY . /github/grpc-web
 RUN cd /github/grpc-web/third_party/grpc && \
-  make -j
+  make
 RUN cd /github/grpc-web && \
   make
