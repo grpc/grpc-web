@@ -15,6 +15,6 @@ RUN apt-get update && apt-get install -y \
   zip
 COPY . /github/grpc-web
 RUN cd /github/grpc-web/third_party/grpc && \
-  make -j
+  make
 RUN cd /github/grpc-web && \
   make
