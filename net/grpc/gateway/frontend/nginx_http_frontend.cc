@@ -83,7 +83,7 @@ ngx_int_t grpc_gateway_handler(ngx_http_request_t *r) {
   http_cleanup->data = context;
   http_cleanup->handler = grpc_gateway_request_cleanup_handler;
   context->frontend->Start();
-  return NGX_AGAIN;
+  return NGX_DONE;
 }
 
 void continue_read_request_body(ngx_http_request_t *r) {
@@ -92,12 +92,11 @@ void continue_read_request_body(ngx_http_request_t *r) {
 }
 
 void continue_write_response(ngx_http_request_t *r) {
-  if (r->stream != nullptr) {
-    if (ngx_http_output_filter(r, nullptr) == NGX_AGAIN) {
-      r->write_event_handler = continue_write_response;
-    } else {
-      r->write_event_handler = ngx_http_request_empty_handler;
-    }
+  if (ngx_http_output_filter(r, nullptr) == NGX_AGAIN) {
+    r->write_event_handler = continue_write_response;
+    ngx_handle_write_event(r->connection->write, 0);
+  } else {
+    r->write_event_handler = ngx_http_request_empty_handler;
   }
 }
 
@@ -270,9 +269,9 @@ void NginxHttpFrontend::SendResponseMessageToClient(Response *response) {
         }
       }
       ngx_chain_seek_to_last(output)->buf->flush = 1;
-      if (ngx_http_output_filter(http_request_, output) == NGX_AGAIN &&
-          http_request_->stream != nullptr) {
+      if (ngx_http_output_filter(http_request_, output) == NGX_AGAIN) {
         http_request_->write_event_handler = continue_write_response;
+        ngx_handle_write_event(http_request_->connection->write, 0);
       }
     }
   }
@@ -586,9 +585,9 @@ void NginxHttpFrontend::WriteToNginxResponse(uint8_t *data, size_t size) {
     last_chain->next->next = nullptr;
   }
   ngx_chain_seek_to_last(output)->buf->flush = 1;
-  if (ngx_http_output_filter(http_request_, output) == NGX_AGAIN &&
-      http_request_->stream != nullptr) {
+  if (ngx_http_output_filter(http_request_, output) == NGX_AGAIN) {
     http_request_->write_event_handler = continue_write_response;
+    ngx_handle_write_event(http_request_->connection->write, 0);
   }
 }  // namespace gateway
 

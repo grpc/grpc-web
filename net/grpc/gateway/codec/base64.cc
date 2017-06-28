@@ -227,8 +227,14 @@ int Base64::DecodeGroup(const uint8_t* input, uint8_t* output) {
   uint8_t byte1 = *(input + 1);
   uint8_t byte2 = *(input + 2);
   uint8_t byte3 = *(input + 3);
-  uint32_t packed = b64_bytes[byte0] << 18 | b64_bytes[byte1] << 12 |
-                    b64_bytes[byte2] << 6 | b64_bytes[byte3];
+  int32_t packed0 = b64_bytes[byte0];
+  int32_t packed1 = b64_bytes[byte1];
+  int32_t packed2 = b64_bytes[byte2];
+  int32_t packed3 = b64_bytes[byte3];
+  if (packed0 == -1 || packed1 == -1 || packed2 == -1 || packed3 == -1) {
+    return -1;
+  }
+  uint32_t packed = packed0 << 18 | packed1 << 12 | packed2 << 6 | packed3;
 
   if ((packed & 0xFF000000) != 0 || byte0 == kPad || byte1 == kPad ||
       (byte2 == kPad && byte3 != kPad)) {

@@ -13,7 +13,7 @@ namespace grpc {
 namespace gateway {
 
 GrpcEventQueue::GrpcEventQueue()
-    : queue_(grpc_completion_queue_create(nullptr)), thread_id_(0) {}
+    : queue_(grpc_completion_queue_create_for_next(nullptr)), thread_id_(0) {}
 
 GrpcEventQueue::~GrpcEventQueue() {}
 

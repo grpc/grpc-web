@@ -28,10 +28,20 @@ const size_t kContentTypeGrpcLength = sizeof(kContentTypeGrpc) - 1;
 const char kContentTypeGrpcWeb[] = "application/grpc-web";
 const size_t kContentTypeGrpcWebLength = sizeof(kContentTypeGrpcWeb) - 1;
 
+// The content type of GRPC Web with proto as payload.
+const char kContentTypeGrpcWebProto[] = "application/grpc-web+proto";
+const size_t kContentTypeGrpcWebProtoLength =
+    sizeof(kContentTypeGrpcWebProto) - 1;
+
 // The content type of GRPC Web Text.
 const char kContentTypeGrpcWebText[] = "application/grpc-web-text";
 const size_t kContentTypeGrpcWebTextLength =
     sizeof(kContentTypeGrpcWebText) - 1;
+
+// The content type of GRPC Web Text with proto as payload.
+const char kContentTypeGrpcWebTextProto[] = "application/grpc-web-text+proto";
+const size_t kContentTypeGrpcWebTextProtoLength =
+    sizeof(kContentTypeGrpcWebTextProto) - 1;
 
 // The type url of google.rpc.Pair.
 const char kTypeUrlPair[] = "type.googleapis.com/google.rpc.Pair";
