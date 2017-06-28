@@ -59,7 +59,7 @@ GrpcBackend::~GrpcBackend() {
   grpc_slice_unref(status_details_);
   if (call_ != nullptr) {
     BACKEND_DEBUG("Destroying GRPC call.");
-    grpc_call_destroy(call_);
+    grpc_call_unref(call_);
   }
   if (!use_shared_channel_pool_ && channel_ != nullptr) {
     BACKEND_DEBUG("Destroying GRPC channel.");
@@ -223,7 +223,7 @@ void GrpcBackend::OnResponseStatus(bool result) {
 }
 
 void GrpcBackend::Send(std::unique_ptr<Request> request, Tag* on_done) {
-  grpc_op ops[3];
+  grpc_op ops[3] = {};
   grpc_op* op = ops;
 
   if (request->headers() != nullptr) {
