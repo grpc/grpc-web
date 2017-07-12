@@ -94,9 +94,11 @@ void continue_read_request_body(ngx_http_request_t *r) {
 void continue_write_response(ngx_http_request_t *r) {
   if (ngx_http_output_filter(r, nullptr) == NGX_AGAIN) {
     r->write_event_handler = continue_write_response;
-    ngx_handle_write_event(r->connection->write, 0);
   } else {
     r->write_event_handler = ngx_http_request_empty_handler;
+  }
+  if (ngx_handle_write_event(r->connection->write, 0) != NGX_OK) {
+    ngx_http_finalize_request(r, NGX_HTTP_INTERNAL_SERVER_ERROR);
   }
 }
 
@@ -271,7 +273,11 @@ void NginxHttpFrontend::SendResponseMessageToClient(Response *response) {
       ngx_chain_seek_to_last(output)->buf->flush = 1;
       if (ngx_http_output_filter(http_request_, output) == NGX_AGAIN) {
         http_request_->write_event_handler = continue_write_response;
-        ngx_handle_write_event(http_request_->connection->write, 0);
+      }
+      if (ngx_handle_write_event(http_request_->connection->write, 0) !=
+          NGX_OK) {
+        ngx_http_finalize_request(http_request_,
+                                  NGX_HTTP_INTERNAL_SERVER_ERROR);
       }
     }
   }
@@ -587,7 +593,9 @@ void NginxHttpFrontend::WriteToNginxResponse(uint8_t *data, size_t size) {
   ngx_chain_seek_to_last(output)->buf->flush = 1;
   if (ngx_http_output_filter(http_request_, output) == NGX_AGAIN) {
     http_request_->write_event_handler = continue_write_response;
-    ngx_handle_write_event(http_request_->connection->write, 0);
+  }
+  if (ngx_handle_write_event(http_request_->connection->write, 0) != NGX_OK) {
+    ngx_http_finalize_request(http_request_, NGX_HTTP_INTERNAL_SERVER_ERROR);
   }
 }  // namespace gateway
 
