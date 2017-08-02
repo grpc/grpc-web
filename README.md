@@ -25,7 +25,7 @@ Please check the end-to-end echo example in net/grpc/gateway/examples/echo.
 
 ## Build the gateway
 
-### Ubuntu 14.04, 12.04
+### Ubuntu 14.04
 1. Install docker.
 2. run `./ubuntu\_14\_04.sh`
 3. build result is available in net/grpc/gateway/docker folder as gConnector.zip and gConnector_static.zip.
