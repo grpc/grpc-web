@@ -21,7 +21,7 @@ For questions, please file an issue or contact varuntalwar@google.com.
 
 ## Generate and use the client library
 
-Please check the end-to-end echo example in net/grpc/gateway/examples/echo.
+Please check the end-to-end echo example in [net/grpc/gateway/examples/echo](https://github.com/grpc/grpc-web/tree/master/net/grpc/gateway/examples/echo).
 
 ## Build the gateway
 
