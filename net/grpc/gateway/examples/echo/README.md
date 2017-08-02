@@ -6,11 +6,9 @@ speaks a different protocol than the native grpc (over http/2) protocol, the
 end-to-end semantics is identicial to what a native grpc client (e.g. a Node
 client) experiences.
 
-## Status
-
-Pre-Alpha
-
 ## Pre-requisites
+
+Use the [build scripts](https://github.com/grpc/grpc-web/blob/master/README.md) or follow the step-by-step instruction.
 
 * Ubuntu 14.04
 
