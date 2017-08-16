@@ -8,7 +8,8 @@ client) experiences.
 
 ## Pre-requisites
 
-Use the [build scripts](https://github.com/grpc/grpc-web/blob/master/README.md) or follow the step-by-step instruction.
+Use the [build scripts](https://github.com/grpc/grpc-web/blob/master/README.md)
+or follow the step-by-step instruction.
 
 * Ubuntu 14.04
 
