@@ -19,6 +19,7 @@ GrpcEventQueue::~GrpcEventQueue() {}
 
 void GrpcEventQueue::Start() {
   gpr_thd_options thread_options = gpr_thd_options_default();
+  gpr_thd_options_set_joinable(&thread_options);
   int ret = gpr_thd_new(&thread_id_, ExecuteEventLoop, this, &thread_options);
   INFO("GRPC event thread started: %d", ret);
 }
