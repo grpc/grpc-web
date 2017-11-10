@@ -147,20 +147,24 @@ void NginxHttpFrontend::Start() {
     http_request_->request_body_no_buffering = true;
   }
 
-  // Initialize the dummy connection of client liveness detection timer.
-  client_liveness_detection_timer_connection_ = static_cast<ngx_connection_t *>(
-      ngx_pcalloc(http_request_->pool, sizeof(ngx_connection_t)));
-  client_liveness_detection_timer_connection_->fd =
-      static_cast<ngx_socket_t>(-1);
-  client_liveness_detection_timer_connection_->data = this;
+  if (client_liveness_detection_interval_ > 0) {
+    // Initialize the dummy connection of client liveness detection timer.
+    client_liveness_detection_timer_connection_ =
+        static_cast<ngx_connection_t *>(
+            ngx_pcalloc(http_request_->pool, sizeof(ngx_connection_t)));
+    client_liveness_detection_timer_connection_->fd =
+        static_cast<ngx_socket_t>(-1);
+    client_liveness_detection_timer_connection_->data = this;
 
-  // Initialize the client liveness detection timer.
-  client_liveness_detection_timer_ = static_cast<ngx_event_t *>(
-      ngx_pcalloc(http_request_->pool, sizeof(ngx_event_t)));
-  client_liveness_detection_timer_->log = http_request_->connection->log;
-  client_liveness_detection_timer_->handler = client_liveness_detection_handler;
-  client_liveness_detection_timer_->data =
-      client_liveness_detection_timer_connection_;
+    // Initialize the client liveness detection timer.
+    client_liveness_detection_timer_ = static_cast<ngx_event_t *>(
+        ngx_pcalloc(http_request_->pool, sizeof(ngx_event_t)));
+    client_liveness_detection_timer_->log = http_request_->connection->log;
+    client_liveness_detection_timer_->handler =
+        client_liveness_detection_handler;
+    client_liveness_detection_timer_->data =
+        client_liveness_detection_timer_connection_;
+  }
 
   ngx_int_t rc = ngx_http_read_client_request_body(http_request_,
                                                    continue_read_request_body);
@@ -183,7 +187,7 @@ void NginxHttpFrontend::ContinueReadRequestBody() {
     // FIN or RST from client received.
     DEBUG("receive FIN from peer, close the HTTP connection.");
     backend()->Cancel(grpc::Status::CANCELLED);
-    ngx_http_close_connection(http_request_->connection);
+    ngx_http_finalize_request(http_request_, NGX_DONE);
     return;
   }
 
@@ -600,6 +604,11 @@ void NginxHttpFrontend::WriteToNginxResponse(uint8_t *data, size_t size) {
 }  // namespace gateway
 
 void NginxHttpFrontend::OnClientLivenessDetectionEvent(ngx_event_t *event) {
+  if (http_request_ == nullptr) {
+    // The HTTP request has been finalized.
+    return;
+  }
+
   if (response_protocol_ == Protocol::PROTO_STREAM_BODY) {
     uint8_t *data =
         reinterpret_cast<uint8_t *>(ngx_palloc(http_request_->pool, 2));
