@@ -23,6 +23,7 @@
 #include "net/grpc/gateway/runtime/constants.h"
 #include "third_party/grpc/include/grpc++/support/config.h"
 #include "third_party/grpc/include/grpc/grpc.h"
+#include "third_party/protobuf/include/google/protobuf/stubs/common.h"
 
 namespace grpc {
 namespace gateway {
@@ -78,6 +79,8 @@ void Runtime::Shutdown() {
     grpc_channel_destroy(entry.second);
   }
   grpc_backend_channels_.clear();
+  grpc_shutdown();
+  google::protobuf::ShutdownProtobufLibrary();
 }
 
 std::shared_ptr<Frontend> Runtime::CreateNginxFrontend(

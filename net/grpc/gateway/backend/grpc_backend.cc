@@ -48,6 +48,10 @@ GrpcBackend::GrpcBackend()
 
 GrpcBackend::~GrpcBackend() {
   BACKEND_DEBUG("Deleting GRPC backend proxy.");
+  for (auto& m : request_initial_metadata_) {
+    grpc_slice_unref(m.key);
+    grpc_slice_unref(m.value);
+  }
   grpc_metadata_array_destroy(&response_initial_metadata_);
   grpc_metadata_array_destroy(&response_trailing_metadata_);
   if (request_buffer_ != nullptr) {
@@ -171,9 +175,9 @@ void GrpcBackend::OnResponseMessage(bool result) {
   grpc_slice slice;
   while (grpc_byte_buffer_reader_next(&reader, &slice)) {
     message->push_back(Slice(slice, Slice::STEAL_REF));
-    grpc_slice_unref(slice);
   }
   grpc_byte_buffer_reader_destroy(&reader);
+  grpc_byte_buffer_destroy(response_buffer_);
   response->set_message(std::move(message));
   frontend()->Send(std::move(response));
 
@@ -234,8 +238,8 @@ void GrpcBackend::Send(std::unique_ptr<Request> request, Tag* on_done) {
         continue;
       }
       grpc_metadata initial_metadata;
-      initial_metadata.key = grpc_slice_intern(
-          grpc_slice_from_copied_string(header.first.c_str()));
+      initial_metadata.key =
+          grpc_slice_from_copied_string(header.first.c_str());
       initial_metadata.value = grpc_slice_from_copied_buffer(
           header.second.data(), header.second.size());
       initial_metadata.flags = 0;

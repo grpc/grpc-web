@@ -43,8 +43,10 @@ grpc::gateway::Frontend *get_frontend(ngx_http_request_t *r) {
 void grpc_gateway_request_cleanup_handler(void *data) {
   grpc_gateway_request_context *context =
       static_cast<grpc_gateway_request_context *>(data);
-  static_cast<grpc::gateway::NginxHttpFrontend *>(context->frontend.get())
-      ->set_http_request(nullptr);
+  auto *frontend =
+      static_cast<grpc::gateway::NginxHttpFrontend *>(context->frontend.get());
+  frontend->StopClientLivenessDetection();
+  frontend->set_http_request(nullptr);
   context->frontend.reset();
 }
 

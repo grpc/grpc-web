@@ -12,8 +12,8 @@ ProtoDecoder::~ProtoDecoder() {}
 
 Status ProtoDecoder::Decode() {
   if (inputs()->empty()) {
-    Slice* slice = new Slice(grpc_empty_slice(), Slice::STEAL_REF);
-    ByteBuffer* buffer = new ByteBuffer(slice, 1);
+    Slice slice(grpc_empty_slice(), Slice::STEAL_REF);
+    ByteBuffer* buffer = new ByteBuffer(&slice, 1);
     results()->push_back(std::unique_ptr<ByteBuffer>(buffer));
   } else {
     ByteBuffer* buffer = new ByteBuffer(inputs()->data(), inputs()->size());
