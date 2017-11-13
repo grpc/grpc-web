@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "google/protobuf/stubs/common.h"
 #include "net/grpc/gateway/backend/grpc_backend.h"
 #include "net/grpc/gateway/codec/b64_proto_decoder.h"
 #include "net/grpc/gateway/codec/b64_proto_encoder.h"
@@ -23,7 +24,6 @@
 #include "net/grpc/gateway/runtime/constants.h"
 #include "third_party/grpc/include/grpc++/support/config.h"
 #include "third_party/grpc/include/grpc/grpc.h"
-#include "third_party/protobuf/include/google/protobuf/stubs/common.h"
 
 namespace grpc {
 namespace gateway {
