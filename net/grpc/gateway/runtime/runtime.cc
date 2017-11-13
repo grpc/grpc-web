@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "google/protobuf/stubs/common.h"
 #include "net/grpc/gateway/backend/grpc_backend.h"
 #include "net/grpc/gateway/codec/b64_proto_decoder.h"
 #include "net/grpc/gateway/codec/b64_proto_encoder.h"
@@ -78,6 +79,8 @@ void Runtime::Shutdown() {
     grpc_channel_destroy(entry.second);
   }
   grpc_backend_channels_.clear();
+  grpc_shutdown();
+  google::protobuf::ShutdownProtobufLibrary();
 }
 
 std::shared_ptr<Frontend> Runtime::CreateNginxFrontend(

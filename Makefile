@@ -2,6 +2,7 @@ OS := $(shell uname)
 CC := g++
 ROOT_DIR := $(shell pwd)
 GRPC_GATEWAY_PROTOS := $(ROOT_DIR)/net/grpc/gateway/protos
+PROTO_INC := $(ROOT_DIR)/third_party/grpc/third_party/protobuf/include
 PROTO_SRC := $(ROOT_DIR)/third_party/grpc/third_party/protobuf/src
 PROTO_LIB := $(PROTO_SRC)/.libs
 PROTOC := $(PROTO_SRC)/protoc
@@ -41,7 +42,7 @@ nginx_config:
 	auto/configure \
 	--with-http_ssl_module \
 	--with-http_v2_module \
-	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR) -I $(PROTO_SRC) \
+	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR) -I $(PROTO_INC) -I $(PROTO_SRC) \
 -I $(GRPC_INC) -I $(GRPC_SRC)" \
 	--with-ld-opt="$(NGINX_LD_OPT)" \
 	--with-openssl="$(ROOT_DIR)/third_party/openssl" \
@@ -52,7 +53,7 @@ nginx_config_static:
 	auto/configure \
 	--with-http_ssl_module \
 	--with-http_v2_module \
-	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR) -I $(PROTO_SRC) \
+	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR) -I $(PROTO_INC) -I $(PROTO_SRC) \
 -I $(GRPC_INC) -I $(GRPC_SRC)" \
 	--with-ld-opt="$(NGINX_STATIC_LD_OPT)" \
 	--with-openssl="$(ROOT_DIR)/third_party/openssl" \

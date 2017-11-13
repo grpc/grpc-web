@@ -81,6 +81,8 @@ class NginxHttpFrontend : public Frontend {
 
   void OnClientLivenessDetectionEvent(ngx_event_t *event);
 
+  void StopClientLivenessDetection();
+
  private:
   friend void ::continue_read_request_body(ngx_http_request_t *r);
 
@@ -115,8 +117,6 @@ class NginxHttpFrontend : public Frontend {
   void SendErrorToClient(const grpc::Status &status);
 
   void WriteToNginxResponse(uint8_t *data, size_t size);
-
-  void StopClientLivenessDetection();
 
   ngx_http_request_t *http_request_;
   std::unique_ptr<Decoder> decoder_;

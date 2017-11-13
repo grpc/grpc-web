@@ -49,7 +49,7 @@ Status StreamBodyDecoder::Decode() {
             if (varint_value_ == 0) {
               buffer_.reset(new Slice(grpc_empty_slice(), Slice::STEAL_REF));
               results()->push_back(std::unique_ptr<ByteBuffer>(
-                  new ByteBuffer(buffer_.release(), 1)));
+                  new ByteBuffer(buffer_.get(), 1)));
               state_ = EXPECTING_MESSAGE_KEY_TYPE;
             } else {
               grpc_slice slice = grpc_slice_malloc(varint_value_);
