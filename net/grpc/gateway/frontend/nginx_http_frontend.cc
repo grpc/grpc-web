@@ -512,6 +512,9 @@ void NginxHttpFrontend::SendResponseHeadersToClient(Response *response) {
     case GRPC_WEB:
       AddHTTPHeader(http_request_, kContentType, kContentTypeGrpcWeb);
       break;
+    case GRPC_WEB_TEXT:
+      AddHTTPHeader(http_request_, kContentType, kContentTypeGrpcWebText);
+      break;
     case JSON_STREAM_BODY:
       AddHTTPHeader(http_request_, kContentType, kContentTypeJson);
       break;

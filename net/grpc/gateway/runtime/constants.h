@@ -78,6 +78,9 @@ const char kContentLength[] = "content-length";
 // The metadata name of content-transfer-encoding.
 const char kContentTransferEncoding[] = "content-transfer-encoding";
 
+// The metadata name of accept.
+const char kAccept[] = "accept";
+
 // The metadata value of content-transfer-encoding for base64.
 const char kContentTransferEncoding_Base64[] = "base64";
 const size_t kContentTransferEncoding_Base64_Length =
@@ -103,6 +106,7 @@ enum Protocol {
   UNKNOWN = 0,
   GRPC,
   GRPC_WEB,
+  GRPC_WEB_TEXT,
   JSON_STREAM_BODY,
   PROTO_STREAM_BODY,
   B64_PROTO_STREAM_BODY,
