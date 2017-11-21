@@ -14,6 +14,8 @@
 #include "net/grpc/gateway/codec/grpc_encoder.h"
 #include "net/grpc/gateway/codec/grpc_web_decoder.h"
 #include "net/grpc/gateway/codec/grpc_web_encoder.h"
+#include "net/grpc/gateway/codec/grpc_web_text_decoder.h"
+#include "net/grpc/gateway/codec/grpc_web_text_encoder.h"
 #include "net/grpc/gateway/codec/json_decoder.h"
 #include "net/grpc/gateway/codec/json_encoder.h"
 #include "net/grpc/gateway/codec/proto_decoder.h"
@@ -58,6 +60,19 @@ bool IsResponseB64(ngx_http_request_t* http_request) {
   if (kXAcceptContentTransferEncoding_Base64_Length == value.size() &&
       strncasecmp(kXAcceptContentTransferEncoding_Base64, value.data(),
                   value.size()) == 0) {
+    return true;
+  }
+  return false;
+}
+
+bool IsResponseGrpcWebText(ngx_http_request_t* http_request) {
+  string_ref value =
+      GetHTTPHeader(&http_request->headers_in.headers.part, kAccept);
+  if ((kContentTypeGrpcWebTextLength == value.size() &&
+       strncasecmp(kContentTypeGrpcWebText, value.data(), value.size()) == 0) ||
+      (kContentTypeGrpcWebTextProtoLength == value.size() &&
+       strncasecmp(kContentTypeGrpcWebTextProto, value.data(), value.size()) ==
+           0)) {
     return true;
   }
   return false;
@@ -116,6 +131,8 @@ std::unique_ptr<Encoder> Runtime::CreateEncoder(
       return std::unique_ptr<Encoder>(new GrpcEncoder());
     case GRPC_WEB:
       return std::unique_ptr<Encoder>(new GrpcWebEncoder());
+    case GRPC_WEB_TEXT:
+      return std::unique_ptr<Encoder>(new GrpcWebTextEncoder());
     case JSON_STREAM_BODY:
       return std::unique_ptr<Encoder>(new JsonEncoder());
     case PROTO_STREAM_BODY:
@@ -151,6 +168,8 @@ std::unique_ptr<Decoder> Runtime::CreateDecoder(
     }
     case GRPC_WEB:
       return std::unique_ptr<Decoder>(new GrpcWebDecoder());
+    case GRPC_WEB_TEXT:
+      return std::unique_ptr<Decoder>(new GrpcWebTextDecoder());
     case JSON_STREAM_BODY:
       return std::unique_ptr<Decoder>(new JsonDecoder());
     case PROTO_STREAM_BODY:
@@ -208,10 +227,21 @@ Protocol Runtime::DetectRequestProtocol(ngx_http_request_t* http_request) {
           0) {
     return GRPC;
   }
-  if (content_type_length == kContentTypeGrpcWebLength &&
-      strncasecmp(kContentTypeGrpcWeb, content_type,
-                  kContentTypeGrpcWebLength) == 0) {
+  if ((content_type_length == kContentTypeGrpcWebLength &&
+       strncasecmp(kContentTypeGrpcWeb, content_type,
+                   kContentTypeGrpcWebLength) == 0) ||
+      (content_type_length == kContentTypeGrpcWebProtoLength &&
+       strncasecmp(kContentTypeGrpcWebProto, content_type,
+                   kContentTypeGrpcWebProtoLength) == 0)) {
     return GRPC_WEB;
+  }
+  if ((content_type_length == kContentTypeGrpcWebTextLength &&
+       strncasecmp(kContentTypeGrpcWebText, content_type,
+                   kContentTypeGrpcWebTextLength) == 0) ||
+      (content_type_length == kContentTypeGrpcWebTextProtoLength &&
+       strncasecmp(kContentTypeGrpcWebTextProto, content_type,
+                   kContentTypeGrpcWebTextProtoLength) == 0)) {
+    return GRPC_WEB_TEXT;
   }
   return UNKNOWN;
 }
@@ -252,9 +282,21 @@ Protocol Runtime::DetectResponseProtocol(ngx_http_request_t* http_request) {
           0) {
     return GRPC;
   }
-  if (content_type_length == kContentTypeGrpcWebLength &&
-      strncasecmp(kContentTypeGrpcWeb, content_type,
-                  kContentTypeGrpcWebLength) == 0) {
+  if ((content_type_length == kContentTypeGrpcWebLength &&
+       strncasecmp(kContentTypeGrpcWeb, content_type,
+                   kContentTypeGrpcWebLength) == 0) ||
+      (content_type_length == kContentTypeGrpcWebProtoLength &&
+       strncasecmp(kContentTypeGrpcWebProto, content_type,
+                   kContentTypeGrpcWebProtoLength) == 0) ||
+      (content_type_length == kContentTypeGrpcWebTextLength &&
+       strncasecmp(kContentTypeGrpcWebText, content_type,
+                   kContentTypeGrpcWebTextLength) == 0) ||
+      (content_type_length == kContentTypeGrpcWebTextProtoLength &&
+       strncasecmp(kContentTypeGrpcWebTextProto, content_type,
+                   kContentTypeGrpcWebTextProtoLength) == 0)) {
+    if (IsResponseGrpcWebText(http_request)) {
+      return GRPC_WEB_TEXT;
+    }
     return GRPC_WEB;
   }
   return UNKNOWN;
