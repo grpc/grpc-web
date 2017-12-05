@@ -12,8 +12,8 @@ The gateway that connects the client to the server uses Nginx. However, Nginx
 still doesn't support HTTP/2 (to backends) as of Q3/2017, and therefore the
 gateway can't be used as a reverse proxy (for load balancing). We have also
 added the gRPC-Web support to [Envoy](https://github.com/lyft/envoy). In future,
-we expect gRPC-Web to be supported in language-specific Web frameworks too, such as
-Go, Java, Node, which will eliminate the need to deploy a gateway.
+we expect gRPC-Web to be supported in language-specific Web frameworks too, such
+as Go, Java, Node, which will eliminate the need to deploy a gateway.
 
 ## Generate and use the client library
 
