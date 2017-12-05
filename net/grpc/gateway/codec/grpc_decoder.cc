@@ -2,10 +2,8 @@
 
 #include "net/grpc/gateway/log.h"
 #include "net/grpc/gateway/utils.h"
-extern "C" {
 #include "third_party/grpc/src/core/lib/compression/message_compress.h"
 #include "third_party/grpc/src/core/lib/iomgr/exec_ctx.h"
-}
 
 namespace grpc {
 namespace gateway {
