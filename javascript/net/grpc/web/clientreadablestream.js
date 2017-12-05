@@ -69,6 +69,13 @@ grpc.web.ClientReadableStream = function(
 
   /**
    * @private
+   * @type {function(...):?|null}
+   *   The stream end callback
+   */
+  this.onEndCallback_ = null;
+
+  /**
+   * @private
    * @type {function(?):!grpc.web.Status}
    *   A function to parse the Rpc Status response
    */
@@ -85,6 +92,11 @@ grpc.web.ClientReadableStream = function(
     if ('2' in data && self.onStatusCallback_) {
       var status = self.rpcStatusParseFn_(data['2']);
       self.onStatusCallback_(status);
+    }
+  });
+  this.xhrNodeReadableStream_.on('end', function() {
+    if (self.onEndCallback_) {
+      self.onEndCallback_();
     }
   });
 };
@@ -105,6 +117,8 @@ grpc.web.ClientReadableStream.prototype.on = function(
     this.onDataCallback_ = callback;
   } else if (eventType == 'status') {
     this.onStatusCallback_ = callback;
+  } else if (eventType == 'end') {
+    this.onEndCallback_ = callback;
   }
   return this;
 };
