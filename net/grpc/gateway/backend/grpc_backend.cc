@@ -151,6 +151,7 @@ void GrpcBackend::OnResponseMessage(bool result) {
   if (response_buffer_ == nullptr) {
     // Receives the GRPC response status.
     grpc_op ops[1];
+    memset(ops, 0, sizeof(ops));
     ops[0].op = GRPC_OP_RECV_STATUS_ON_CLIENT;
     ops[0].data.recv_status_on_client.status = &status_code_;
     ops[0].data.recv_status_on_client.status_details = &status_details_;
