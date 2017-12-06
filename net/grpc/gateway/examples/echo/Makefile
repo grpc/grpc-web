@@ -77,6 +77,12 @@ client: proto-js compiled-js
 compiled-js:
 	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/*_test.js || true
 	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/binary/*_test.js || true
+	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/commonjs/*_test.js || true
+	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/compatibility_tests/v3.0.0/*_test.js || true
+	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/compatibility_tests/v3.0.0/binary/*_test.js || true
+	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/compatibility_tests/v3.0.0/commonjs/*_test.js || true
+	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/compatibility_tests/v3.1.0/*_test.js || true
+	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/compatibility_tests/v3.1.0/binary/*_test.js || true
 	$(ROOT_DIR)/third_party/closure-library/$(CLOSUREBUILDER) \
   --root=$(ROOT_DIR)/javascript \
   --root=$(ROOT_DIR)/net \
