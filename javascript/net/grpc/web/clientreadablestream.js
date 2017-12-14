@@ -17,6 +17,7 @@ goog.provide('grpc.web.ClientReadableStream');
  * A stream that the client can read from. Used for calls that are streaming
  * from the server side.
  *
+ * @template RESPONSE
  * @interface
  */
 grpc.web.ClientReadableStream = function() {};
