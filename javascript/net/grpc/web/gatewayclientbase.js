@@ -14,6 +14,7 @@ goog.require('grpc.web.AbstractClientBase');
 goog.require('grpc.web.ClientReadableStream');
 goog.require('grpc.web.Status');
 goog.require('grpc.web.StatusCode');
+goog.require('grpc.web.StreamBodyClientReadableStream');
 goog.require('proto.google.rpc.Status');
 goog.require('proto.grpc.gateway.Pair');
 
@@ -109,8 +110,10 @@ grpc.web.GatewayClientBase.prototype.newXhr_ = function() {
  */
 grpc.web.GatewayClientBase.prototype.createClientReadableStream_ = function(
     xhr, responseDeserializeFn) {
-  return new grpc.web.ClientReadableStream(xhr, responseDeserializeFn,
-      grpc.web.GatewayClientBase.parseRpcStatus_);
+  var stream = new grpc.web.StreamBodyClientReadableStream(xhr);
+  stream.setResponseDeserializeFn(responseDeserializeFn);
+  stream.setRpcStatusParseFn(grpc.web.GatewayClientBase.parseRpcStatus_);
+  return stream;
 };
 
 

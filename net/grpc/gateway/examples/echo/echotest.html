@@ -30,13 +30,31 @@
    addLeftMessage(msg);
    var unaryRequest = new proto.grpc.gateway.testing.EchoRequest();
    unaryRequest.setMessage(msg);
-   echoService.echo(unaryRequest, {}, function(err, response) {
+   echoService.echo(unaryRequest, {"custom-header-1": "value1"},
+                    function(err, response) {
      if (err) {
        addRightMessage('Error code: '+err.code+' "'+err.message+'"');
      } else {
        setTimeout(function () {
          addRightMessage(response.getMessage());
        }, INTERVAL);
+     }
+   });
+ };
+
+ var echoError = function(msg) {
+   addLeftMessage(msg);
+   var unaryRequest =
+      new proto.grpc.gateway.testing.EchoRequest();
+   unaryRequest.setMessage(msg);
+   echoService.echoAbort(unaryRequest, {}, function(err, response) {
+     if (err) {
+       addRightMessage('Error received');
+       console.log('Error:', err);
+       console.log('Error code: ' + err.code +
+                   (err.code == grpc.web.StatusCode.ABORTED ?
+                    ' is ' : ' is not ') +
+                   'StatusCode.ABORTED');
      }
    });
  };
@@ -50,7 +68,8 @@
    streamRequest.setMessageCount(count);
    streamRequest.setMessageInterval(INTERVAL);
 
-   var stream = echoService.serverStreamingEcho(streamRequest);
+   var stream = echoService.serverStreamingEcho(streamRequest,
+                                                {"custom-header-1": "value1"});
    stream.on('data', function(response) {
      addRightMessage(response.getMessage());
    });
@@ -58,6 +77,13 @@
      if (status.code != grpc.web.StatusCode.OK) {
        addRightMessage('Error code: '+status.code+' "'+status.details+'"');
      }
+     if (status.metadata) {
+       console.log("Received metadata");
+       console.log(status.metadata);
+     }
+   });
+   stream.on('end', function() {
+     console.log("stream end signal received");
    });
  };
 
@@ -70,6 +96,8 @@
      var count = msg.substr(0, msg.indexOf(' '));
      if (/^\d+$/.test(count)) {
        repeatEcho(msg.substr(msg.indexOf(' ') + 1), count);
+     } else if (count == 'err') {
+       echoError(msg.substr(msg.indexOf(' ') + 1));
      } else {
        echo(msg);
      }
@@ -102,7 +130,8 @@
         <div class="input-group">
           <input type="text" class="form-control" id="msg">
           <span class="input-group-btn">
-            <button class="btn btn-primary" type="button" id="send">Send</button>
+            <button class="btn btn-primary" type="button" id="send">Send
+            </button>
           </span>
         </div>
         <p class="help-block">Example: "Hello", "4 Hello"</p>
