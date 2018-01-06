@@ -25,11 +25,21 @@ class GrpcBackend : public Backend {
   void Send(std::unique_ptr<Request> request, Tag* on_done) override;
   void Cancel(const Status& reason) override;
 
-  void set_address(string address) { address_ = address; }
-  void set_host(string host) { host_ = host; }
-  void set_method(string method) { method_ = method; }
+  void set_address(const string& address) { address_ = address; }
+  void set_host(const string& host) { host_ = host; }
+  void set_method(const string& method) { method_ = method; }
   void set_use_shared_channel_pool(bool use_shared_channel_pool) {
     use_shared_channel_pool_ = use_shared_channel_pool;
+  }
+  void set_ssl(bool ssl) { ssl_ = ssl; }
+  void set_ssl_pem_root_certs(const string& ssl_pem_root_certs) {
+    ssl_pem_root_certs_ = ssl_pem_root_certs;
+  }
+  void set_ssl_pem_private_key(const string& ssl_pem_private_key) {
+    ssl_pem_private_key_ = ssl_pem_private_key;
+  }
+  void set_ssl_pem_cert_chain(const string& ssl_pem_cert_chain) {
+    ssl_pem_cert_chain_ = ssl_pem_cert_chain;
   }
 
  private:
@@ -53,6 +63,14 @@ class GrpcBackend : public Backend {
   string method_;
   // True if the shared channel pool should be used.
   bool use_shared_channel_pool_;
+  // True if ssl should be used.
+  bool ssl_;
+  // The file location which contains the root certs in pem format.
+  string ssl_pem_root_certs_;
+  // The file location which contains the client private key in pem format.
+  string ssl_pem_private_key_;
+  // The file location which contains the client cert chain in pem format.
+  string ssl_pem_cert_chain_;
   // The GRPC channel.
   grpc_channel* channel_;
   // The GRPC call.

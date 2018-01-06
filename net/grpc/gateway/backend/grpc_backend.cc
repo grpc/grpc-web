@@ -72,7 +72,9 @@ GrpcBackend::~GrpcBackend() {
 }
 
 grpc_channel* GrpcBackend::CreateChannel() {
-  return Runtime::Get().GetBackendChannel(address_, use_shared_channel_pool_);
+  return Runtime::Get().GetBackendChannel(
+      address_, use_shared_channel_pool_, ssl_, ssl_pem_root_certs_,
+      ssl_pem_private_key_, ssl_pem_cert_chain_);
 }
 
 grpc_call* GrpcBackend::CreateCall() {

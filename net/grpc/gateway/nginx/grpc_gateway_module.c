@@ -74,6 +74,22 @@ static ngx_command_t grpc_gateway_commands[] = {
      offsetof(ngx_grpc_gateway_loc_conf_t,
               grpc_client_liveness_detection_interval),
      NULL},
+    {ngx_string("grpc_ssl"), NGX_HTTP_LOC_CONF | NGX_CONF_FLAG,
+     ngx_conf_set_flag_slot, NGX_HTTP_LOC_CONF_OFFSET,
+     offsetof(ngx_grpc_gateway_loc_conf_t, grpc_ssl), NULL},
+    {ngx_string("grpc_ssl_target_name_override"),
+     NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1, grpc_gateway, NGX_HTTP_LOC_CONF_OFFSET,
+     offsetof(ngx_grpc_gateway_loc_conf_t, grpc_ssl_target_name_override),
+     NULL},
+    {ngx_string("grpc_ssl_pem_root_certs"), NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
+     grpc_gateway, NGX_HTTP_LOC_CONF_OFFSET,
+     offsetof(ngx_grpc_gateway_loc_conf_t, grpc_ssl_pem_root_certs), NULL},
+    {ngx_string("grpc_ssl_pem_private_key"), NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
+     grpc_gateway, NGX_HTTP_LOC_CONF_OFFSET,
+     offsetof(ngx_grpc_gateway_loc_conf_t, grpc_ssl_pem_private_key), NULL},
+    {ngx_string("grpc_ssl_pem_cert_chain"), NGX_HTTP_LOC_CONF | NGX_CONF_TAKE1,
+     grpc_gateway, NGX_HTTP_LOC_CONF_OFFSET,
+     offsetof(ngx_grpc_gateway_loc_conf_t, grpc_ssl_pem_cert_chain), NULL},
     ngx_null_command};
 
 // Module context for grpc_gateway module.
@@ -122,6 +138,7 @@ void *grpc_gateway_create_loc_conf(ngx_conf_t *cf) {
   }
   conf->grpc_channel_reuse = NGX_CONF_UNSET;
   conf->grpc_client_liveness_detection_interval = NGX_CONF_UNSET_MSEC;
+  conf->grpc_ssl = NGX_CONF_UNSET;
   return conf;
 }
 
@@ -133,5 +150,14 @@ char *grpc_gateway_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child) {
                             p->grpc_client_liveness_detection_interval, 0);
   ngx_conf_merge_value(conf->grpc_channel_reuse, p->grpc_channel_reuse, 1);
   ngx_conf_merge_str_value(conf->grpc_pass, p->grpc_pass, "");
+  ngx_conf_merge_value(conf->grpc_ssl, p->grpc_ssl, 0);
+  ngx_conf_merge_str_value(conf->grpc_ssl_target_name_override,
+                           p->grpc_ssl_target_name_override, "");
+  ngx_conf_merge_str_value(conf->grpc_ssl_pem_root_certs,
+                           p->grpc_ssl_pem_root_certs, "");
+  ngx_conf_merge_str_value(conf->grpc_ssl_pem_private_key,
+                           p->grpc_ssl_pem_private_key, "");
+  ngx_conf_merge_str_value(conf->grpc_ssl_pem_cert_chain,
+                           p->grpc_ssl_pem_cert_chain, "");
   return NGX_CONF_OK;
 }

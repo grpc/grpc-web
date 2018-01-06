@@ -68,6 +68,15 @@ ngx_int_t grpc_gateway_handler(ngx_http_request_t *r) {
   std::string backend_host(reinterpret_cast<char *>(r->host_start),
                            r->host_end - r->host_start);
   std::string backend_method(reinterpret_cast<char *>(r->uri.data), r->uri.len);
+  std::string backend_ssl_pem_root_certs(
+      reinterpret_cast<char *>(mlcf->grpc_ssl_pem_root_certs.data),
+      mlcf->grpc_ssl_pem_root_certs.len);
+  std::string backend_ssl_pem_private_key(
+      reinterpret_cast<char *>(mlcf->grpc_ssl_pem_private_key.data),
+      mlcf->grpc_ssl_pem_private_key.len);
+  std::string backend_ssl_pem_cert_chain(
+      reinterpret_cast<char *>(mlcf->grpc_ssl_pem_cert_chain.data),
+      mlcf->grpc_ssl_pem_cert_chain.len);
 
   // Initiate nginx request context.
   grpc_gateway_request_context *context =
@@ -78,7 +87,9 @@ ngx_int_t grpc_gateway_handler(ngx_http_request_t *r) {
   }
   context->frontend = grpc::gateway::Runtime::Get().CreateNginxFrontend(
       r, backend_address, backend_host, backend_method,
-      mlcf->grpc_channel_reuse, mlcf->grpc_client_liveness_detection_interval);
+      mlcf->grpc_channel_reuse, mlcf->grpc_client_liveness_detection_interval,
+      mlcf->grpc_ssl, backend_ssl_pem_root_certs, backend_ssl_pem_private_key,
+      backend_ssl_pem_cert_chain);
   ngx_http_set_ctx(r, context, grpc_gateway_module);
   ngx_pool_cleanup_t *http_cleanup =
       ngx_pool_cleanup_add(r->pool, sizeof(grpc_gateway_request_context));
