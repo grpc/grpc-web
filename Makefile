@@ -23,15 +23,15 @@ protos:
 --cpp_out="$(GRPC_GATEWAY_PROTOS)"
 
 NGINX_DIR := third_party/nginx
-NGINX_LD_OPT := -L"$(PROTO_LIB)" -L"$(GRPC_LIB)" -lgrpc++_unsecure \
--lgrpc_unsecure -lprotobuf -lpthread -ldl -lrt -lstdc++ -lm
+NGINX_LD_OPT := -L"$(PROTO_LIB)" -L"$(GRPC_LIB)" -lgrpc++ \
+-lgrpc -lprotobuf -lpthread -ldl -lrt -lstdc++ -lm
 ifeq ($(OS), Darwin)
-NGINX_LD_OPT := -L"$(PROTO_LIB)" -L"$(GRPC_LIB)" -lgrpc++_unsecure \
--lgrpc_unsecure -lprotobuf -lpthread -lstdc++ -lm
+NGINX_LD_OPT := -L"$(PROTO_LIB)" -L"$(GRPC_LIB)" -lgrpc++ \
+-lgrpc -lprotobuf -lpthread -lstdc++ -lm
 endif
 
 NGINX_STATIC_LD_OPT := -L"$(PROTO_LIB)" -L"$(GRPC_LIB)" \
--l:libgrpc++_unsecure.a -l:libgrpc_unsecure.a -l:libprotobuf.a -lpthread -ldl \
+-l:libgrpc++.a -l:libgrpc.a -l:libprotobuf.a -lpthread -ldl \
 -lrt -lstdc++ -lm
 ifeq ($(OS), Darwin)
 NGINX_STATIC_LD_OPT := $(NGINX_LD_OPT)
@@ -56,7 +56,6 @@ nginx_config_static:
 	--with-cc-opt="-I /usr/local/include -I $(ROOT_DIR) -I $(PROTO_INC) -I $(PROTO_SRC) \
 -I $(GRPC_INC) -I $(GRPC_SRC)" \
 	--with-ld-opt="$(NGINX_STATIC_LD_OPT)" \
-	--with-openssl="$(ROOT_DIR)/third_party/openssl" \
 	--add-module="$(ROOT_DIR)/net/grpc/gateway/nginx"
 
 nginx: protos nginx_config
