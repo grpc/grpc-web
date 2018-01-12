@@ -1,16 +1,21 @@
 
 # BUILD:
-#   docker build -t grpc-web .
+#   docker build \ 
+#   -t grpc-web \
+#   -f ~/github-pr/grpc-web/net/grpc/gateway/docker/container_build/Dockerfile .
 #
 # RUN:
 #   start the container:
-#      docker run -itdp 8080:8080 -p 9091:9091 --name grpc-web grpc-web /bin/bash
-#
-#   start nginx:
-#      docker exec -itp 8080:8080 -p 9091:9091 grpc-web /grpc-web/gConnector/nginx.sh
+#      $ docker run -itp 8080:8080 -p 9091:9091 --name grpc-web grpc-web /bin/bash
+#      $ cd /grpc-web/gConnector && ./nginx.sh
 #
 #   start the grpc server:
 #      docker exec -it grpc-web /grpc-web/net/grpc/gateway/examples/echo/echo_server
+#
+# Once the nginx server and the echo server are both running in different terminals, you
+# can point a web browser to
+# http://localhost:8080/net/grpc/gateway/examples/echo/echotest.html
+
 FROM ubuntu:latest as install
 
 COPY ./ /grpc-web
