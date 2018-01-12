@@ -77,6 +77,12 @@ client: proto-js compiled-js
 compiled-js:
 	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/*_test.js || true
 	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/binary/*_test.js || true
+	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/commonjs/*_test.js || true
+	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/compatibility_tests/v3.0.0/*_test.js || true
+	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/compatibility_tests/v3.0.0/binary/*_test.js || true
+	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/compatibility_tests/v3.0.0/commonjs/*_test.js || true
+	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/compatibility_tests/v3.1.0/*_test.js || true
+	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/compatibility_tests/v3.1.0/binary/*_test.js || true
 	$(ROOT_DIR)/third_party/closure-library/$(CLOSUREBUILDER) \
   --root=$(ROOT_DIR)/javascript \
   --root=$(ROOT_DIR)/net \
@@ -100,7 +106,7 @@ proto-js:
   $(PROTOS_PATH)/protos/pair.proto
 	$(PROTOC) -I=. --js_out=$(JS_IMPORT_STYLE):$(OUT_DIR) ./echo.proto
 	$(PROTOC) -I=. --plugin=protoc-gen-grpc-web=$(GRPC_WEB_PLUGIN_PATH) \
-  --grpc-web_out=out=$(OUT_DIR)/echo.grpc.pb.js,mode=base64:. ./echo.proto
+  --grpc-web_out=out=$(OUT_DIR)/echo.grpc.pb.js,mode=grpcweb:. ./echo.proto
 
 install:
 	mkdir -p $(HTML_DIR)/$(EXAMPLES_PATH)

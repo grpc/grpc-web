@@ -43,8 +43,10 @@ grpc::gateway::Frontend *get_frontend(ngx_http_request_t *r) {
 void grpc_gateway_request_cleanup_handler(void *data) {
   grpc_gateway_request_context *context =
       static_cast<grpc_gateway_request_context *>(data);
-  static_cast<grpc::gateway::NginxHttpFrontend *>(context->frontend.get())
-      ->set_http_request(nullptr);
+  auto *frontend =
+      static_cast<grpc::gateway::NginxHttpFrontend *>(context->frontend.get());
+  frontend->StopClientLivenessDetection();
+  frontend->set_http_request(nullptr);
   context->frontend.reset();
 }
 
@@ -66,6 +68,15 @@ ngx_int_t grpc_gateway_handler(ngx_http_request_t *r) {
   std::string backend_host(reinterpret_cast<char *>(r->host_start),
                            r->host_end - r->host_start);
   std::string backend_method(reinterpret_cast<char *>(r->uri.data), r->uri.len);
+  std::string backend_ssl_pem_root_certs(
+      reinterpret_cast<char *>(mlcf->grpc_ssl_pem_root_certs.data),
+      mlcf->grpc_ssl_pem_root_certs.len);
+  std::string backend_ssl_pem_private_key(
+      reinterpret_cast<char *>(mlcf->grpc_ssl_pem_private_key.data),
+      mlcf->grpc_ssl_pem_private_key.len);
+  std::string backend_ssl_pem_cert_chain(
+      reinterpret_cast<char *>(mlcf->grpc_ssl_pem_cert_chain.data),
+      mlcf->grpc_ssl_pem_cert_chain.len);
 
   // Initiate nginx request context.
   grpc_gateway_request_context *context =
@@ -76,7 +87,9 @@ ngx_int_t grpc_gateway_handler(ngx_http_request_t *r) {
   }
   context->frontend = grpc::gateway::Runtime::Get().CreateNginxFrontend(
       r, backend_address, backend_host, backend_method,
-      mlcf->grpc_channel_reuse, mlcf->grpc_client_liveness_detection_interval);
+      mlcf->grpc_channel_reuse, mlcf->grpc_client_liveness_detection_interval,
+      mlcf->grpc_ssl, backend_ssl_pem_root_certs, backend_ssl_pem_private_key,
+      backend_ssl_pem_cert_chain);
   ngx_http_set_ctx(r, context, grpc_gateway_module);
   ngx_pool_cleanup_t *http_cleanup =
       ngx_pool_cleanup_add(r->pool, sizeof(grpc_gateway_request_context));
@@ -147,20 +160,24 @@ void NginxHttpFrontend::Start() {
     http_request_->request_body_no_buffering = true;
   }
 
-  // Initialize the dummy connection of client liveness detection timer.
-  client_liveness_detection_timer_connection_ = static_cast<ngx_connection_t *>(
-      ngx_pcalloc(http_request_->pool, sizeof(ngx_connection_t)));
-  client_liveness_detection_timer_connection_->fd =
-      static_cast<ngx_socket_t>(-1);
-  client_liveness_detection_timer_connection_->data = this;
+  if (client_liveness_detection_interval_ > 0) {
+    // Initialize the dummy connection of client liveness detection timer.
+    client_liveness_detection_timer_connection_ =
+        static_cast<ngx_connection_t *>(
+            ngx_pcalloc(http_request_->pool, sizeof(ngx_connection_t)));
+    client_liveness_detection_timer_connection_->fd =
+        static_cast<ngx_socket_t>(-1);
+    client_liveness_detection_timer_connection_->data = this;
 
-  // Initialize the client liveness detection timer.
-  client_liveness_detection_timer_ = static_cast<ngx_event_t *>(
-      ngx_pcalloc(http_request_->pool, sizeof(ngx_event_t)));
-  client_liveness_detection_timer_->log = http_request_->connection->log;
-  client_liveness_detection_timer_->handler = client_liveness_detection_handler;
-  client_liveness_detection_timer_->data =
-      client_liveness_detection_timer_connection_;
+    // Initialize the client liveness detection timer.
+    client_liveness_detection_timer_ = static_cast<ngx_event_t *>(
+        ngx_pcalloc(http_request_->pool, sizeof(ngx_event_t)));
+    client_liveness_detection_timer_->log = http_request_->connection->log;
+    client_liveness_detection_timer_->handler =
+        client_liveness_detection_handler;
+    client_liveness_detection_timer_->data =
+        client_liveness_detection_timer_connection_;
+  }
 
   ngx_int_t rc = ngx_http_read_client_request_body(http_request_,
                                                    continue_read_request_body);
@@ -183,7 +200,7 @@ void NginxHttpFrontend::ContinueReadRequestBody() {
     // FIN or RST from client received.
     DEBUG("receive FIN from peer, close the HTTP connection.");
     backend()->Cancel(grpc::Status::CANCELLED);
-    ngx_http_close_connection(http_request_->connection);
+    ngx_http_finalize_request(http_request_, NGX_DONE);
     return;
   }
 
@@ -506,6 +523,9 @@ void NginxHttpFrontend::SendResponseHeadersToClient(Response *response) {
     case GRPC_WEB:
       AddHTTPHeader(http_request_, kContentType, kContentTypeGrpcWeb);
       break;
+    case GRPC_WEB_TEXT:
+      AddHTTPHeader(http_request_, kContentType, kContentTypeGrpcWebText);
+      break;
     case JSON_STREAM_BODY:
       AddHTTPHeader(http_request_, kContentType, kContentTypeJson);
       break;
@@ -600,6 +620,11 @@ void NginxHttpFrontend::WriteToNginxResponse(uint8_t *data, size_t size) {
 }  // namespace gateway
 
 void NginxHttpFrontend::OnClientLivenessDetectionEvent(ngx_event_t *event) {
+  if (http_request_ == nullptr) {
+    // The HTTP request has been finalized.
+    return;
+  }
+
   if (response_protocol_ == Protocol::PROTO_STREAM_BODY) {
     uint8_t *data =
         reinterpret_cast<uint8_t *>(ngx_palloc(http_request_->pool, 2));

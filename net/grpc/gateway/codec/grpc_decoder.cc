@@ -2,10 +2,8 @@
 
 #include "net/grpc/gateway/log.h"
 #include "net/grpc/gateway/utils.h"
-extern "C" {
 #include "third_party/grpc/src/core/lib/compression/message_compress.h"
 #include "third_party/grpc/src/core/lib/iomgr/exec_ctx.h"
-}
 
 namespace grpc {
 namespace gateway {
@@ -17,7 +15,7 @@ GrpcDecoder::GrpcDecoder()
 GrpcDecoder::~GrpcDecoder() {}
 
 Status GrpcDecoder::Decode() {
-  grpc_exec_ctx exec_ctx = GRPC_EXEC_CTX_INIT;
+  grpc_core::ExecCtx exec_ctx;
   for (const Slice& slice : *inputs()) {
     if (slice.size() == 0) {
       continue;
@@ -34,7 +32,7 @@ Status GrpcDecoder::Decode() {
             Status status(StatusCode::INVALID_ARGUMENT,
                           Format("Receives invalid compressed flag: %c.", c));
             DEBUG("%s", status.error_message().c_str());
-            grpc_exec_ctx_finish(&exec_ctx);
+
             return status;
           }
           compressed_flag_ = c;
@@ -87,11 +85,11 @@ Status GrpcDecoder::Decode() {
               grpc_slice_buffer output;
               grpc_slice_buffer_init(&output);
               if (grpc_msg_decompress(
-                      &exec_ctx, grpc_compression_algorithm::GRPC_COMPRESS_GZIP,
-                      &input, &output) != 1) {
+                      grpc_compression_algorithm::GRPC_COMPRESS_GZIP, &input,
+                      &output) != 1) {
                 grpc_slice_buffer_destroy(&input);
                 grpc_slice_buffer_destroy(&output);
-                grpc_exec_ctx_finish(&exec_ctx);
+
                 return Status(StatusCode::INTERNAL,
                               "Failed to uncompress the GRPC data frame.");
               }
@@ -117,7 +115,7 @@ Status GrpcDecoder::Decode() {
     }
   }
   inputs()->clear();
-  grpc_exec_ctx_finish(&exec_ctx);
+
   return Status::OK;
 }
 }  // namespace gateway

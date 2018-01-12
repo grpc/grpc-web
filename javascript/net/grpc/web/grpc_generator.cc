@@ -59,6 +59,7 @@ enum Mode {
   GATEWAY = 1,     // open-source gRPC Gateway, currently nginx
   OPJSPB = 2,      // first party google3 one platform services with JSPB
   FRAMEWORKS = 3,  // first party google3 AF services with AF data add-ons
+  GRPCWEB = 4,     // client using the application/grpc-web wire format
 };
 
 string GetModeVar(const Mode mode) {
@@ -71,6 +72,8 @@ string GetModeVar(const Mode mode) {
       return "OPJspb";
     case FRAMEWORKS:
       return "Frameworks";
+    case GRPCWEB:
+      return "GrpcWeb";
   }
 }
 
@@ -325,6 +328,8 @@ class GrpcCodeGenerator : public CodeGenerator {
       vars["mode"] = GetModeVar(Mode::OP);
     } else if (mode == "base64") {
       vars["mode"] = GetModeVar(Mode::GATEWAY);
+    } else if (mode == "grpcweb") {
+      vars["mode"] = GetModeVar(Mode::GRPCWEB);
     } else if (mode == "jspb") {
       vars["mode"] = GetModeVar(Mode::OPJSPB);
     } else if (mode == "frameworks") {

@@ -3,7 +3,9 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 
+#include "google/protobuf/stubs/common.h"
 #include "net/grpc/gateway/backend/grpc_backend.h"
 #include "net/grpc/gateway/codec/b64_proto_decoder.h"
 #include "net/grpc/gateway/codec/b64_proto_encoder.h"
@@ -13,6 +15,8 @@
 #include "net/grpc/gateway/codec/grpc_encoder.h"
 #include "net/grpc/gateway/codec/grpc_web_decoder.h"
 #include "net/grpc/gateway/codec/grpc_web_encoder.h"
+#include "net/grpc/gateway/codec/grpc_web_text_decoder.h"
+#include "net/grpc/gateway/codec/grpc_web_text_encoder.h"
 #include "net/grpc/gateway/codec/json_decoder.h"
 #include "net/grpc/gateway/codec/json_encoder.h"
 #include "net/grpc/gateway/codec/proto_decoder.h"
@@ -23,6 +27,7 @@
 #include "net/grpc/gateway/runtime/constants.h"
 #include "third_party/grpc/include/grpc++/support/config.h"
 #include "third_party/grpc/include/grpc/grpc.h"
+#include "third_party/grpc/include/grpc/grpc_security.h"
 
 namespace grpc {
 namespace gateway {
@@ -61,6 +66,19 @@ bool IsResponseB64(ngx_http_request_t* http_request) {
   }
   return false;
 }
+
+bool IsResponseGrpcWebText(ngx_http_request_t* http_request) {
+  string_ref value =
+      GetHTTPHeader(&http_request->headers_in.headers.part, kAccept);
+  if ((kContentTypeGrpcWebTextLength == value.size() &&
+       strncasecmp(kContentTypeGrpcWebText, value.data(), value.size()) == 0) ||
+      (kContentTypeGrpcWebTextProtoLength == value.size() &&
+       strncasecmp(kContentTypeGrpcWebTextProto, value.data(), value.size()) ==
+           0)) {
+    return true;
+  }
+  return false;
+}
 }  // namespace
 
 Runtime::Runtime() {
@@ -78,13 +96,18 @@ void Runtime::Shutdown() {
     grpc_channel_destroy(entry.second);
   }
   grpc_backend_channels_.clear();
+  grpc_shutdown();
+  google::protobuf::ShutdownProtobufLibrary();
 }
 
 std::shared_ptr<Frontend> Runtime::CreateNginxFrontend(
     ngx_http_request_t* http_request, const string& backend_address,
     const string& backend_host, const string& backend_method,
     const ngx_flag_t& channel_reuse,
-    const ngx_msec_t& client_liveness_detection_interval) {
+    const ngx_msec_t& client_liveness_detection_interval,
+    const ngx_flag_t& backend_ssl, const string& backend_ssl_pem_root_certs,
+    const string& backend_ssl_pem_private_key,
+    const string& backend_ssl_pem_cert_chain) {
   std::unique_ptr<GrpcBackend> backend(new GrpcBackend());
   backend->set_address(backend_address);
   backend->set_host(backend_host);
@@ -92,6 +115,10 @@ std::shared_ptr<Frontend> Runtime::CreateNginxFrontend(
   if (channel_reuse) {
     backend->set_use_shared_channel_pool(true);
   }
+  backend->set_ssl(backend_ssl);
+  backend->set_ssl_pem_root_certs(backend_ssl_pem_root_certs);
+  backend->set_ssl_pem_private_key(backend_ssl_pem_private_key);
+  backend->set_ssl_pem_cert_chain(backend_ssl_pem_cert_chain);
   NginxHttpFrontend* frontend = new NginxHttpFrontend(std::move(backend));
   frontend->set_http_request(http_request);
   Protocol request_protocol = DetectRequestProtocol(http_request);
@@ -113,6 +140,8 @@ std::unique_ptr<Encoder> Runtime::CreateEncoder(
       return std::unique_ptr<Encoder>(new GrpcEncoder());
     case GRPC_WEB:
       return std::unique_ptr<Encoder>(new GrpcWebEncoder());
+    case GRPC_WEB_TEXT:
+      return std::unique_ptr<Encoder>(new GrpcWebTextEncoder());
     case JSON_STREAM_BODY:
       return std::unique_ptr<Encoder>(new JsonEncoder());
     case PROTO_STREAM_BODY:
@@ -148,6 +177,8 @@ std::unique_ptr<Decoder> Runtime::CreateDecoder(
     }
     case GRPC_WEB:
       return std::unique_ptr<Decoder>(new GrpcWebDecoder());
+    case GRPC_WEB_TEXT:
+      return std::unique_ptr<Decoder>(new GrpcWebTextDecoder());
     case JSON_STREAM_BODY:
       return std::unique_ptr<Decoder>(new JsonDecoder());
     case PROTO_STREAM_BODY:
@@ -205,10 +236,21 @@ Protocol Runtime::DetectRequestProtocol(ngx_http_request_t* http_request) {
           0) {
     return GRPC;
   }
-  if (content_type_length == kContentTypeGrpcWebLength &&
-      strncasecmp(kContentTypeGrpcWeb, content_type,
-                  kContentTypeGrpcWebLength) == 0) {
+  if ((content_type_length == kContentTypeGrpcWebLength &&
+       strncasecmp(kContentTypeGrpcWeb, content_type,
+                   kContentTypeGrpcWebLength) == 0) ||
+      (content_type_length == kContentTypeGrpcWebProtoLength &&
+       strncasecmp(kContentTypeGrpcWebProto, content_type,
+                   kContentTypeGrpcWebProtoLength) == 0)) {
     return GRPC_WEB;
+  }
+  if ((content_type_length == kContentTypeGrpcWebTextLength &&
+       strncasecmp(kContentTypeGrpcWebText, content_type,
+                   kContentTypeGrpcWebTextLength) == 0) ||
+      (content_type_length == kContentTypeGrpcWebTextProtoLength &&
+       strncasecmp(kContentTypeGrpcWebTextProto, content_type,
+                   kContentTypeGrpcWebTextProtoLength) == 0)) {
+    return GRPC_WEB_TEXT;
   }
   return UNKNOWN;
 }
@@ -249,31 +291,92 @@ Protocol Runtime::DetectResponseProtocol(ngx_http_request_t* http_request) {
           0) {
     return GRPC;
   }
-  if (content_type_length == kContentTypeGrpcWebLength &&
-      strncasecmp(kContentTypeGrpcWeb, content_type,
-                  kContentTypeGrpcWebLength) == 0) {
+  if ((content_type_length == kContentTypeGrpcWebLength &&
+       strncasecmp(kContentTypeGrpcWeb, content_type,
+                   kContentTypeGrpcWebLength) == 0) ||
+      (content_type_length == kContentTypeGrpcWebProtoLength &&
+       strncasecmp(kContentTypeGrpcWebProto, content_type,
+                   kContentTypeGrpcWebProtoLength) == 0) ||
+      (content_type_length == kContentTypeGrpcWebTextLength &&
+       strncasecmp(kContentTypeGrpcWebText, content_type,
+                   kContentTypeGrpcWebTextLength) == 0) ||
+      (content_type_length == kContentTypeGrpcWebTextProtoLength &&
+       strncasecmp(kContentTypeGrpcWebTextProto, content_type,
+                   kContentTypeGrpcWebTextProtoLength) == 0)) {
+    if (IsResponseGrpcWebText(http_request)) {
+      return GRPC_WEB_TEXT;
+    }
     return GRPC_WEB;
   }
   return UNKNOWN;
 }
 
-grpc_channel* Runtime::GetBackendChannel(const std::string& backend_address,
-                                         bool use_shared_channel_pool) {
+grpc_channel* Runtime::GetBackendChannel(
+    const std::string& backend_address, bool use_shared_channel_pool, bool ssl,
+    const std::string& ssl_pem_root_certs,
+    const std::string& ssl_pem_private_key,
+    const std::string& ssl_pem_cert_chain) {
   if (use_shared_channel_pool) {
     auto result = grpc_backend_channels_.find(backend_address);
     if (result != grpc_backend_channels_.end()) {
       return result->second;
     }
   }
-  grpc_channel_args args;
-  grpc_arg arg;
-  arg.type = GRPC_ARG_INTEGER;
-  arg.key = const_cast<char*>(GRPC_ARG_MAX_MESSAGE_LENGTH);
-  arg.value.integer = 100 * 1024 * 1024;
-  args.num_args = 1;
-  args.args = &arg;
-  grpc_channel* channel =
-      grpc_insecure_channel_create(backend_address.c_str(), &args, nullptr);
+  grpc_arg arg_max_message_length;
+  arg_max_message_length.type = GRPC_ARG_INTEGER;
+  arg_max_message_length.key = const_cast<char*>(GRPC_ARG_MAX_MESSAGE_LENGTH);
+  arg_max_message_length.value.integer = 100 * 1024 * 1024;
+  grpc_arg arg_ssl_target;
+  arg_ssl_target.type = GRPC_ARG_STRING;
+  arg_ssl_target.key = const_cast<char*>(GRPC_SSL_TARGET_NAME_OVERRIDE_ARG);
+  arg_ssl_target.value.string = const_cast<char*>("grpc.test.google.fr");
+
+  grpc_arg args[] = {arg_max_message_length, arg_ssl_target};
+  grpc_channel_args channel_args;
+  channel_args.num_args = 2;
+  channel_args.args = args;
+
+  grpc_channel* channel = nullptr;
+  if (ssl) {
+    std::string pem_root_certs;
+    {
+      std::ifstream istream(ssl_pem_root_certs);
+      pem_root_certs = std::string(std::istreambuf_iterator<char>(istream),
+                                   std::istreambuf_iterator<char>());
+      istream.close();
+    }
+
+    grpc_ssl_pem_key_cert_pair pem_key_cert_pair;
+    std::string pem_private_key;
+    std::string pem_cert_chain;
+    {
+      std::ifstream istream(ssl_pem_private_key);
+      pem_private_key = std::string(std::istreambuf_iterator<char>(istream),
+                                    std::istreambuf_iterator<char>());
+      istream.close();
+    }
+    {
+      std::ifstream istream(ssl_pem_cert_chain);
+      pem_cert_chain = std::string(std::istreambuf_iterator<char>(istream),
+                                   std::istreambuf_iterator<char>());
+      istream.close();
+    }
+    pem_key_cert_pair.private_key = pem_private_key.c_str();
+    pem_key_cert_pair.cert_chain = pem_cert_chain.c_str();
+    grpc_channel_credentials* creds = grpc_ssl_credentials_create(
+        pem_root_certs.empty() ? nullptr : pem_root_certs.c_str(),
+        (pem_private_key.empty() || pem_cert_chain.empty())
+            ? nullptr
+            : &pem_key_cert_pair,
+        nullptr);
+    channel = grpc_secure_channel_create(creds, backend_address.c_str(),
+                                         &channel_args, nullptr);
+    grpc_channel_credentials_release(creds);
+  } else {
+    channel = grpc_insecure_channel_create(backend_address.c_str(),
+                                           &channel_args, nullptr);
+  }
+
   if (use_shared_channel_pool) {
     grpc_backend_channels_.insert(
         std::pair<string, grpc_channel*>(backend_address, channel));

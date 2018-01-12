@@ -48,6 +48,10 @@ GrpcBackend::GrpcBackend()
 
 GrpcBackend::~GrpcBackend() {
   BACKEND_DEBUG("Deleting GRPC backend proxy.");
+  for (auto& m : request_initial_metadata_) {
+    grpc_slice_unref(m.key);
+    grpc_slice_unref(m.value);
+  }
   grpc_metadata_array_destroy(&response_initial_metadata_);
   grpc_metadata_array_destroy(&response_trailing_metadata_);
   if (request_buffer_ != nullptr) {
@@ -68,7 +72,9 @@ GrpcBackend::~GrpcBackend() {
 }
 
 grpc_channel* GrpcBackend::CreateChannel() {
-  return Runtime::Get().GetBackendChannel(address_, use_shared_channel_pool_);
+  return Runtime::Get().GetBackendChannel(
+      address_, use_shared_channel_pool_, ssl_, ssl_pem_root_certs_,
+      ssl_pem_private_key_, ssl_pem_cert_chain_);
 }
 
 grpc_call* GrpcBackend::CreateCall() {
@@ -147,6 +153,7 @@ void GrpcBackend::OnResponseMessage(bool result) {
   if (response_buffer_ == nullptr) {
     // Receives the GRPC response status.
     grpc_op ops[1];
+    memset(ops, 0, sizeof(ops));
     ops[0].op = GRPC_OP_RECV_STATUS_ON_CLIENT;
     ops[0].data.recv_status_on_client.status = &status_code_;
     ops[0].data.recv_status_on_client.status_details = &status_details_;
@@ -171,9 +178,9 @@ void GrpcBackend::OnResponseMessage(bool result) {
   grpc_slice slice;
   while (grpc_byte_buffer_reader_next(&reader, &slice)) {
     message->push_back(Slice(slice, Slice::STEAL_REF));
-    grpc_slice_unref(slice);
   }
   grpc_byte_buffer_reader_destroy(&reader);
+  grpc_byte_buffer_destroy(response_buffer_);
   response->set_message(std::move(message));
   frontend()->Send(std::move(response));
 
@@ -234,8 +241,8 @@ void GrpcBackend::Send(std::unique_ptr<Request> request, Tag* on_done) {
         continue;
       }
       grpc_metadata initial_metadata;
-      initial_metadata.key = grpc_slice_intern(
-          grpc_slice_from_copied_string(header.first.c_str()));
+      initial_metadata.key =
+          grpc_slice_from_copied_string(header.first.c_str());
       initial_metadata.value = grpc_slice_from_copied_buffer(
           header.second.data(), header.second.size());
       initial_metadata.flags = 0;

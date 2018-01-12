@@ -83,19 +83,22 @@ void GrpcWebEncoder::EncodeStatus(const grpc::Status& status,
   }
 
   // Encodes GRPC trailers.
-  for (auto& trailer : *trailers) {
-    size_t grpc_trailer_size = trailer.first.size() + trailer.second.size() + 4;
-    grpc_slice grpc_trailer = grpc_slice_malloc(grpc_trailer_size);
-    uint8_t* p = GPR_SLICE_START_PTR(grpc_trailer);
-    memcpy(p, trailer.first.c_str(), trailer.first.size());
-    p += trailer.first.size();
-    memcpy(p, ": ", 2);
-    p += 2;
-    memcpy(p, trailer.second.data(), trailer.second.size());
-    p += trailer.second.size();
-    memcpy(p, "\r\n", 2);
-    buffer.push_back(Slice(grpc_trailer, Slice::STEAL_REF));
-    length += grpc_trailer_size;
+  if (trailers != nullptr) {
+    for (auto& trailer : *trailers) {
+      size_t grpc_trailer_size =
+          trailer.first.size() + trailer.second.size() + 4;
+      grpc_slice grpc_trailer = grpc_slice_malloc(grpc_trailer_size);
+      uint8_t* p = GPR_SLICE_START_PTR(grpc_trailer);
+      memcpy(p, trailer.first.c_str(), trailer.first.size());
+      p += trailer.first.size();
+      memcpy(p, ": ", 2);
+      p += 2;
+      memcpy(p, trailer.second.data(), trailer.second.size());
+      p += trailer.second.size();
+      memcpy(p, "\r\n", 2);
+      buffer.push_back(Slice(grpc_trailer, Slice::STEAL_REF));
+      length += grpc_trailer_size;
+    }
   }
 
   // Encodes GRPC trailer frame.

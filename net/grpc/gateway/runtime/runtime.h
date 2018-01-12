@@ -42,7 +42,10 @@ class Runtime {
       ngx_http_request_t *http_request, const string &backend_address,
       const string &host, const string &backend_method,
       const ngx_flag_t &channel_reuse,
-      const ngx_msec_t &client_liveness_detection_interval);
+      const ngx_msec_t &client_liveness_detection_interval,
+      const ngx_flag_t &backend_ssl, const string &backend_ssl_pem_root_certs,
+      const string &backend_ssl_pem_private_key,
+      const string &backend_ssl_pem_cert_chain);
 
   // Returns the GRPC completion queue.
   grpc_completion_queue *grpc_event_queue() {
@@ -52,7 +55,10 @@ class Runtime {
   // Returns the GRPC backend channel for the given backend address, creates new
   // channel if needed.
   grpc_channel *GetBackendChannel(const std::string &backend_address,
-                                  bool use_shared_channel_pool);
+                                  bool use_shared_channel_pool, bool ssl,
+                                  const std::string &ssl_pem_root_certs,
+                                  const std::string &ssl_pem_private_key,
+                                  const std::string &ssl_pem_cert_chain);
 
  private:
   Runtime();
