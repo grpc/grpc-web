@@ -11,7 +11,7 @@ client) experiences.
 Use the [build scripts](https://github.com/grpc/grpc-web/blob/master/README.md)
 or follow the step-by-step instruction.
 
-* Ubuntu 14.04
+* Ubuntu
 
 ```sh
 $ sudo apt-get install autoconf automake build-essential curl git \
@@ -82,7 +82,8 @@ above steps.
 From the repo root directory:
 
 ```sh
-$ make example
+$ make package                  # build nginx
+$ make example                  # build client JS library
 $ sudo make install-example
 ```
 

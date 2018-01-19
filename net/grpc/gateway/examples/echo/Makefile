@@ -51,11 +51,7 @@ GRPC_WEB_PLUGIN_PATH = $(ROOT_DIR)/$(JS_PATH)/protoc-gen-grpc-web
 all: echo_server client package
 
 package:
-	mkdir -p $(ROOT_DIR)/gConnector/conf
 	mkdir -p $(ROOT_DIR)/gConnector/$(EXAMPLES_PATH)
-	cp $(ROOT_DIR)/net/grpc/gateway/nginx/package/nginx.sh $(ROOT_DIR)/gConnector
-	cp $(ROOT_DIR)/third_party/nginx/src/objs/nginx $(ROOT_DIR)/gConnector
-	cp $(ROOT_DIR)/third_party/nginx/src/conf/* $(ROOT_DIR)/gConnector/conf
 	cp nginx.conf $(ROOT_DIR)/gConnector/conf
 	cp echo_server $(ROOT_DIR)/gConnector
 	cp echotest.html $(ROOT_DIR)/gConnector/$(EXAMPLES_PATH)
