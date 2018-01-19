@@ -82,15 +82,16 @@ above steps.
 From the repo root directory:
 
 ```sh
-$ make package                  # build nginx
-$ make example                  # build client JS library
+$ make                          # build nginx
+$ make example                  # build end-to-end example
 $ sudo make install-example
 ```
 
 On MacOS, you might have to do
 
 ```sh
-$ KERNEL_BITS=64 make example
+$ KERNEL_BITS=64 make
+$ make example
 $ sudo make install-example
 ```
 
