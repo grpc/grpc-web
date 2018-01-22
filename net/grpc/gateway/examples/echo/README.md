@@ -6,13 +6,10 @@ speaks a different protocol than the native grpc (over http/2) protocol, the
 end-to-end semantics is identicial to what a native grpc client (e.g. a Node
 client) experiences.
 
-## Install pre-requisites
+## Pre-requisites
 
 Use the [build scripts](https://github.com/grpc/grpc-web/blob/master/README.md)
 or follow the step-by-step instruction.
-
-Pre-requisites
-------
 
 * Ubuntu
 
@@ -28,16 +25,14 @@ $ sudo apt-get install autoconf automake build-essential curl git \
 $ brew install autoconf automake libtool pcre
 ```
 
-Clone the repo
-------
+## Clone the repo
 
 ```sh
 $ git clone git@github.com:grpc/grpc-web.git
 $ cd grpc-web && git submodule update --init
 ```
 
-Install gRPC and Protobuf
-------
+## Install gRPC and Protobuf
 
 ```sh
 $ cd third_party/grpc
@@ -64,8 +59,7 @@ $ sudo EMBED_OPENSSL=false make install   # install gRPC
 > $ sudo EMBED_OPENSSL=false CPPFLAGS=-DOSATOMIC_USE_INLINED=1 make install  # install gRPC
 > ```
 
-Download the Closure compiler
-------
+## Download the Closure compiler
 
 From the repo root directory:
 
