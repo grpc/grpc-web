@@ -6,10 +6,13 @@ speaks a different protocol than the native grpc (over http/2) protocol, the
 end-to-end semantics is identicial to what a native grpc client (e.g. a Node
 client) experiences.
 
-## Pre-requisites
+## Install pre-requisites
 
 Use the [build scripts](https://github.com/grpc/grpc-web/blob/master/README.md)
 or follow the step-by-step instruction.
+
+Pre-requisites
+------
 
 * Ubuntu
 
@@ -25,14 +28,16 @@ $ sudo apt-get install autoconf automake build-essential curl git \
 $ brew install autoconf automake libtool pcre
 ```
 
-* Clone the repo
+Clone the repo
+------
 
 ```sh
 $ git clone git@github.com:grpc/grpc-web.git
 $ cd grpc-web && git submodule update --init
 ```
 
-* Install gRPC and Protobuf
+Install gRPC and Protobuf
+------
 
 ```sh
 $ cd third_party/grpc
@@ -45,21 +50,22 @@ $ EMBED_OPENSSL=false make
 $ sudo EMBED_OPENSSL=false make install   # install gRPC
 ```
 
-On MacOS Sierra, when running `make` from the `third_party/grpc` directory,
-you might have to add one more environment variable.
+> On MacOS Sierra, when running `make` from the `third_party/grpc` directory,
+> you might have to add one more environment variable.
 
-```sh
-$ cd third_party/grpc
-$ git submodule update --init
-$ cd third_party/protobuf
-$ ./autogen.sh && ./configure && make
-$ sudo make install                       # install protobuf
-$ cd ../..
-$ EMBED_OPENSSL=false CPPFLAGS=-DOSATOMIC_USE_INLINED=1 make
-$ sudo EMBED_OPENSSL=false CPPFLAGS=-DOSATOMIC_USE_INLINED=1 make install  # install gRPC
-```
+> ```sh
+> $ cd third_party/grpc
+> $ git submodule update --init
+> $ cd third_party/protobuf
+> $ ./autogen.sh && ./configure && make
+> $ sudo make install                       # install protobuf
+> $ cd ../..
+> $ EMBED_OPENSSL=false CPPFLAGS=-DOSATOMIC_USE_INLINED=1 make
+> $ sudo EMBED_OPENSSL=false CPPFLAGS=-DOSATOMIC_USE_INLINED=1 make install  # install gRPC
+> ```
 
-* Download the Closure compiler
+Download the Closure compiler
+------
 
 From the repo root directory:
 
@@ -68,11 +74,11 @@ $ wget http://dl.google.com/closure-compiler/compiler-latest.zip -O compiler-lat
 $ unzip -p -qq -o compiler-latest.zip *.jar > closure-compiler.jar
 ```
 
-If you don't have `wget` installed, you can try
+> If you don't have `wget` installed, you can try
 
-```sh
-$ curl http://dl.google.com/closure-compiler/compiler-latest.zip -o compiler-latest.zip
-```
+> ```sh
+> $ curl http://dl.google.com/closure-compiler/compiler-latest.zip -o compiler-latest.zip
+> ```
 
 Make sure `closure-compiler.jar` is put in the repo root directory after the
 above steps.
@@ -87,13 +93,13 @@ $ make example                  # build end-to-end example
 $ sudo make install-example
 ```
 
-On MacOS, you might have to do
+> On MacOS, you might have to do
 
-```sh
-$ KERNEL_BITS=64 make
-$ make example
-$ sudo make install-example
-```
+> ```sh
+> $ KERNEL_BITS=64 make
+> $ make example
+> $ sudo make install-example
+> ```
 
 ## Run the example
 
