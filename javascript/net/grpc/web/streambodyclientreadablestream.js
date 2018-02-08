@@ -74,6 +74,13 @@ grpc.web.StreamBodyClientReadableStream = function(
 
   /**
    * @private
+   * @type {function(...):?|null}
+   *   The stream error callback
+   */
+  this.onErrorCallback_ = null;
+
+  /**
+   * @private
    * @type {function(?):!grpc.web.Status|null}
    *   A function to parse the Rpc Status response
    */
@@ -97,6 +104,11 @@ grpc.web.StreamBodyClientReadableStream = function(
       self.onEndCallback_();
     }
   });
+  this.xhrNodeReadableStream_.on('error', function() {
+    if (self.onErrorCallback_) {
+      self.onErrorCallback_();
+    }
+  });
 };
 
 
@@ -112,6 +124,8 @@ grpc.web.StreamBodyClientReadableStream.prototype.on = function(
     this.onStatusCallback_ = callback;
   } else if (eventType == 'end') {
     this.onEndCallback_ = callback;
+  } else if (eventType == 'error') {
+    this.onErrorCallback_ = callback;
   }
   return this;
 };
