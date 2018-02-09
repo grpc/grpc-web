@@ -1,15 +1,58 @@
-## Overview
+## Build and Run an Echo example
 
-Provided as a Javascript client library, gRPC Web allows a browser/HTML client
-to use the same API as a Node client to access a grpc service. While grpc-web
-speaks a different protocol than the native grpc (over http/2) protocol, the
-end-to-end semantics is identicial to what a native grpc client (e.g. a Node
-client) experiences.
+This page will show you how to quickly build and run an end-to-end Echo
+example. The example has 3 key components:
+
+ - Front-end JS client
+ - Nginx gateway
+ - gRPC backend server (written in C++)
+
+
+## Before you start
+
+You need the following 3 things before you start:
+
+ 1. Protobuf
+ 2. gRPC
+ 3. Closure compiler
+ 
+Click [here](#pre-requisites) or scroll down to see some details on how to
+install those.
+ 
+## Build the example
+
+From the repo root directory:
+
+```sh
+$ make                          # build nginx
+# on MacOS, you might have to do this instead
+# KERNEL_BITS=64 make
+
+$ make example                  # build end-to-end example
+$ sudo make install-example
+```
+
+## Run the example
+
+1. Run the gRPC backend server (written in C++)
+
+```sh
+$ cd net/grpc/gateway/examples/echo && ./echo_server &
+```
+
+2. Run the gRPC Nginx Gateway
+
+```sh
+$ cd gConnector && ./nginx.sh &
+```
+
+3. Open a browser tab, and Inspect
+```
+http://<hostname>:8080/net/grpc/gateway/examples/echo/echotest.html
+```
+
 
 ## Pre-requisites
-
-Use the [build scripts](https://github.com/grpc/grpc-web/blob/master/README.md)
-or follow the step-by-step instruction.
 
 * Ubuntu
 
@@ -30,36 +73,37 @@ $ brew install autoconf automake libtool pcre
 ```sh
 $ git clone git@github.com:grpc/grpc-web.git
 $ cd grpc-web && git submodule update --init
+
+$ cd third_party/grpc
+$ git submodule update --init
 ```
 
-## Install gRPC and Protobuf
+## 1. Install Protobuf
+
+From the repo root directory:
+
+```sh
+$ cd third_party/grpc/third_party/protobuf
+$ ./autogen.sh && ./configure && make
+$ sudo make install
+```
+
+
+## 2. Install gRPC
+
+From the repo root directory:
 
 ```sh
 $ cd third_party/grpc
-$ git submodule update --init
-$ cd third_party/protobuf
-$ ./autogen.sh && ./configure && make
-$ sudo make install                       # install protobuf
-$ cd ../..
 $ EMBED_OPENSSL=false make
-$ sudo EMBED_OPENSSL=false make install   # install gRPC
+$ sudo EMBED_OPENSSL=false make install
+
+# On MacOS Sierra or above, you might need to run these 2 commands instead
+# EMBED_OPENSSL=false CPPFLAGS=-DOSATOMIC_USE_INLINED=1 make
+# sudo EMBED_OPENSSL=false CPPFLAGS=-DOSATOMIC_USE_INLINED=1 make install
 ```
 
-> On MacOS Sierra, when running `make` from the `third_party/grpc` directory,
-> you might have to add one more environment variable.
-
-> ```sh
-> $ cd third_party/grpc
-> $ git submodule update --init
-> $ cd third_party/protobuf
-> $ ./autogen.sh && ./configure && make
-> $ sudo make install                       # install protobuf
-> $ cd ../..
-> $ EMBED_OPENSSL=false CPPFLAGS=-DOSATOMIC_USE_INLINED=1 make
-> $ sudo EMBED_OPENSSL=false CPPFLAGS=-DOSATOMIC_USE_INLINED=1 make install  # install gRPC
-> ```
-
-## Download the Closure compiler
+## 3. Download the Closure compiler
 
 From the repo root directory:
 
@@ -68,51 +112,9 @@ $ wget http://dl.google.com/closure-compiler/compiler-latest.zip -O compiler-lat
 $ unzip -p -qq -o compiler-latest.zip *.jar > closure-compiler.jar
 ```
 
-> If you don't have `wget` installed, you can try
-
-> ```sh
-> $ curl http://dl.google.com/closure-compiler/compiler-latest.zip -o compiler-latest.zip
-> ```
-
 Make sure `closure-compiler.jar` is put in the repo root directory after the
 above steps.
 
-## Build the example
-
-From the repo root directory:
-
-```sh
-$ make                          # build nginx
-$ make example                  # build end-to-end example
-$ sudo make install-example
-```
-
-> On MacOS, you might have to do
-
-> ```sh
-> $ KERNEL_BITS=64 make
-> $ make example
-> $ sudo make install-example
-> ```
-
-## Run the example
-
-* Run the gRPC backend server (written in C++)
-
-```sh
-$ cd net/grpc/gateway/examples/echo && ./echo_server &
-```
-
-* Run the gRPC Nginx Gateway
-
-```sh
-$ cd gConnector && ./nginx.sh &
-```
-
-* Open a browser tab, and Inspect
-```
-http://<hostname>:8080/net/grpc/gateway/examples/echo/echotest.html
-```
 
 
 ## What's next?
