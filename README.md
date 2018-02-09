@@ -15,23 +15,55 @@ added the gRPC-Web support to [Envoy](https://github.com/lyft/envoy). In future,
 we expect gRPC-Web to be supported in language-specific Web frameworks too, such
 as Go, Java, Node, which will eliminate the need to deploy a gateway.
 
-## Generate and use the client library
+## It's easy to get started!
 
-Please check the end-to-end echo example in [net/grpc/gateway/examples/echo](https://github.com/grpc/grpc-web/tree/master/net/grpc/gateway/examples/echo).
+For more information about building and running an end-to-end example, please
+check [this page](net/grpc/gateway/examples/echo).
 
-## Build the gateway
 
-### Ubuntu 14.04
+### 1. Define your service
 
-1.  Install docker.
-2.  run `./ubuntu\_14\_04.sh`
-3.  build result is available in net/grpc/gateway/docker folder as
-    gConnector.zip and gConnector_static.zip.
+```
+service EchoService {
+  rpc Echo(EchoRequest) returns (EchoResponse);
 
-### Mac OS X
+  rpc ServerStreamingEcho(ServerStreamingEchoRequest)
+      returns (stream ServerStreamingEchoResponse);
+}
+```
 
-1.  Install brew.
-2.  `brew install autoconf automake libtool pcre`
-3.  run `./darwin\_x86\_64.sh`
-4.  build result is available in the root folder as gConnector.zip and
-    gConnector_static.zip.
+
+### 2. Build an example client
+
+```sh
+$ make                       # build nginx gateway
+$ make example               # build end-to-end example
+$ sudo make install-example
+```
+
+
+### 3. Write your JS client
+
+Create your client
+```js
+var echoService = new proto.grpc.gateway.testing.EchoServiceClient(
+  'http://localhost:9091');
+```
+  
+Make a unary RPC call
+```js
+var unaryRequest = new proto.grpc.gateway.testing.EchoRequest();
+unaryRequest.setMessage(msg);
+echoService.echo(unaryRequest, {},
+  function(err, response) {
+    console.log(response.getMessage());
+  });
+```
+
+Server-side streaming is supported!
+```js
+var stream = echoService.serverStreamingEcho(streamRequest, {});
+stream.on('data', function(response) {
+  console.log(response.getMessage());
+});
+```
