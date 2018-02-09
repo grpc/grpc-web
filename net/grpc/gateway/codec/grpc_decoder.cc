@@ -84,9 +84,9 @@ Status GrpcDecoder::Decode() {
               grpc_slice_buffer_add(&input, slice_input);
               grpc_slice_buffer output;
               grpc_slice_buffer_init(&output);
-              if (grpc_msg_decompress(
-                      grpc_compression_algorithm::GRPC_COMPRESS_GZIP, &input,
-                      &output) != 1) {
+              if (grpc_msg_decompress(grpc_message_compression_algorithm::
+                                          GRPC_MESSAGE_COMPRESS_GZIP,
+                                      &input, &output) != 1) {
                 grpc_slice_buffer_destroy(&input);
                 grpc_slice_buffer_destroy(&output);
 
