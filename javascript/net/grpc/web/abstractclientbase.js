@@ -25,8 +25,8 @@ grpc.web.AbstractClientBase = function() {};
  * @struct
  * @template REQUEST, RESPONSE
  * @param {function(new: RESPONSE, ...)} responseType
- * @param {function(!REQUEST):?} requestSerializeFn
- * @param {function(?):!RESPONSE} responseDeserializeFn
+ * @param {function(REQUEST): ?} requestSerializeFn
+ * @param {function(?): RESPONSE} responseDeserializeFn
  */
 grpc.web.AbstractClientBase.MethodInfo = function(
     responseType,
@@ -54,7 +54,7 @@ grpc.web.AbstractClientBase.MethodInfo = function(
  *         X))))
  * =:
  * @param {!string} method The method to invoke
- * @param {!REQUEST} request The request proto
+ * @param {REQUEST} request The request proto
  * @param {!Object<string, string>} metadata User defined call metadata
  * @param {!grpc.web.AbstractClientBase.MethodInfo<REQUEST, RESPONSE_LEAN>}
  *   methodInfo Information of this RPC method
@@ -69,7 +69,7 @@ grpc.web.AbstractClientBase.prototype.rpcCall = goog.abstractMethod;
 /**
  * @template REQUEST, RESPONSE
  * @param {!string} method The method to invoke
- * @param {!REQUEST} request The request proto
+ * @param {REQUEST} request The request proto
  * @param {!Object<string, string>} metadata User defined call metadata
  * @param {!grpc.web.AbstractClientBase.MethodInfo<REQUEST, RESPONSE>}
  *   methodInfo Information of this RPC method

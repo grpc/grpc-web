@@ -42,7 +42,7 @@ grpc.web.StreamBodyClientReadableStream = function(
 
   /**
    * @private
-   * @type {function(?):!RESPONSE|null} The deserialize function for the proto
+   * @type {function(?): RESPONSE|null} The deserialize function for the proto
    */
   this.responseDeserializeFn_ = null;
 
@@ -54,7 +54,7 @@ grpc.web.StreamBodyClientReadableStream = function(
 
   /**
    * @private
-   * @type {function(!RESPONSE)|null} The data callback
+   * @type {function(RESPONSE)|null} The data callback
    */
   this.onDataCallback_ = null;
 
@@ -134,7 +134,7 @@ grpc.web.StreamBodyClientReadableStream.prototype.on = function(
 /**
  * Register a callbackl to parse the response
  *
- * @param {function(?):!RESPONSE} responseDeserializeFn The deserialize
+ * @param {function(?): RESPONSE} responseDeserializeFn The deserialize
  *   function for the proto
  */
 grpc.web.StreamBodyClientReadableStream.prototype.setResponseDeserializeFn =
