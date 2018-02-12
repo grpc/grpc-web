@@ -1,4 +1,5 @@
 ./init_submodules.sh
+cd ..
 make clean
 docker build -t ubuntu_14_04 -f net/grpc/gateway/docker/ubuntu_14_04/Dockerfile .
 CONTAINER_ID=$(docker create ubuntu_14_04)

@@ -1,4 +1,5 @@
 ./init_submodules.sh
+cd ..
 make clean
 cd third_party/grpc/third_party/protobuf \
   && ./autogen.sh \
