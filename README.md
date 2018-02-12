@@ -17,11 +17,14 @@ as Go, Java, Node, which will eliminate the need to deploy a gateway.
 
 ## It's easy to get started!
 
-For more information about building and running an end-to-end example, please
-check [this page](net/grpc/gateway/examples/echo).
+The following section provides a quick introduction on how to get started on
+using gRPC-Web.
 
 
 ### 1. Define your service
+
+gRPC-Web uses [protocol buffers](https://developers.google.com/protocol-buffers/)
+to define message types and service definition.
 
 ```
 service EchoService {
@@ -35,6 +38,10 @@ service EchoService {
 
 ### 2. Build an example client
 
+The following builds and runs an end-to-end example. For more details, please
+see [this page](net/grpc/gateway/examples/echo). This example will build a
+simple C++ gRPC backend server and the Nginx gateway.
+
 ```sh
 $ make                       # build nginx gateway
 $ make example               # build end-to-end example
@@ -43,6 +50,8 @@ $ sudo make install-example
 
 
 ### 3. Write your JS client
+
+You can start making gRPC calls from the browser!
 
 Create your client
 ```js
