@@ -1,4 +1,5 @@
 ./init_submodules.sh
+cd ..
 make clean
 docker build -t debian_stretch -f net/grpc/gateway/docker/debian_stretch/Dockerfile .
 CONTAINER_ID=$(docker create debian_stretch)

@@ -16,8 +16,8 @@ You need the following 3 things before you start:
  2. gRPC
  3. Closure compiler
  
-Click [here](#pre-requisites) or scroll down to see some details on how to
-install those.
+Click [here](../../../../../INSTALL.md) and make sure you have installed all
+required pre-requisites.
  
 ## Build the example
 
@@ -50,71 +50,6 @@ $ cd gConnector && ./nginx.sh &
 ```
 http://<hostname>:8080/net/grpc/gateway/examples/echo/echotest.html
 ```
-
-
-## Pre-requisites
-
-* Ubuntu
-
-```sh
-$ sudo apt-get install autoconf automake build-essential curl git \
-  default-jdk default-jre libtool libpcre3 libpcre3-dev libssl-dev \
-  make wget zip
-```
-
-* MacOS
-
-```sh
-$ brew install autoconf automake libtool pcre
-```
-
-## Clone the repo
-
-```sh
-$ git clone git@github.com:grpc/grpc-web.git
-$ cd grpc-web && git submodule update --init
-
-$ cd third_party/grpc
-$ git submodule update --init
-```
-
-## 1. Install Protobuf
-
-From the repo root directory:
-
-```sh
-$ cd third_party/grpc/third_party/protobuf
-$ ./autogen.sh && ./configure && make
-$ sudo make install
-```
-
-
-## 2. Install gRPC
-
-From the repo root directory:
-
-```sh
-$ cd third_party/grpc
-$ EMBED_OPENSSL=false make
-$ sudo EMBED_OPENSSL=false make install
-
-# On MacOS Sierra or above, you might need to run these 2 commands instead
-# EMBED_OPENSSL=false CPPFLAGS=-DOSATOMIC_USE_INLINED=1 make
-# sudo EMBED_OPENSSL=false CPPFLAGS=-DOSATOMIC_USE_INLINED=1 make install
-```
-
-## 3. Download the Closure compiler
-
-From the repo root directory:
-
-```sh
-$ wget http://dl.google.com/closure-compiler/compiler-latest.zip -O compiler-latest.zip
-$ unzip -p -qq -o compiler-latest.zip *.jar > closure-compiler.jar
-```
-
-Make sure `closure-compiler.jar` is put in the repo root directory after the
-above steps.
-
 
 
 ## What's next?
