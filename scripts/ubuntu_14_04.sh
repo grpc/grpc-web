@@ -1,3 +1,4 @@
+cd "$(dirname "$0")"
 ./init_submodules.sh
 cd ..
 make clean
