@@ -40,6 +40,10 @@ $ sudo make install
 
 ## 2. Install gRPC
 
+Note: Since gRPC-Web is still in Beta, the version of gRPC required is
+sensitive to upstream changes. You most likely would need the build gRPC
+from the `master` branch.
+
 From the repo root directory:
 
 ```sh

@@ -18,6 +18,11 @@ You need the following 3 things before you start:
  
 Click [here](../../../../../INSTALL.md) and make sure you have installed all
 required pre-requisites.
+
+Note: Since gRPC-Web is still in Beta, the version of gRPC required is
+sensitive to upstream changes. You most likely would need the build gRPC
+from the `master` branch.
+
  
 ## Build the example
 
