@@ -8,6 +8,7 @@
 #include "net/grpc/gateway/runtime/tag.h"
 #include "third_party/grpc/include/grpc/grpc.h"
 #include "third_party/grpc/include/grpc/support/time.h"
+#include "third_party/grpc/src/core/lib/gpr/thd.h"
 
 namespace grpc {
 namespace gateway {
