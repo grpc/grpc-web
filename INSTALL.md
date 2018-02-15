@@ -54,6 +54,8 @@ $ sudo EMBED_OPENSSL=false make install
 # On MacOS Sierra or above, you might need to run these 2 commands instead
 # EMBED_OPENSSL=false CPPFLAGS=-DOSATOMIC_USE_INLINED=1 make
 # sudo EMBED_OPENSSL=false CPPFLAGS=-DOSATOMIC_USE_INLINED=1 make install
+
+# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<path-to-repo>/third_party/grpc/libs/opt
 ```
 
 ## 3. Download the Closure compiler
