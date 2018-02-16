@@ -26,7 +26,6 @@
 #include "third_party/grpc/include/grpc/grpc.h"
 #include "third_party/grpc/include/grpc/slice.h"
 #include "third_party/grpc/include/grpc/status.h"
-#include "third_party/grpc/include/grpc/support/thd.h"
 #include "third_party/grpc/include/grpc/support/time.h"
 
 // Tag for requests to GRPC backend. It contains the content and will be send

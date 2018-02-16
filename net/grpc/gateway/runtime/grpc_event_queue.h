@@ -2,7 +2,7 @@
 #define NET_GRPC_GATEWAY_RUNTIME_GRPC_EVENT_QUEUE_H_
 
 #include "third_party/grpc/include/grpc/grpc.h"
-#include "third_party/grpc/include/grpc/support/thd.h"
+#include "third_party/grpc/include/grpc/support/thd_id.h"
 
 namespace grpc {
 namespace gateway {
