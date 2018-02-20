@@ -39,7 +39,7 @@ RUN apt-get update && apt-get install -y \
 
 # Stage 2 init git submodules
 RUN cd /grpc-web && \
-  ./init_submodules.sh
+  ./scripts/init_submodules.sh
 
 # Stage 3 build the libraries
 RUN cd /grpc-web/third_party/grpc/third_party/protobuf && \
