@@ -18,14 +18,14 @@
 #
 # $ docker build \
 #   -t grpc-web \
-#   -f ~/grpc-web/net/grpc/gateway/docker/ubuntu_16_04/Dockerfile .
+#   -f net/grpc/gateway/docker/ubuntu_16_04/Dockerfile .
 #
 # Option 2: With end-to-end example
 #
 # $ docker build \
 #   -t grpc-web \
-#   --build-arg build_examples=true \
-#   -f ~/grpc-web/net/grpc/gateway/docker/ubuntu_16_04/Dockerfile .
+#   --build-arg with_examples=true \
+#   -f net/grpc/gateway/docker/ubuntu_16_04/Dockerfile .
 #
 # RUN
 #
@@ -50,8 +50,8 @@
 
 FROM ubuntu:16.04
 
-ARG build_examples=false
-ENV build_examples $build_examples
+ARG with_examples=false
+ENV with_examples $with_examples
 ENV EMBED_OPENSSL false
 
 RUN apt-get update && apt-get install -y \

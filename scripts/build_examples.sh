@@ -17,7 +17,7 @@ cd "$(dirname "$0")"
 pwd=$(pwd)
 
 # This environment variable is being set by the Dockerfile
-if [[ "$build_examples" = false ]]; then
+if [[ "$with_examples" = false ]]; then
   exit 0;
 fi
 
