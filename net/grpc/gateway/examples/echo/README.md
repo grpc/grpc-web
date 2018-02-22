@@ -10,19 +10,13 @@ example. The example has 3 key components:
 
 ## Before you start
 
-You need the following 3 things before you start:
+Before you start, ensure that you have the following installed exactly as per
+our [pre-requisites](../../../../../INSTALL.md):
 
- 1. Protobuf
+ 1. Protocol buffers
  2. gRPC
  3. Closure compiler
  
-Click [here](../../../../../INSTALL.md) and make sure you have installed all
-required pre-requisites.
-
-Note: Since gRPC-Web is still in Beta, the version of gRPC required is
-sensitive to upstream changes. You most likely would need the build gRPC
-from the `master` branch.
-
  
 ## Build the example
 
@@ -59,5 +53,5 @@ http://<hostname>:8080/net/grpc/gateway/examples/echo/echotest.html
 
 ## What's next?
 
-For more details about how you can run your own gRPC service from the browser,
-please see this [tutorial](tutorial.md)
+For more details about how you can run your own gRPC service and access it
+from the browser, please see this [tutorial](tutorial.md)

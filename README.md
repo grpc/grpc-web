@@ -1,30 +1,36 @@
 ## Overview
 
-gRPC-Web provides a Javascript client library that enables browser clients to
-access a gRPC server.
+gRPC-Web provides a Javascript client library that lets browser clients
+access a gRPC server. You can find out much more about gRPC in its own
+[website](https://grpc.io).
 
-The current release is an Alpha release, mainly for early adopters to provide
+The current release is a Beta release, mainly for early adopters to provide
 feedback on the JS API (both gRPC and Protobuf). The JS client library has been
-used by Google (and Alphabet) projects with [Closure compiler](https://github.com/google/closure-compiler)
-and its TypeScript generator (not yet open-sourced).
+used for some time by Google and Alphabet projects with the
+[Closure compiler](https://github.com/google/closure-compiler)
+and its TypeScript generator (which has not yet been open-sourced).
 
-The gateway that connects the client to the server uses Nginx. However, Nginx
-still doesn't support HTTP/2 (to backends) as of Q3/2017, and therefore the
-gateway can't be used as a reverse proxy (for load balancing). We have also
-added the gRPC-Web support to [Envoy](https://github.com/lyft/envoy). In future,
-we expect gRPC-Web to be supported in language-specific Web frameworks too, such
-as Go, Java, Node, which will eliminate the need to deploy a gateway.
+gRPC-Web clients connect to gRPC servers via a special gateway proxy: our
+provided version uses Nginx. However, Nginx doesn't support HTTP/2 to backends
+as of Q3/2017, and therefore the gateway can't be used as a reverse proxy for
+load balancing - if you need to use a reverse proxy as well you'll need to
+deploy a second gateway. We have also added gRPC-Web support to
+[Envoy](https://github.com/lyft/envoy), if you wish to use this instead of an
+Nginx gateway. In future, we expect gRPC-Web to be supported in
+language-specific Web frameworks, such as Go, Java, and Node, which will
+eliminate the need to deploy a gateway at all.
 
-## It's easy to get started!
+## How it works
 
-The following section provides a quick introduction on how to get started on
-using gRPC-Web.
-
+Let's take a look at how gRPC-Web works with a simple example. You can find out
+how to build, run and explore the example yourself in
+[Build and Run the Echo Example](net/grpc/gateway/examples/echo).
 
 ### 1. Define your service
 
-gRPC-Web uses [protocol buffers](https://developers.google.com/protocol-buffers/)
-to define message types and service definition.
+The first step when creating any gRPC service is to define it. Like all gRPC
+services, gRPC-Web uses [protocol buffers](https://developers.google.com/protocol-buffers/)
+to define its RPC service methods and their message request and response types.
 
 ```
 service EchoService {
@@ -36,22 +42,19 @@ service EchoService {
 ```
 
 
-### 2. Build an example client
+### 2. Build the server
 
-The following builds and runs an end-to-end example. For more details, please
-see [this page](net/grpc/gateway/examples/echo). This example will build a
-simple C++ gRPC backend server and the Nginx gateway.
+Next you need to have a gRPC server that implements the service interface and a
+gateway that allows the client to connect to the server. Our example builds a
+simple C++ gRPC backend server and the Nginx gateway. You can find out more in
+the [Echo Example](net/grpc/gateway/examples/echo).
 
-```sh
-$ make                       # build nginx gateway
-$ make example               # build end-to-end example
-$ sudo make install-example
-```
 
 
 ### 3. Write your JS client
 
-You can start making gRPC calls from the browser!
+Once the server and gateway are up and running, you can start making gRPC calls
+from the browser!
 
 Create your client
 ```js

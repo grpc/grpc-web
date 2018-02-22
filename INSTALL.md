@@ -1,5 +1,5 @@
-This document shows you some steps on how you can install gRPC-Web and the
-necessary pre-requisites.
+This document shows you how to install gRPC-Web and the necessary
+pre-requisites.
 
 ## Pre-requisites
 
@@ -41,8 +41,8 @@ $ sudo make install
 ## 2. Install gRPC
 
 Note: Since gRPC-Web is still in Beta, the version of gRPC required is
-sensitive to upstream changes. You most likely would need the build gRPC
-from the `master` branch.
+sensitive to upstream changes. You most likely will need to build from
+the `master` branch.
 
 From the repo root directory:
 
