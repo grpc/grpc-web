@@ -18,14 +18,14 @@
 #
 # $ docker build \
 #   -t grpc-web \
-#   -f ~/grpc-web/net/grpc/gateway/docker/ubuntu_14_04/Dockerfile .
+#   -f ~/grpc-web/net/grpc/gateway/docker/ubuntu_16_04/Dockerfile .
 #
 # Option 2: With end-to-end example
 #
 # $ docker build \
 #   -t grpc-web \
 #   --build-arg build_examples=true \
-#   -f ~/grpc-web/net/grpc/gateway/docker/ubuntu_14_04/Dockerfile .
+#   -f ~/grpc-web/net/grpc/gateway/docker/ubuntu_16_04/Dockerfile .
 #
 # RUN
 #
@@ -48,7 +48,7 @@
 #
 # http://localhost:8080/net/grpc/gateway/examples/echo/echotest.html
 
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 
 ARG build_examples=false
 ENV build_examples $build_examples
@@ -60,6 +60,8 @@ RUN apt-get update && apt-get install -y \
   build-essential \
   curl \
   git \
+  default-jdk \
+  default-jre \
   libtool \
   libpcre3 \
   libpcre3-dev \
@@ -68,11 +70,6 @@ RUN apt-get update && apt-get install -y \
   python-software-properties \
   software-properties-common \
   zip
-
-RUN add-apt-repository ppa:openjdk-r/ppa && \
-  apt-get update && apt-get install -y \
-  openjdk-8-jdk \
-  openjdk-8-jre
 
 COPY . /github/grpc-web
 
@@ -87,3 +84,4 @@ RUN cd /github/grpc-web && \
 
 RUN cd /github/grpc-web/ && \
   ./scripts/build_examples.sh
+
