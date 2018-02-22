@@ -1,21 +1,21 @@
-This guide will go into more details on how to run and access a gRPC service in
-the browser. We will try to define an `EchoService` as seen from this
-directory.
+This tutorial provides a detailed guide on how to run a gRPC service and access
+it in the browser.
 
 
 ## Define the Service
 
-Here we will define our `EchoService` in a file called
+The first step when creating a gRPC service is to define the service methods
+and their request and response message types using protocol buffers. In this
+example, we define our `EchoService` in a file called
 [`echo.proto`](echo.proto). For more information about protocol buffers and
 proto3 syntax, please see the [protobuf documentation][].
 
 
-
 ## Implement gRPC Backend Server
 
-For this example, we implement the backend gRPC `EchoServer` to handle client
-requests using C++. See the file [`echo_server.cc`](echo_server.cc) for
-details.
+Next, we implement our EchoService interface using C++ in the backend gRPC
+`EchoServer`. This will handle requests from clients. See the file
+[`echo_server.cc`](echo_server.cc) for details.
 
 You can implement the server in any language supported by gRPC. Please see
 the [gRPC website][] for more details.
@@ -24,8 +24,9 @@ the [gRPC website][] for more details.
 
 ## Configure the gRPC Nginx Gateway
 
-For this example, we will use the gRPC Nginx gateway to both serve static
-content and forward the gRPC request to the backend server.
+In this example, we will use the gRPC Nginx gateway to both serve static
+content and forward the gRPC request to the backend server. You can see the
+complete config file in [nginx.conf](./nginx.conf)
 
 To serve static content, we just need a simple block like this:
 
@@ -51,21 +52,21 @@ this:
   }
 ```
 
-You can see the file [`nginx.conf`](nginx.conf) to see the complete config.
-We also added some CORS setup to make sure the browser can request
-cross-origin content.
+We also add some CORS setup to make sure the browser can request cross-origin
+content.
 
 
-In this simple example, the HTML and JS assets will be served from port
-`:8080`. The HTML will make a gRPC request to port `:9091`. Nginx will
-forward the request to the backend gRPC server listening on port `:9090`.
+In this simple example, the HTML and JS assets are served from port `:8080`.
+The HTML makes gRPC requests to port `:9091`. Nginx forwards the requests to
+the backend gRPC server listening on port `:9090`.
 
 
 
 ## Generate JS messages and client stub
 
 
-To generate JS message classes from our `echo.proto`, you can run this:
+To generate JS message classes from our `echo.proto`, run the following
+command:
 
 ```sh
 $ protoc -I=. --js_out=import_style=closure,binary:. ./echo.proto
@@ -75,8 +76,8 @@ The `import_style` option passed to the `--js_out` flag makes sure the
 generated files will have closure style `goog.require` statements as well
 as serialize/deserialize methods for the binary protobuf format.
 
-For dependencies that we will need later, you will also need to generate
-message JS files for the following protos:
+For dependencies that we will need later, you also need to generate
+message JS files for the following protos using the same syntax:
 ```
 third_party/protobuf/src/google/protobuf/any.proto
 net/grpc/gateway/protos/stream_body.proto
@@ -84,8 +85,8 @@ net/grpc/gateway/protos/pair.proto
 ```
 
 
-To generate the client stub, you will first need the gRPC Web protoc plugin.
-To compile the plugin `protoc-gen-grpc-web`, you can run this:
+To generate the client stub, first you need the gRPC Web protoc plugin.
+To compile the plugin `protoc-gen-grpc-web`, run this command:
 
 ```sh
 $ cd ~/grpc-web
@@ -93,20 +94,20 @@ $ cd javascript/net/grpc/web
 $ make
 ```
 
-To generate the client stub JS file, you can now run this command:
+To generate the client stub JS file, now run this command:
 
 ```sh
 $ protoc -I=. --plugin=protoc-gen-grpc-web=<path to plugin> \
   --grpc-web_out=out=echo.grpc.pb.js,mode=grpcweb:. ./echo.proto
 ```
 
-Specifically, the format for the `--grpc-web_out` param is
+The format for the `--grpc-web_out` param is
 
 ```sh
 --grpc-web_out=out=<filename>,mode=grpcweb:<output dir>
 ```
 
-This will generate the client stub in the file `echo.grpc.pb.js`.
+Our command generates the client stub in the file `echo.grpc.pb.js`.
 
 
 ## Compile the JS library
@@ -138,8 +139,9 @@ from your HTML file.
 ## Write client JS code
 
 
-Connecting everything above together, here is how you can call your gRPC
-service from javascript from the browser.
+Connecting everything together, here's how to call your gRPC
+service from Javascript from the browser. You can see the entire example in the
+sample [echotest.html](./echotest.html) file.
 
 First, load the compiled JS library
 
@@ -147,7 +149,7 @@ First, load the compiled JS library
 <script type="text/javascript" src="compiled.js">
 ```
 
-Then, you can create the service client.
+Then create the service client.
 
 ```js
     var service = new proto.grpc.gateway.testing.EchoServiceClient(
@@ -183,9 +185,6 @@ Here's how you can call a server streaming RPC method:
                   ' '+(i++));
     });
 ```
-
-You can see the entire example in the sample [`echotest.html`](echotest.html)
-file.
 
 
 [protobuf documentation]:https://developers.google.com/protocol-buffers/
