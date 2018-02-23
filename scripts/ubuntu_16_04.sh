@@ -14,22 +14,11 @@
 # limitations under the License.
 
 cd "$(dirname "$0")"
-pwd=$(pwd)
-
-# This environment variable is being set by the Dockerfile
-if [[ "$with_examples" = false ]]; then
-  exit 0;
-fi
-
-# Install Protobuf
-cd "$pwd"/../third_party/grpc/third_party/protobuf && \
-  ./autogen.sh && ./configure && make && make install && ldconfig
-
-# Download closure-compiler.jar and build the example
-cd "$pwd"/../ && \
-  curl http://dl.google.com/closure-compiler/compiler-latest.zip \
-  -o compiler-latest.zip && \
-  rm -f closure-compiler.jar && \
-  unzip -p -qq -o compiler-latest.zip *.jar > closure-compiler.jar && \
-  make example && \
-  make install-example
+./init_submodules.sh
+cd ..
+make clean
+docker build -t ubuntu_16_04 -f net/grpc/gateway/docker/ubuntu_16_04/Dockerfile .
+CONTAINER_ID=$(docker create ubuntu_16_04)
+docker cp "$CONTAINER_ID:/github/grpc-web/gConnector.zip" net/grpc/gateway/docker/ubuntu_16_04
+docker cp "$CONTAINER_ID:/github/grpc-web/gConnector_static.zip" net/grpc/gateway/docker/ubuntu_16_04
+docker rm "$CONTAINER_ID"
