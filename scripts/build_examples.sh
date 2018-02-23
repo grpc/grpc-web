@@ -29,6 +29,7 @@ cd "$pwd"/../third_party/grpc/third_party/protobuf && \
 cd "$pwd"/../ && \
   curl http://dl.google.com/closure-compiler/compiler-latest.zip \
   -o compiler-latest.zip && \
+  rm -f closure-compiler.jar && \
   unzip -p -qq -o compiler-latest.zip *.jar > closure-compiler.jar && \
   make example && \
   make install-example
