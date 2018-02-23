@@ -17,20 +17,8 @@ cd "$(dirname "$0")"
 ./init_submodules.sh
 cd ..
 make clean
-cd third_party/grpc/third_party/protobuf \
-  && ./autogen.sh \
-  && ./configure \
-  && make install -j8 \
-  && cd ../../../..
-if [[ $(uname -r) == 16* ]]; # Mac OS X Sierra
-then
-  cd third_party/grpc \
-    && CPPFLAGS=-DOSATOMIC_USE_INLINED=1 make install \
-    && cd ../..
-else
-  cd third_party/grpc \
-    && make install -j8 \
-    && cd ../..
-fi
-export KERNEL_BITS=64
-make
+docker build -t ubuntu_16_04 -f net/grpc/gateway/docker/ubuntu_16_04/Dockerfile .
+CONTAINER_ID=$(docker create ubuntu_16_04)
+docker cp "$CONTAINER_ID:/github/grpc-web/gConnector.zip" net/grpc/gateway/docker/ubuntu_16_04
+docker cp "$CONTAINER_ID:/github/grpc-web/gConnector_static.zip" net/grpc/gateway/docker/ubuntu_16_04
+docker rm "$CONTAINER_ID"

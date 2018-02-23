@@ -74,6 +74,8 @@ RUN apt-get update && apt-get install -y \
 COPY . /github/grpc-web
 
 RUN cd /github/grpc-web && \
+  rm -rf third_party && \
+  git checkout third_party && \
   ./scripts/init_submodules.sh
 
 RUN cd /github/grpc-web/third_party/grpc && \
