@@ -76,7 +76,11 @@ This is working in progress. We will be using the Angular/TS tool chain to gener
 
 Let us know what you think.
 
+# Web UI support
 
+This allows the user to construct and submit a gRPC request directly using the browser.
+
+We need define a standard look & feel for creating and rendering nested protobuf messages.
 
 
 
