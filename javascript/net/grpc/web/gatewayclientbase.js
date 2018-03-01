@@ -76,6 +76,7 @@ grpc.web.GatewayClientBase.prototype.rpcCall = function(
   });
 
   xhr.headers.set('Content-Type', 'application/x-protobuf');
+  xhr.headers.set('X-User-Agent', 'grpc-web-javascript/0.1');
   xhr.headers.set('X-Accept-Content-Transfer-Encoding', 'base64');
   xhr.headers.set('X-Accept-Response-Streaming', 'true');
 
@@ -99,6 +100,7 @@ grpc.web.GatewayClientBase.prototype.serverStreaming = function(
       methodInfo.responseDeserializeFn);
 
   xhr.headers.set('Content-Type', 'application/x-protobuf');
+  xhr.headers.set('X-User-Agent', 'grpc-web-javascript/0.1');
   xhr.headers.set('X-Accept-Content-Transfer-Encoding', 'base64');
   xhr.headers.set('X-Accept-Response-Streaming', 'true');
 
