@@ -70,6 +70,7 @@ grpc.web.GrpcWebClientBase.prototype.rpcCall = function(
   });
 
   xhr.headers.set('Content-Type', 'application/grpc-web-text');
+  xhr.headers.set('X-User-Agent', 'grpc-web-javascript/0.1');
   xhr.headers.set('Accept', 'application/grpc-web-text');
 
   var payload = this.encodeRequest_(serialized);
@@ -92,6 +93,7 @@ grpc.web.GrpcWebClientBase.prototype.serverStreaming = function(
   stream.setResponseDeserializeFn(methodInfo.responseDeserializeFn);
 
   xhr.headers.set('Content-Type', 'application/grpc-web-text');
+  xhr.headers.set('X-User-Agent', 'grpc-web-javascript/0.1');
   xhr.headers.set('Accept', 'application/grpc-web-text');
 
   var payload = this.encodeRequest_(serialized);
