@@ -1,3 +1,10 @@
+# Overview
+
+The purpose of this document is to list all the features that we believe are useful for gRPC users. 
+We hope to use your [votes](https://docs.google.com/forms/d/1NjWpyRviohn5jaPntosBHXRXZYkh_Ffi4GxJZFibylM/edit) to prioritize the work to either publish Google's existing solutions or develope some of the features
+directly in the open-source repo. For the latter case, please mention if you are interested in contributing to any of the road-map
+features.
+
 # Background
 
 gRPC-Web has been developed internally at Google 
@@ -9,12 +16,9 @@ Like everywhere, Web platforms and technologies are constantly evolving, often w
 As much as we like to open-source everything, we also need keep the balance bewteen creating a reusable and stable open-source solution
 and meeting those requirements uqniue to Google's Web ecosystems or their applications (such as search). 
 
-The purpose of this document is to list all the features (in no particular order) that we believe are useful for gRPC users. 
-We hope to use your [votes](https://docs.google.com/forms/d/1NjWpyRviohn5jaPntosBHXRXZYkh_Ffi4GxJZFibylM/edit) to prioritize the work to either publish some existing solutions or develope some of the features
-directly in the open-source repo. For the latter case, please mention if you are interested in contributing to any of the road-map
-features.
+# Roadmap features (in no particular order)
 
-# More efficient message encoding
+## More efficient message encoding
 
 The binary protobuf encoding format is not most CPU efficient for browser clients. 
 Furthremore, the generated code size increases as the total protobuf definition increases.
@@ -24,7 +28,7 @@ which is much more efficient (comparable to JSON) and compact in code size.
 
 Note this is also one of the reasons we need support the non-binary ("application/grpc-web-text") wire-transport format. 
 
-# Streaming-friendly transport implementation
+## Streaming-friendly transport implementation
 
 Currently the gRPC-Web client library uses XHR to ensure cross-browser support and to support platforms such as Reactive-Native.
 
@@ -34,26 +38,26 @@ on the client-side.
 However, fetch still has certain gaps compared to XHR, most notably the lack of cancellation support. 
 Progressing events, I/O event throttling are other concerns.  
 
-# Bidi support
+## Bidi support
 
 We are yet to finalize the bidi transport story. At the same time, please tell us your exact use case, 
 and maybe explain why server-streaming is insufficient.
 
-# Security
+## Security
 
 We plan to publish a comprehensive guideline doc on how to create secure Web applications.
 
 Native support such as XSRF, XSS prevention may also be added to the gRPC-Web protocol.
 
-# Compression
+## Compression
 
 Do you need request compression? Brotli? 
 
-# CORS 
+## CORS 
 
 We plan to support CORS preflight as specified in [PROTOCOL-WEB.md](https://github.com/grpc/grpc-web/blob/master/PROTOCOL-WEB.md).
 
-# Local proxies
+## Local proxies
 
 In-process proxies will eliminate the need to deploy an extra proxy such as Nginx. 
 
@@ -62,32 +66,25 @@ in-process gRPC-Web proxy.
 
 To minimize maintenance overhead, we don't have any plan to add gRPC-Web support to any new HTTP reverse proxies other than Nginx and Envoy.
 
-# Web framework integration
+## Web framework integration
 
 This is to provide first-class support for gRPC API and gRPC-Web in popular Web frameworks such as Angular. 
 
 Note Dart gRPC will be using gRPC-Web as the underlying implementation on the Dart Web platform.
 
-# TypeScript support
+## TypeScript support
 
 This is working in progress. We will be using the Angular/TS tool chain to generate TS APIs for gRPC-Web clients.
 
-# Non-closure compiler support
+## Non-closure compiler support
 
 Let us know what you think.
 
-# Web UI support
+## Web UI support
 
 This allows the user to construct and submit a gRPC request directly using the browser.
 
 We need define a standard look & feel for creating and rendering nested protobuf messages.
-
-
-
-
-
-
-
 
 
 
