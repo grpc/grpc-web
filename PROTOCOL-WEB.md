@@ -19,4 +19,16 @@ we expect some of those features will evolve too or become deprecated.
   * https://github.com/whatwg/fetch/issues/210
 * CSP support to be specified
 
-# More to be added
+# Security
+
+* XSRF, XSS policy to be published 
+
+# Compression
+
+* Full-body compression is supported and expected for all unary
+requests/responses. The compression/decompression will be done
+by browsers, using standard Content-Encoding headers
+  * “grpc-encoding” header is not used
+  * SDCH, Brotli will be supported
+* Message-level compression for streamed requests/responses is not supported
+because manual compression/decompression is prohibitively expensive using JS
