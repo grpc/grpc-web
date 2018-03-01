@@ -3,7 +3,7 @@
 Due to browser limitation, gRPC-Web supports a different transport
 than the [HTTP/2 based gRPC protocol](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md).
 The difference between the gRPC-Web
-protocol and the HTTP/2 based gRPC protocol is specified in the [gRPC repo](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md). 
+protocol and the HTTP/2 based gRPC protocol is specified in the core gRPC repo as [PROTOCOL-WEB](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md). 
 
 In addition to the wire-transport spec, gRPC-Web also supports features that are unique to browser (HTML) clients.
 This document is the official spec for those features. As the Web platform evolves,
