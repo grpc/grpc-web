@@ -18,15 +18,13 @@ and meeting those requirements uqniue to Google's Web ecosystems or their applic
 
 # Roadmap features (in no particular order)
 
-## More efficient message encoding
+## Non-binary message encoding
 
 The binary protobuf encoding format is not most CPU efficient for browser clients. 
 Furthremore, the generated code size increases as the total protobuf definition increases.
 
 For Google's Web applications (e.g. gmail), we use a JSON like format 
-which is much more efficient (comparable to JSON) and compact in code size. 
-
-Note this is also one of the reasons we need support the non-binary ("application/grpc-web-text") wire-transport format. 
+which is comparable to JSON in efficiency but also very compact in both the message size and code size.
 
 ## Streaming-friendly transport implementation
 
