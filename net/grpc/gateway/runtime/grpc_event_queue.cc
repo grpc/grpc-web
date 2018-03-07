@@ -26,27 +26,25 @@
 #include "net/grpc/gateway/runtime/tag.h"
 #include "third_party/grpc/include/grpc/grpc.h"
 #include "third_party/grpc/include/grpc/support/time.h"
-#include "third_party/grpc/src/core/lib/gpr/thd.h"
+#include "third_party/grpc/src/core/lib/gprpp/thd.h"
 
 namespace grpc {
 namespace gateway {
 
 GrpcEventQueue::GrpcEventQueue()
-    : queue_(grpc_completion_queue_create_for_next(nullptr)), thread_id_(0) {}
+    : queue_(grpc_completion_queue_create_for_next(nullptr)),
+      thread_("grpc_event_queue", ExecuteEventLoop, this) {}
 
 GrpcEventQueue::~GrpcEventQueue() {}
 
 void GrpcEventQueue::Start() {
-  gpr_thd_options thread_options = gpr_thd_options_default();
-  gpr_thd_options_set_joinable(&thread_options);
-  int ret = gpr_thd_new(&thread_id_, "grpc_event_queue", ExecuteEventLoop, this,
-                        &thread_options);
-  INFO("GRPC event thread started: %d", ret);
+  thread_.Start();
+  INFO("GRPC event thread started");
 }
 
 void GrpcEventQueue::Stop() {
   grpc_completion_queue_shutdown(queue_);
-  gpr_thd_join(thread_id_);
+  thread_.Join();
   grpc_completion_queue_destroy(queue_);
 }
 

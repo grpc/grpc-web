@@ -20,7 +20,7 @@
 #define NET_GRPC_GATEWAY_RUNTIME_GRPC_EVENT_QUEUE_H_
 
 #include "third_party/grpc/include/grpc/grpc.h"
-#include "third_party/grpc/include/grpc/support/thd_id.h"
+#include "third_party/grpc/src/core/lib/gprpp/thd.h"
 
 namespace grpc {
 namespace gateway {
@@ -49,7 +49,7 @@ class GrpcEventQueue {
 
   grpc_completion_queue* queue_;
 
-  gpr_thd_id thread_id_;
+  grpc_core::Thread thread_;
 };
 }  // namespace gateway
 }  // namespace grpc
