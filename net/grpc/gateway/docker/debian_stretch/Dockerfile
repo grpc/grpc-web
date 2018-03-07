@@ -12,22 +12,78 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# BUILD
+#
+# Option 1: Only the Nginx gateway
+#
+# $ docker build \
+#   -t grpc-web \
+#   -f net/grpc/gateway/docker/debian_stretch/Dockerfile .
+#
+# Option 2: With end-to-end example
+#
+# $ docker build \
+#   -t grpc-web \
+#   --build-arg with_examples=true \
+#   -f net/grpc/gateway/docker/debian_stretch/Dockerfile .
+#
+# RUN
+#
+# 1. Nginx gateway:
+#
+# $ docker run -itp 8080:8080 -p 9091:9091 --name grpc-web grpc-web /bin/bash
+# $ cd /github/grpc-web/gConnector && ./nginx.sh
+#
+# 2. Backend gRPC server:
+# (if you had built the end-to-end example with Option 2 in the BUILD section)
+#
+# $ docker exec -it grpc-web \
+#   /github/grpc-web/net/grpc/gateway/examples/echo/echo_server
+#
+# 3. Browser example:
+# (if you had built the end-to-end example with Option 2 in the BUILD section)
+#
+# Once the Nginx gateway and the Echo server are both running in different
+# terminals, you can point a web browser to
+#
+# http://localhost:8080/net/grpc/gateway/examples/echo/echotest.html
+
 FROM debian:stretch
+
+ARG with_examples=false
+ENV with_examples $with_examples
+ENV EMBED_OPENSSL false
+
 RUN apt-get update && apt-get install -y \
   autoconf \
   automake \
   build-essential \
   curl \
   git \
+  default-jdk \
+  default-jre \
   libtool \
   libpcre3 \
   libpcre3-dev \
   libssl-dev \
   make \
+  python \
   software-properties-common \
-  zip
+  zip \
+  zlib1g-dev
+
 COPY . /github/grpc-web
+
+RUN cd /github/grpc-web && \
+  rm -rf third_party && \
+  git checkout third_party && \
+  ./scripts/init_submodules.sh
+
 RUN cd /github/grpc-web/third_party/grpc && \
-  make
+  make && make install && ldconfig
+
 RUN cd /github/grpc-web && \
   make
+
+RUN cd /github/grpc-web && \
+  ./scripts/build_examples.sh
