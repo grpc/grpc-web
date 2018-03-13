@@ -20,7 +20,6 @@ LDFLAGS += -L/usr/local/lib -lgrpc++ -lgrpc -lgrpc++_reflection \
            -lprotobuf -lpthread -ldl
 PROTOC = protoc
 PROTOS_PATH = ../..
-CLOSUREBUILDER = closure/bin/build/closurebuilder.py
 EXAMPLES_PATH = net/grpc/gateway/examples/echo
 HTML_DIR = /var/www/html
 JS_IMPORT_STYLE = import_style=closure,binary
@@ -62,14 +61,15 @@ compiled-js:
 	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/compatibility_tests/v3.0.0/commonjs/*_test.js || true
 	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/compatibility_tests/v3.1.0/*_test.js || true
 	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/compatibility_tests/v3.1.0/binary/*_test.js || true
-	$(ROOT_DIR)/third_party/closure-library/$(CLOSUREBUILDER) \
-  --root=$(ROOT_DIR)/javascript \
-  --root=$(ROOT_DIR)/net \
-  --root=$(ROOT_DIR)/third_party/closure-library \
-  --root=$(ROOT_DIR)/$(PROTOBUF_PATH)/js \
-  --namespace="proto.grpc.gateway.testing.EchoServiceClient" \
-  --output_mode=compiled \
-  --compiler_jar=$(ROOT_DIR)/closure-compiler.jar > compiled.js
+	java \
+  -jar $(ROOT_DIR)/closure-compiler.jar \
+  --js $(ROOT_DIR)/javascript \
+  --js $(ROOT_DIR)/net \
+  --js $(ROOT_DIR)/third_party/closure-library \
+  --js $(ROOT_DIR)/$(PROTOBUF_PATH)/js \
+  --entry_point=goog:proto.grpc.gateway.testing.EchoServiceClient \
+  --dependency_mode=STRICT \
+  --js_output_file compiled.js
 	cd $(ROOT_DIR)/$(PROTOBUF_PATH) && git checkout .
 
 proto-js:

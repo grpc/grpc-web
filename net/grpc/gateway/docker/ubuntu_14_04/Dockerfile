@@ -65,7 +65,6 @@ RUN apt-get update && apt-get install -y \
   libpcre3-dev \
   libssl-dev \
   make \
-  python-software-properties \
   software-properties-common \
   zip
 
