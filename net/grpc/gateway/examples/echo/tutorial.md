@@ -118,14 +118,15 @@ that can be used in the browser, using the [Closure compiler][]
 
 ```sh
 $ cd ~/grpc-web
-$ ./third_party/closure-library/closure/bin/build/closurebuilder.py \
-  --root=./javascript \
-  --root=./net \
-  --root=./third_party/closure-library \
-  --root=./third_party/protobuf/js \
-  --namespace="proto.grpc.gateway.testing.EchoServiceClient" \
-  --output_mode=compiled \
-  --compiler_jar=./closure-compiler.jar > compiled.js
+$ java \
+  -jar ./closure-compiler.jar \
+  --js ./javascript \
+  --js ./net \
+  --js ./third_party/closure-library \
+  --js ./third_party/protobuf/js \
+  --entry_point=goog:proto.grpc.gateway.testing.EchoServiceClient \
+  --dependency_mode=STRICT \
+  --js_output_file compiled.js
 ```
 
 You can add as many `--root` parameters as you like so that the Closure
