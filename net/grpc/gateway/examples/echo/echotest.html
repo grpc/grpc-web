@@ -124,7 +124,7 @@
 
  $(document).ready(function() {
    echoService = new proto.grpc.gateway.testing.EchoServiceClient(
-     'http://' + window.location.hostname + ':9091');
+     'http://' + window.location.hostname + ':8080');
 
    // event handlers
    $("#send").click(send);

@@ -20,6 +20,23 @@ Nginx gateway. In future, we expect gRPC-Web to be supported in
 language-specific Web frameworks, such as Go, Java, and Node, which will
 eliminate the need to deploy a gateway at all.
 
+## Quick start
+
+Try gRPC-Web and run a quick Echo example from the browser!
+
+From the repo root directory:
+
+```sh
+$ docker build -t grpc-web --build-arg with_examples=true \
+  -f net/grpc/gateway/docker/ubuntu_16_04/Dockerfile .
+$ docker run -t -p 8080:8080 grpc-web
+```
+
+Open a browser tab, and inspect
+```
+http://localhost:8080/net/grpc/gateway/examples/echo/echotest.html
+```
+
 ## How it works
 
 Let's take a look at how gRPC-Web works with a simple example. You can find out
@@ -59,9 +76,9 @@ from the browser!
 Create your client
 ```js
 var echoService = new proto.grpc.gateway.testing.EchoServiceClient(
-  'http://localhost:9091');
+  'http://localhost:8080');
 ```
-  
+
 Make a unary RPC call
 ```js
 var unaryRequest = new proto.grpc.gateway.testing.EchoRequest();
