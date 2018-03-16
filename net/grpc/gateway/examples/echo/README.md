@@ -16,8 +16,23 @@ our [pre-requisites](../../../../../INSTALL.md):
  1. Protocol buffers
  2. gRPC
  3. Closure compiler
- 
- 
+
+
+## Using Docker
+
+From the repo root directory:
+
+```sh
+$ docker build -t grpc-web --build-arg with_examples=true \
+  -f net/grpc/gateway/docker/ubuntu_16_04/Dockerfile .
+$ docker run -t -p 8080:8080 grpc-web
+```
+
+Open a browser tab, and inspect
+```
+http://<hostname>:8080/net/grpc/gateway/examples/echo/echotest.html
+```
+
 ## Build the example
 
 From the repo root directory:
@@ -45,7 +60,7 @@ $ cd net/grpc/gateway/examples/echo && ./echo_server &
 $ cd gConnector && ./nginx.sh &
 ```
 
-3. Open a browser tab, and Inspect
+3. Open a browser tab, and inspect
 ```
 http://<hostname>:8080/net/grpc/gateway/examples/echo/echotest.html
 ```

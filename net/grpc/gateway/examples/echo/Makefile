@@ -38,6 +38,7 @@ package:
 	cp echo_server $(ROOT_DIR)/gConnector
 	cp echotest.html $(ROOT_DIR)/gConnector/$(EXAMPLES_PATH)
 	cp compiled.js $(ROOT_DIR)/gConnector
+	cp run_example.sh $(ROOT_DIR)/gConnector
 	zip -r $(ROOT_DIR)/gConnector.zip $(ROOT_DIR)/gConnector/*
 
 echo_server: echo.pb.o echo.grpc.pb.o echo_server.o echo_service_impl.o

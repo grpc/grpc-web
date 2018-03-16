@@ -29,22 +29,14 @@
 #
 # RUN
 #
-# 1. Nginx gateway:
+# 1. Run the docker container
 #
-# $ docker run -itp 8080:8080 -p 9091:9091 --name grpc-web grpc-web /bin/bash
-# $ cd /github/grpc-web/gConnector && ./nginx.sh
+# $ docker run -t -p 8080:8080 grpc-web
 #
-# 2. Backend gRPC server:
+# 2. Browser example:
 # (if you had built the end-to-end example with Option 2 in the BUILD section)
 #
-# $ docker exec -it grpc-web \
-#   /github/grpc-web/net/grpc/gateway/examples/echo/echo_server
-#
-# 3. Browser example:
-# (if you had built the end-to-end example with Option 2 in the BUILD section)
-#
-# Once the Nginx gateway and the Echo server are both running in different
-# terminals, you can point a web browser to
+# Point a web browser to
 #
 # http://localhost:8080/net/grpc/gateway/examples/echo/echotest.html
 
@@ -88,3 +80,6 @@ RUN cd /github/grpc-web && \
 
 RUN cd /github/grpc-web && \
   ./scripts/build_examples.sh
+
+EXPOSE 8080
+CMD ["/github/grpc-web/gConnector/run_example.sh"]

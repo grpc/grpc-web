@@ -33,8 +33,9 @@ To serve static content, we just need a simple block like this:
 ```
   server {
     listen 8080;
-    root /var/www/html;
-    location / {
+    server_name localhost;
+    location ~ \.(html|js)$ {
+      root /var/www/html;
     }
   }
 ```
@@ -44,7 +45,7 @@ this:
 
 ```
   server {
-    listen 9091;
+    listen 8080;
     server_name localhost;
     location / {
       grpc_pass localhost:9090;
@@ -57,8 +58,8 @@ content.
 
 
 In this simple example, the HTML and JS assets are served from port `:8080`.
-The HTML makes gRPC requests to port `:9091`. Nginx forwards the requests to
-the backend gRPC server listening on port `:9090`.
+The HTML makes gRPC requests to same port `:8080`. Nginx forwards the request
+to the backend gRPC server listening on port `:9090`.
 
 
 
@@ -154,7 +155,7 @@ Then create the service client.
 
 ```js
     var service = new proto.grpc.gateway.testing.EchoServiceClient(
-        'http://localhost:9091');
+        'http://localhost:8080');
 ```
 
 

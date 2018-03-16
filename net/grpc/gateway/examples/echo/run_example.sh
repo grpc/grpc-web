@@ -14,4 +14,5 @@
 # limitations under the License.
 
 cd "$(dirname "$0")"
-./nginx -p . -c conf/nginx.conf
+./nginx.sh &
+../net/grpc/gateway/examples/echo/echo_server
