@@ -11,14 +11,9 @@ used for some time by Google and Alphabet projects with the
 and its TypeScript generator (which has not yet been open-sourced).
 
 gRPC-Web clients connect to gRPC servers via a special gateway proxy: our
-provided version uses Nginx. However, Nginx doesn't support HTTP/2 to backends
-as of Q3/2017, and therefore the gateway can't be used as a reverse proxy for
-load balancing - if you need to use a reverse proxy as well you'll need to
-deploy a second gateway. We have also added gRPC-Web support to
+provided version uses Nginx. We have also added gRPC-Web support to
 [Envoy](https://github.com/lyft/envoy), if you wish to use this instead of an
-Nginx gateway. In future, we expect gRPC-Web to be supported in
-language-specific Web frameworks, such as Go, Java, and Node, which will
-eliminate the need to deploy a gateway at all.
+Nginx gateway. We may support other gateways in future. See the [roadmap](https://github.com/grpc/grpc-web/blob/master/ROADMAP.md) doc.
 
 ## Quick start
 
