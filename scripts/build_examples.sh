@@ -23,7 +23,7 @@ fi
 
 # Install Protobuf
 cd "$pwd"/../third_party/grpc/third_party/protobuf && \
-  ./autogen.sh && ./configure && make && make install && ldconfig
+  ./autogen.sh && ./configure && make && make install
 
 # Download closure-compiler.jar and build the example
 cd "$pwd"/../ && \

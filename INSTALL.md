@@ -7,8 +7,7 @@ pre-requisites.
 
 ```sh
 $ sudo apt-get install autoconf automake build-essential curl git \
-  default-jdk default-jre libtool libpcre3 libpcre3-dev libssl-dev \
-  make wget zip
+  default-jdk default-jre libtool libpcre3-dev libssl-dev make wget zip
 ```
 
 * MacOS
