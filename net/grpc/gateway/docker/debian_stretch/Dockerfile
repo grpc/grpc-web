@@ -43,6 +43,7 @@
 FROM debian:stretch
 
 ARG with_examples=false
+ARG MAKEFLAGS=-j8
 ENV with_examples $with_examples
 ENV EMBED_OPENSSL false
 
@@ -55,11 +56,9 @@ RUN apt-get update && apt-get install -y \
   default-jdk \
   default-jre \
   libtool \
-  libpcre3 \
   libpcre3-dev \
   libssl-dev \
   make \
-  software-properties-common \
   zip \
   zlib1g-dev
 
@@ -71,10 +70,10 @@ RUN cd /github/grpc-web && \
   ./scripts/init_submodules.sh
 
 RUN cd /github/grpc-web/third_party/grpc && \
-  make && make install && ldconfig
+  make && make install
 
 RUN cd /github/grpc-web && \
-  make
+  make package
 
 RUN cd /github/grpc-web && \
   ./scripts/build_examples.sh
