@@ -65,11 +65,9 @@ RUN add-apt-repository ppa:openjdk-r/ppa && \
   openjdk-8-jdk \
   openjdk-8-jre
 
-COPY . /github/grpc-web
+RUN git clone https://github.com/grpc/grpc-web /github/grpc-web
 
 RUN cd /github/grpc-web && \
-  rm -rf third_party && \
-  git checkout third_party && \
   ./scripts/init_submodules.sh
 
 RUN cd /github/grpc-web/third_party/grpc && \
