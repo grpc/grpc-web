@@ -19,7 +19,7 @@ $ brew install autoconf automake libtool pcre
 ## Clone the repo
 
 ```sh
-$ git clone git@github.com:grpc/grpc-web.git
+$ git clone https://github.com/grpc/grpc-web
 $ cd grpc-web && git submodule update --init
 
 $ cd third_party/grpc
