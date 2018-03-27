@@ -14,7 +14,7 @@ most of the features and make them available to gRPC users.
 
 Like everywhere, Web platforms and technologies are constantly evolving, often with many inter-dependent ecosystems.
 As much as we like to open-source everything, we also need keep the balance bewteen creating a reusable and stable open-source solution
-and meeting those requirements uqniue to Google's Web ecosystems or their applications (such as search). 
+and meeting those requirements unique to Google's Web ecosystems or their applications (such as search). 
 
 # Roadmap features (in no particular order)
 
