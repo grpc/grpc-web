@@ -15,7 +15,6 @@
  * limitations under the License.
  *
  */
-
 /**
  * @fileoverview gRPC browser client library.
  *
@@ -23,18 +22,22 @@
  *
  * @author stanleycheung@google.com (Stanley Cheung)
  */
-goog.provide('grpc.web.GatewayClientBase');
+goog.module('grpc.web.GatewayClientBase');
+
+goog.module.declareLegacyNamespace();
 
 
-goog.require('goog.crypt');
-goog.require('goog.net.XhrIo');
-goog.require('grpc.web.AbstractClientBase');
-goog.require('grpc.web.ClientReadableStream');
-goog.require('grpc.web.Status');
-goog.require('grpc.web.StatusCode');
-goog.require('grpc.web.StreamBodyClientReadableStream');
-goog.require('proto.google.rpc.Status');
-goog.require('proto.grpc.gateway.Pair');
+const AbstractClientBase = goog.require('grpc.web.AbstractClientBase');
+const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
+const GoogleRpcStatus = goog.require('proto.google.rpc.Status');
+const NodeReadableStream = goog.require('goog.net.streams.NodeReadableStream');
+const Pair = goog.require('proto.grpc.gateway.Pair');
+const StatusCode = goog.require('grpc.web.StatusCode');
+const StreamBodyClientReadableStream = goog.require('grpc.web.StreamBodyClientReadableStream');
+const XhrIo = goog.require('goog.net.XhrIo');
+const createXhrNodeReadableStream = goog.require('goog.net.streams.createXhrNodeReadableStream');
+const googCrypt = goog.require('goog.crypt');
+const {Status} = goog.require('grpc.web.Status');
 
 
 
@@ -42,16 +45,16 @@ goog.require('proto.grpc.gateway.Pair');
  * Base class for gRPC web client (gRPC Gateway)
  * @param {?Object=} opt_options
  * @constructor
- * @implements {grpc.web.AbstractClientBase}
+ * @implements {AbstractClientBase}
  */
-grpc.web.GatewayClientBase = function(opt_options) {
+const GatewayClientBase = function(opt_options) {
 };
 
 
 /**
  * @override
  */
-grpc.web.GatewayClientBase.prototype.rpcCall = function(
+GatewayClientBase.prototype.rpcCall = function(
     method, request, metadata, methodInfo, callback) {
   var xhr = this.newXhr_();
   var serialized = methodInfo.requestSerializeFn(request);
@@ -67,7 +70,7 @@ grpc.web.GatewayClientBase.prototype.rpcCall = function(
   });
 
   stream.on('status', function(status) {
-    if (status.code != grpc.web.StatusCode.OK) {
+    if (status.code != StatusCode.OK) {
       callback({
         'code': status.code,
         'message': status.details
@@ -88,7 +91,7 @@ grpc.web.GatewayClientBase.prototype.rpcCall = function(
 /**
  * @override
  */
-grpc.web.GatewayClientBase.prototype.serverStreaming = function(
+GatewayClientBase.prototype.serverStreaming = function(
     method, request, metadata, methodInfo) {
   var xhr = this.newXhr_();
   var serialized = methodInfo.requestSerializeFn(request);
@@ -113,26 +116,43 @@ grpc.web.GatewayClientBase.prototype.serverStreaming = function(
  * Create a new XhrIo object
  *
  * @private
- * @return {!goog.net.XhrIo} The created XhrIo object
+ * @return {!XhrIo} The created XhrIo object
  */
-grpc.web.GatewayClientBase.prototype.newXhr_ = function() {
-  return new goog.net.XhrIo();
+GatewayClientBase.prototype.newXhr_ = function() {
+  return new XhrIo();
+};
+
+
+/**
+ * Create a new XhrNodeReadableStream object
+ *
+ * @private
+ * @param {!XhrIo} xhr The XhrIo object
+ * @return {?NodeReadableStream} The XHR NodeReadableStream object
+ */
+GatewayClientBase.prototype.newXhrNodeReadableStream_ = function(xhr) {
+  return createXhrNodeReadableStream(xhr);
 };
 
 
 /**
  * @template RESPONSE
  * @private
- * @param {!goog.net.XhrIo} xhr The XhrIo object
+ * @param {!XhrIo} xhr The XhrIo object
  * @param {function(?):!RESPONSE} responseDeserializeFn
  *   The deserialize function for the proto
- * @return {!grpc.web.ClientReadableStream<RESPONSE>} The Client Readable Stream
+ * @return {!ClientReadableStream<RESPONSE>} The Client Readable Stream
  */
-grpc.web.GatewayClientBase.prototype.createClientReadableStream_ = function(
-    xhr, responseDeserializeFn) {
-  var stream = new grpc.web.StreamBodyClientReadableStream(xhr);
+GatewayClientBase.prototype.createClientReadableStream_ = function(
+  xhr, responseDeserializeFn) {
+  var xhrNodeReadableStream = this.newXhrNodeReadableStream_(xhr);
+  var genericTransportInterface = {
+    xhr: xhr,
+    nodeReadableStream: xhrNodeReadableStream,
+  };
+  var stream = new StreamBodyClientReadableStream(genericTransportInterface);
   stream.setResponseDeserializeFn(responseDeserializeFn);
-  stream.setRpcStatusParseFn(grpc.web.GatewayClientBase.parseRpcStatus_);
+  stream.setRpcStatusParseFn(GatewayClientBase.parseRpcStatus_);
   return stream;
 };
 
@@ -141,18 +161,18 @@ grpc.web.GatewayClientBase.prototype.createClientReadableStream_ = function(
  * @private
  * @static
  * @param {!Uint8Array} data Data returned from underlying stream
- * @return {!grpc.web.Status} status The Rpc Status details
+ * @return {!Status} status The Rpc Status details
  */
-grpc.web.GatewayClientBase.parseRpcStatus_ = function(data) {
-  var rpcStatus = proto.google.rpc.Status.deserializeBinary(data);
+GatewayClientBase.parseRpcStatus_ = function(data) {
+  var rpcStatus = GoogleRpcStatus.deserializeBinary(data);
   var metadata = {};
   var details = rpcStatus.getDetailsList();
   for (var i = 0; i < details.length; i++) {
-    var pair = proto.grpc.gateway.Pair.deserializeBinary(
+    var pair = Pair.deserializeBinary(
       details[i].getValue());
-    var first = goog.crypt.utf8ByteArrayToString(
+    var first = googCrypt.utf8ByteArrayToString(
       pair.getFirst_asU8());
-    var second = goog.crypt.utf8ByteArrayToString(
+    var second = googCrypt.utf8ByteArrayToString(
       pair.getSecond_asU8());
     metadata[first] = second;
   }
@@ -163,3 +183,6 @@ grpc.web.GatewayClientBase.parseRpcStatus_ = function(data) {
   };
   return status;
 };
+
+
+exports = GatewayClientBase;

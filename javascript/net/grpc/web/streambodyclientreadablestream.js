@@ -15,7 +15,6 @@
  * limitations under the License.
  *
  */
-
 /**
  * @fileoverview gRPC web client Readable Stream
  *
@@ -27,14 +26,16 @@
  *
  * @author stanleycheung@google.com (Stanley Cheung)
  */
-goog.provide('grpc.web.StreamBodyClientReadableStream');
+goog.module('grpc.web.StreamBodyClientReadableStream');
+
+goog.module.declareLegacyNamespace();
 
 
-goog.require('goog.net.XhrIo');
-goog.require('goog.net.streams.NodeReadableStream');
-goog.require('goog.net.streams.createXhrNodeReadableStream');
-goog.require('grpc.web.ClientReadableStream');
-goog.require('grpc.web.Status');
+const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
+const NodeReadableStream = goog.require('goog.net.streams.NodeReadableStream');
+const XhrIo = goog.require('goog.net.XhrIo');
+const {GenericTransportInterface} = goog.require('grpc.web.GenericTransportInterface');
+const {Status} = goog.require('grpc.web.Status');
 
 
 
@@ -44,19 +45,18 @@ goog.require('grpc.web.Status');
  *
  * @template RESPONSE
  * @constructor
- * @implements {grpc.web.ClientReadableStream}
+ * @implements {ClientReadableStream}
  * @final
- * @param {!goog.net.XhrIo} xhr The XhrIo object
+ * @param {!GenericTransportInterface} genericTransportInterface The
+ *   GenericTransportInterface
  */
-grpc.web.StreamBodyClientReadableStream = function(
-    xhr) {
+const StreamBodyClientReadableStream = function(genericTransportInterface) {
   /**
+   * @const
    * @private
-   * @type {?goog.net.streams.NodeReadableStream} The XHR Node Readable
-   *   Stream
+   * @type {?NodeReadableStream|undefined} The XHR Node Readable Stream
    */
-  this.xhrNodeReadableStream_ =
-      goog.net.streams.createXhrNodeReadableStream(xhr);
+  this.xhrNodeReadableStream_ = genericTransportInterface.nodeReadableStream;
 
   /**
    * @private
@@ -65,10 +65,11 @@ grpc.web.StreamBodyClientReadableStream = function(
   this.responseDeserializeFn_ = null;
 
   /**
+   * @const
    * @private
-   * @type {!goog.net.XhrIo} The XhrIo object
+   * @type {?XhrIo|undefined} The XhrIo object
    */
-  this.xhr_ = xhr;
+  this.xhr_ = genericTransportInterface.xhr;
 
   /**
    * @private
@@ -78,7 +79,7 @@ grpc.web.StreamBodyClientReadableStream = function(
 
   /**
    * @private
-   * @type {function(!grpc.web.Status)|null}
+   * @type {function(!Status)|null}
    *   The status callback
    */
   this.onStatusCallback_ = null;
@@ -99,7 +100,7 @@ grpc.web.StreamBodyClientReadableStream = function(
 
   /**
    * @private
-   * @type {function(?):!grpc.web.Status|null}
+   * @type {function(?):!Status|null}
    *   A function to parse the Rpc Status response
    */
   this.rpcStatusParseFn_ = null;
@@ -133,7 +134,7 @@ grpc.web.StreamBodyClientReadableStream = function(
 /**
  * @override
  */
-grpc.web.StreamBodyClientReadableStream.prototype.on = function(
+StreamBodyClientReadableStream.prototype.on = function(
     eventType, callback) {
   // TODO(stanleycheung): change eventType to @enum type
   if (eventType == 'data') {
@@ -155,7 +156,7 @@ grpc.web.StreamBodyClientReadableStream.prototype.on = function(
  * @param {function(?): RESPONSE} responseDeserializeFn The deserialize
  *   function for the proto
  */
-grpc.web.StreamBodyClientReadableStream.prototype.setResponseDeserializeFn =
+StreamBodyClientReadableStream.prototype.setResponseDeserializeFn =
   function(responseDeserializeFn) {
   this.responseDeserializeFn_ = responseDeserializeFn;
 };
@@ -165,10 +166,10 @@ grpc.web.StreamBodyClientReadableStream.prototype.setResponseDeserializeFn =
 /**
  * Register a function to parse RPC status response
  *
- * @param {function(?):!grpc.web.Status} rpcStatusParseFn A function to parse
+ * @param {function(?):!Status} rpcStatusParseFn A function to parse
  *    the RPC status response
  */
-grpc.web.StreamBodyClientReadableStream.prototype.setRpcStatusParseFn = function(rpcStatusParseFn) {
+StreamBodyClientReadableStream.prototype.setRpcStatusParseFn = function(rpcStatusParseFn) {
   this.rpcStatusParseFn_ = rpcStatusParseFn;
 };
 
@@ -176,6 +177,10 @@ grpc.web.StreamBodyClientReadableStream.prototype.setRpcStatusParseFn = function
 /**
  * @override
  */
-grpc.web.StreamBodyClientReadableStream.prototype.cancel = function() {
+StreamBodyClientReadableStream.prototype.cancel = function() {
   this.xhr_.abort();
 };
+
+
+
+exports = StreamBodyClientReadableStream;

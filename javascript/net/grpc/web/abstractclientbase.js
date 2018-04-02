@@ -15,7 +15,6 @@
  * limitations under the License.
  *
  */
-
 /**
  * @fileoverview gRPC browser client library.
  *
@@ -23,11 +22,13 @@
  *
  * @author stanleycheung@google.com (Stanley Cheung)
  */
-goog.provide('grpc.web.AbstractClientBase');
+goog.module('grpc.web.AbstractClientBase');
+
+goog.module.declareLegacyNamespace();
 
 
-goog.require('grpc.web.Error');
-
+const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
+const Error = goog.require('grpc.web.Error');
 
 
 /**
@@ -35,7 +36,7 @@ goog.require('grpc.web.Error');
  *
  * @interface
  */
-grpc.web.AbstractClientBase = function() {};
+const AbstractClientBase = function() {};
 
 
 /**
@@ -46,7 +47,7 @@ grpc.web.AbstractClientBase = function() {};
  * @param {function(REQUEST): ?} requestSerializeFn
  * @param {function(?): RESPONSE} responseDeserializeFn
  */
-grpc.web.AbstractClientBase.MethodInfo = function(
+AbstractClientBase.MethodInfo = function(
     responseType,
     requestSerializeFn,
     responseDeserializeFn) {
@@ -71,26 +72,31 @@ grpc.web.AbstractClientBase.MethodInfo = function(
  *         cond(eq(X, 'null'), none(),
  *         X))))
  * =:
- * @param {!string} method The method to invoke
+ * @param {string} method The method to invoke
  * @param {REQUEST} request The request proto
  * @param {!Object<string, string>} metadata User defined call metadata
- * @param {!grpc.web.AbstractClientBase.MethodInfo<REQUEST, RESPONSE_LEAN>}
+ * @param {!AbstractClientBase.MethodInfo<REQUEST, RESPONSE_LEAN>}
  *   methodInfo Information of this RPC method
- * @param {function(?grpc.web.Error, ?RESPONSE)}
+ * @param {function(?Error, ?RESPONSE)}
  *   callback A callback function which takes (error, response)
- * @return {!grpc.web.ClientReadableStream<RESPONSE_LEAN>|undefined}
+ * @return {!ClientReadableStream<RESPONSE_LEAN>|undefined}
  *   The Client Readable Stream
  */
-grpc.web.AbstractClientBase.prototype.rpcCall = goog.abstractMethod;
+AbstractClientBase.prototype.rpcCall = goog.abstractMethod;
 
 
 /**
  * @template REQUEST, RESPONSE
- * @param {!string} method The method to invoke
+ * @param {string} method The method to invoke
  * @param {REQUEST} request The request proto
  * @param {!Object<string, string>} metadata User defined call metadata
- * @param {!grpc.web.AbstractClientBase.MethodInfo<REQUEST, RESPONSE>}
+ * @param {!AbstractClientBase.MethodInfo<REQUEST, RESPONSE>}
  *   methodInfo Information of this RPC method
- * @return {!grpc.web.ClientReadableStream<RESPONSE>} The Client Readable Stream
+ * @return {!ClientReadableStream<RESPONSE>} The Client Readable Stream
  */
-grpc.web.AbstractClientBase.prototype.serverStreaming = goog.abstractMethod;
+AbstractClientBase.prototype.serverStreaming = goog.abstractMethod;
+
+
+
+exports = AbstractClientBase;
+
