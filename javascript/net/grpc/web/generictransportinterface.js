@@ -26,39 +26,19 @@
  *
  * @author stanleycheung@google.com (Stanley Cheung)
  */
-goog.module('grpc.web.ClientReadableStream');
+goog.module('grpc.web.GenericTransportInterface');
 
 goog.module.declareLegacyNamespace();
 
 
-
-/**
- * A stream that the client can read from. Used for calls that are streaming
- * from the server side.
- *
- * @template RESPONSE
- * @interface
- */
-const ClientReadableStream = function() {};
+const NodeReadableStream = goog.require('goog.net.streams.NodeReadableStream');
+const XhrIo = goog.require('goog.net.XhrIo');
 
 
 /**
- * Register a callback to handle I/O events.
- *
- * @param {string} eventType The event type
- * @param {function(?)} callback The call back to handle the event with
- * an optional input object
- * @return {!ClientReadableStream} this object
+ * @typedef {{
+ *   nodeReadableStream: (?NodeReadableStream|undefined),
+ *   xhr: (?XhrIo|undefined),
+ * }}
  */
-ClientReadableStream.prototype.on = goog.abstractMethod;
-
-
-
-/**
- * Close the stream.
- */
-ClientReadableStream.prototype.cancel = goog.abstractMethod;
-
-
-
-exports = ClientReadableStream;
+exports.GenericTransportInterface;

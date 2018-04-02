@@ -29,6 +29,7 @@
 goog.module('grpc.web.util.GenericPbjsClient');
 
 var AbstractClientBase = goog.require('grpc.web.AbstractClientBase');
+var Error = goog.require('grpc.web.Error');
 var GatewayClientBase = goog.require('grpc.web.GatewayClientBase');
 
 
@@ -77,7 +78,7 @@ function getServiceName(method) {
  * @param {!Object} request
  *     The request (an instance of Protobuf.js Message or a payload object)
  * @param {!Object<string, string>} metadata User defined call metadata
- * @param {function(?grpc.web.Error, ?Object)} callback A callback function
+ * @param {function(?Error, ?Object)} callback A callback function
  *     which takes (error, response)
  */
 GenericPbjsClient.prototype.rpcCall = function(

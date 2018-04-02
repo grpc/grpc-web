@@ -15,7 +15,6 @@
  * limitations under the License.
  *
  */
-
 /**
  * @fileoverview gRPC browser client library.
  *
@@ -24,36 +23,41 @@
  *
  * @author stanleycheung@google.com (Stanley Cheung)
  */
-goog.provide('grpc.web.GrpcWebClientBase');
+goog.module('grpc.web.GrpcWebClientBase');
+
+goog.module.declareLegacyNamespace();
 
 
-goog.require('goog.crypt.base64');
-goog.require('goog.net.XhrIo');
-goog.require('grpc.web.AbstractClientBase');
-goog.require('grpc.web.GrpcWebClientReadableStream');
-goog.require('grpc.web.StatusCode');
+const AbstractClientBase = goog.require('grpc.web.AbstractClientBase');
+const GrpcWebClientReadableStream = goog.require('grpc.web.GrpcWebClientReadableStream');
+const StatusCode = goog.require('grpc.web.StatusCode');
+const XhrIo = goog.require('goog.net.XhrIo');
+const googCrypt = goog.require('goog.crypt.base64');
 
 
 /**
  * Base class for gRPC web client using the application/grpc-web wire format
  * @param {?Object=} opt_options
  * @constructor
- * @implements {grpc.web.AbstractClientBase}
+ * @implements {AbstractClientBase}
  */
-grpc.web.GrpcWebClientBase = function(opt_options) {
+const GrpcWebClientBase = function(opt_options) {
 };
 
 
 /**
  * @override
  */
-grpc.web.GrpcWebClientBase.prototype.rpcCall = function(
+GrpcWebClientBase.prototype.rpcCall = function(
     method, request, metadata, methodInfo, callback) {
   var xhr = this.newXhr_();
   var serialized = methodInfo.requestSerializeFn(request);
   xhr.headers.addAll(metadata);
 
-  var stream = new grpc.web.GrpcWebClientReadableStream(xhr);
+  var genericTransportInterface = {
+    xhr: xhr,
+  };
+  var stream = new GrpcWebClientReadableStream(genericTransportInterface);
   stream.setResponseDeserializeFn(methodInfo.responseDeserializeFn);
 
   stream.on('data', function(response) {
@@ -61,7 +65,7 @@ grpc.web.GrpcWebClientBase.prototype.rpcCall = function(
   });
 
   stream.on('status', function(status) {
-    if (status.code != grpc.web.StatusCode.OK) {
+    if (status.code != StatusCode.OK) {
       callback({
         'code': status.code,
         'message': status.details
@@ -74,7 +78,7 @@ grpc.web.GrpcWebClientBase.prototype.rpcCall = function(
   xhr.headers.set('Accept', 'application/grpc-web-text');
 
   var payload = this.encodeRequest_(serialized);
-  payload = goog.crypt.base64.encodeByteArray(payload);
+  payload = googCrypt.encodeByteArray(payload);
   xhr.send(method, 'POST', payload);
   return;
 };
@@ -83,13 +87,16 @@ grpc.web.GrpcWebClientBase.prototype.rpcCall = function(
 /**
  * @override
  */
-grpc.web.GrpcWebClientBase.prototype.serverStreaming = function(
+GrpcWebClientBase.prototype.serverStreaming = function(
     method, request, metadata, methodInfo) {
   var xhr = this.newXhr_();
   var serialized = methodInfo.requestSerializeFn(request);
   xhr.headers.addAll(metadata);
 
-  var stream = new grpc.web.GrpcWebClientReadableStream(xhr);
+  var genericTransportInterface = {
+    xhr: xhr,
+  };
+  var stream = new GrpcWebClientReadableStream(genericTransportInterface);
   stream.setResponseDeserializeFn(methodInfo.responseDeserializeFn);
 
   xhr.headers.set('Content-Type', 'application/grpc-web-text');
@@ -97,7 +104,7 @@ grpc.web.GrpcWebClientBase.prototype.serverStreaming = function(
   xhr.headers.set('Accept', 'application/grpc-web-text');
 
   var payload = this.encodeRequest_(serialized);
-  payload = goog.crypt.base64.encodeByteArray(payload);
+  payload = googCrypt.encodeByteArray(payload);
   xhr.send(method, 'POST', payload);
 
   return stream;
@@ -108,10 +115,10 @@ grpc.web.GrpcWebClientBase.prototype.serverStreaming = function(
  * Create a new XhrIo object
  *
  * @private
- * @return {!goog.net.XhrIo} The created XhrIo object
+ * @return {!XhrIo} The created XhrIo object
  */
-grpc.web.GrpcWebClientBase.prototype.newXhr_ = function() {
-  return new goog.net.XhrIo();
+GrpcWebClientBase.prototype.newXhr_ = function() {
+  return new XhrIo();
 };
 
 
@@ -123,7 +130,7 @@ grpc.web.GrpcWebClientBase.prototype.newXhr_ = function() {
  * @param {!Uint8Array} serialized The serialized proto payload
  * @return {!Uint8Array} The application/grpc-web padded request
  */
-grpc.web.GrpcWebClientBase.prototype.encodeRequest_ = function(serialized) {
+GrpcWebClientBase.prototype.encodeRequest_ = function(serialized) {
   var len = serialized.length;
   var bytesArray = [0, 0, 0, 0];
   var payload = new Uint8Array(5 + len);
@@ -135,3 +142,7 @@ grpc.web.GrpcWebClientBase.prototype.encodeRequest_ = function(serialized) {
   payload.set(serialized, 5);
   return payload;
 };
+
+
+
+exports = GrpcWebClientBase;

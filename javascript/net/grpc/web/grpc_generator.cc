@@ -341,6 +341,7 @@ class GrpcCodeGenerator : public CodeGenerator {
     printer.Print(vars, "goog.require('grpc.web.$mode$ClientBase');\n");
     printer.Print(vars, "goog.require('grpc.web.AbstractClientBase');\n");
     printer.Print(vars, "goog.require('grpc.web.ClientReadableStream');\n");
+    printer.Print(vars, "goog.require('grpc.web.Error');\n");
     PrintMessagesDeps(&printer, file);
     printer.Print("goog.scope(function() {\n\n");
 

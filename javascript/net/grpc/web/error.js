@@ -15,7 +15,6 @@
  * limitations under the License.
  *
  */
-
 /**
  * @fileoverview gRPC-Web Error objects
  *
@@ -23,7 +22,9 @@
  *
  * @author stanleycheung@google.com (Stanley Cheung)
  */
-goog.provide('grpc.web.Error');
+goog.module('grpc.web.Error');
+
+goog.module.declareLegacyNamespace();
 
 
 
@@ -33,4 +34,6 @@ goog.provide('grpc.web.Error');
  *   message: (string|undefined),
  * }}
  */
-grpc.web.Error;
+let Error;
+
+exports = Error;

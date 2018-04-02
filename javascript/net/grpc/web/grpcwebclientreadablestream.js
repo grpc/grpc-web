@@ -15,7 +15,6 @@
  * limitations under the License.
  *
  */
-
 /**
  * @fileoverview gRPC web client Readable Stream
  *
@@ -27,17 +26,20 @@
  *
  * @author stanleycheung@google.com (Stanley Cheung)
  */
-goog.provide('grpc.web.GrpcWebClientReadableStream');
+goog.module('grpc.web.GrpcWebClientReadableStream');
+
+goog.module.declareLegacyNamespace();
 
 
-goog.require('goog.crypt.base64');
-goog.require('goog.events');
-goog.require('goog.net.EventType');
-goog.require('goog.net.XhrIo');
-goog.require('goog.net.XmlHttp');
-goog.require('grpc.web.ClientReadableStream');
-goog.require('grpc.web.GrpcWebStreamParser');
-goog.require('grpc.web.StatusCode');
+const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
+const EventType = goog.require('goog.net.EventType');
+const GrpcWebStreamParser = goog.require('grpc.web.GrpcWebStreamParser');
+const StatusCode = goog.require('grpc.web.StatusCode');
+const XhrIo = goog.require('goog.net.XhrIo');
+const XmlHttp = goog.require('goog.net.XmlHttp');
+const events = goog.require('goog.events');
+const googCrypt = goog.require('goog.crypt.base64');
+const {GenericTransportInterface} = goog.require('grpc.web.GenericTransportInterface');
 
 
 
@@ -51,16 +53,18 @@ const GRPC_STATUS_MESSAGE = "grpc-message";
  *
  * @template RESPONSE
  * @constructor
- * @implements {grpc.web.ClientReadableStream}
+ * @implements {ClientReadableStream}
  * @final
- * @param {!goog.net.XhrIo} xhr The XhrIo object
+ * @param {!GenericTransportInterface} genericTransportInterface The
+ *   GenericTransportInterface
  */
-grpc.web.GrpcWebClientReadableStream = function(xhr) {
+const GrpcWebClientReadableStream = function(genericTransportInterface) {
   /**
+   * @const
    * @private
-   * @type {!goog.net.XhrIo} The XhrIo object
+   * @type {?XhrIo} The XhrIo object
    */
-  this.xhr_ = xhr;
+  this.xhr_ = /** @type {?XhrIo} */ (genericTransportInterface.xhr);
 
   /**
    * @private
@@ -94,14 +98,15 @@ grpc.web.GrpcWebClientReadableStream = function(xhr) {
 
   /**
    * @private
-   * @type {!grpc.web.GrpcWebStreamParser} The grpc-web stream parser
+   * @type {!GrpcWebStreamParser} The grpc-web stream parser
+   * @const
    */
-  this.parser_ = new grpc.web.GrpcWebStreamParser();
+  this.parser_ = new GrpcWebStreamParser();
 
   var self = this;
-  goog.events.listen(this.xhr_, goog.net.EventType.READY_STATE_CHANGE,
-                     function(e) {
-    var FrameType = grpc.web.GrpcWebStreamParser.FrameType;
+  events.listen(this.xhr_, EventType.READY_STATE_CHANGE,
+                function(e) {
+    var FrameType = GrpcWebStreamParser.FrameType;
 
     var responseText = self.xhr_.getResponseText();
     var newPos = responseText.length - responseText.length % 4;
@@ -109,7 +114,7 @@ grpc.web.GrpcWebClientReadableStream = function(xhr) {
     if (newData.length == 0) return;
     self.pos_ = newPos;
 
-    var byteSource = goog.crypt.base64.decodeStringToUint8Array(newData);
+    var byteSource = googCrypt.decodeStringToUint8Array(newData);
     var messages = self.parser_.parse([].slice.call(byteSource));
     if (!messages) return;
 
@@ -132,7 +137,7 @@ grpc.web.GrpcWebClientReadableStream = function(xhr) {
               messages[i][FrameType.TRAILER][pos]);
           }
           var trailers = self.parseHttp1Headers_(trailerString);
-          var grpcStatusCode = grpc.web.StatusCode.OK;
+          var grpcStatusCode = StatusCode.OK;
           var grpcStatusMessage = "";
           if (GRPC_STATUS in trailers) {
             grpcStatusCode = trailers[GRPC_STATUS];
@@ -152,7 +157,7 @@ grpc.web.GrpcWebClientReadableStream = function(xhr) {
     }
 
     var readyState = self.xhr_.getReadyState();
-    if (readyState == goog.net.XmlHttp.ReadyState.COMPLETE) {
+    if (readyState == XmlHttp.ReadyState.COMPLETE) {
       if (self.onEndCallback_) {
         self.onEndCallback_();
       }
@@ -165,7 +170,7 @@ grpc.web.GrpcWebClientReadableStream = function(xhr) {
 /**
  * @override
  */
-grpc.web.GrpcWebClientReadableStream.prototype.on = function(
+GrpcWebClientReadableStream.prototype.on = function(
     eventType, callback) {
   // TODO(stanleycheung): change eventType to @enum type
   if (eventType == 'data') {
@@ -185,7 +190,7 @@ grpc.web.GrpcWebClientReadableStream.prototype.on = function(
  * @param {function(?):!RESPONSE} responseDeserializeFn The deserialize
  *   function for the proto
  */
-grpc.web.GrpcWebClientReadableStream.prototype.setResponseDeserializeFn =
+GrpcWebClientReadableStream.prototype.setResponseDeserializeFn =
   function(responseDeserializeFn) {
   this.responseDeserializeFn_ = responseDeserializeFn;
 };
@@ -194,7 +199,7 @@ grpc.web.GrpcWebClientReadableStream.prototype.setResponseDeserializeFn =
 /**
  * @override
  */
-grpc.web.GrpcWebClientReadableStream.prototype.cancel = function() {
+GrpcWebClientReadableStream.prototype.cancel = function() {
   this.xhr_.abort();
 };
 
@@ -203,10 +208,10 @@ grpc.web.GrpcWebClientReadableStream.prototype.cancel = function() {
  * Parse HTTP headers
  *
  * @private
- * @param {!string} str The raw http header string
+ * @param {string} str The raw http header string
  * @return {!Object} The header:value pairs
  */
-grpc.web.GrpcWebClientReadableStream.prototype.parseHttp1Headers_ =
+GrpcWebClientReadableStream.prototype.parseHttp1Headers_ =
   function(str) {
   var chunks = str.trim().split("\r\n");
   var headers = {};
@@ -217,3 +222,7 @@ grpc.web.GrpcWebClientReadableStream.prototype.parseHttp1Headers_ =
   }
   return headers;
 };
+
+
+
+exports = GrpcWebClientReadableStream;

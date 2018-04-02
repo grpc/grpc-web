@@ -15,7 +15,6 @@
  * limitations under the License.
  *
  */
-
 /**
  * @fileoverview The default grpc-web stream parser
  *
@@ -38,13 +37,14 @@
  *
  * Result: [ { 0x00 : <message1 }, { 0x00 : <message2> }, { 0x80 : trailers } ]
  */
+goog.module('grpc.web.GrpcWebStreamParser');
 
-goog.provide('grpc.web.GrpcWebStreamParser');
+goog.module.declareLegacyNamespace();
 
-goog.require('goog.asserts');
-goog.require('goog.net.streams.StreamParser');
 
-goog.scope(function() {
+const StreamParser = goog.require('goog.net.streams.StreamParser');
+const asserts = goog.require('goog.asserts');
+
 
 
 /**
@@ -52,10 +52,10 @@ goog.scope(function() {
  *
  * @constructor
  * @struct
- * @implements {goog.net.streams.StreamParser}
+ * @implements {StreamParser}
  * @final
  */
-grpc.web.GrpcWebStreamParser = function() {
+const GrpcWebStreamParser = function() {
   /**
    * The current error message, if any.
    * @private {?string}
@@ -76,7 +76,7 @@ grpc.web.GrpcWebStreamParser = function() {
 
   /**
    * The current parser state.
-   * @private {grpc.web.GrpcWebStreamParser.State_}
+   * @private {number}
    */
   this.state_ = Parser.State_.INIT;
 
@@ -113,7 +113,7 @@ grpc.web.GrpcWebStreamParser = function() {
 };
 
 
-var Parser = grpc.web.GrpcWebStreamParser;
+var Parser = GrpcWebStreamParser;
 
 
 /**
@@ -132,19 +132,19 @@ Parser.State_ = {
  * Possible frame byte
  * @enum {number}
  */
-grpc.web.GrpcWebStreamParser.FrameType = {
+GrpcWebStreamParser.FrameType = {
   DATA:    0x00,   // expecting a data frame
   TRAILER: 0x80,   // expecting a trailer frame
 };
 
 
-var FrameType = grpc.web.GrpcWebStreamParser.FrameType;
+var FrameType = GrpcWebStreamParser.FrameType;
 
 
 /**
  * @override
  */
-grpc.web.GrpcWebStreamParser.prototype.isInputValid = function() {
+GrpcWebStreamParser.prototype.isInputValid = function() {
   return this.state_ != Parser.State_.INVALID;
 };
 
@@ -152,7 +152,7 @@ grpc.web.GrpcWebStreamParser.prototype.isInputValid = function() {
 /**
  * @override
  */
-grpc.web.GrpcWebStreamParser.prototype.getErrorMessage = function() {
+GrpcWebStreamParser.prototype.getErrorMessage = function() {
   return this.errorMessage_;
 };
 
@@ -178,8 +178,8 @@ Parser.prototype.error_ = function(inputBytes, pos, errorMsg) {
  * @throws {!Error} Throws an error message if the input is invalid.
  * @override
  */
-grpc.web.GrpcWebStreamParser.prototype.parse = function(input) {
-  goog.asserts.assert(input instanceof Array || input instanceof ArrayBuffer);
+GrpcWebStreamParser.prototype.parse = function(input) {
+  asserts.assert(input instanceof Array || input instanceof ArrayBuffer);
 
   var parser = this;
   var inputBytes = (input instanceof Array) ? input : new Uint8Array(input);
@@ -275,4 +275,5 @@ grpc.web.GrpcWebStreamParser.prototype.parse = function(input) {
 };
 
 
-});  // goog.scope
+
+exports = GrpcWebStreamParser;
