@@ -28,7 +28,7 @@ which is comparable to JSON in efficiency but also very compact in both the mess
 
 ## Streaming-friendly transport implementation
 
-Currently the gRPC-Web client library uses XHR to ensure cross-browser support and to support platforms such as Reactive-Native.
+Currently the gRPC-Web client library uses XHR to ensure cross-browser support and to support platforms such as React-Native.
 
 We do plan to add fetch/streams support at some point, which is more efficient for binary streams and incurs less memory overhead
 on the client-side.
