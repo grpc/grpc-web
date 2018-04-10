@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+set -ex
 
 cd "$(dirname "$0")"
 ./init_submodules.sh
@@ -20,5 +21,4 @@ make clean
 docker build -t ubuntu_12_04 -f net/grpc/gateway/docker/ubuntu_12_04/Dockerfile .
 CONTAINER_ID=$(docker create ubuntu_12_04)
 docker cp "$CONTAINER_ID:/github/grpc-web/gConnector.zip" net/grpc/gateway/docker/ubuntu_12_04
-docker cp "$CONTAINER_ID:/github/grpc-web/gConnector_static.zip" net/grpc/gateway/docker/ubuntu_12_04
 docker rm "$CONTAINER_ID"
