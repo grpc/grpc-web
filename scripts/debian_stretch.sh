@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+set -ex
 
 cd "$(dirname "$0")"
 ./init_submodules.sh
@@ -20,5 +21,4 @@ make clean
 docker build -t debian_stretch -f net/grpc/gateway/docker/debian_stretch/Dockerfile .
 CONTAINER_ID=$(docker create debian_stretch)
 docker cp "$CONTAINER_ID:/github/grpc-web/gConnector.zip" net/grpc/gateway/docker/debian_stretch
-docker cp "$CONTAINER_ID:/github/grpc-web/gConnector_static.zip" net/grpc/gateway/docker/debian_stretch
 docker rm "$CONTAINER_ID"

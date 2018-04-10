@@ -19,6 +19,7 @@
 #include "net/grpc/gateway/runtime/tag.h"
 
 #include <algorithm>
+#include <utility>
 
 namespace grpc {
 namespace gateway {

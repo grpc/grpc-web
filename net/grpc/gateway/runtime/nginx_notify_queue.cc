@@ -19,6 +19,7 @@
 #include "net/grpc/gateway/runtime/nginx_notify_queue.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "net/grpc/gateway/log.h"
 
