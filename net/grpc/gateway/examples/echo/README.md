@@ -38,9 +38,9 @@ http://<hostname>:8080/net/grpc/gateway/examples/echo/echotest.html
 From the repo root directory:
 
 ```sh
-$ make                          # build nginx
+$ make package                  # build nginx
 # on MacOS, you might have to do this instead
-# KERNEL_BITS=64 make
+# KERNEL_BITS=64 make package
 
 $ make example                  # build end-to-end example
 $ sudo make install-example

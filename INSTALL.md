@@ -47,13 +47,10 @@ From the repo root directory:
 
 ```sh
 $ cd third_party/grpc
-$ EMBED_OPENSSL=false make
-$ sudo EMBED_OPENSSL=false make install
+$ make
+$ sudo make install
 
-# On MacOS Sierra or above, you might need to run these 2 commands instead
-# EMBED_OPENSSL=false CPPFLAGS=-DOSATOMIC_USE_INLINED=1 make
-# sudo EMBED_OPENSSL=false CPPFLAGS=-DOSATOMIC_USE_INLINED=1 make install
-
+# On MacOS Sierra or above, you might need to run this command first
 # export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<path-to-repo>/third_party/grpc/libs/opt
 ```
 
@@ -76,6 +73,9 @@ From the repo root directory:
 
 ```sh
 $ make         # build the nginx gateway
+
+# On MacOS Sierra or above, you might need to run this instead
+# KERNEL_BITS=64 make
 ```
 
 
