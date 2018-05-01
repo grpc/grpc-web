@@ -23,7 +23,7 @@
 #include <memory>
 
 #include "net/grpc/gateway/runtime/types.h"
-#include "third_party/grpc/include/grpc++/support/status.h"
+#include "third_party/grpc/include/grpcpp/support/status.h"
 
 namespace grpc {
 namespace gateway {

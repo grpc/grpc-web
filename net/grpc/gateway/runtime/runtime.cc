@@ -43,7 +43,7 @@
 #include "net/grpc/gateway/codec/stream_body_encoder.h"
 #include "net/grpc/gateway/frontend/nginx_http_frontend.h"
 #include "net/grpc/gateway/runtime/constants.h"
-#include "third_party/grpc/include/grpc++/support/config.h"
+#include "third_party/grpc/include/grpcpp/support/config.h"
 #include "third_party/grpc/include/grpc/grpc.h"
 #include "third_party/grpc/include/grpc/grpc_security.h"
 

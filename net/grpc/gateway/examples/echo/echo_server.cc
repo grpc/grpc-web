@@ -16,7 +16,7 @@
  *
  */
 
-#include <grpc++/grpc++.h>
+#include <grpcpp/grpcpp.h>
 #include <unistd.h>
 #include <string>
 

@@ -18,8 +18,8 @@
 
 #include "net/grpc/gateway/codec/proto_decoder.h"
 
-#include "third_party/grpc/include/grpc++/support/byte_buffer.h"
-#include "third_party/grpc/include/grpc++/support/status.h"
+#include "third_party/grpc/include/grpcpp/support/byte_buffer.h"
+#include "third_party/grpc/include/grpcpp/support/status.h"
 
 namespace grpc {
 namespace gateway {

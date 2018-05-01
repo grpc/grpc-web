@@ -24,8 +24,8 @@
 
 #include "net/grpc/gateway/codec/base64.h"
 #include "net/grpc/gateway/codec/decoder.h"
-#include "third_party/grpc/include/grpc++/support/byte_buffer.h"
-#include "third_party/grpc/include/grpc++/support/slice.h"
+#include "third_party/grpc/include/grpcpp/support/byte_buffer.h"
+#include "third_party/grpc/include/grpcpp/support/slice.h"
 
 namespace grpc {
 namespace gateway {

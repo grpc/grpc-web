@@ -26,7 +26,7 @@
 #include "net/grpc/gateway/runtime/request.h"
 #include "net/grpc/gateway/runtime/response.h"
 #include "net/grpc/gateway/runtime/tag.h"
-#include "third_party/grpc/include/grpc++/support/config.h"
+#include "third_party/grpc/include/grpcpp/support/config.h"
 #include "third_party/grpc/include/grpc/grpc.h"
 
 namespace grpc {
