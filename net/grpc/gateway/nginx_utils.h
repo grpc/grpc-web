@@ -23,7 +23,7 @@
 #include "net/grpc/gateway/nginx_includes.h"
 
 #include "net/grpc/gateway/log.h"
-#include "third_party/grpc/include/grpc++/support/string_ref.h"
+#include "third_party/grpc/include/grpcpp/support/string_ref.h"
 
 namespace grpc {
 namespace gateway {

@@ -26,8 +26,8 @@
 #include "net/grpc/gateway/protos/stream_body.pb.h"
 #include "net/grpc/gateway/runtime/constants.h"
 #include "net/grpc/gateway/runtime/types.h"
-#include "third_party/grpc/include/grpc++/support/byte_buffer.h"
-#include "third_party/grpc/include/grpc++/support/slice.h"
+#include "third_party/grpc/include/grpcpp/support/byte_buffer.h"
+#include "third_party/grpc/include/grpcpp/support/slice.h"
 #include "third_party/grpc/include/grpc/slice.h"
 
 namespace grpc {

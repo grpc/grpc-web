@@ -28,7 +28,7 @@
 #include "net/grpc/gateway/protos/pair.pb.h"
 #include "net/grpc/gateway/protos/stream_body.pb.h"
 #include "net/grpc/gateway/runtime/constants.h"
-#include "third_party/grpc/include/grpc++/support/slice.h"
+#include "third_party/grpc/include/grpcpp/support/slice.h"
 
 namespace grpc {
 namespace gateway {

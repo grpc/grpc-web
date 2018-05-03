@@ -23,8 +23,8 @@
 #include <utility>
 #include <vector>
 
-#include "third_party/grpc/include/grpc++/support/slice.h"
-#include "third_party/grpc/include/grpc++/support/string_ref.h"
+#include "third_party/grpc/include/grpcpp/support/slice.h"
+#include "third_party/grpc/include/grpcpp/support/string_ref.h"
 
 namespace grpc {
 namespace gateway {

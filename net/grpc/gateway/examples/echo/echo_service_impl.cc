@@ -18,7 +18,7 @@
 
 #include "net/grpc/gateway/examples/echo/echo_service_impl.h"
 
-#include <grpc++/grpc++.h>
+#include <grpcpp/grpcpp.h>
 #include <unistd.h>
 #include <string>
 

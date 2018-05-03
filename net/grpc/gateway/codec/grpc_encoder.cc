@@ -18,7 +18,7 @@
 
 #include "net/grpc/gateway/codec/grpc_encoder.h"
 
-#include "third_party/grpc/include/grpc++/support/slice.h"
+#include "third_party/grpc/include/grpcpp/support/slice.h"
 
 namespace grpc {
 namespace gateway {

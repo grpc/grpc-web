@@ -20,7 +20,7 @@
 #define NET_GRPC_GATEWAY_CODEC_STREAM_BODY_ENCODER_H_
 
 #include "net/grpc/gateway/codec/encoder.h"
-#include "third_party/grpc/include/grpc++/support/byte_buffer.h"
+#include "third_party/grpc/include/grpcpp/support/byte_buffer.h"
 
 namespace grpc {
 namespace gateway {

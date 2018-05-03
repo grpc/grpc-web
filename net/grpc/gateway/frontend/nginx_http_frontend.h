@@ -32,8 +32,8 @@
 #include "net/grpc/gateway/codec/encoder.h"
 #include "net/grpc/gateway/frontend/frontend.h"
 #include "net/grpc/gateway/runtime/constants.h"
-#include "third_party/grpc/include/grpc++/support/byte_buffer.h"
-#include "third_party/grpc/include/grpc++/support/string_ref.h"
+#include "third_party/grpc/include/grpcpp/support/byte_buffer.h"
+#include "third_party/grpc/include/grpcpp/support/string_ref.h"
 
 #ifdef __cplusplus
 extern "C" {

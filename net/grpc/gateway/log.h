@@ -20,6 +20,7 @@
 #define NET_GRPC_GATEWAY_LOG_H_
 
 #include "third_party/grpc/include/grpc/support/log.h"
+#include <inttypes.h>
 
 #define INFO_0(f) gpr_log(GPR_INFO, f);
 #define INFO_1(f, v1) gpr_log(GPR_INFO, f, v1);

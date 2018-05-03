@@ -19,7 +19,7 @@
 #ifndef NET_GRPC_GATEWAY_UTILS_H_
 #define NET_GRPC_GATEWAY_UTILS_H_
 
-#include "third_party/grpc/include/grpc++/support/config.h"
+#include "third_party/grpc/include/grpcpp/support/config.h"
 
 namespace grpc {
 namespace gateway {
