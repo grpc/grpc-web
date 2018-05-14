@@ -141,7 +141,7 @@ void PrintServiceConstructor(Printer* printer,
       " * @struct\n"
       " * @final\n"
       " */\n"
-      "proto.$package$.$service_name$Client =\n"
+      "proto.$package_dot$$service_name$Client =\n"
       "    function(hostname, credentials, options) {\n"
       "  /**\n"
       "   * @private @const {!grpc.web.$mode$ClientBase} The client\n"
@@ -209,7 +209,7 @@ void PrintUnaryCall(Printer* printer, std::map<string, string> vars) {
       " * @return {!grpc.web.ClientReadableStream<!proto.$out$>|undefined}\n"
       " *     The XHR Node Readable Stream\n"
       " */\n"
-      "proto.$package$.$service_name$Client.prototype.$js_method_name$ =\n");
+      "proto.$package_dot$$service_name$Client.prototype.$js_method_name$ =\n");
   printer->Indent();
   printer->Print(vars,
                  "  function(request, metadata, callback) {\n"
@@ -219,9 +219,9 @@ void PrintUnaryCall(Printer* printer, std::map<string, string> vars) {
   if (vars["mode"] == GetModeVar(Mode::OP) ||
       vars["mode"] == GetModeVar(Mode::OPJSPB)) {
     printer->Print(vars,
-                   "'/$$rpc/$package$.$service_name$/$method_name$',\n");
+                   "'/$$rpc/$package_dot$$service_name$/$method_name$',\n");
   } else {
-    printer->Print(vars, "'/$package$.$service_name$/$method_name$',\n");
+    printer->Print(vars, "'/$package_dot$$service_name$/$method_name$',\n");
   }
   printer->Print(
       vars,
@@ -246,7 +246,7 @@ void PrintServerStreamingCall(Printer* printer, std::map<string, string> vars) {
       " * @return {!grpc.web.ClientReadableStream<!proto.$out$>}\n"
       " *     The XHR Node Readable Stream\n"
       " */\n"
-      "proto.$package$.$service_name$Client.prototype.$js_method_name$ =\n");
+      "proto.$package_dot$$service_name$Client.prototype.$js_method_name$ =\n");
   printer->Indent();
   printer->Print(
       "  function(request, metadata) {\n"
@@ -256,9 +256,9 @@ void PrintServerStreamingCall(Printer* printer, std::map<string, string> vars) {
   if (vars["mode"] == GetModeVar(Mode::OP) ||
       vars["mode"] == GetModeVar(Mode::OPJSPB)) {
     printer->Print(vars,
-                   "'/$$rpc/$package$.$service_name$/$method_name$',\n");
+                   "'/$$rpc/$package_dot$$service_name$/$method_name$',\n");
   } else {
-    printer->Print(vars, "'/$package$.$service_name$/$method_name$',\n");
+    printer->Print(vars, "'/$package_dot$$service_name$/$method_name$',\n");
   }
   printer->Print(
       vars,
@@ -308,7 +308,10 @@ class GrpcCodeGenerator : public CodeGenerator {
     }
 
     std::map<string, string> vars;
-    vars["package"] = file->package();
+    std::string package = file->package();
+    vars["package"] = package;
+    vars["package_dot"] = package.size() > 0 ? package + '.' : "";
+
     if (mode == "binary") {
       vars["mode"] = GetModeVar(Mode::OP);
     } else if (mode == "base64") {
@@ -334,7 +337,7 @@ class GrpcCodeGenerator : public CodeGenerator {
       vars["service_name"] = service->name();
       printer.Print(
           vars,
-          "goog.provide('proto.$package$.$service_name$Client');\n");
+          "goog.provide('proto.$package_dot$$service_name$Client');\n");
     }
     printer.Print("\n");
 
