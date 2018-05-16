@@ -308,9 +308,9 @@ class GrpcCodeGenerator : public CodeGenerator {
     }
 
     std::map<string, string> vars;
-    std::string package = file->package();
+    string package = file->package();
     vars["package"] = package;
-    vars["package_dot"] = package.size() > 0 ? package + '.' : "";
+    vars["package_dot"] = package.empty() ? "" : package + '.';
 
     if (mode == "binary") {
       vars["mode"] = GetModeVar(Mode::OP);
