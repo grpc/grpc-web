@@ -40,6 +40,7 @@ $ docker run -t -p 8080:8080 grpc-web
 ```
 
 Open a browser tab, and inspect
+
 ```
 http://localhost:8080/net/grpc/gateway/examples/echo/echotest.html
 ```
@@ -81,12 +82,14 @@ Once the server and gateway are up and running, you can start making gRPC calls
 from the browser!
 
 Create your client
+
 ```js
 var echoService = new proto.grpc.gateway.testing.EchoServiceClient(
   'http://localhost:8080');
 ```
 
 Make a unary RPC call
+
 ```js
 var unaryRequest = new proto.grpc.gateway.testing.EchoRequest();
 unaryRequest.setMessage(msg);
@@ -97,6 +100,7 @@ echoService.echo(unaryRequest, {},
 ```
 
 Server-side streaming is supported!
+
 ```js
 var stream = echoService.serverStreamingEcho(streamRequest, {});
 stream.on('data', function(response) {
