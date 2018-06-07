@@ -30,6 +30,7 @@ goog.module.declareLegacyNamespace();
 
 const AbstractClientBase = goog.require('grpc.web.AbstractClientBase');
 const GrpcWebClientReadableStream = goog.require('grpc.web.GrpcWebClientReadableStream');
+const HttpCors = goog.require('goog.net.rpc.HttpCors');
 const StatusCode = goog.require('grpc.web.StatusCode');
 const XhrIo = goog.require('goog.net.XhrIo');
 const googCrypt = goog.require('goog.crypt.base64');
@@ -42,6 +43,12 @@ const googCrypt = goog.require('goog.crypt.base64');
  * @implements {AbstractClientBase}
  */
 const GrpcWebClientBase = function(opt_options) {
+  /**
+   * @const
+   * @private {boolean}
+   */
+  this.suppressCorsPreflight_ =
+    goog.getObjectByName('suppressCorsPreflight', opt_options) || false;
 };
 
 
@@ -79,6 +86,12 @@ GrpcWebClientBase.prototype.rpcCall = function(
 
   var payload = this.encodeRequest_(serialized);
   payload = googCrypt.encodeByteArray(payload);
+
+  if (this.suppressCorsPreflight_) {
+    var headerObject = xhr.headers.toObject();
+    xhr.headers.clear();
+    method = GrpcWebClientBase.setCorsOverride_(method, headerObject);
+  }
   xhr.send(method, 'POST', payload);
   return;
 };
@@ -105,6 +118,12 @@ GrpcWebClientBase.prototype.serverStreaming = function(
 
   var payload = this.encodeRequest_(serialized);
   payload = googCrypt.encodeByteArray(payload);
+
+  if (this.suppressCorsPreflight_) {
+    var headerObject = xhr.headers.toObject();
+    xhr.headers.clear();
+    method = GrpcWebClientBase.setCorsOverride_(method, headerObject);
+  }
   xhr.send(method, 'POST', payload);
 
   return stream;
@@ -143,6 +162,19 @@ GrpcWebClientBase.prototype.encodeRequest_ = function(serialized) {
   return payload;
 };
 
+
+
+/**
+ * @private
+ * @static
+ * @param {string} method The method to invoke
+ * @param {!Object<string,string>} headerObject The xhr headers
+ * @return {string} The URI object or a string path with headers
+ */
+GrpcWebClientBase.setCorsOverride_ = function(method, headerObject) {
+  return /** @type {string} */  (HttpCors.setHttpHeadersWithOverwriteParam(
+    method, HttpCors.HTTP_HEADERS_PARAM_NAME, headerObject));
+};
 
 
 exports = GrpcWebClientBase;
