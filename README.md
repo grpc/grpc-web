@@ -4,26 +4,20 @@ gRPC-Web provides a Javascript client library that lets browser clients
 access a gRPC server. You can find out much more about gRPC in its own
 [website](https://grpc.io).
 
-The current release is a Beta release, mainly for early adopters to provide
-feedback on the JS API (both gRPC and Protobuf). The JS client library has been
+The current release is a Beta release, and we expect to announce General-Available by Oct. 2018. 
+
+The JS client library has been
 used for some time by Google and Alphabet projects with the
 [Closure compiler](https://github.com/google/closure-compiler)
 and its TypeScript generator (which has not yet been open-sourced).
 
 gRPC-Web clients connect to gRPC servers via a special gateway proxy: our
-provided version uses Nginx. The current gateway uses
-[an older version of Nginx](https://nginx.googlesource.com/nginx#),
-which doesn't support gRPC as back-end servers and therefore can't be deployed
-as a reverse proxy to talk to multiple gRPC servers.
-Nginx has added support for gRPC backends on
-[March 18, 2018](https://www.nginx.com/blog/nginx-1-13-10-grpc/). We plan to
-update the grpc-web gateway to the newer Nginx version in the next few months,
-which will allow the gateway to be used as a traditional Nginx-based reverse
-proxy.
+provided version uses Nginx. 
 
-We have also added gRPC-Web support to
-[Envoy](https://github.com/lyft/envoy), if you wish to use this instead of an
-Nginx gateway. In future, we expect gRPC-Web to be supported in
+We have also added built-in gRPC-Web support to
+[Envoy](https://github.com/lyft/envoy), which will become the default gateway for gRPC-Web by GA. 
+
+In future, we expect gRPC-Web to be supported in
 language-specific Web frameworks, such as Python, Java, and Node. See the
 [roadmap](https://github.com/grpc/grpc-web/blob/master/ROADMAP.md) doc.
 
