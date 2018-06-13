@@ -1,4 +1,4 @@
-# gRPC-Web for browser (HTML) clients
+# gRPC-Web features for browser (HTML) clients
 
 Due to browser limitation, gRPC-Web supports a different transport
 than the [HTTP/2 based gRPC protocol](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md).
@@ -15,7 +15,7 @@ we expect some of those features will evolve too or become deprecated.
   * Access-Control-Allow-Credentials to allow Authorization headers
   * Access-Control-Allow-Methods to allow POST and (preflight) OPTIONS only
   * Access-Control-Allow-Headers to whatever the preflight request carries
-* The client library may support header overwrites to avoid preflight
+* The client library is epxected to support header overwrites to avoid preflight
   * https://github.com/whatwg/fetch/issues/210
 * CSP support to be specified
 
