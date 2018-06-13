@@ -4,7 +4,7 @@ The purpose of this document is to list all the features that we believe are use
 
 We would like your feedback! Please tell us which features you would most want to see, so that we can prioritize the work to
 either publish Google's existing solutions or develop some of the features directly in the open-source repo. For the latter
-case, please mention if you are interested in contributing to any of the road-map features.
+case, please mention if you are interested in contributing to any of the road-map features :)
 
 [Survey link](https://docs.google.com/forms/d/1NjWpyRviohn5jaPntosBHXRXZYkh_Ffi4GxJZFibylM/edit)
 
@@ -41,8 +41,9 @@ Progressing events, I/O event throttling are other concerns.
 
 ## Bidi support
 
-We are yet to finalize the bidi transport story. At the same time, please tell us your exact use case, 
-and maybe explain why server-streaming is insufficient.
+As WebSocket over HTTP/2 becomes more available, we may add bidi support over WebSockets.
+
+At the same time, please tell us your exact use case, and maybe explain why server-streaming is insufficient.
 
 ## Security
 
