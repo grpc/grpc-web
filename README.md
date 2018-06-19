@@ -21,6 +21,11 @@ In future, we expect gRPC-Web to be supported in
 language-specific Web frameworks, such as Python, Java, and Node. See the
 [roadmap](https://github.com/grpc/grpc-web/blob/master/ROADMAP.md) doc.
 
+Some of the advantages of Protocol Buffers over JSON are:
+
+* Less data to communicate same information
+* Native classes generated for both client and server (so structure and types are built-in)
+
 ## Quick start
 
 Try gRPC-Web and run a quick Echo example from the browser!
