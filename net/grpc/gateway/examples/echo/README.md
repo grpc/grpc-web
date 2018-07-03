@@ -38,7 +38,7 @@ This compiles the gRPC backend server, written in C++, and listens on port
 ```sh
 $ docker build -t grpc-web:echo-server \
   -f net/grpc/gateway/docker/echo_server/Dockerfile .
-$ docker run -d -p 9090:9090 grpc-web:echo-server
+$ docker run -d -p 9090:9090 --name echo-server grpc-web:echo-server
 ```
 
 ## Run the Envoy proxy
@@ -49,7 +49,7 @@ requests will be forwarded to port 9090.
 ```sh
 $ docker build -t grpc-web:envoy \
   -f net/grpc/gateway/docker/envoy/Dockerfile .
-$ docker run -d --net="host" grpc-web:envoy
+$ docker run -d -p 8080:8080 --link echo-server:echo-server grpc-web:envoy
 ```
 
 ## Serve static JS/HTML contents

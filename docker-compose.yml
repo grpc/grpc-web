@@ -17,9 +17,10 @@ services:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/envoy/Dockerfile
     image: grpc-web:envoy
-    network_mode: "host"
     ports:
       - "8080:8080"
+    links:
+      - echo-server
   static-assets:
     build:
       context: ./

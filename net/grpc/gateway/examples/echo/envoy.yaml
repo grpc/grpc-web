@@ -40,4 +40,4 @@ static_resources:
     type: logical_dns
     http2_protocol_options: {}
     lb_policy: round_robin
-    hosts: [{ socket_address: { address: 0.0.0.0, port_value: 9090 }}]
+    hosts: [{ socket_address: { address: echo-server, port_value: 9090 }}]
