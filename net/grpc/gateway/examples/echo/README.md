@@ -4,7 +4,7 @@ This page will show you how to quickly build and run an end-to-end Echo
 example. The example has 3 key components:
 
  - Front-end JS client
- - Nginx gateway
+ - Envoy proxy
  - gRPC backend server (written in C++)
 
 
@@ -18,53 +18,58 @@ our [pre-requisites](../../../../../INSTALL.md):
  3. Closure compiler
 
 
-## Using Docker
-
 From the repo root directory:
 
-```sh
-$ docker build -t grpc-web --build-arg with_examples=true \
-  -f net/grpc/gateway/docker/ubuntu_16_04/Dockerfile .
-$ docker run -t -p 8080:8080 grpc-web
-```
+## Build pre-requisites
 
-Open a browser tab, and inspect
-```
-http://<hostname>:8080/net/grpc/gateway/examples/echo/echotest.html
-```
-
-## Build the example
-
-From the repo root directory:
+This step compiles gRPC and Protobuf, and serves as the base docker image for
+the subsequent docker images.
 
 ```sh
-$ make package                  # build nginx
-# on MacOS, you might have to do this instead
-# KERNEL_BITS=64 make package
-
-$ make example                  # build end-to-end example
-$ sudo make install-example
+$ docker build -t grpc-web:prereqs \
+  -f net/grpc/gateway/docker/prereqs/Dockerfile .
 ```
 
-## Run the example
+## Run the gRPC Backend server
 
-1. Run the gRPC backend server (written in C++)
+This compiles the gRPC backend server, written in C++, and listens on port
+9090.
 
 ```sh
-$ cd net/grpc/gateway/examples/echo && ./echo_server &
+$ docker build -t grpc-web:echo-server \
+  -f net/grpc/gateway/docker/echo_server/Dockerfile .
+$ docker run -d -p 9090:9090 grpc-web:echo-server
 ```
 
-2. Run the gRPC Nginx Gateway
+## Run the Envoy proxy
+
+This step runs the Envoy proxy, and listens on port 8080. Any gRPC-Web browser
+requests will be forwarded to port 9090.
 
 ```sh
-$ cd gConnector && ./nginx.sh &
+$ docker build -t grpc-web:envoy \
+  -f net/grpc/gateway/docker/envoy/Dockerfile .
+$ docker run -d --net="host" grpc-web:envoy
 ```
 
-3. Open a browser tab, and inspect
-```
-http://<hostname>:8080/net/grpc/gateway/examples/echo/echotest.html
+## Serve static JS/HTML contents
+
+This steps compiles the front-end gRPC-Web client into a static .JS file, and
+we use a simple server to serve up the JS/HTML static contents.
+
+```sh
+$ docker build -t grpc-web:static-assets \
+  -f net/grpc/gateway/docker/static_assets/Dockerfile .
+$ docker run -d -p 80:80 grpc-web:static-assets
 ```
 
+## Run the example from your browser
+
+Finally, open a browser tab, and inspect
+
+```
+http://localhost/net/grpc/gateway/examples/echo/echotest.html
+```
 
 ## What's next?
 

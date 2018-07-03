@@ -41,7 +41,7 @@ using std::string;
 
 enum Mode {
   OP = 0,          // first party google3 one platform services
-  GATEWAY = 1,     // open-source gRPC Gateway, currently nginx
+  GATEWAY = 1,     // open-source gRPC Gateway
   OPJSPB = 2,      // first party google3 one platform services with JSPB
   FRAMEWORKS = 3,  // first party google3 AF services with AF data add-ons
   GRPCWEB = 4,     // client using the application/grpc-web wire format

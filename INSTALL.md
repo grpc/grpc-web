@@ -67,17 +67,5 @@ Make sure `closure-compiler.jar` is put in the repo root directory after the
 above steps.
 
 
-## Build!
-
-From the repo root directory:
-
-```sh
-$ make         # build the nginx gateway
-
-# On MacOS Sierra or above, you might need to run this instead
-# KERNEL_BITS=64 make
-```
-
-
 For more example on how to build the client and an end-to-end example, please
 see [this page](net/grpc/gateway/examples/echo).

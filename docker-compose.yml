@@ -1,0 +1,29 @@
+version: '3'
+services:
+  prereqs:
+    build:
+      context: ./
+      dockerfile: ./net/grpc/gateway/docker/prereqs/Dockerfile
+    image: grpc-web:prereqs
+  echo-server:
+    build:
+      context: ./
+      dockerfile: ./net/grpc/gateway/docker/echo_server/Dockerfile
+    image: grpc-web:echo-server
+    ports:
+      - "9090:9090"
+  envoy:
+    build:
+      context: ./
+      dockerfile: ./net/grpc/gateway/docker/envoy/Dockerfile
+    image: grpc-web:envoy
+    network_mode: "host"
+    ports:
+      - "8080:8080"
+  static-assets:
+    build:
+      context: ./
+      dockerfile: ./net/grpc/gateway/docker/static_assets/Dockerfile
+    image: grpc-web:static-assets
+    ports:
+      - "80:80"
