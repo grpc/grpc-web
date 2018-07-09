@@ -93,6 +93,12 @@ plugin:
 example: plugin
 	cd "$(ROOT_DIR)"/net/grpc/gateway/examples/echo && make
 
+echo_server:
+	cd "$(ROOT_DIR)"/net/grpc/gateway/examples/echo && make echo_server
+
+client: plugin
+	cd "$(ROOT_DIR)"/net/grpc/gateway/examples/echo && make client
+
 install-example:
 	cd "$(ROOT_DIR)"/net/grpc/gateway/examples/echo && make install
 

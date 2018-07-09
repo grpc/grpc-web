@@ -4,20 +4,20 @@ gRPC-Web provides a Javascript client library that lets browser clients
 access a gRPC server. You can find out much more about gRPC in its own
 [website](https://grpc.io).
 
-The current release is a Beta release, and we expect to announce General-Available by Oct. 2018. 
+The current release is a Beta release, and we expect to announce
+General-Available by Oct. 2018. 
 
-The JS client library has been
-used for some time by Google and Alphabet projects with the
+The JS client library has been used for some time by Google and Alphabet
+projects with the
 [Closure compiler](https://github.com/google/closure-compiler)
 and its TypeScript generator (which has not yet been open-sourced).
 
 gRPC-Web clients connect to gRPC servers via a special gateway proxy: our
-provided version uses Nginx. 
+provided version uses [Envoy](https://github.com/envoyproxy/envoy), in which
+gRPC-Web support is built-in. Envoy will become the default gateway for
+gRPC-Web by GA.
 
-We have also added built-in gRPC-Web support to
-[Envoy](https://github.com/lyft/envoy), which will become the default gateway for gRPC-Web by GA. 
-
-In future, we expect gRPC-Web to be supported in
+In the future, we expect gRPC-Web to be supported in
 language-specific Web frameworks, such as Python, Java, and Node. See the
 [roadmap](https://github.com/grpc/grpc-web/blob/master/ROADMAP.md) doc.
 
@@ -28,15 +28,13 @@ Try gRPC-Web and run a quick Echo example from the browser!
 From the repo root directory:
 
 ```sh
-$ docker build -t grpc-web --build-arg with_examples=true \
-  -f net/grpc/gateway/docker/ubuntu_16_04/Dockerfile .
-$ docker run -t -p 8080:8080 grpc-web
+$ docker-compose up
 ```
 
 Open a browser tab, and inspect
 
 ```
-http://localhost:8080/net/grpc/gateway/examples/echo/echotest.html
+http://localhost/net/grpc/gateway/examples/echo/echotest.html
 ```
 
 ## How it works
@@ -65,7 +63,7 @@ service EchoService {
 
 Next you need to have a gRPC server that implements the service interface and a
 gateway that allows the client to connect to the server. Our example builds a
-simple C++ gRPC backend server and the Nginx gateway. You can find out more in
+simple C++ gRPC backend server and the Envoy proxy. You can find out more in
 the [Echo Example](net/grpc/gateway/examples/echo).
 
 
