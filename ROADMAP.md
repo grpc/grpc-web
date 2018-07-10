@@ -24,7 +24,7 @@ and meeting those requirements unique to Google's Web ecosystems or their applic
 ## Non-binary message encoding
 
 The binary protobuf encoding format is not most CPU efficient for browser clients. 
-Furthremore, the generated code size increases as the total protobuf definition increases.
+Furthermore, the generated code size increases as the total protobuf definition increases.
 
 For Google's Web applications (e.g. gmail), we use a JSON like format 
 which is comparable to JSON in efficiency but also very compact in both the message size and code size.
