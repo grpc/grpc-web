@@ -40,6 +40,7 @@ const XmlHttp = goog.require('goog.net.XmlHttp');
 const events = goog.require('goog.events');
 const googCrypt = goog.require('goog.crypt.base64');
 const {GenericTransportInterface} = goog.require('grpc.web.GenericTransportInterface');
+const {Status} = goog.require('grpc.web.Status');
 
 
 
@@ -80,7 +81,7 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
 
   /**
    * @private
-   * @type {function(!grpc.web.Status)|null} The status callback
+   * @type {function(!Status)|null} The status callback
    */
   this.onStatusCallback_ = null;
 
