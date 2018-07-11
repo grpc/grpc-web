@@ -14,7 +14,7 @@
 
 FROM grpc-web:prereqs
 
-COPY net/grpc/gateway/examples/echo/nginx_simple.conf \
+RUN cp /github/grpc-web/net/grpc/gateway/examples/echo/nginx_simple.conf \
   /etc/nginx/nginx.conf
 
 RUN cd /github/grpc-web && \

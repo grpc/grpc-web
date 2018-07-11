@@ -10,7 +10,7 @@ GRPC_INC := $(ROOT_DIR)/third_party/grpc/include
 GRPC_SRC := $(ROOT_DIR)/third_party/grpc
 GRPC_LIB := $(ROOT_DIR)/third_party/grpc/libs/opt
 
-all: clean package package_static
+all: clean package_static
 
 protos:
 	cd "$(ROOT_DIR)" && LD_LIBRARY_PATH="$(PROTO_LIB):$(GRPC_LIB)" "$(PROTOC)" \
