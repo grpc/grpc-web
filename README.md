@@ -5,7 +5,7 @@ access a gRPC server. You can find out much more about gRPC in its own
 [website](https://grpc.io).
 
 The current release is a Beta release, and we expect to announce
-General-Available by Oct. 2018. 
+General-Available by Oct. 2018.
 
 The JS client library has been used for some time by Google and Alphabet
 projects with the
