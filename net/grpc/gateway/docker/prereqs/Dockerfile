@@ -16,8 +16,6 @@ FROM ubuntu:16.04
 
 ARG MAKEFLAGS=-j8
 
-COPY . /github/grpc-web
-
 RUN apt-get update && apt-get install -y \
   autoconf \
   automake \
@@ -31,6 +29,8 @@ RUN apt-get update && apt-get install -y \
   make \
   nginx \
   zip
+
+RUN git clone https://github.com/grpc/grpc-web /github/grpc-web
 
 RUN cd /github/grpc-web && \
   ./scripts/init_submodules.sh
