@@ -137,6 +137,7 @@ void PrintServiceConstructor(Printer* printer,
       "/**\n"
       " * @param {string} hostname\n"
       " * @param {?Object} credentials\n"
+      " * @param {?Object} options\n"
       " * @constructor\n"
       " * @struct\n"
       " * @final\n"
