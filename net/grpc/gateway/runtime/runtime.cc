@@ -386,7 +386,7 @@ grpc_channel* Runtime::GetBackendChannel(
         (pem_private_key.empty() || pem_cert_chain.empty())
             ? nullptr
             : &pem_key_cert_pair,
-        nullptr);
+        nullptr, nullptr);
     channel = grpc_secure_channel_create(creds, backend_address.c_str(),
                                          &channel_args, nullptr);
     grpc_channel_credentials_release(creds);
