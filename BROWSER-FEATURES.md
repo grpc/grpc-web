@@ -19,6 +19,10 @@ we expect some of those features will evolve too or become deprecated.
   * https://github.com/whatwg/fetch/issues/210
 * CSP support to be specified
 
+# HTTP status code mapping
+
+A grpc-web gateway is recommended to overwrite the default 200 status code and map any gateway-generated or server-generated error status to standard HTTP status codes (such as 503) when it is possible. This will help with debugging and may also improve security protection for web apps.
+
 # Security
 
 * XSRF, XSS policy to be published 
