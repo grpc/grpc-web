@@ -63,8 +63,7 @@
    unaryRequest.setMessage(msg);
    echoService.echoAbort(unaryRequest, {}, function(err, response) {
      if (err) {
-       addRightMessage('Error received');
-       console.log('Error:', err);
+       addRightMessage('Error code: '+err.code+' "'+err.message+'"');
        console.log('Error code: ' + err.code +
                    (err.code == grpc.web.StatusCode.ABORTED ?
                     ' is ' : ' is not ') +
@@ -95,6 +94,9 @@
        console.log("Received metadata");
        console.log(status.metadata);
      }
+   });
+   stream.on('error', function(err) {
+     addRightMessage('Error code: '+err.code+' "'+err.message+'"');
    });
    stream.on('end', function() {
      console.log("stream end signal received");

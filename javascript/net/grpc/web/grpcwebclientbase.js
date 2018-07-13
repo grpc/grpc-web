@@ -74,9 +74,18 @@ GrpcWebClientBase.prototype.rpcCall = function(
   stream.on('status', function(status) {
     if (status.code != StatusCode.OK) {
       callback({
-        'code': status.code,
-        'message': status.details
+        code: status.code,
+        message: status.details
       }, null);
+    }
+  });
+
+  stream.on('error', function(error) {
+    if (error.code != StatusCode.OK) {
+      callback({
+        code: error.code,
+        message: error.message
+      });
     }
   });
 
