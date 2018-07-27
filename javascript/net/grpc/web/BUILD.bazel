@@ -4,6 +4,16 @@ load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_binary")
 load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_library")
 load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_test")
 
+cc_binary(
+    name = "protoc-gen-grpc-web",
+    srcs = [
+        "grpc_generator.cc",
+    ],
+    deps = [
+        "@com_google_protobuf//:protoc_lib"
+    ],
+)
+
 closure_js_library(
     name = "abstractclientbase",
     srcs = [

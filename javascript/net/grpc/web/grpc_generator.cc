@@ -60,6 +60,7 @@ string GetModeVar(const Mode mode) {
     case GRPCWEB:
       return "GrpcWeb";
   }
+  return "";
 }
 
 string GetDeserializeMethodName(const string& mode_var) {
@@ -289,7 +290,7 @@ class GrpcCodeGenerator : public CodeGenerator {
 
     string file_name;
     string mode;
-    for (int i = 0; i < options.size(); ++i) {
+    for (uint i = 0; i < options.size(); ++i) {
       if (options[i].first == "out") {
         file_name = options[i].second;
       } else if (options[i].first == "mode") {
