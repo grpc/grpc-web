@@ -28,3 +28,10 @@ services:
     image: grpc-web:static-assets
     ports:
       - "80:80"
+  commonjs-client-example:
+    build:
+      context: ./
+      dockerfile: ./net/grpc/gateway/docker/commonjs_client_example/Dockerfile
+    image: grpc-web:commonjs-client-example
+    ports:
+      - "8081:8081"
