@@ -16,12 +16,6 @@ FROM grpc-web:prereqs
 
 ARG EXAMPLE_DIR=/github/grpc-web/net/grpc/gateway/examples/echo
 
-RUN cd /github/grpc-web/packages/grpc-web && \
-  rm -rf node_modules && \
-  npm install && \
-  npm run build && \
-  npm link
-
 RUN protoc -I=$EXAMPLE_DIR echo.proto \
 --plugin=protoc-gen-grpc-web=\
 /github/grpc-web/javascript/net/grpc/web/protoc-gen-grpc-web \
@@ -33,7 +27,6 @@ $EXAMPLE_DIR/commonjs-example
 RUN cd $EXAMPLE_DIR/commonjs-example && \
   rm -rf node_modules && \
   npm install && \
-  npm link grpc-web && \
   ./node_modules/.bin/browserify client.js > out.js
 
 EXPOSE 8081
