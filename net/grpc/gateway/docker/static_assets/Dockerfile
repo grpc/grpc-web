@@ -14,9 +14,6 @@
 
 FROM grpc-web:prereqs
 
-RUN cp /github/grpc-web/net/grpc/gateway/examples/echo/nginx_simple.conf \
-  /etc/nginx/nginx.conf
-
 RUN cd /github/grpc-web && \
   curl http://dl.google.com/closure-compiler/compiler-latest.zip \
   -o /github/grpc-web/compiler-latest.zip

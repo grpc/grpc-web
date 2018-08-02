@@ -14,14 +14,7 @@
 
 FROM grpc-web:prereqs
 
-RUN cp /github/grpc-web/net/grpc/gateway/examples/echo/nginx_simple.conf \
-  /etc/nginx/nginx.conf
-
-RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
-  apt-get install -y nodejs
-
-RUN cd /github/grpc-web/javascript/net/grpc/web && \
-  make
+ARG EXAMPLE_DIR=/github/grpc-web/net/grpc/gateway/examples/echo
 
 RUN cd /github/grpc-web/packages/grpc-web && \
   rm -rf node_modules && \
@@ -29,12 +22,15 @@ RUN cd /github/grpc-web/packages/grpc-web && \
   npm run build && \
   npm link
 
-RUN protoc -I=/github/grpc-web/net/grpc/gateway/examples/echo echo.proto \
-  --plugin=protoc-gen-grpc-web=/github/grpc-web/javascript/net/grpc/web/protoc-gen-grpc-web \
-  --js_out=import_style=commonjs:/github/grpc-web/net/grpc/gateway/examples/echo/commonjs-example \
-  --grpc-web_out=import_style=commonjs,mode=grpcweb,out=echo_grpc_pb.js:/github/grpc-web/net/grpc/gateway/examples/echo/commonjs-example
+RUN protoc -I=$EXAMPLE_DIR echo.proto \
+--plugin=protoc-gen-grpc-web=\
+/github/grpc-web/javascript/net/grpc/web/protoc-gen-grpc-web \
+--js_out=import_style=commonjs:\
+$EXAMPLE_DIR/commonjs-example \
+--grpc-web_out=import_style=commonjs,mode=grpcweb,out=echo_grpc_pb.js:\
+$EXAMPLE_DIR/commonjs-example
 
-RUN cd /github/grpc-web/net/grpc/gateway/examples/echo/commonjs-example && \
+RUN cd $EXAMPLE_DIR/commonjs-example && \
   rm -rf node_modules && \
   npm install && \
   npm link grpc-web && \
