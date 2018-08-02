@@ -3,8 +3,11 @@
   "version": "0.1.0",
   "description": "gRPC-Web CommonJS client example",
   "license": "Apache-2.0",
+  "dependencies": {
+    "google-protobuf": "3",
+    "grpc-web": "^0.2.0"
+  },
   "devDependencies": {
-    "browserify": "16",
-    "google-protobuf": "3"
+    "browserify": "16"
   }
 }
