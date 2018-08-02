@@ -19,30 +19,7 @@
 <title>Echo Example</title>
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <script src="//ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-<script src="../../../../../echo_js_bin_dev.js"></script>
-<script type="text/javascript">
-const module = {};
-</script>
-<script src="./echoapp.js"></script>
-<script type="text/javascript">
- var EchoServiceClient = proto.grpc.gateway.testing.EchoServiceClient;
- var echoService = new EchoServiceClient('http://localhost:8080', null, null);
- var echoApp = new echoapp.EchoApp(
-   echoService,
-   {
-     EchoRequest: proto.grpc.gateway.testing.EchoRequest,
-     ServerStreamingEchoRequest: proto.grpc.gateway.testing.ServerStreamingEchoRequest
-   },
-   {
-     checkGrpcStatusCode: function(status) {
-       if (status.code != grpc.web.StatusCode.OK) {
-         echoapp.EchoApp.addRightMessage('Error code: '+status.code+' "'+status.details+'"');
-       }
-     }
-   }
- );
- echoApp.load();
-</script>
+<script src="./out.js"></script>
 </head>
 <body>
   <div class="container">

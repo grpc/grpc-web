@@ -1,0 +1,40 @@
+# Copyright 2018 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+FROM grpc-web:prereqs
+
+ARG EXAMPLE_DIR=/github/grpc-web/net/grpc/gateway/examples/echo
+
+RUN cd /github/grpc-web/packages/grpc-web && \
+  rm -rf node_modules && \
+  npm install && \
+  npm run build && \
+  npm link
+
+RUN protoc -I=$EXAMPLE_DIR echo.proto \
+--plugin=protoc-gen-grpc-web=\
+/github/grpc-web/javascript/net/grpc/web/protoc-gen-grpc-web \
+--js_out=import_style=commonjs:\
+$EXAMPLE_DIR/commonjs-example \
+--grpc-web_out=import_style=commonjs,mode=grpcweb,out=echo_grpc_pb.js:\
+$EXAMPLE_DIR/commonjs-example
+
+RUN cd $EXAMPLE_DIR/commonjs-example && \
+  rm -rf node_modules && \
+  npm install && \
+  npm link grpc-web && \
+  ./node_modules/.bin/browserify client.js > out.js
+
+EXPOSE 8081
+CMD ["nginx"]

@@ -30,6 +30,9 @@ RUN apt-get update && apt-get install -y \
   nginx \
   zip
 
+RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
+  apt-get install -y nodejs
+
 RUN git clone https://github.com/grpc/grpc-web /github/grpc-web
 
 RUN cd /github/grpc-web && \
@@ -40,3 +43,9 @@ RUN cd /github/grpc-web/third_party/grpc && \
 
 RUN cd /github/grpc-web/third_party/grpc/third_party/protobuf && \
   make install
+
+RUN cd /github/grpc-web/javascript/net/grpc/web && \
+  make
+
+RUN cp /github/grpc-web/net/grpc/gateway/examples/echo/nginx_simple.conf \
+  /etc/nginx/nginx.conf

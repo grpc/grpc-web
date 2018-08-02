@@ -91,6 +91,7 @@ proto-js:
 install:
 	mkdir -p $(HTML_DIR)/$(EXAMPLES_PATH)
 	cp ./echotest.html $(HTML_DIR)/$(EXAMPLES_PATH)/
+	cp ./echoapp.js $(HTML_DIR)/$(EXAMPLES_PATH)/
 	cp compiled.js $(HTML_DIR)/echo_js_bin_dev.js
 
 clean:
