@@ -23,7 +23,7 @@ language-specific Web frameworks, such as Python, Java, and Node. See the
 
 ## Quick start
 
-This example is using the `echo.proto` file from the [Echo Example](net/grpc/gateway/examples/echo).
+This example is using the `echo.proto` file from the [Echo Example](https://github.com/grpc/grpc-web/tree/master/net/grpc/gateway/examples/echo).
 
 1. Add `grpc-web` as a dependency using `npm` or `yarn`.
 
