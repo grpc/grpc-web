@@ -9,6 +9,8 @@ services:
     build:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/echo_server/Dockerfile
+    depends_on:
+      - prereqs
     image: grpc-web:echo-server
     ports:
       - "9090:9090"
@@ -25,6 +27,8 @@ services:
     build:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/static_assets/Dockerfile
+    depends_on:
+      - prereqs
     image: grpc-web:static-assets
     ports:
       - "80:80"
@@ -32,6 +36,8 @@ services:
     build:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/commonjs_client_example/Dockerfile
+    depends_on:
+      - prereqs
     image: grpc-web:commonjs-client-example
     ports:
       - "8081:8081"
