@@ -58,9 +58,9 @@ This steps compiles the front-end gRPC-Web client into a static .JS file, and
 we use a simple server to serve up the JS/HTML static contents.
 
 ```sh
-$ docker build -t grpc-web:static-assets \
-  -f net/grpc/gateway/docker/static_assets/Dockerfile .
-$ docker run -d -p 80:80 grpc-web:static-assets
+$ docker build -t grpc-web:closure-client \
+  -f net/grpc/gateway/docker/closure-client/Dockerfile .
+$ docker run -d -p 80:80 grpc-web:closure-client
 ```
 
 ## Run the example from your browser

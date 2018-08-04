@@ -28,7 +28,7 @@ Try gRPC-Web and run a quick Echo example from the browser!
 From the repo root directory:
 
 ```sh
-$ docker-compose up echo-server envoy commonjs-client-example
+$ docker-compose up echo-server envoy commonjs-client
 ```
 
 Open a browser tab, and inspect
@@ -106,19 +106,19 @@ Multiple proxies supports the gRPC-Web protocol. Currently, the default proxy
 is [Envoy](https://www.envoyproxy.io), which supports gRPC-Web out of the box.
 
 ```
-$ docker-compose up echo-server envoy commonjs-client-example
+$ docker-compose up echo-server envoy commonjs-client
 ```
 
 An alternative is to build Nginx that comes with this repository.
 
 ```
-$ docker-compose up echo-server nginx commonjs-client-example
+$ docker-compose up echo-server nginx commonjs-client
 ```
 
 Finally, you can also try this [gRPC-Web Go Proxy](https://github.com/improbable-eng/grpc-web/tree/master/go/grpcwebproxy).
 
 ```
-$ docker-compose up echo-server grpcwebproxy binary-client-example
+$ docker-compose up echo-server grpcwebproxy binary-client
 ```
 
 
