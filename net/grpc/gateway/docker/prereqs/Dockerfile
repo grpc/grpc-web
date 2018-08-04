@@ -37,8 +37,10 @@ RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
 COPY . /github/grpc-web
 
 RUN cd /github/grpc-web && \
+  git checkout . && \
   rm -rf third_party && \
   git checkout third_party && \
+  git clean -f -d -x && \
   ./scripts/init_submodules.sh
 
 RUN cd /github/grpc-web/third_party/grpc && \
@@ -49,6 +51,11 @@ RUN cd /github/grpc-web/third_party/grpc/third_party/protobuf && \
 
 RUN cd /github/grpc-web/javascript/net/grpc/web && \
   make
+
+RUN cd /github/grpc-web/packages/grpc-web && \
+  npm install && \
+  npm run build && \
+  npm link
 
 RUN cp /github/grpc-web/net/grpc/gateway/examples/echo/nginx_simple.conf \
   /etc/nginx/nginx.conf
