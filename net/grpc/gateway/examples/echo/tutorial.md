@@ -99,13 +99,13 @@ To generate the client stub JS file, now run this command:
 
 ```sh
 $ protoc -I=. --plugin=protoc-gen-grpc-web=<path to plugin> \
-  --grpc-web_out=out=echo.grpc.pb.js,mode=grpcweb:. ./echo.proto
+  --grpc-web_out=out=echo.grpc.pb.js,mode=grpcwebtext:. ./echo.proto
 ```
 
 The format for the `--grpc-web_out` param is
 
 ```sh
---grpc-web_out=out=<filename>,mode=grpcweb:<output dir>
+--grpc-web_out=out=<filename>,mode=grpcwebtext:<output dir>
 ```
 
 Our command generates the client stub in the file `echo.grpc.pb.js`.

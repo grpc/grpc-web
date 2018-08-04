@@ -45,6 +45,13 @@ const googCrypt = goog.require('goog.crypt.base64');
 const GrpcWebClientBase = function(opt_options) {
   /**
    * @const
+   * @private {string}
+   */
+  this.format_ =
+    goog.getObjectByName('format', opt_options) || "text";
+
+  /**
+   * @const
    * @private {boolean}
    */
   this.suppressCorsPreflight_ =
@@ -58,8 +65,6 @@ const GrpcWebClientBase = function(opt_options) {
 GrpcWebClientBase.prototype.rpcCall = function(
     method, request, metadata, methodInfo, callback) {
   var xhr = this.newXhr_();
-  var serialized = methodInfo.requestSerializeFn(request);
-  xhr.headers.addAll(metadata);
 
   var genericTransportInterface = {
     xhr: xhr,
@@ -89,17 +94,27 @@ GrpcWebClientBase.prototype.rpcCall = function(
     }
   });
 
-  xhr.headers.set('Content-Type', 'application/grpc-web-text');
+  xhr.headers.addAll(metadata);
+  if (this.format_ == "text") {
+    xhr.headers.set('Content-Type', 'application/grpc-web-text');
+    xhr.headers.set('Accept', 'application/grpc-web-text');
+  } else {
+    xhr.headers.set('Content-Type', 'application/grpc-web+proto');
+  }
   xhr.headers.set('X-User-Agent', 'grpc-web-javascript/0.1');
-  xhr.headers.set('Accept', 'application/grpc-web-text');
-
-  var payload = this.encodeRequest_(serialized);
-  payload = googCrypt.encodeByteArray(payload);
-
+  xhr.headers.set('X-Grpc-Web', '1');
   if (this.suppressCorsPreflight_) {
     var headerObject = xhr.headers.toObject();
     xhr.headers.clear();
     method = GrpcWebClientBase.setCorsOverride_(method, headerObject);
+  }
+
+  var serialized = methodInfo.requestSerializeFn(request);
+  var payload = this.encodeRequest_(serialized);
+  if (this.format_ == "text") {
+    payload = googCrypt.encodeByteArray(payload);
+  } else if (this.format_ == "binary") {
+    xhr.setResponseType(XhrIo.ResponseType.ARRAY_BUFFER);
   }
   xhr.send(method, 'POST', payload);
   return;
@@ -112,8 +127,6 @@ GrpcWebClientBase.prototype.rpcCall = function(
 GrpcWebClientBase.prototype.serverStreaming = function(
     method, request, metadata, methodInfo) {
   var xhr = this.newXhr_();
-  var serialized = methodInfo.requestSerializeFn(request);
-  xhr.headers.addAll(metadata);
 
   var genericTransportInterface = {
     xhr: xhr,
@@ -121,17 +134,27 @@ GrpcWebClientBase.prototype.serverStreaming = function(
   var stream = new GrpcWebClientReadableStream(genericTransportInterface);
   stream.setResponseDeserializeFn(methodInfo.responseDeserializeFn);
 
-  xhr.headers.set('Content-Type', 'application/grpc-web-text');
+  xhr.headers.addAll(metadata);
+  if (this.format_ == "text") {
+    xhr.headers.set('Content-Type', 'application/grpc-web-text');
+    xhr.headers.set('Accept', 'application/grpc-web-text');
+  } else {
+    xhr.headers.set('Content-Type', 'application/grpc-web+proto');
+  }
   xhr.headers.set('X-User-Agent', 'grpc-web-javascript/0.1');
-  xhr.headers.set('Accept', 'application/grpc-web-text');
-
-  var payload = this.encodeRequest_(serialized);
-  payload = googCrypt.encodeByteArray(payload);
-
+  xhr.headers.set('X-Grpc-Web', '1');
   if (this.suppressCorsPreflight_) {
     var headerObject = xhr.headers.toObject();
     xhr.headers.clear();
     method = GrpcWebClientBase.setCorsOverride_(method, headerObject);
+  }
+
+  var serialized = methodInfo.requestSerializeFn(request);
+  var payload = this.encodeRequest_(serialized);
+  if (this.format_ == "text") {
+    payload = googCrypt.encodeByteArray(payload);
+  } else if (this.format_ == "binary") {
+    xhr.setResponseType(XhrIo.ResponseType.ARRAY_BUFFER);
   }
   xhr.send(method, 'POST', payload);
 

@@ -40,6 +40,7 @@ const XhrIo = goog.require('goog.net.XhrIo');
 const XmlHttp = goog.require('goog.net.XmlHttp');
 const events = goog.require('goog.events');
 const googCrypt = goog.require('goog.crypt.base64');
+const googString = goog.require('goog.string');
 const {GenericTransportInterface} = goog.require('grpc.web.GenericTransportInterface');
 const {Status} = goog.require('grpc.web.Status');
 
@@ -114,18 +115,26 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
   var self = this;
   events.listen(this.xhr_, EventType.READY_STATE_CHANGE,
                 function(e) {
-    var FrameType = GrpcWebStreamParser.FrameType;
+    var contentType = self.xhr_.getStreamingResponseHeader('Content-Type');
+    if (!contentType) return;
+    contentType = contentType.toLowerCase();
 
-    var responseText = self.xhr_.getResponseText();
-    var newPos = responseText.length - responseText.length % 4;
-    var newData = responseText.substr(self.pos_, newPos - self.pos_);
-    if (newData.length == 0) return;
-    self.pos_ = newPos;
-
-    var byteSource = googCrypt.decodeStringToUint8Array(newData);
+    if (googString.startsWith(contentType, 'application/grpc-web-text')) {
+      var responseText = self.xhr_.getResponseText();
+      var newPos = responseText.length - responseText.length % 4;
+      var newData = responseText.substr(self.pos_, newPos - self.pos_);
+      if (newData.length == 0) return;
+      self.pos_ = newPos;
+      var byteSource = googCrypt.decodeStringToUint8Array(newData);
+    } else if (googString.startsWith(contentType, 'application/grpc')) {
+      var byteSource = new Uint8Array(self.xhr_.getResponse());
+    } else {
+      return;
+    }
     var messages = self.parser_.parse([].slice.call(byteSource));
     if (!messages) return;
 
+    var FrameType = GrpcWebStreamParser.FrameType;
     for (var i = 0; i < messages.length; i++) {
       if (FrameType.DATA in messages[i]) {
         var data = messages[i][FrameType.DATA];

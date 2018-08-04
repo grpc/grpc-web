@@ -41,6 +41,11 @@ package:
 	cp run_example.sh $(ROOT_DIR)/gConnector
 	zip -r $(ROOT_DIR)/gConnector.zip $(ROOT_DIR)/gConnector/*
 
+standalone-proxy:
+	mkdir -p $(ROOT_DIR)/gConnector/$(EXAMPLES_PATH)
+	cp nginx.conf $(ROOT_DIR)/gConnector/conf
+	zip -r $(ROOT_DIR)/gConnector.zip $(ROOT_DIR)/gConnector/*
+
 echo_server: echo.pb.o echo.grpc.pb.o echo_server.o echo_service_impl.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
@@ -86,7 +91,7 @@ proto-js:
   $(PROTOS_PATH)/protos/pair.proto
 	$(PROTOC) -I=. --js_out=$(JS_IMPORT_STYLE):$(OUT_DIR) ./echo.proto
 	$(PROTOC) -I=. --plugin=protoc-gen-grpc-web=$(GRPC_WEB_PLUGIN_PATH) \
-  --grpc-web_out=out=$(OUT_DIR)/echo.grpc.pb.js,mode=grpcweb:. ./echo.proto
+  --grpc-web_out=out=$(OUT_DIR)/echo.grpc.pb.js,mode=grpcwebtext:. ./echo.proto
 
 install:
 	mkdir -p $(HTML_DIR)/$(EXAMPLES_PATH)
