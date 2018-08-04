@@ -24,7 +24,9 @@ docker build -t grpc-web:ubuntu_16_04 \
 
 docker-compose build
 
-bazel test javascript/net/grpc/web/...
+bazel test \
+    //javascript/net/grpc/web/... \
+    //net/grpc/gateway/examples/...
 
 cd packages/grpc-web && \
   npm install && \

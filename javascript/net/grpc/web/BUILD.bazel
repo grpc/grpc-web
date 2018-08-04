@@ -86,6 +86,7 @@ closure_js_library(
         "@io_bazel_rules_closure//closure/library/net:eventtype",
         "@io_bazel_rules_closure//closure/library/net:xhrio",
         "@io_bazel_rules_closure//closure/library/net:xmlhttp",
+        "@io_bazel_rules_closure//closure/library/string",
     ],
     suppress = [
         "reportUnknownTypes",

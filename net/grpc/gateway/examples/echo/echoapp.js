@@ -113,7 +113,7 @@ echoapp.EchoApp.prototype.load = function() {
       if (e.keyCode == 13) self.send(); // enter key
       return false;
     });
-    
+
     $("#msg").focus();
   });
 };
