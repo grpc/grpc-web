@@ -44,7 +44,7 @@ services:
   closure-client:
     build:
       context: ./
-      dockerfile: ./net/grpc/gateway/docker/closure-client/Dockerfile
+      dockerfile: ./net/grpc/gateway/docker/closure_client/Dockerfile
     depends_on:
       - prereqs
     image: grpc-web:closure-client
