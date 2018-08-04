@@ -41,30 +41,30 @@ services:
       - "8080:8080"
     links:
       - echo-server
-  static-assets:
+  closure-client:
     build:
       context: ./
-      dockerfile: ./net/grpc/gateway/docker/static_assets/Dockerfile
+      dockerfile: ./net/grpc/gateway/docker/closure_client/Dockerfile
     depends_on:
       - prereqs
-    image: grpc-web:static-assets
+    image: grpc-web:closure-client
     ports:
       - "80:80"
-  commonjs-client-example:
+  commonjs-client:
     build:
       context: ./
-      dockerfile: ./net/grpc/gateway/docker/commonjs_client_example/Dockerfile
+      dockerfile: ./net/grpc/gateway/docker/commonjs_client/Dockerfile
     depends_on:
       - prereqs
-    image: grpc-web:commonjs-client-example
+    image: grpc-web:commonjs-client
     ports:
       - "8081:8081"
-  binary-client-example:
+  binary-client:
     build:
       context: ./
-      dockerfile: ./net/grpc/gateway/docker/binary_client_example/Dockerfile
+      dockerfile: ./net/grpc/gateway/docker/binary_client/Dockerfile
     depends_on:
       - prereqs
-    image: grpc-web:binary-client-example
+    image: grpc-web:binary-client
     ports:
       - "8081:8081"
