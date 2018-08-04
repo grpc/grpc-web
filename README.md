@@ -103,7 +103,7 @@ stream.on('data', function(response) {
 ## Proxy interoperability
 
 Multiple proxies supports the gRPC-Web protocol. Currently, the default proxy
-is [Envoy](https://www.envoyproxy.io).
+is [Envoy](https://www.envoyproxy.io), which supports gRPC-Web out of the box.
 
 ```
 $ docker-compose up echo-server envoy commonjs-client-example
@@ -120,3 +120,47 @@ Finally, you can also try this [gRPC-Web Go Proxy](https://github.com/improbable
 ```
 $ docker-compose up echo-server grpcwebproxy binary-client-example
 ```
+
+
+## Client configuration options
+
+Typically, you will run the following command to generate the client stub
+from your proto definitions:
+
+```
+$ protoc -I=$DIR echo.proto \
+--plugin=protoc-gen-grpc-web=/path-to/protoc-gen-grpc-web \
+--js_out=import_style=commonjs:$OUT_DIR \
+--grpc-web_out=import_style=commonjs,mode=grpcwebtext,out=echo_grpc_pb.js:$OUT_DIR
+```
+
+
+### Import style
+
+The default generated code has [Closure](https://developers.google.com/closure/library/)
+`goog.require()` import style. Pass in `import_style=closure`.
+
+The [CommonJS](https://requirejs.org/docs/commonjs.html) style `require()` is also
+supported. Pass in `import_style=commonjs`.
+
+
+
+### Wire format mode
+
+For more information about the gRPC-Web wire format, please see the
+[spec](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md#protocol-differences-vs-grpc-over-http2)
+here.
+
+The default generated code sends the payload in the `grpc-web-text` format. Pass in
+`mode=grpcwebtext`.
+
+  - `Content-type: application/grpc-web-text`
+  - Payload are base64-encoded.
+  - Both unary and server streaming calls are supported.
+
+A binary protobuf format is also supported. Pass in `mode=grpcweb`.
+
+  - `Content-type: application/grpc-web+proto`
+  - Payload are in the binary protobuf format.
+  - Only unary calls are supported for now.
+  
