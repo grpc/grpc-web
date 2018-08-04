@@ -23,6 +23,24 @@ services:
       - "8080:8080"
     links:
       - echo-server
+  grpcwebproxy:
+    build:
+      context: ./
+      dockerfile: ./net/grpc/gateway/docker/grpcwebproxy/Dockerfile
+    image: grpc-web:grpcwebproxy
+    ports:
+      - "8080:8080"
+    links:
+      - echo-server
+  nginx:
+    build:
+      context: ./
+      dockerfile: ./net/grpc/gateway/docker/nginx/Dockerfile
+    image: grpc-web:nginx
+    ports:
+      - "8080:8080"
+    links:
+      - echo-server
   static-assets:
     build:
       context: ./
@@ -39,5 +57,14 @@ services:
     depends_on:
       - prereqs
     image: grpc-web:commonjs-client-example
+    ports:
+      - "8081:8081"
+  binary-client-example:
+    build:
+      context: ./
+      dockerfile: ./net/grpc/gateway/docker/binary_client_example/Dockerfile
+    depends_on:
+      - prereqs
+    image: grpc-web:binary-client-example
     ports:
       - "8081:8081"

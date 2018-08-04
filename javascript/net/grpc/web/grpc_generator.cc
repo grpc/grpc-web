@@ -165,7 +165,7 @@ void PrintFileHeader(Printer* printer, const std::map<string, string>& vars) {
 }
 
 void PrintServiceConstructor(Printer* printer,
-                             const std::map<string, string>& vars) {
+                             std::map<string, string>& vars) {
   printer->Print(
       vars,
       "/**\n"
@@ -181,6 +181,14 @@ void PrintServiceConstructor(Printer* printer,
       "  /**\n"
       "   * @private @const {!grpc.web.$mode$ClientBase} The client\n"
       "   */\n"
+      "   if (!options) options = {};\n");
+  if (vars["mode"] == GetModeVar(Mode::GRPCWEB)) {
+    printer->Print(
+        vars,
+        "  options['format'] = '$format$';\n\n");
+  }
+  printer->Print(
+      vars,
       "  this.client_ = new grpc.web.$mode$ClientBase(options);\n\n"
       "  /**\n"
       "   * @private @const {string} The hostname\n"
@@ -357,8 +365,9 @@ class GrpcCodeGenerator : public CodeGenerator {
       vars["mode"] = GetModeVar(Mode::OP);
     } else if (mode == "base64") {
       vars["mode"] = GetModeVar(Mode::GATEWAY);
-    } else if (mode == "grpcweb") {
+    } else if (mode == "grpcweb" || mode == "grpcwebtext") {
       vars["mode"] = GetModeVar(Mode::GRPCWEB);
+      vars["format"] = (mode == "grpcweb") ? "binary" : "text";
     } else if (mode == "jspb") {
       vars["mode"] = GetModeVar(Mode::OPJSPB);
     } else if (mode == "frameworks") {

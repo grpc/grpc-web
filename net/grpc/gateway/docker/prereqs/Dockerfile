@@ -25,6 +25,7 @@ RUN apt-get update && apt-get install -y \
   default-jdk \
   default-jre \
   libtool \
+  libpcre3-dev \
   libssl-dev \
   make \
   nginx \
@@ -33,9 +34,11 @@ RUN apt-get update && apt-get install -y \
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
   apt-get install -y nodejs
 
-RUN git clone https://github.com/grpc/grpc-web /github/grpc-web
+COPY . /github/grpc-web
 
 RUN cd /github/grpc-web && \
+  rm -rf third_party && \
+  git checkout third_party && \
   ./scripts/init_submodules.sh
 
 RUN cd /github/grpc-web/third_party/grpc && \
