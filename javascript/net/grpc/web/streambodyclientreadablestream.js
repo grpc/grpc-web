@@ -32,7 +32,9 @@ goog.module.declareLegacyNamespace();
 
 
 const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
+const ErrorCode = goog.require('goog.net.ErrorCode');
 const NodeReadableStream = goog.require('goog.net.streams.NodeReadableStream');
+const StatusCode = goog.require('grpc.web.StatusCode');
 const XhrIo = goog.require('goog.net.XhrIo');
 const {GenericTransportInterface} = goog.require('grpc.web.GenericTransportInterface');
 const {Status} = goog.require('grpc.web.Status');
@@ -124,9 +126,13 @@ const StreamBodyClientReadableStream = function(genericTransportInterface) {
     }
   });
   this.xhrNodeReadableStream_.on('error', function() {
-    if (self.onErrorCallback_) {
-      self.onErrorCallback_();
-    }
+    if (!self.onErrorCallback_) return;
+    var lastErrorCode = self.xhr_.getLastErrorCode();
+    if (lastErrorCode == ErrorCode.NO_ERROR) return;
+    self.onErrorCallback_({
+      code: StatusCode.UNAVAILABLE,
+      message: ErrorCode.getDebugMessage(lastErrorCode)
+    });
   });
 };
 

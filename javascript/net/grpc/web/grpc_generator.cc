@@ -48,8 +48,8 @@ enum Mode {
 };
 
 enum ImportStyle {
-  CLOSURE = 0,  // goog.require("grpc.web.*")
-  COMMONJS = 1, // const grpcWeb = require("grpc-web")
+  CLOSURE = 0,     // goog.require("grpc.web.*")
+  COMMONJS = 1,    // const grpcWeb = require("grpc-web")
 };
 
 string GetModeVar(const Mode mode) {
@@ -137,7 +137,6 @@ void PrintCommonJsMessagesDeps(Printer* printer, const FileDescriptor* file) {
 
   printer->Print(vars, "const proto = {};\n");
   if (!package.empty()) {
-
     size_t offset = 0;
     size_t dotIndex = package.find('.');
 
@@ -150,7 +149,9 @@ void PrintCommonJsMessagesDeps(Printer* printer, const FileDescriptor* file) {
     }
   }
 
-  printer->Print(vars, "proto.$package_name$ = require('./$filename$_pb.js');\n\n");
+  printer->Print(
+      vars,
+      "proto.$package_name$ = require('./$filename$_pb.js');\n\n");
 }
 
 void PrintFileHeader(Printer* printer, const std::map<string, string>& vars) {
@@ -165,7 +166,7 @@ void PrintFileHeader(Printer* printer, const std::map<string, string>& vars) {
 }
 
 void PrintServiceConstructor(Printer* printer,
-                             std::map<string, string>& vars) {
+                             std::map<string, string> vars) {
   printer->Print(
       vars,
       "/**\n"
@@ -178,10 +179,7 @@ void PrintServiceConstructor(Printer* printer,
       " */\n"
       "proto.$package_dot$$service_name$Client =\n"
       "    function(hostname, credentials, options) {\n"
-      "  /**\n"
-      "   * @private @const {!grpc.web.$mode$ClientBase} The client\n"
-      "   */\n"
-      "   if (!options) options = {};\n");
+      "  if (!options) options = {};\n");
   if (vars["mode"] == GetModeVar(Mode::GRPCWEB)) {
     printer->Print(
         vars,
@@ -189,6 +187,9 @@ void PrintServiceConstructor(Printer* printer,
   }
   printer->Print(
       vars,
+      "  /**\n"
+      "   * @private @const {!grpc.web.$mode$ClientBase} The client\n"
+      "   */\n"
       "  this.client_ = new grpc.web.$mode$ClientBase(options);\n\n"
       "  /**\n"
       "   * @private @const {string} The hostname\n"
@@ -400,8 +401,9 @@ class GrpcCodeGenerator : public CodeGenerator {
             vars,
             "goog.provide('proto.$package_dot$$service_name$Client');\n");
           break;
+        case ImportStyle::COMMONJS:
+          break;
       }
-
     }
     printer.Print("\n");
 

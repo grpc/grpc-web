@@ -16,7 +16,8 @@ var echoApp = new EchoApp(
   {
     checkGrpcStatusCode: function(status) {
       if (status.code != grpc.web.StatusCode.OK) {
-        EchoApp.addRightMessage('Error code: '+status.code+' "'+status.details+'"');
+        EchoApp.addRightMessage('Error code: '+status.code+' "'+
+                                status.details+'"');
       }
     }
   }
