@@ -90,7 +90,7 @@ GrpcWebClientBase.prototype.rpcCall = function(
       callback({
         code: error.code,
         message: error.message
-      });
+      }, null);
     }
   });
 
