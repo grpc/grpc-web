@@ -1,5 +1,10 @@
 const echoapp = {};
 
+/**
+ * @param {Object} echoService
+ * @param {Object} ctors
+ * @param {Object} handlers
+ */
 echoapp.EchoApp = function(echoService, ctors, handlers) {
   this.echoService = echoService;
   this.ctors = ctors;
@@ -9,6 +14,10 @@ echoapp.EchoApp = function(echoService, ctors, handlers) {
 echoapp.EchoApp.INTERVAL = 500; // ms
 echoapp.EchoApp.MAX_STREAM_MESSAGES = 50;
 
+/**
+ * @param {string} message
+ * @param {string} cssClass
+ */
 echoapp.EchoApp.addMessage = function(message, cssClass) {
   $("#first").after(
     $("<div/>").addClass("row").append(
@@ -16,14 +25,23 @@ echoapp.EchoApp.addMessage = function(message, cssClass) {
         $("<span/>").addClass("label " + cssClass).text(message))));
 };
 
+/**
+ * @param {string} message
+ */
 echoapp.EchoApp.addLeftMessage = function(message) {
   this.addMessage(message, "label-primary pull-left");
 };
 
+/**
+ * @param {string} message
+ */
 echoapp.EchoApp.addRightMessage = function(message) {
   this.addMessage(message, "label-default pull-right");
 };
 
+/**
+ * @param {string} msg
+ */
 echoapp.EchoApp.prototype.echo = function(msg) {
   echoapp.EchoApp.addLeftMessage(msg);
   var unaryRequest = new this.ctors.EchoRequest();
@@ -31,7 +49,8 @@ echoapp.EchoApp.prototype.echo = function(msg) {
   this.echoService.echo(unaryRequest, {"custom-header-1": "value1"},
                         function(err, response) {
     if (err) {
-      echoapp.EchoApp.addRightMessage('Error code: '+err.code+' "'+err.message+'"');
+      echoapp.EchoApp.addRightMessage('Error code: '+err.code+' "'+
+                                      err.message+'"');
     } else {
       setTimeout(function () {
         echoapp.EchoApp.addRightMessage(response.getMessage());
@@ -40,17 +59,25 @@ echoapp.EchoApp.prototype.echo = function(msg) {
   });
 };
 
+/**
+ * @param {string} msg
+ */
 echoapp.EchoApp.prototype.echoError = function(msg) {
   echoapp.EchoApp.addLeftMessage(msg);
   var unaryRequest = new this.ctors.EchoRequest();
   unaryRequest.setMessage(msg);
   this.echoService.echoAbort(unaryRequest, {}, function(err, response) {
     if (err) {
-      echoapp.EchoApp.addRightMessage('Error code: '+err.code+' "'+err.message+'"');
+      echoapp.EchoApp.addRightMessage('Error code: '+err.code+' "'+
+                                      err.message+'"');
     }
   });
 };
 
+/**
+ * @param {string} msg
+ * @param {number} count
+ */
 echoapp.EchoApp.prototype.repeatEcho = function(msg, count) {
   echoapp.EchoApp.addLeftMessage(msg);
   if (count > echoapp.EchoApp.MAX_STREAM_MESSAGES) {
@@ -76,13 +103,18 @@ echoapp.EchoApp.prototype.repeatEcho = function(msg, count) {
     }
   });
   stream.on('error', function(err) {
-    echoapp.EchoApp.addRightMessage('Error code: '+err.code+' "'+err.message+'"');
+    echoapp.EchoApp.addRightMessage('Error code: '+err.code+' "'+
+                                    err.message+'"');
   });
   stream.on('end', function() {
     console.log("stream end signal received");
   });
 };
 
+/**
+ * @param {Object} e event
+ * @return {boolean} status
+ */
 echoapp.EchoApp.prototype.send = function(e) {
   var msg = $("#msg").val().trim();
   $("#msg").val(''); // clear the text box
@@ -104,6 +136,9 @@ echoapp.EchoApp.prototype.send = function(e) {
   return false;
 };
 
+/**
+ * Load the app
+ */
 echoapp.EchoApp.prototype.load = function() {
   var self = this;
   $(document).ready(function() {

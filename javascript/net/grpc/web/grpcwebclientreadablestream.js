@@ -127,7 +127,8 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
       self.pos_ = newPos;
       var byteSource = googCrypt.decodeStringToUint8Array(newData);
     } else if (googString.startsWith(contentType, 'application/grpc')) {
-      var byteSource = new Uint8Array(self.xhr_.getResponse());
+      var byteSource = new Uint8Array(
+        /** @type {!ArrayBuffer} */ (self.xhr_.getResponse()));
     } else {
       return;
     }
