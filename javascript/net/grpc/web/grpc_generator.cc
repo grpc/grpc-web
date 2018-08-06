@@ -333,7 +333,7 @@ class GrpcCodeGenerator : public CodeGenerator {
     string mode;
     string import_style_str;
     ImportStyle import_style;
-  
+
     for (size_t i = 0; i < options.size(); ++i) {
       if (options[i].first == "out") {
         file_name = options[i].second;

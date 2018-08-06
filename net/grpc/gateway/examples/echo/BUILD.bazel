@@ -1,0 +1,15 @@
+load("//bazel:closure_grpc_web_library.bzl", "closure_grpc_web_library")
+
+proto_library(
+    name = "echo_proto",
+    srcs = [
+        "echo.proto",
+    ],
+)
+
+closure_grpc_web_library(
+    name = "echo",
+    deps = [
+        ":echo_proto",
+    ],
+)
