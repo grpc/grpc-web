@@ -140,8 +140,8 @@ $ protoc -I=$DIR echo.proto \
 The default generated code has [Closure](https://developers.google.com/closure/library/)
 `goog.require()` import style. Pass in `import_style=closure`.
 
-The [CommonJS](https://requirejs.org/docs/commonjs.html) style `require()` is also
-supported. Pass in `import_style=commonjs`.
+The [CommonJS](https://requirejs.org/docs/commonjs.html) style `require()` is
+also supported. Pass in `import_style=commonjs`.
 
 
 
@@ -151,8 +151,8 @@ For more information about the gRPC-Web wire format, please see the
 [spec](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md#protocol-differences-vs-grpc-over-http2)
 here.
 
-The default generated code sends the payload in the `grpc-web-text` format. Pass in
-`mode=grpcwebtext`.
+The default generated code sends the payload in the `grpc-web-text` format.
+Pass in `mode=grpcwebtext`.
 
   - `Content-type: application/grpc-web-text`
   - Payload are base64-encoded.
@@ -163,4 +163,3 @@ A binary protobuf format is also supported. Pass in `mode=grpcweb`.
   - `Content-type: application/grpc-web+proto`
   - Payload are in the binary protobuf format.
   - Only unary calls are supported for now.
-  
