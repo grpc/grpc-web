@@ -179,10 +179,7 @@ void PrintServiceConstructor(Printer* printer,
       " */\n"
       "proto.$package_dot$$service_name$Client =\n"
       "    function(hostname, credentials, options) {\n"
-      "  /**\n"
-      "   * @private @const {!grpc.web.$mode$ClientBase} The client\n"
-      "   */\n"
-      "   if (!options) options = {};\n");
+      "  if (!options) options = {};\n");
   if (vars["mode"] == GetModeVar(Mode::GRPCWEB)) {
     printer->Print(
         vars,
@@ -190,6 +187,9 @@ void PrintServiceConstructor(Printer* printer,
   }
   printer->Print(
       vars,
+      "  /**\n"
+      "   * @private @const {!grpc.web.$mode$ClientBase} The client\n"
+      "   */\n"
       "  this.client_ = new grpc.web.$mode$ClientBase(options);\n\n"
       "  /**\n"
       "   * @private @const {string} The hostname\n"
