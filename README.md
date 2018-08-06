@@ -105,6 +105,88 @@ here.
   - Only unary calls are supported for now.
 
 
+### Bazel
+
+> :exclamation: ***Disclaimer***:
+> Using gRPC-Web in bazel currently requires [rules_closure] with
+  an unmerged patch \(See [#223](https://github.com/grpc/grpc-web/issues/223)\).
+
+Add the following to your WORKSPACE:
+
+```python
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "io_bazel_rules_closure",
+    sha256 = "248a7a98eb3962d9f0013e543ea79c5063a83bac7af349ebf412d844e6ab3035",
+    strip_prefix = "rules_closure-53f2cab21fa6c608f32f114387d88ffd7868c5fc",
+    urls = [
+        "https://github.com/Yannic/rules_closure/archive/53f2cab21fa6c608f32f114387d88ffd7868c5fc.zip",
+    ],
+)
+
+http_archive(
+    name = "com_github_grpc_grpc_web",
+    sha256 = "e75d8b37334ec691cad4df1ef4e17b2fefdedda5a8c2ba344f83e2e8b52d3572",
+    strip_prefix = "grpc-web-9b7b2d5411c486aa646ba2491cfd894d5352775b",
+    urls = [
+        "https://github.com/grpc/grpc-web/archive/9b7b2d5411c486aa646ba2491cfd894d5352775b.zip",
+    ],
+)
+
+load("@io_bazel_rules_closure//closure:defs.bzl", "closure_repositories")
+closure_repositories()
+```
+
+Now, you can use `closure_grpc_web_library` by adding this to your BUILD files
+(\([example](bazel_echo_example)\)):
+
+```python
+load(
+    "@com_github_grpc_grpc_web//bazel:closure_grpc_web_library.bzl",
+    "closure_grpc_web_library",
+)
+
+load(
+    "@io_bazel_rules_closure//closure:def.bzl",
+    "closure_js_library",
+    "closure_proto_library",
+)
+
+proto_library(
+    name = "echo_proto",
+    srcs = [
+        "echo.proto",
+    ],
+)
+
+closure_proto_library(
+    name = "echo_closure_proto",
+    deps = [
+        ":echo_proto",
+    ],
+)
+
+closure_grpc_web_library(
+    name = "echo_closure_grpc",
+    deps = [
+        ":echo_proto",
+    ],
+)
+
+closure_js_library(
+    name = "echo_lib",
+    srcs = [
+        "echo.js",
+    ],
+    deps = [
+        ":echo_closure_grpc",
+        ":echo_closure_proto",
+    ],
+)
+```
+
+
 ## How It Works
 
 Let's take a look at how gRPC-Web works with a simple example. You can find out
@@ -262,3 +344,7 @@ this project!
 
 * [zaucy](https://github.com/zaucy)
 * [yannic](https://github.com/yannic)
+
+
+[rules_closure]: https://github.com/bazelbuild/rules_closure
+[bazel_echo_example]: https://github.com/oferb/startup-os-example/tree/master/app/client
