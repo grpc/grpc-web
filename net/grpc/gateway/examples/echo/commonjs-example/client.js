@@ -1,4 +1,5 @@
-const {EchoRequest,
+const {Bar, Baz, Foo,
+       EchoRequest,
        ServerStreamingEchoRequest} = require('./echo_pb.js');
 const {EchoServiceClient} = require('./echo_grpc_pb.js');
 const {EchoApp} = require('../echoapp.js');
@@ -10,6 +11,9 @@ var echoService = new EchoServiceClient('http://localhost:8080', null, null);
 var echoApp = new EchoApp(
   echoService,
   {
+    Bar: Bar,
+    Baz: Baz,
+    Foo: Foo,
     EchoRequest: EchoRequest,
     ServerStreamingEchoRequest: ServerStreamingEchoRequest
   },

@@ -46,6 +46,36 @@ echoapp.EchoApp.prototype.echo = function(msg) {
   echoapp.EchoApp.addLeftMessage(msg);
   var unaryRequest = new this.ctors.EchoRequest();
   unaryRequest.setMessage(msg);
+
+  var standaloneFoo = new this.ctors.Foo();
+  standaloneFoo.setVal(msg+"@standaloneFoo");
+  unaryRequest.setStandaloneFoo(standaloneFoo);
+  
+  var foo1 = new this.ctors.Foo();
+  foo1.setVal(msg+"@foo1");
+  var foo2 = new this.ctors.Foo();
+  foo2.setVal(msg+"@foo2");
+  
+  if (isNaN(msg)) {
+    var username = new this.ctors.Foo();
+    username.setVal(msg+"@username");
+    unaryRequest.setUsername(username);
+    var bar1 = new this.ctors.Bar();
+    var bar2 = new this.ctors.Bar();
+    bar1.setName(msg+"@foo1.bar");
+    bar2.setName(msg+"@foo2.bar");
+    foo1.setBar(bar1);
+    foo2.setBar(bar2);
+  } else {
+    unaryRequest.setUserid(msg*1000+999);
+    var baz1 = new this.ctors.Baz();
+    var baz2 = new this.ctors.Baz();
+    baz1.setId(msg*1000+111);
+    baz2.setId(msg*1000+222);
+    foo1.setBaz(baz1);
+    foo2.setBaz(baz2);
+  }
+  unaryRequest.setFoosList([foo1, foo2]);
   this.echoService.echo(unaryRequest, {"custom-header-1": "value1"},
                         function(err, response) {
     if (err) {
@@ -54,6 +84,30 @@ echoapp.EchoApp.prototype.echo = function(msg) {
     } else {
       setTimeout(function () {
         echoapp.EchoApp.addRightMessage(response.getMessage());
+
+        console.log('standaloneFoo = '+response.getStandaloneFoo().getVal());
+        
+        var resp_foo1 = response.getFoosList()[0];
+        var resp_foo2 = response.getFoosList()[1]
+        console.log('foo1.val = '+resp_foo1.getVal());
+        console.log('foo2.val = '+resp_foo2.getVal());
+        
+        if (resp_foo1.hasBar()) {
+          console.log("foo1.bar = "+resp_foo1.getBar().getName());
+        } else {
+          console.log("foo1.baz = "+resp_foo1.getBaz().getId());
+        }
+        if (resp_foo2.hasBar()) {
+          console.log("foo2.bar = "+resp_foo2.getBar().getName());
+        } else {
+          console.log("foo2.baz = "+resp_foo2.getBaz().getId());
+        }
+
+        if (response.hasUsername()) {
+          console.log('username = '+response.getUsername().getVal());
+        } else {
+          console.log('userid = '+response.getUserid());
+        }
       }, echoapp.EchoApp.INTERVAL);
     }
   });

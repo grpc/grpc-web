@@ -30,6 +30,9 @@ const module = {};
  var echoApp = new echoapp.EchoApp(
    echoService,
    {
+     Bar: proto.grpc.gateway.testing.Bar,
+     Baz: proto.grpc.gateway.testing.Baz,
+     Foo: proto.grpc.gateway.testing.Foo,
      EchoRequest: proto.grpc.gateway.testing.EchoRequest,
      ServerStreamingEchoRequest: proto.grpc.gateway.testing.ServerStreamingEchoRequest
    },

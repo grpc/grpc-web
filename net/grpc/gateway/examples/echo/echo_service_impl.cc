@@ -27,6 +27,7 @@
 using grpc::ServerContext;
 using grpc::ServerWriter;
 using grpc::Status;
+using grpc::gateway::testing::Foo;
 using grpc::gateway::testing::EchoRequest;
 using grpc::gateway::testing::EchoResponse;
 using grpc::gateway::testing::EchoService;
@@ -56,6 +57,22 @@ Status EchoServiceImpl::Echo(ServerContext* context, const EchoRequest* request,
                              EchoResponse* response) {
   CopyClientMetadataToResponse(context);
   response->set_message(request->message());
+  response->mutable_standalone_foo()->set_val(request->standalone_foo().val());
+  for (int i = 0; i < request->foos_size(); i++) {
+    Foo* foo = response->add_foos();
+    foo->set_val(request->foos(i).val());
+    if (request->foos(i).id_case() == Foo::IdCase::kBar) {
+      foo->mutable_bar()->set_name(request->foos(i).bar().name());
+    } else {
+      foo->mutable_baz()->set_id(request->foos(i).baz().id());
+    }
+    std::cout << request->foos(i).val().c_str() << std::endl;
+  }
+  if (request->has_username()) {
+    response->mutable_username()->set_val(request->username().val());
+  } else {
+    response->set_userid(request->userid());
+  }
   return Status::OK;
 }
 
