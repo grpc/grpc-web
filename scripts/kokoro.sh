@@ -19,6 +19,13 @@ cd "$(dirname "$0")"
 cd ..
 make clean
 
+progs=(docker docker-compose bazel npm)
+for p in "${progs[@]}"
+do
+  command -v $p > /dev/null 2>&1 || \
+    { echo >&2 "$p is required but not installed. Aborting."; exit 1; }
+done
+
 docker build -t grpc-web:ubuntu_16_04 \
   -f net/grpc/gateway/docker/ubuntu_16_04/Dockerfile .
 
