@@ -19,13 +19,41 @@ package grpc.gateway.testing;
 message Empty {
 }
 
+message Bar {
+  string name = 1;
+}
+
+message Baz {
+  int32 id = 1;
+}
+
+message Foo {
+  string val = 5;
+  oneof id {
+    Bar bar = 6;
+    Baz baz = 7;
+  }
+}
+
 message EchoRequest {
   string message = 1;
+  Foo standalone_foo = 2;
+  repeated Foo foos = 4;
+  oneof identity {
+    Foo username = 5;
+    int32 userid = 6;
+  }
 }
 
 message EchoResponse {
   string message = 1;
   int32 message_count = 2;
+  Foo standalone_foo = 3;
+  repeated Foo foos = 4;
+  oneof identity {
+    Foo username = 6;
+    int32 userid = 7;
+  }
 }
 
 // Request type for server side streaming echo.
