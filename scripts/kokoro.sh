@@ -19,15 +19,12 @@ cd "$(dirname "$0")"
 cd ..
 make clean
 
-command -v docker > /dev/null 2>&1 || \
-  { echo >&2 "docker is required but not installed. Aborting."; exit 1; }
-command -v docker-compose > /dev/null 2>&1 || \
-  { echo >&2 "docker-compose is required but not installed. Aborting."; \
-  exit 1; }
-command -v bazel > /dev/null 2>&1 || \
-  { echo >&2 "bazel is required but not installed. Aborting."; exit 1; }
-command -v npm > /dev/null 2>&1 || \
-  { echo >&2 "npm is required but not installed. Aborting."; exit 1; }
+progs=(docker docker-compose bazel npm)
+for p in "${progs[@]}"
+do
+  command -v $p > /dev/null 2>&1 || \
+    { echo >&2 "$p is required but not installed. Aborting."; exit 1; }
+done
 
 docker build -t grpc-web:ubuntu_16_04 \
   -f net/grpc/gateway/docker/ubuntu_16_04/Dockerfile .
