@@ -19,8 +19,20 @@ package grpc.gateway.testing;
 message Empty {
 }
 
+message Node {
+  oneof contents {
+    List list = 1;
+    string val = 2;
+  }
+}
+
+message List {
+  repeated Node nodes = 1;
+}
+
 message EchoRequest {
   string message = 1;
+  List list = 2;
 }
 
 message EchoResponse {
