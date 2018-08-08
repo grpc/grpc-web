@@ -13,7 +13,7 @@ projects with the
 and its TypeScript generator (which has not yet been open-sourced).
 
 gRPC-Web clients connect to gRPC servers via a special gateway proxy: our
-provided version uses [Envoy](https://github.com/envoyproxy/envoy), in which
+provided version uses [Envoy](https://www.envoyproxy.io/), in which
 gRPC-Web support is built-in. Envoy will become the default gateway for
 gRPC-Web by GA.
 
