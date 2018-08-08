@@ -34,7 +34,7 @@ $ docker-compose up echo-server envoy commonjs-client
 Open a browser tab, and inspect
 
 ```
-http://localhost:8081/echo_commonjs_test.html
+http://localhost:8081/echotest.html
 ```
 
 ## How it works
