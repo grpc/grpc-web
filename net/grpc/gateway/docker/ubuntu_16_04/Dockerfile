@@ -12,39 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# BUILD
-#
-# Option 1: Only the Nginx gateway
-#
-# $ docker build \
-#   -t grpc-web \
-#   -f net/grpc/gateway/docker/ubuntu_16_04/Dockerfile .
-#
-# Option 2: With end-to-end example
-#
-# $ docker build \
-#   -t grpc-web \
-#   --build-arg with_examples=true \
-#   -f net/grpc/gateway/docker/ubuntu_16_04/Dockerfile .
-#
-# RUN
-#
-# 1. Run the docker container
-#
-# $ docker run -t -p 8080:8080 grpc-web
-#
-# 2. Browser example:
-# (if you had built the end-to-end example with Option 2 in the BUILD section)
-#
-# Point a web browser to
-#
-# http://localhost:8080/net/grpc/gateway/examples/echo/echotest.html
-
 FROM ubuntu:16.04
 
-ARG with_examples=false
 ARG MAKEFLAGS=-j8
-ENV with_examples $with_examples
 ENV EMBED_OPENSSL false
 
 RUN apt-get update && apt-get install -y \
@@ -70,10 +40,4 @@ RUN cd /github/grpc-web/third_party/grpc && \
   make && make install
 
 RUN cd /github/grpc-web && \
-  make package
-
-RUN cd /github/grpc-web && \
-  ./scripts/build_examples.sh
-
-EXPOSE 8080
-CMD ["/github/grpc-web/gConnector/run_example.sh"]
+  make
