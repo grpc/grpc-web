@@ -19,19 +19,35 @@ cd "$(dirname "$0")"
 cd ..
 make clean
 
-progs=(docker docker-compose bazel npm)
+# These programs need to be already installed
+progs=(docker docker-compose bazel npm curl)
 for p in "${progs[@]}"
 do
   command -v $p > /dev/null 2>&1 || \
     { echo >&2 "$p is required but not installed. Aborting."; exit 1; }
 done
 
+# Build all relevant docker images. They should all build successfully.
 docker-compose build
 
+# Run all bazel unit tests
 bazel test \
-    //javascript/net/grpc/web/... \
-    //net/grpc/gateway/examples/...
+  //javascript/net/grpc/web/... \
+  //net/grpc/gateway/examples/...
 
+# Build the grpc-web npm package
 cd packages/grpc-web && \
   npm install && \
-  npm run build
+  npm run build && \
+  cd ../..
+
+# Bring up the Echo server and the Envoy proxy (in background).
+# The 'sleep' seems necessary for the docker containers to be fully up
+# and listening before we test the with curl requests
+docker-compose up -d echo-server envoy && sleep 5;
+
+# Run a curl request and verify the output
+source ./scripts/test-proxy.sh
+
+# Remove all docker containers
+docker-compose down
