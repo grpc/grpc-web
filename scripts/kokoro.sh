@@ -26,9 +26,6 @@ do
     { echo >&2 "$p is required but not installed. Aborting."; exit 1; }
 done
 
-docker build -t grpc-web:ubuntu_16_04 \
-  -f net/grpc/gateway/docker/ubuntu_16_04/Dockerfile .
-
 docker-compose build
 
 bazel test \

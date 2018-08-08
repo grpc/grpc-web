@@ -93,7 +93,7 @@ plugin:
 example: plugin
 	cd "$(ROOT_DIR)"/net/grpc/gateway/examples/echo && make
 
-standalone-proxy: package
+standalone-proxy: package_static
 	cd "$(ROOT_DIR)"/net/grpc/gateway/examples/echo && make standalone-proxy
 
 echo_server:
