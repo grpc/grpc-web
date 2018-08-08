@@ -21,4 +21,4 @@ RUN cd /github/grpc-web && \
   make standalone-proxy
 
 EXPOSE 8080
-CMD ["/github/grpc-web/gConnector/nginx.sh"]
+CMD ["/github/grpc-web/gConnector_static/nginx.sh"]

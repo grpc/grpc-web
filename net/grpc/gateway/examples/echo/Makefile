@@ -42,9 +42,9 @@ package:
 	zip -r $(ROOT_DIR)/gConnector.zip $(ROOT_DIR)/gConnector/*
 
 standalone-proxy:
-	mkdir -p $(ROOT_DIR)/gConnector/$(EXAMPLES_PATH)
-	cp nginx.conf $(ROOT_DIR)/gConnector/conf
-	zip -r $(ROOT_DIR)/gConnector.zip $(ROOT_DIR)/gConnector/*
+	mkdir -p $(ROOT_DIR)/gConnector_static/$(EXAMPLES_PATH)
+	cp nginx.conf $(ROOT_DIR)/gConnector_static/conf
+	zip -r $(ROOT_DIR)/gConnector_static.zip $(ROOT_DIR)/gConnector_static/*
 
 echo_server: echo.pb.o echo.grpc.pb.o echo_server.o echo_service_impl.o
 	$(CXX) $^ $(LDFLAGS) -o $@
