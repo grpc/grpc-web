@@ -35,10 +35,10 @@ This example is using the `echo.proto` file from the [Echo Example](https://gith
     yarn add grpc-web
     ```
 
-2. Generate your client with `protoc` and the `protoc-gen-grpc-web` plugin. Make sure you set the import_style for both `js_out` and `grpc-web_out` to **commonjs**. It is also important that both your js and grpc-web output to the same directory.
+2. Generate your client with `protoc` and the `protoc-gen-grpc-web` plugin. To install the plugin, clone the `grpc/grpc-web` repository` and run `make plugin`. Make sure you set the import_style for both `js_out` and `grpc-web_out` to **commonjs**. It is also important that both your js and grpc-web output to the same directory.
 
     ```shell
-    protoc echo.proto --js_out=import_style=commonjs:generated --grpc-web_out=import_style=commonjs,mode=grpcwebtext,out=echo_grpc_pb.js:generated
+    protoc echo.proto --js_out=import_style=commonjs:generated --grpc-web_out=import_style=commonjs,mode=grpcwebtext,out=echo_grpc_pb.js:generated --plugin=protoc-gen-grpc-web=PATH_TO_grpc-web_REPOSITORY/javascript/net/grpc/web/protoc-gen-grpc-web
     ```
 
 3. Start using your generated client!
