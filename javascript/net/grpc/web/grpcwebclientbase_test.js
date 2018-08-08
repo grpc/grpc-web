@@ -18,18 +18,179 @@
 goog.module('grpc.web.GrpcWebClientBaseTest');
 goog.setTestOnly('grpc.web.GrpcWebClientBaseTest');
 
+var GrpcWebClientBase = goog.require('grpc.web.GrpcWebClientBase');
+var Map = goog.require('goog.structs.Map');
+var googCrypt = goog.require('goog.crypt.base64');
+var googEvents = goog.require('goog.events');
 var testSuite = goog.require('goog.testing.testSuite');
 goog.require('goog.testing.jsunit');
 
+var REQUEST_BYTES = [1,2,3];
+var FAKE_METHOD = "fake-method";
+var PROTO_FIELD_VALUE = "meow";
+var EXPECTED_HEADERS;
+var EXPECTED_HEADER_VALUES;
+var EXPECTED_UNARY_HEADERS = ['Content-Type', 'Accept',
+                              'X-User-Agent', 'X-Grpc-Web'];
+var EXPECTED_UNARY_HEADER_VALUES = ['application/grpc-web-text',
+                                    'application/grpc-web-text',
+                                    'grpc-web-javascript/0.1',
+                                    '1'];
+var dataCallback;
+
+
 testSuite({
   setUp: function() {
+    googEvents.listen = function(a, b, listener, d, e) {
+      dataCallback = listener;
+      return;
+    };
   },
 
   tearDown: function() {
+    EXPECTED_HEADERS = null;
+    EXPECTED_HEADER_VALUES = null;
   },
 
+  testRpcResponse: function() {
+    var client = new GrpcWebClientBase();
+    client.newXhr_ = function() {
+      return new MockXhr({
+        // This parses to [ { DATA: [4,5,6] }, { TRAILER: "a: b" } ]
+        response: googCrypt.encodeByteArray(new Uint8Array([
+          0, 0, 0, 0, 3, 4, 5, 6, 128, 0, 0, 0, 4, 97, 58, 32, 98
+        ])),
+      });
+    };
 
-  testTrivial: function() {
-    assertEquals(1, 1);
+    expectUnaryHeaders();
+    client.rpcCall(FAKE_METHOD, {}, {}, {
+      requestSerializeFn : function(request) {
+        return REQUEST_BYTES;
+      },
+      responseDeserializeFn : function(bytes) {
+        assertElementsEquals([4,5,6], [].slice.call(bytes));
+        return {"field1": PROTO_FIELD_VALUE};
+      }
+    }, function(error, response) {
+      assertNull(error);
+      assertEquals(PROTO_FIELD_VALUE, response.field1);
+    });
+    dataCallback();
   },
+
+  testRpcError: function() {
+    var client = new GrpcWebClientBase();
+    client.newXhr_ = function() {
+      return new MockXhr({
+        // This decodes to "grpc-status: 3"
+        response: googCrypt.encodeByteArray(new Uint8Array([
+          128, 0, 0, 0, 14, 103, 114, 112, 99, 45, 115, 116, 97, 116, 117, 115, 58, 32, 51
+        ])),
+      });
+    };
+
+    expectUnaryHeaders();
+    client.rpcCall(FAKE_METHOD, {}, {}, {
+      requestSerializeFn : function(request) {
+        return REQUEST_BYTES;
+      },
+      responseDeserializeFn : function(bytes) {
+        return {};
+      }
+    }, function(error, response) {
+      assertNull(response);
+      assertEquals(3, error.code);
+    });
+    dataCallback();
+  }
 });
+
+
+/** Sets expected headers as the unary response headers */
+function expectUnaryHeaders() {
+  EXPECTED_HEADERS = EXPECTED_UNARY_HEADERS;
+  EXPECTED_HEADER_VALUES = EXPECTED_UNARY_HEADER_VALUES;
+}
+
+
+/**
+ * @constructor
+ * @param {?Object} mockValues
+ * Mock XhrIO object to test the outgoing values
+ */
+function MockXhr(mockValues) {
+  this.mockValues = mockValues;
+  this.headers = new Map();
+}
+
+
+/**
+ * @param {string} url
+ * @param {string=} opt_method
+ * @param {string=} opt_content
+ * @param {string=} opt_headers
+ */
+MockXhr.prototype.send = function(url, opt_method, opt_content, opt_headers) {
+  assertEquals(FAKE_METHOD, url);
+  assertEquals("POST", opt_method);
+  assertElementsEquals(googCrypt.encodeByteArray(new Uint8Array([0, 0, 0, 0, 3, 1, 2, 3])), opt_content);
+  assertElementsEquals(EXPECTED_HEADERS, this.headers.getKeys());
+  assertElementsEquals(EXPECTED_HEADER_VALUES, this.headers.getValues());
+};
+
+
+/**
+ * @param {boolean} withCredentials
+ */
+MockXhr.prototype.setWithCredentials = function(withCredentials) {
+  return;
+};
+
+
+/**
+ * @return {string} response
+ */
+MockXhr.prototype.getResponseText = function() {
+  return this.mockValues.response;
+};
+
+
+/**
+ * @return {string} response
+ */
+MockXhr.prototype.getResponseHeaders = function() {
+  return {};
+};
+
+
+/**
+ * @return {number} xhr state
+ */
+MockXhr.prototype.getReadyState = function() {
+  return 0;
+};
+
+
+/**
+ * @return {number} lastErrorCode
+ */
+MockXhr.prototype.getLastErrorCode = function() {
+  return 0;
+};
+
+
+/**
+ * @return {string} lastError
+ */
+MockXhr.prototype.getLastError = function() {
+  return 'server not responding';
+};
+
+
+/**
+ * @param {string} responseType
+ */
+MockXhr.prototype.setResponseType = function(responseType) {
+  return;
+};

@@ -129,8 +129,19 @@ closure_js_test(
     entry_points = [
         "goog:grpc.web.GrpcWebClientBaseTest",
     ],
+    suppress = [
+        "visibility",
+        "checkTypes",
+        "deprecated",
+        "reportUnknownTypes",
+        "strictCheckTypes",
+    ],
     deps = [
         "@io_bazel_rules_closure//closure/library:testing",
+        "@io_bazel_rules_closure//closure/library/crypt:base64",
+        "@io_bazel_rules_closure//closure/library/events:events",
+        "@io_bazel_rules_closure//closure/library/structs:map",
+        ":grpcwebclientbase",
     ],
 )
 
