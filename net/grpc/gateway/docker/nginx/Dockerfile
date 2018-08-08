@@ -14,6 +14,9 @@
 
 FROM grpc-web:prereqs
 
+RUN cd /github/grpc-web/net/grpc/gateway/examples/echo && \
+  sed -i 's/localhost:9090/echo-server:9090/g' nginx.conf
+
 RUN cd /github/grpc-web && \
   make standalone-proxy
 
