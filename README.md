@@ -34,7 +34,7 @@ $ docker-compose up echo-server envoy commonjs-client
 Open a browser tab, and inspect
 
 ```
-http://localhost:8081/echo_commonjs_test.html
+http://localhost:8081/echotest.html
 ```
 
 ## How it works
@@ -143,6 +143,8 @@ The default generated code has [Closure](https://developers.google.com/closure/l
 The [CommonJS](https://requirejs.org/docs/commonjs.html) style `require()` is
 also supported. Pass in `import_style=commonjs`.
 
+
+Note: ES6 style `import` is not supported yet.
 
 
 ### Wire format mode

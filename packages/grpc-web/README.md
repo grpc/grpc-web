@@ -82,4 +82,4 @@ $ cd grpc-web
 $ docker-compose up echo-server envoy commonjs-client
 ```
 
-Open your browser to `http://localhost:8081/echo_commonjs_test.html`
+Open your browser to `http://localhost:8081/echotest.html`
