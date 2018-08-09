@@ -38,7 +38,6 @@ package:
 	cp echo_server $(ROOT_DIR)/gConnector
 	cp echotest.html $(ROOT_DIR)/gConnector/$(EXAMPLES_PATH)
 	cp compiled.js $(ROOT_DIR)/gConnector
-	cp run_example.sh $(ROOT_DIR)/gConnector
 	zip -r $(ROOT_DIR)/gConnector.zip $(ROOT_DIR)/gConnector/*
 
 standalone-proxy:
