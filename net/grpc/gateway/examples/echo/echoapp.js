@@ -46,8 +46,10 @@ echoapp.EchoApp.prototype.echo = function(msg) {
   echoapp.EchoApp.addLeftMessage(msg);
   var unaryRequest = new this.ctors.EchoRequest();
   unaryRequest.setMessage(msg);
-  this.echoService.echo(unaryRequest, {"custom-header-1": "value1"},
-                        function(err, response) {
+  var self = this;
+  var call = this.echoService.echo(unaryRequest,
+                                   {"custom-header-1": "value1"},
+                                   function(err, response) {
     if (err) {
       echoapp.EchoApp.addRightMessage('Error code: '+err.code+' "'+
                                       err.message+'"');
@@ -55,6 +57,13 @@ echoapp.EchoApp.prototype.echo = function(msg) {
       setTimeout(function () {
         echoapp.EchoApp.addRightMessage(response.getMessage());
       }, echoapp.EchoApp.INTERVAL);
+    }
+  });
+  call.on('status', function(status) {
+    self.handlers.checkGrpcStatusCode(status);
+    if (status.metadata) {
+      console.log("Received metadata");
+      console.log(status.metadata);
     }
   });
 };

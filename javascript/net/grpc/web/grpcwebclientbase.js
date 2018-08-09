@@ -117,7 +117,7 @@ GrpcWebClientBase.prototype.rpcCall = function(
     xhr.setResponseType(XhrIo.ResponseType.ARRAY_BUFFER);
   }
   xhr.send(method, 'POST', payload);
-  return;
+  return stream;
 };
 
 
