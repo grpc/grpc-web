@@ -144,6 +144,8 @@ The [CommonJS](https://requirejs.org/docs/commonjs.html) style `require()` is
 also supported. Pass in `import_style=commonjs`.
 
 
+Note: ES6 style `import` is not supported yet.
+
 
 ### Wire format mode
 
