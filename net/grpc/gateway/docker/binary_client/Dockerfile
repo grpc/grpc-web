@@ -27,7 +27,7 @@ $EXAMPLE_DIR/commonjs-example
 RUN cd $EXAMPLE_DIR/commonjs-example && \
   npm install && \
   npm link grpc-web && \
-  npx webpack client.js
+  npx webpack
 
 EXPOSE 8081
 CMD ["nginx"]
