@@ -45,6 +45,6 @@ s1=$(echo "$out" | base64 -d | \
 echo "$s1" | base64 -d | xxd
 
 # Take the 28 bytes we cut out above, the base64-encoded string should be this
-if [ "$s1" != "AAAAAAcKBWhlbGxvgGdycGMtc3RhdHVzOjANCg==" ]; then
+if [[ "$s1" != "AAAAAAcKBWhlbGxvgGdycGMtc3RhdHVzOjANCg==" ]]; then
   exit 1;
 fi

@@ -23,7 +23,7 @@ make clean
 progs=(docker docker-compose bazel npm curl)
 for p in "${progs[@]}"
 do
-  command -v $p > /dev/null 2>&1 || \
+  command -v "$p" > /dev/null 2>&1 || \
     { echo >&2 "$p is required but not installed. Aborting."; exit 1; }
 done
 
