@@ -15,12 +15,11 @@ const grpcWebExports = [
   "grpc.web.AbstractClientBase",
   "grpc.web.ClientReadableStream",
   "grpc.web.Error",
+  "grpc.web.GrpcWebClientBase",
   "grpc.web.GrpcWebClientReadableStream",
   "grpc.web.GrpcWebStreamParser",
   "grpc.web.Status",
   "grpc.web.StatusCode",
-  "grpc.web.StreamBodyClientReadableStream",
-  "grpc.web.GrpcWebClientBase",
 ];
 
 const closureArgs = [].concat(
