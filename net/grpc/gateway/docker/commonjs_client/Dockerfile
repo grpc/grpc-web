@@ -27,7 +27,7 @@ $EXAMPLE_DIR/commonjs-example
 RUN cd $EXAMPLE_DIR/commonjs-example && \
   npm install && \
   npm link grpc-web && \
-  ./node_modules/.bin/browserify client.js > out.js
+  npx webpack client.js
 
 EXPOSE 8081
 CMD ["nginx"]
