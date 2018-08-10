@@ -158,7 +158,9 @@ You will need a `package.json` file
     "grpc-web": "^0.2.0"
   },
   "devDependencies": {
-    "browserify": "16"
+    "browserify": "16",
+    "webpack": "4",
+    "webpack-cli": "3"
   }
 }
 ```
@@ -171,10 +173,10 @@ into one single JS library that can be used in the browser.
 
 ```sh
 $ npm install
-$ ./node_modules/.bin/browserify client.js > out.js
+$ npx webpack client.js
 ```
 
-Now embed `out.js` into your project and see it in action!
+Now embed `dist/main.js` into your project and see it in action!
 
 
 [protobuf documentation]:https://developers.google.com/protocol-buffers/
