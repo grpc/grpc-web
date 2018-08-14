@@ -59,7 +59,7 @@ $ sudo make install
 From the repo root directory:
 
 ```sh
-$ wget http://dl.google.com/closure-compiler/compiler-latest.zip -O compiler-latest.zip
+$ wget https://dl.google.com/closure-compiler/compiler-latest.zip -O compiler-latest.zip
 $ unzip -p -qq -o compiler-latest.zip *.jar > closure-compiler.jar
 ```
 
