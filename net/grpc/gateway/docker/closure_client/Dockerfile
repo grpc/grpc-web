@@ -15,7 +15,7 @@
 FROM grpc-web:prereqs
 
 RUN cd /github/grpc-web && \
-  curl http://dl.google.com/closure-compiler/compiler-latest.zip \
+  curl https://dl.google.com/closure-compiler/compiler-latest.zip \
   -o /github/grpc-web/compiler-latest.zip
 
 RUN cd /github/grpc-web && \

@@ -180,5 +180,5 @@ Now embed `dist/main.js` into your project and see it in action!
 
 
 [protobuf documentation]:https://developers.google.com/protocol-buffers/
-[gRPC website]:http://grpc.io
+[gRPC website]:https://grpc.io
 [Closure compiler]:https://developers.google.com/closure/compiler/

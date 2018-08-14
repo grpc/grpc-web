@@ -27,7 +27,7 @@ out=$(curl -s 'http://localhost:8080/grpc.gateway.testing.EchoService/Echo' \
 # Cut out a few parts of the response that we are reasonably sure that should
 # not change.
 #
-# Take he first 13 bytes:
+# Take the first 13 bytes:
 #   First byte: 00 (data marker)
 #   Next 4 bytes: 00 00 00 07 (length of payload)
 #   Next 7 bytes: 0a 05 68 65 6c 6c 6f (binary proto of "1: hello")
