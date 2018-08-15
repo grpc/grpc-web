@@ -90,6 +90,9 @@ package_static: nginx_static
 plugin:
 	cd "$(ROOT_DIR)"/javascript/net/grpc/web && make
 
+install-plugin:
+	cd "$(ROOT_DIR)"/javascript/net/grpc/web && make install
+
 example: plugin
 	cd "$(ROOT_DIR)"/net/grpc/gateway/examples/echo && make
 
