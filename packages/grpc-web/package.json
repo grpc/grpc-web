@@ -4,11 +4,18 @@
   "description": "gRPC web runtime",
   "main": "index.js",
   "scripts": {
+    "build": "node scripts/build.js",
+    "prepare": "npm run build && require-self",
     "prepublishOnly": "npm run build",
-    "build": "node scripts/build.js"
+    "test": "mocha"
   },
   "license": "Apache-2.0",
   "devDependencies": {
-    "google-closure-compiler": "^20180716.0.0"
+    "command-exists": "^1.2.7",
+    "google-closure-compiler": "^20180716.0.0",
+    "google-protobuf": "^3.6.1",
+    "mocha": "^5.2.0",
+    "mock-xmlhttprequest": "^2.0.0",
+    "require-self": "^0.2.1"
   }
 }

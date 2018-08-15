@@ -36,23 +36,26 @@ $ npm i grpc-web
 $ yarn add grpc-web
 ```
 
-2. Generate your client with `protoc` and the `protoc-gen-grpc-web` plugin.
+2. Compile the protoc plugin
+
+```sh
+$ git clone https://github.com/grpc/grpc-web
+$ cd grpc-web && sudo make install-plugin
+```
+
+3. Generate your client with `protoc` and the `protoc-gen-grpc-web` plugin.
 Make sure you set the `import_style` for both `js_out` and `grpc-web_out` to
 **commonjs**. It is also important that both your js and grpc-web output to
 the same directory.
 
 ```sh
-# Compile the protoc-gen-grpc-web plugin
-$ git clone https://github.com/grpc/grpc-web
-$ cd grpc-web && make plugin
-
 $ protoc -I=$DIR echo.proto \
 --plugin=protoc-gen-grpc-web=/path-to/protoc-gen-grpc-web \
 --js_out=import_style=commonjs:generated \
 --grpc-web_out=import_style=commonjs,mode=grpcwebtext,out=echo_grpc_pb.js:generated
 ```
 
-3. Start using your generated client!
+4. Start using your generated client!
 
 ```js
 const {EchoRequest} = require('./generated/echo_pb.js');
@@ -83,3 +86,14 @@ $ docker-compose up echo-server envoy commonjs-client
 ```
 
 Open your browser to `http://localhost:8081/echotest.html`
+
+
+## Run tests
+
+Pre-requisites:
+ - `protoc`
+ - `protoc-gen-grpc-web` plugin
+
+```sh
+$ npm test
+```

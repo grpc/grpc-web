@@ -49,8 +49,8 @@ RUN cd /github/grpc-web/third_party/grpc && \
 RUN cd /github/grpc-web/third_party/grpc/third_party/protobuf && \
   make install
 
-RUN cd /github/grpc-web/javascript/net/grpc/web && \
-  make
+RUN cd /github/grpc-web && \
+  make install-plugin
 
 RUN cd /github/grpc-web/packages/grpc-web && \
   npm install && \

@@ -51,3 +51,7 @@ source ./scripts/test-proxy.sh
 
 # Remove all docker containers
 docker-compose down
+
+# Run unit tests from npm package
+docker run grpc-web:prereqs /bin/bash \
+  /github/grpc-web/scripts/docker-run-tests.sh
