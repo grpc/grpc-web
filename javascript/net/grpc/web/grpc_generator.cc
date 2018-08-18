@@ -90,6 +90,120 @@ string LowercaseFirstLetter(string s) {
   return s;
 }
 
+
+// The following 5 functions were copied from
+// google/protobuf/src/google/protobuf/stubs/strutil.h
+
+inline bool HasPrefixString(const string& str,
+                            const string& prefix) {
+  return str.size() >= prefix.size() &&
+      str.compare(0, prefix.size(), prefix) == 0;
+}
+
+inline string StripPrefixString(const string& str, const string& prefix) {
+  if (HasPrefixString(str, prefix)) {
+    return str.substr(prefix.size());
+  } else {
+    return str;
+  }
+}
+
+inline bool HasSuffixString(const string& str,
+                            const string& suffix) {
+  return str.size() >= suffix.size() &&
+      str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
+
+inline string StripSuffixString(const string& str, const string& suffix) {
+  if (HasSuffixString(str, suffix)) {
+    return str.substr(0, str.size() - suffix.size());
+  } else {
+    return str;
+  }
+}
+
+void ReplaceCharacters(string *s, const char *remove, char replacewith) {
+  const char *str_start = s->c_str();
+  const char *str = str_start;
+  for (str = strpbrk(str, remove);
+       str != nullptr;
+       str = strpbrk(str + 1, remove)) {
+    (*s)[str - str_start] = replacewith;
+  }
+}
+
+
+// The following function was copied from
+// google/protobuf/src/google/protobuf/compiler/cpp/cpp_helpers.cc
+
+string StripProto(const string& filename) {
+  if (HasSuffixString(filename, ".protodevel")) {
+    return StripSuffixString(filename, ".protodevel");
+  } else {
+    return StripSuffixString(filename, ".proto");
+  }
+}
+
+
+// The following 3 functions were copied from
+// google/protobuf/src/google/protobuf/compiler/js/js_generator.cc
+
+// Returns the name of the message with a leading dot and taking into account
+// nesting, for example ".OuterMessage.InnerMessage", or returns empty if
+// descriptor is null. This function does not handle namespacing, only message
+// nesting.
+string GetNestedMessageName(const Descriptor* descriptor) {
+  if (descriptor == nullptr) {
+    return "";
+  }
+  string result = StripPrefixString(descriptor->full_name(),
+                                    descriptor->file()->package());
+  // Add a leading dot if one is not already present.
+  if (!result.empty() && result[0] != '.') {
+    result = "." + result;
+  }
+  return result;
+}
+
+// Given a filename like foo/bar/baz.proto, returns the root directory
+// path ../../
+string GetRootPath(const string& from_filename, const string& to_filename) {
+  if (HasPrefixString(to_filename, "google/protobuf")) {
+    // Well-known types (.proto files in the google/protobuf directory) are
+    // assumed to come from the 'google-protobuf' npm package.  We may want to
+    // generalize this exception later by letting others put generated code in
+    // their own npm packages.
+    return "google-protobuf/";
+  }
+
+  size_t slashes = std::count(from_filename.begin(), from_filename.end(), '/');
+  if (slashes == 0) {
+    return "./";
+  }
+  string result = "";
+  for (size_t i = 0; i < slashes; i++) {
+    result += "../";
+  }
+  return result;
+}
+
+// Returns the alias we assign to the module of the given .proto filename
+// when importing.
+string ModuleAlias(const string& filename) {
+  // This scheme could technically cause problems if a file includes any 2 of:
+  //   foo/bar_baz.proto
+  //   foo_bar_baz.proto
+  //   foo_bar/baz.proto
+  //
+  // We'll worry about this problem if/when we actually see it.  This name isn't
+  // exposed to users so we can change it later if we need to.
+  string basename = StripProto(filename);
+  ReplaceCharacters(&basename, "-", '$');
+  ReplaceCharacters(&basename, "/", '_');
+  ReplaceCharacters(&basename, ".", '_');
+  return basename + "_pb";
+}
+
 /* Finds all message types used in all services in the file, and returns them
  * as a map of fully qualified message type name to message descriptor */
 std::map<string, const Descriptor*> GetAllMessages(const FileDescriptor* file) {
@@ -126,14 +240,20 @@ void PrintMessagesDeps(Printer* printer, const FileDescriptor* file) {
 }
 
 void PrintCommonJsMessagesDeps(Printer* printer, const FileDescriptor* file) {
-  std::map<string, const Descriptor*> messages = GetAllMessages(file);
   std::map<string, string> vars;
+
+  for (int i = 0; i < file->dependency_count(); i++) {
+    const string& name = file->dependency(i)->name();
+    vars["alias"] = ModuleAlias(name);
+    vars["dep_filename"] = GetRootPath(file->name(), name) + StripProto(name);
+    // we need to give each cross-file import an alias
+    printer->Print(
+        vars,
+        "\nvar $alias$ = require('$dep_filename$_pb.js')\n");
+  }
+
   string package = file->package();
-  string filename = file->name();
-  // Remove .proto extension
-  filename = filename.substr(0, filename.size() - 6);
   vars["package_name"] = package;
-  vars["filename"] = filename;
 
   printer->Print(vars, "const proto = {};\n");
   if (!package.empty()) {
@@ -148,6 +268,14 @@ void PrintCommonJsMessagesDeps(Printer* printer, const FileDescriptor* file) {
       dotIndex = package.find(".", offset);
     }
   }
+
+  // need to import the messages from our own file
+  string filename = StripProto(file->name());
+  size_t last_slash = filename.find_last_of('/');
+  if (last_slash != string::npos) {
+    filename = filename.substr(last_slash + 1);
+  }
+  vars["filename"] = filename;
 
   printer->Print(
       vars,
@@ -221,7 +349,7 @@ void PrintMethodInfo(Printer* printer, std::map<string, string> vars) {
   printer->Indent();
   printer->Print(
       vars,
-      "proto.$out$,\n"
+      "$out_type$,\n"
       "/** @param {!proto.$in$} request */\n"
       "function(request) {\n");
   printer->Print(
@@ -230,7 +358,7 @@ void PrintMethodInfo(Printer* printer, std::map<string, string> vars) {
   printer->Print("},\n");
   printer->Print(
       vars,
-      ("proto.$out$." + GetDeserializeMethodName(vars["mode"]) +
+      ("$out_type$." + GetDeserializeMethodName(vars["mode"]) +
        "\n").c_str());
   printer->Outdent();
   printer->Print(
@@ -349,8 +477,7 @@ class GrpcCodeGenerator : public CodeGenerator {
     }
 
     if (file_name.empty()) {
-      *error = "options: out is required";
-      return false;
+      file_name = StripProto(file->name()) + "_grpc_pb.js";
     }
     if (mode.empty()) {
       *error = "options: mode is required";
@@ -398,8 +525,8 @@ class GrpcCodeGenerator : public CodeGenerator {
       switch (import_style) {
         case ImportStyle::CLOSURE:
           printer.Print(
-            vars,
-            "goog.provide('proto.$package_dot$$service_name$Client');\n");
+              vars,
+              "goog.provide('proto.$package_dot$$service_name$Client');\n");
           break;
         case ImportStyle::COMMONJS:
           break;
@@ -439,6 +566,15 @@ class GrpcCodeGenerator : public CodeGenerator {
         vars["method_name"] = method->name();
         vars["in"] = method->input_type()->full_name();
         vars["out"] = method->output_type()->full_name();
+        if (import_style == ImportStyle::COMMONJS &&
+            method->output_type()->file() != file) {
+          // Cross-file ref in CommonJS needs to use the module alias instead
+          // of the global name.
+          vars["out_type"] = ModuleAlias(method->output_type()->file()->name())
+                             + GetNestedMessageName(method->output_type());
+        } else {
+          vars["out_type"] = "proto."+method->output_type()->full_name();
+        }
 
         // Client streaming is not supported yet
         if (!method->client_streaming()) {

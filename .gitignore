@@ -3,3 +3,5 @@ bazel-genfiles
 bazel-grpc-web
 bazel-out
 bazel-testlogs
+*.o
+protoc-gen-*
