@@ -1,13 +1,20 @@
 {
   "name": "grpc-web",
   "version": "0.3.0",
-  "description": "gRPC web runtime",
+  "author": "Google Inc.",
+  "description": "gRPC-Web JS Client Runtime Library",
+  "homepage": "https://grpc.io/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grpc/grpc-web.git"
+  },
+  "bugs": "https://github.com/grpc/grpc-web/issues",
   "main": "index.js",
   "scripts": {
     "build": "node scripts/build.js",
     "prepare": "npm run build && require-self",
     "prepublishOnly": "npm run build",
-    "test": "mocha"
+    "test": "mocha --timeout 8000 \"./test/**/*_test.js\""
   },
   "license": "Apache-2.0",
   "devDependencies": {
