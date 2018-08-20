@@ -9,7 +9,7 @@ General-Availability by Oct. 2018.
 
 gRPC-Web clients connect to gRPC services via a special gateway proxy: the
 current version of the library uses [Envoy](https://www.envoyproxy.io/) by
-default, in which gRPC-Web support is built-in. 
+default, in which gRPC-Web support is built-in.
 
 In the future, we expect gRPC-Web to be supported in language-specific Web
 frameworks, such as Python, Java, and Node. See the
@@ -136,10 +136,10 @@ gateway proxy that allows the client to connect to the server. Our example
 builds a simple C++ gRPC backend server and the Envoy proxy.
 
 For the Echo service: see the
-[service implementations](net/grpc/gateway/examples/echo/echo_service_impl.cc).
+[service implementations](https://github.com/grpc/grpc-web/blob/master/net/grpc/gateway/examples/echo/echo_service_impl.cc).
 
 For the Envoy proxy: see the
-[config yaml file](net/grpc/gateway/examples/echo/envoy.yaml).
+[config yaml file](https://github.com/grpc/grpc-web/blob/master/net/grpc/gateway/examples/echo/envoy.yaml).
 
 
 ### 3. Write your JS client
@@ -193,7 +193,7 @@ stream.on('end', function(end) {
 ```
 
 You can find a more in-depth tutorial from
-[this page](net/grpc/gateway/examples/echo/tutorial.md).
+[this page](https://github.com/grpc/grpc-web/blob/master/net/grpc/gateway/examples/echo/tutorial.md).
 
 
 ## Proxy Interoperability
