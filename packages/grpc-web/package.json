@@ -2,7 +2,7 @@
   "name": "grpc-web",
   "version": "0.3.0",
   "author": "Google Inc.",
-  "description": "gRPC-Web JS Client Runtime Library",
+  "description": "gRPC-Web Client Runtime Library",
   "homepage": "https://grpc.io/",
   "repository": {
     "type": "git",

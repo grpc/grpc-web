@@ -54,7 +54,7 @@ $ sudo make install
 # export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<path-to-repo>/third_party/grpc/libs/opt
 ```
 
-## 3. Download the Closure compiler
+## [Optional] 3. Download the Closure compiler
 
 From the repo root directory:
 
