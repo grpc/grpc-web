@@ -477,7 +477,7 @@ class GrpcCodeGenerator : public CodeGenerator {
     }
 
     if (file_name.empty()) {
-      file_name = StripProto(file->name()) + "_grpc_pb.js";
+      file_name = StripProto(file->name()) + "_grpc_web_pb.js";
     }
     if (mode.empty()) {
       *error = "options: mode is required";

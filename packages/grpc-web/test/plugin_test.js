@@ -36,7 +36,7 @@ describe('grpc-web plugin test, with subdirectories', function() {
   const genCodePath2 = path.resolve(
     __dirname, GENERATED_CODE_PATH + '/otherapi/v1/otherapi_pb.js');
   const genCodePath3 = path.resolve(
-    __dirname, GENERATED_CODE_PATH + '/myapi/v1/myapi_grpc_pb.js');
+    __dirname, GENERATED_CODE_PATH + '/myapi/v1/myapi_grpc_web_pb.js');
 
   const genCodeCmd =
     'protoc -I=./test/protos ' +
@@ -111,9 +111,9 @@ describe('grpc-web plugin test, with multiple input files', function() {
   const genCodePath2 = path.resolve(
     __dirname, GENERATED_CODE_PATH + '/otherapi/v1/otherapi_pb.js');
   const genCodePath3 = path.resolve(
-    __dirname, GENERATED_CODE_PATH + '/myapi/v1/myapi_grpc_pb.js');
+    __dirname, GENERATED_CODE_PATH + '/myapi/v1/myapi_grpc_web_pb.js');
   const genCodePath4 = path.resolve(
-    __dirname, GENERATED_CODE_PATH + '/myapi/v1/myapi-two_grpc_pb.js');
+    __dirname, GENERATED_CODE_PATH + '/myapi/v1/myapi-two_grpc_web_pb.js');
 
   const genCodeCmd =
     'protoc -I=./test/protos ' +

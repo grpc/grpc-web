@@ -70,7 +70,7 @@ describe('grpc-web generated code (commonjs+grpcwebtext)', function() {
   const oldXMLHttpRequest = global.XMLHttpRequest;
 
   const protoGenCodePath = path.resolve(__dirname, './echo_pb.js');
-  const genCodePath = path.resolve(__dirname, './echo_grpc_pb.js');
+  const genCodePath = path.resolve(__dirname, './echo_grpc_web_pb.js');
 
   const genCodeCmd =
     'protoc -I=./test/protos echo.proto ' +
