@@ -95,8 +95,8 @@ forwards the request to the backend gRPC server listening on port `:9090`.
 ## Generate Protobuf Messages and Service Client Stub
 
 
-To generate Protobuf message classes from our `echo.proto`, run the following
-command:
+To generate the protobuf message classes from our `echo.proto`, run the
+following command:
 
 ```sh
 $ protoc -I=$DIR echo.proto \
@@ -113,15 +113,14 @@ this from the repo's root directory:
 
 ```sh
 $ cd grpc-web
-$ make plugin
+$ sudo make install-plugin
 ```
 
 To generate the service client stub file, run this command:
 
 ```sh
 $ protoc -I=$DIR echo.proto \
-  --plugin=protoc-gen-grpc-web=<path to>/protoc-gen-grpc-web \
-  --grpc-web_out=import_style=commonjs,mode=grpcwebtext,out=echo_grpc_pb.js:$OUT_DIR
+  --grpc-web_out=import_style=commonjs,mode=grpcwebtext:$OUT_DIR
 ```
 
 In the `--grpc-web_out` param above:
@@ -139,11 +138,12 @@ Now you are ready to write some JS client code. Put this in a `client.js` file.
 const {EchoRequest, EchoResponse} = require('./echo_pb.js'));
 const {EchoServiceClient} = require('./echo_grpc_pb.js');
 
-var echoRequest = new EchoRequest();
-echoRequest.setMessage('Hello World!');
-
 var echoService = new EchoServiceClient('http://localhost:8080');
-echoService.echo(echoRequest, {}, function(err, response) {
+
+var request = new EchoRequest();
+request.setMessage('Hello World!');
+
+echoService.echo(request, {}, function(err, response) {
   // ...
 });
 ```
@@ -181,4 +181,3 @@ Now embed `dist/main.js` into your project and see it in action!
 
 [protobuf documentation]:https://developers.google.com/protocol-buffers/
 [gRPC website]:https://grpc.io
-[Closure compiler]:https://developers.google.com/closure/compiler/
