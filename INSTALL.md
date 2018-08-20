@@ -68,4 +68,4 @@ above steps.
 
 
 For more example on how to build the client and an end-to-end example, please
-see [this page](net/grpc/gateway/examples/echo).
+see [this page](https://github.com/grpc/grpc-web/blob/master/net/grpc/gateway/examples/echo).
