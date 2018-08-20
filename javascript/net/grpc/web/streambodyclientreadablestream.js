@@ -32,12 +32,15 @@ goog.module.declareLegacyNamespace();
 
 
 const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
+const ClientReadableStreamDelegate = goog.require('grpc.web.ClientReadableStreamDelegate');
+const DefaultClientReadableStreamDelegate = goog.require('grpc.web.DefaultClientReadableStreamDelegate');
 const ErrorCode = goog.require('goog.net.ErrorCode');
 const NodeReadableStream = goog.require('goog.net.streams.NodeReadableStream');
 const StatusCode = goog.require('grpc.web.StatusCode');
 const XhrIo = goog.require('goog.net.XhrIo');
 const {GenericTransportInterface} = goog.require('grpc.web.GenericTransportInterface');
 const {Status} = goog.require('grpc.web.Status');
+const {assertInstanceof} = goog.require('goog.asserts');
 
 
 
@@ -75,30 +78,9 @@ const StreamBodyClientReadableStream = function(genericTransportInterface) {
 
   /**
    * @private
-   * @type {function(RESPONSE)|null} The data callback
+   * @type {!ClientReadableStreamDelegate<RESPONSE>}
    */
-  this.onDataCallback_ = null;
-
-  /**
-   * @private
-   * @type {function(!Status)|null}
-   *   The status callback
-   */
-  this.onStatusCallback_ = null;
-
-  /**
-   * @private
-   * @type {function(...):?|null}
-   *   The stream end callback
-   */
-  this.onEndCallback_ = null;
-
-  /**
-   * @private
-   * @type {function(...):?|null}
-   *   The stream error callback
-   */
-  this.onErrorCallback_ = null;
+  this.delegate_ = new DefaultClientReadableStreamDelegate();
 
   /**
    * @private
@@ -109,27 +91,25 @@ const StreamBodyClientReadableStream = function(genericTransportInterface) {
 
 
   // Add the callback to the underlying stream
-  var self = this;
-  this.xhrNodeReadableStream_.on('data', function(data) {
-    if ('1' in data && self.onDataCallback_) {
-      var response = self.responseDeserializeFn_(data['1']);
-      self.onDataCallback_(response);
+  this.xhrNodeReadableStream_.on('data', (data) => {
+    if ('1' in data) {
+      const response = this.responseDeserializeFn_(data['1']);
+      this.delegate_.onData(response);
     }
-    if ('2' in data && self.onStatusCallback_) {
-      var status = self.rpcStatusParseFn_(data['2']);
-      self.onStatusCallback_(status);
-    }
-  });
-  this.xhrNodeReadableStream_.on('end', function() {
-    if (self.onEndCallback_) {
-      self.onEndCallback_();
+    if ('2' in data) {
+      const status = this.rpcStatusParseFn_(data['2']);
+      this.delegate_.onStatus(status);
     }
   });
-  this.xhrNodeReadableStream_.on('error', function() {
-    if (!self.onErrorCallback_) return;
-    var lastErrorCode = self.xhr_.getLastErrorCode();
-    if (lastErrorCode == ErrorCode.NO_ERROR) return;
-    self.onErrorCallback_({
+  this.xhrNodeReadableStream_.on('end', () => {
+    this.delegate_.onEnd();
+  });
+  this.xhrNodeReadableStream_.on('error', () => {
+    const lastErrorCode = this.xhr_.getLastErrorCode();
+    if (lastErrorCode == ErrorCode.NO_ERROR) {
+      return;
+    }
+    this.delegate_.onError({
       code: StatusCode.UNAVAILABLE,
       message: ErrorCode.getDebugMessage(lastErrorCode)
     });
@@ -139,19 +119,33 @@ const StreamBodyClientReadableStream = function(genericTransportInterface) {
 
 /**
  * @override
+ *
+ * @suppress {checkTypes}
  */
-StreamBodyClientReadableStream.prototype.on = function(
-    eventType, callback) {
+StreamBodyClientReadableStream.prototype.on = function(eventType, callback) {
+  assertInstanceof(
+      this.delegate_, DefaultClientReadableStreamDelegate,
+      'Cannot call StreamBodyClientReadableStream.on with custom delegate');
+
   // TODO(stanleycheung): change eventType to @enum type
   if (eventType == 'data') {
-    this.onDataCallback_ = callback;
-  } else if (eventType == 'status') {
-    this.onStatusCallback_ = callback;
+    this.delegate_.setOnData(callback);
   } else if (eventType == 'end') {
-    this.onEndCallback_ = callback;
+    this.delegate_.setOnEnd(callback);
   } else if (eventType == 'error') {
-    this.onErrorCallback_ = callback;
+    this.delegate_.setOnError(callback);
+  } else if (eventType == 'status') {
+    this.delegate_.setOnStatus(callback);
   }
+  return this;
+};
+
+
+/**
+ * @override
+ */
+StreamBodyClientReadableStream.prototype.setDelegate = function(delegate) {
+  this.delegate_ = delegate;
   return this;
 };
 
@@ -163,7 +157,7 @@ StreamBodyClientReadableStream.prototype.on = function(
  *   function for the proto
  */
 StreamBodyClientReadableStream.prototype.setResponseDeserializeFn =
-  function(responseDeserializeFn) {
+    function(responseDeserializeFn) {
   this.responseDeserializeFn_ = responseDeserializeFn;
 };
 
@@ -175,7 +169,8 @@ StreamBodyClientReadableStream.prototype.setResponseDeserializeFn =
  * @param {function(?):!Status} rpcStatusParseFn A function to parse
  *    the RPC status response
  */
-StreamBodyClientReadableStream.prototype.setRpcStatusParseFn = function(rpcStatusParseFn) {
+StreamBodyClientReadableStream.prototype.setRpcStatusParseFn =
+    function(rpcStatusParseFn) {
   this.rpcStatusParseFn_ = rpcStatusParseFn;
 };
 

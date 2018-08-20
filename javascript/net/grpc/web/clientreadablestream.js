@@ -30,6 +30,8 @@ goog.module('grpc.web.ClientReadableStream');
 
 goog.module.declareLegacyNamespace();
 
+const ClientReadableStreamDelegate = goog.require('grpc.web.ClientReadableStreamDelegate');
+
 
 
 /**
@@ -51,6 +53,13 @@ const ClientReadableStream = function() {};
  * @return {!ClientReadableStream} this object
  */
 ClientReadableStream.prototype.on = goog.abstractMethod;
+
+
+/**
+ * @param {!ClientReadableStreamDelegate} delegate
+ * @return {!ClientReadableStream}
+ */
+ClientReadableStream.prototype.setDelegate = goog.abstractMethod;
 
 
 

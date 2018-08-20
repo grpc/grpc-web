@@ -10,7 +10,7 @@ cc_binary(
         "grpc_generator.cc",
     ],
     deps = [
-        "@com_google_protobuf//:protoc_lib"
+        "@com_google_protobuf//:protoc_lib",
     ],
 )
 
@@ -30,6 +30,35 @@ closure_js_library(
     srcs = [
         "clientreadablestream.js",
     ],
+    deps = [
+        ":clientreadablestreamdelegate",
+    ],
+)
+
+closure_js_library(
+    name = "clientreadablestreamdelegate",
+    srcs = [
+        "clientreadablestreamdelegate.js",
+    ],
+    deps = [
+        ":error",
+        ":status",
+    ],
+)
+
+closure_js_library(
+    name = "defaultclientreadablestreamdelegate",
+    srcs = [
+        "defaultclientreadablestreamdelegate.js",
+    ],
+    suppress = [
+        "reportUnknownTypes",
+    ],
+    deps = [
+        ":clientreadablestreamdelegate",
+        ":error",
+        ":status",
+    ],
 )
 
 closure_js_library(
@@ -45,8 +74,8 @@ closure_js_library(
         "generictransportinterface.js",
     ],
     deps = [
-        "@io_bazel_rules_closure//closure/library/net/streams:nodereadablestream",
         "@io_bazel_rules_closure//closure/library/net:xhrio",
+        "@io_bazel_rules_closure//closure/library/net/streams:nodereadablestream",
     ],
 )
 
@@ -69,27 +98,54 @@ closure_js_library(
     ],
 )
 
+closure_js_test(
+    name = "grpcwebclientbase_test",
+    srcs = [
+        "grpcwebclientbase_test.js",
+    ],
+    entry_points = [
+        "goog:grpc.web.GrpcWebClientBaseTest",
+    ],
+    suppress = [
+        "visibility",
+        "checkTypes",
+        "deprecated",
+        "reportUnknownTypes",
+        "strictCheckTypes",
+    ],
+    deps = [
+        ":grpcwebclientbase",
+        "@io_bazel_rules_closure//closure/library/crypt:base64",
+        "@io_bazel_rules_closure//closure/library/events",
+        "@io_bazel_rules_closure//closure/library/structs:map",
+        "@io_bazel_rules_closure//closure/library/testing:jsunit",
+        "@io_bazel_rules_closure//closure/library/testing:testsuite",
+    ],
+)
+
 closure_js_library(
     name = "grpcwebclientreadablestream",
     srcs = [
         "grpcwebclientreadablestream.js",
     ],
+    suppress = [
+        "reportUnknownTypes",
+    ],
     deps = [
         ":clientreadablestream",
+        ":clientreadablestreamdelegate",
+        ":defaultclientreadablestreamdelegate",
         ":generictransportinterface",
         ":grpcwebstreamparser",
-        ":status",
         ":statuscode",
+        "@io_bazel_rules_closure//closure/library/asserts",
         "@io_bazel_rules_closure//closure/library/crypt:base64",
-        "@io_bazel_rules_closure//closure/library/events:events",
+        "@io_bazel_rules_closure//closure/library/events",
         "@io_bazel_rules_closure//closure/library/net:errorcode",
         "@io_bazel_rules_closure//closure/library/net:eventtype",
         "@io_bazel_rules_closure//closure/library/net:xhrio",
         "@io_bazel_rules_closure//closure/library/net:xmlhttp",
         "@io_bazel_rules_closure//closure/library/string",
-    ],
-    suppress = [
-        "reportUnknownTypes",
     ],
 )
 
@@ -107,6 +163,24 @@ closure_js_library(
     ],
 )
 
+closure_js_test(
+    name = "grpcwebstreamparser_test",
+    srcs = [
+        "grpcwebstreamparser_test.js",
+    ],
+    entry_points = [
+        "goog:grpc.web.GrpcWebStreamParserTest",
+    ],
+    suppress = [
+        "reportUnknownTypes",
+    ],
+    deps = [
+        ":grpcwebstreamparser",
+        "@io_bazel_rules_closure//closure/library/testing:jsunit",
+        "@io_bazel_rules_closure//closure/library/testing:testsuite",
+    ],
+)
+
 closure_js_library(
     name = "status",
     srcs = [
@@ -121,43 +195,40 @@ closure_js_library(
     ],
 )
 
-closure_js_test(
-    name = "grpcwebclientbase_test",
+closure_js_library(
+    name = "streambodyclientreadablestream",
     srcs = [
-        "grpcwebclientbase_test.js",
-    ],
-    entry_points = [
-        "goog:grpc.web.GrpcWebClientBaseTest",
+        "streambodyclientreadablestream.js",
     ],
     suppress = [
-        "visibility",
-        "checkTypes",
-        "deprecated",
         "reportUnknownTypes",
-        "strictCheckTypes",
     ],
     deps = [
-        "@io_bazel_rules_closure//closure/library:testing",
-        "@io_bazel_rules_closure//closure/library/crypt:base64",
-        "@io_bazel_rules_closure//closure/library/events:events",
-        "@io_bazel_rules_closure//closure/library/structs:map",
-        ":grpcwebclientbase",
+        ":clientreadablestream",
+        ":clientreadablestreamdelegate",
+        ":defaultclientreadablestreamdelegate",
+        ":generictransportinterface",
+        ":status",
+        ":statuscode",
+        "@io_bazel_rules_closure//closure/library/asserts",
+        "@io_bazel_rules_closure//closure/library/net:errorcode",
+        "@io_bazel_rules_closure//closure/library/net:xhrio",
+        "@io_bazel_rules_closure//closure/library/net/streams:nodereadablestream",
     ],
 )
 
 closure_js_test(
-    name = "grpcwebstreamparser_test",
+    name = "streambodyclientreadablestream_test",
     srcs = [
-        "grpcwebstreamparser_test.js",
+        "streambodyclientreadablestream_test.js",
     ],
     entry_points = [
-        "goog:grpc.web.GrpcWebStreamParserTest",
-    ],
-    suppress = [
-        "reportUnknownTypes",
+        "goog:grpc.web.StreamBodyClientReadableStreamTest",
     ],
     deps = [
-        ":grpcwebstreamparser",
-        "@io_bazel_rules_closure//closure/library:testing",
+        ":streambodyclientreadablestream",
+        "@io_bazel_rules_closure//closure/library/reflect",
+        "@io_bazel_rules_closure//closure/library/testing:jsunit",
+        "@io_bazel_rules_closure//closure/library/testing:testsuite",
     ],
 )

@@ -32,6 +32,8 @@ goog.module.declareLegacyNamespace();
 
 
 const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
+const ClientReadableStreamDelegate = goog.require('grpc.web.ClientReadableStreamDelegate');
+const DefaultClientReadableStreamDelegate = goog.require('grpc.web.DefaultClientReadableStreamDelegate');
 const ErrorCode = goog.require('goog.net.ErrorCode');
 const EventType = goog.require('goog.net.EventType');
 const GrpcWebStreamParser = goog.require('grpc.web.GrpcWebStreamParser');
@@ -42,12 +44,13 @@ const events = goog.require('goog.events');
 const googCrypt = goog.require('goog.crypt.base64');
 const googString = goog.require('goog.string');
 const {GenericTransportInterface} = goog.require('grpc.web.GenericTransportInterface');
-const {Status} = goog.require('grpc.web.Status');
+const {assertInstanceof} = goog.require('goog.asserts');
 
 
 
 const GRPC_STATUS = "grpc-status";
 const GRPC_STATUS_MESSAGE = "grpc-message";
+
 
 
 /**
@@ -71,33 +74,15 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
 
   /**
    * @private
+   * @type {!ClientReadableStreamDelegate<RESPONSE>}
+   */
+  this.delegate_ = new DefaultClientReadableStreamDelegate();
+
+  /**
+   * @private
    * @type {function(?):!RESPONSE|null} The deserialize function for the proto
    */
   this.responseDeserializeFn_ = null;
-
-  /**
-   * @private
-   * @type {function(!RESPONSE)|null} The data callback
-   */
-  this.onDataCallback_ = null;
-
-  /**
-   * @private
-   * @type {function(!Status)|null} The status callback
-   */
-  this.onStatusCallback_ = null;
-
-  /**
-   * @private
-   * @type {function(...):?|null} The error callback
-   */
-  this.onErrorCallback_ = null;
-
-  /**
-   * @private
-   * @type {function(...):?|null} The stream end callback
-   */
-  this.onEndCallback_ = null;
 
   /**
    * @private
@@ -142,7 +127,7 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
         if (data) {
           var response = self.responseDeserializeFn_(data);
           if (response) {
-            self.onDataCallback_(response);
+            self.delegate_.onData(response);
           }
         }
       }
@@ -174,20 +159,15 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
       }
     }
 
-    var readyState = self.xhr_.getReadyState();
-    if (readyState == XmlHttp.ReadyState.COMPLETE) {
-      if (self.onEndCallback_) {
-        self.onEndCallback_();
-      }
-      return;
+    if (XmlHttp.ReadyState.COMPLETE == self.xhr_.getReadyState()) {
+      self.delegate_.onEnd();
     }
   });
 
   events.listen(this.xhr_, EventType.COMPLETE, function(e) {
-    if (!self.onErrorCallback_) return;
     var lastErrorCode = self.xhr_.getLastErrorCode();
     if (lastErrorCode != ErrorCode.NO_ERROR) {
-      self.onErrorCallback_({
+      self.delegate_.onError({
         code: StatusCode.UNAVAILABLE,
         message: ErrorCode.getDebugMessage(lastErrorCode)
       });
@@ -196,7 +176,7 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
     var responseHeaders = self.xhr_.getResponseHeaders();
     if (GRPC_STATUS in responseHeaders &&
         responseHeaders[GRPC_STATUS] != StatusCode.OK) {
-      self.onErrorCallback_({
+      self.delegate_.onError({
         code: responseHeaders[GRPC_STATUS],
         message: responseHeaders[GRPC_STATUS_MESSAGE]
       });
@@ -207,19 +187,33 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
 
 /**
  * @override
+ *
+ * @suppress {checkTypes}
  */
-GrpcWebClientReadableStream.prototype.on = function(
-    eventType, callback) {
+GrpcWebClientReadableStream.prototype.on = function(eventType, callback) {
+  assertInstanceof(
+      this.delegate_, DefaultClientReadableStreamDelegate,
+      'Cannot call GrpcWebClientReadableStream.on with custom delegate');
+
   // TODO(stanleycheung): change eventType to @enum type
   if (eventType == 'data') {
-    this.onDataCallback_ = callback;
-  } else if (eventType == 'status') {
-    this.onStatusCallback_ = callback;
+    this.delegate_.setOnData(callback);
   } else if (eventType == 'end') {
-    this.onEndCallback_ = callback;
+    this.delegate_.setOnEnd(callback);
   } else if (eventType == 'error') {
-    this.onErrorCallback_ = callback;
+    this.delegate_.setOnError(callback);
+  } else if (eventType == 'status') {
+    this.delegate_.setOnStatus(callback);
   }
+  return this;
+};
+
+
+/**
+ * @override
+ */
+GrpcWebClientReadableStream.prototype.setDelegate = function(delegate) {
+  this.delegate_ = delegate;
   return this;
 };
 
