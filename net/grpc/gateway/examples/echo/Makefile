@@ -90,7 +90,7 @@ proto-js:
   $(PROTOS_PATH)/protos/pair.proto
 	$(PROTOC) -I=. --js_out=$(JS_IMPORT_STYLE):$(OUT_DIR) ./echo.proto
 	$(PROTOC) -I=. --plugin=protoc-gen-grpc-web=$(GRPC_WEB_PLUGIN_PATH) \
-  --grpc-web_out=out=$(OUT_DIR)/echo.grpc.pb.js,mode=grpcwebtext:. ./echo.proto
+  --grpc-web_out=import_style=closure,mode=grpcwebtext:. ./echo.proto
 
 install:
 	mkdir -p $(HTML_DIR)/$(EXAMPLES_PATH)

@@ -47,7 +47,7 @@ $ protoc -I=$DIR echo.proto \
 4. Start using your generated client!
 
 ```js
-const {EchoServiceClient} = require('./generated/echo_grpc_pb.js');
+const {EchoServiceClient} = require('./generated/echo_grpc_web_pb.js');
 const {EchoRequest} = require('./generated/echo_pb.js');
 
 const client = new EchoServiceClient('localhost:8080');

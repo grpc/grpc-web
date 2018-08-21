@@ -21,7 +21,7 @@ RUN protoc -I=$EXAMPLE_DIR echo.proto \
 /github/grpc-web/javascript/net/grpc/web/protoc-gen-grpc-web \
 --js_out=import_style=commonjs:\
 $EXAMPLE_DIR/commonjs-example \
---grpc-web_out=import_style=commonjs,mode=grpcweb,out=echo_grpc_pb.js:\
+--grpc-web_out=import_style=commonjs,mode=grpcweb:\
 $EXAMPLE_DIR/commonjs-example
 
 RUN cd $EXAMPLE_DIR/commonjs-example && \
