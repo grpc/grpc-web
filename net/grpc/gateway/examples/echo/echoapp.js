@@ -152,7 +152,7 @@ echoapp.EchoApp.prototype.load = function() {
   var self = this;
   $(document).ready(function() {
     // event handlers
-    $("#send").click(self.send);
+    $("#send").click(self.send.bind(self));
     $("#msg").keyup(function (e) {
       if (e.keyCode == 13) self.send(); // enter key
       return false;
