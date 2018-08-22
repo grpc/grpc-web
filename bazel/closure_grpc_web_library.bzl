@@ -158,7 +158,7 @@ closure_grpc_web_library = rule(
         ),
         "import_style": attr.string(
             default = "closure",
-            values = ["closure"],
+            values = ["closure", "commonjs"],
         ),
         "mode": attr.string(
             default = "grpcwebtext",
