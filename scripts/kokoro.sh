@@ -53,5 +53,5 @@ source ./scripts/test-proxy.sh
 docker-compose down
 
 # Run unit tests from npm package
-docker run --rm grpc-web:prereqs /bin/bash \
+docker run --rm grpc-web:common /bin/bash \
   /github/grpc-web/scripts/docker-run-tests.sh

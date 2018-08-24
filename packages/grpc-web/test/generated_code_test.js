@@ -328,3 +328,50 @@ describe('grpc-web generated code (closure+grpcwebtext)', function() {
     });
   });
 });
+
+
+describe('grpc-web generated code (commonjs+dts)', function() {
+  const protoGenCodePath = path.resolve(__dirname, './echo_pb.js');
+  const protoDtsGenCodePath = path.resolve(__dirname, './echo_pb.d.ts');
+  const genCodePath = path.resolve(__dirname, './echo_grpc_web_pb.js');
+  const genDtsCodePath = path.resolve(__dirname, './echo_grpc_web_pb.d.ts');
+
+  const genCodeCmd =
+    'protoc -I=./test/protos echo.proto ' +
+    '--js_out=import_style=commonjs:./test ' +
+    '--grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:./test';
+
+  before(function() {
+    ['protoc', 'protoc-gen-grpc-web'].map(prog => {
+      if (!commandExists(prog)) {
+        assert.fail(`${prog} is not installed`);
+      }
+    });
+  });
+
+  beforeEach(function() {
+    [protoGenCodePath, protoDtsGenCodePath,
+     genCodePath, genDtsCodePath].map(f => {
+       if (fs.existsSync(f)) {
+         fs.unlinkSync(f);
+       }
+     });
+  });
+
+  afterEach(function() {
+    [protoGenCodePath, protoDtsGenCodePath,
+     genCodePath, genDtsCodePath].map(f => {
+       if (fs.existsSync(f)) {
+         fs.unlinkSync(f);
+       }
+     });
+  });
+
+  it('should exist', function() {
+    execSync(genCodeCmd);
+    assert.equal(true, fs.existsSync(genCodePath));
+    assert.equal(true, fs.existsSync(genDtsCodePath));
+    assert.equal(true, fs.existsSync(protoGenCodePath));
+    assert.equal(true, fs.existsSync(protoDtsGenCodePath));
+  });
+});

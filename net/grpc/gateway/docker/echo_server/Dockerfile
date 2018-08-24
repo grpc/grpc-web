@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM grpc-web:prereqs
+FROM grpc-web:common
 
 RUN cd /github/grpc-web && \
   make echo_server

@@ -16,16 +16,17 @@ FROM grpc-web:common
 
 ARG EXAMPLE_DIR=/github/grpc-web/net/grpc/gateway/examples/echo
 
-RUN protoc -I=$EXAMPLE_DIR echo.proto \
---js_out=import_style=commonjs:\
-$EXAMPLE_DIR/commonjs-example \
---grpc-web_out=import_style=commonjs,mode=grpcwebtext:\
-$EXAMPLE_DIR/commonjs-example
+RUN npm install -g tsc typescript
 
-RUN cd $EXAMPLE_DIR/commonjs-example && \
+RUN protoc -I=$EXAMPLE_DIR echo.proto \
+--js_out=import_style=commonjs:$EXAMPLE_DIR/ts-example \
+--grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:$EXAMPLE_DIR/ts-example
+
+RUN cd $EXAMPLE_DIR/ts-example && \
   npm install && \
   npm link grpc-web && \
+  tsc && \
   npx webpack
 
-EXPOSE 8081
+EXPOSE 8082
 CMD ["nginx"]

@@ -9,7 +9,12 @@
     "url": "https://github.com/grpc/grpc-web.git"
   },
   "bugs": "https://github.com/grpc/grpc-web/issues",
+  "files": [
+    "index.js",
+    "index.d.ts"
+  ],
   "main": "index.js",
+  "typings": "index.d.ts",
   "scripts": {
     "build": "node scripts/build.js",
     "prepare": "npm run build && require-self",
