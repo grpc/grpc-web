@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM grpc-web:prereqs
+FROM grpc-web:common
 
-RUN cd /github/grpc-web/net/grpc/gateway/examples/echo && \
+RUN cd /github/grpc-web-base/net/grpc/gateway/examples/echo && \
   sed -i 's/localhost:9090/echo-server:9090/g' nginx.conf
 
-RUN cd /github/grpc-web && \
+RUN cd /github/grpc-web-base && \
   make standalone-proxy
 
 EXPOSE 8080
-CMD ["/github/grpc-web/gConnector_static/nginx.sh"]
+CMD ["/github/grpc-web-base/gConnector_static/nginx.sh"]
