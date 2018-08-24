@@ -76,7 +76,11 @@ import style.
 [CommonJS](https://requirejs.org/docs/commonjs.html) style `require()` is
 also supported.
 
-Note: ES6 style `import` is not supported yet.
+`import_style=commonjs+dts`: (Experimental) In addition to above, a `.d.ts`
+typings file will also be generated for the protobuf messages and service stub.
+
+`import_style=typescript`: (Experimental) The service stub will be generated
+in TypeScript.
 
 
 ### Wire Format Mode
@@ -195,6 +199,15 @@ stream.on('end', function(end) {
 You can find a more in-depth tutorial from
 [this page](https://github.com/grpc/grpc-web/blob/master/net/grpc/gateway/examples/echo/tutorial.md).
 
+
+## TypeScript support
+
+The `grpc-web` module can now be imported as a TypeScript module. This is
+currently an experimental feature. Any feedback welcome!
+
+```js
+import * as grpcWeb from 'grpc-web';
+```
 
 ## Proxy Interoperability
 
