@@ -10,7 +10,7 @@ example, we define our `EchoService` in a file called
 [`echo.proto`](echo.proto). For more information about protocol buffers and
 proto3 syntax, please see the [protobuf documentation][].
 
-```
+```protobuf
 message EchoRequest {
   string message = 1;
 }
@@ -33,7 +33,7 @@ Next, we implement our EchoService interface using C++ in the backend gRPC
 You can implement the server in any language supported by gRPC. Please see
 the [gRPC website][] for more details.
 
-```
+```cpp
 Status EchoServiceImpl::Echo(ServerContext* context,
                              const EchoRequest* request,
                              EchoResponse* response) {
@@ -52,7 +52,7 @@ the complete config file in [envoy.yaml](./envoy.yaml)
 To forward the gRPC requests to the backend server, we need a block like
 this:
 
-```
+```yaml
   listeners:
   - name: listener_0
     address:

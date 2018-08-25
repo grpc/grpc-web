@@ -35,8 +35,8 @@ $ cd grpc-web && sudo make install-plugin
 ```
 
 3. Generate your proto messages and the service client stub classes with
-`protoc` and the `protoc-gen-grpc-web` plugin. You can set the `import_style`
-option for both `--js_out` and `--grpc-web_out` to `commonjs`.
+`protoc` and the `protoc-gen-grpc-web` plugin. You can set the
+`import_style=commonjs` option for both `--js_out` and `--grpc-web_out`.
 
 ```sh
 $ protoc -I=$DIR echo.proto \
@@ -84,6 +84,40 @@ Open a browser tab, and go to:
 ```
 http://localhost:8081/echotest.html
 ```
+
+## TypeScript Support
+
+The `grpc-web` module can now be imported as a TypeScript module. This is
+currently an experimental feature. Any feedback welcome!
+
+When using the `protoc-gen-grpc-web` protoc plugin, mentioned above, pass in
+either:
+
+ - `import_style=commonjs+dts`: existing CommonJS style stub + `.d.ts` typings
+ - `import_style=typescript`: full TypeSCript output
+
+
+```ts
+import * as grpcWeb from 'grpc-web';
+import {EchoServiceClient} from './echo_grpc_web_pb';
+import {EchoRequest, EchoResponse} from './echo_pb';
+
+const echoService = new EchoServiceClient('http://localhost:8080', null, null);
+
+const request = new EchoRequest();
+request.setMessage('Hello World!');
+
+const call = echoService.echo(request, {'custom-header-1': 'value1'},
+  (err: grpcWeb.Error, response: EchoResponse) => {
+    console.log(response.getMessage());
+  });
+call.on('status', (status: grpcWeb.Status) => {
+  // ...
+});
+```
+
+See a full TypeScript example
+[here](https://github.com/grpc/grpc-web/blob/master/net/grpc/gateway/examples/echo/ts-example/client.ts).
 
 
 ## Run Tests

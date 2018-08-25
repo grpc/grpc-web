@@ -35,7 +35,6 @@ http://localhost:8081/echotest.html
 
 To shutdown: `docker-compose down`.
 
-
 ## Runtime Library
 
 The gRPC-Web runtime library is available at `npm`:
@@ -59,7 +58,7 @@ $ sudo make install-plugin
 Typically, you will run the following command to generate the proto messages
 and the service client stub from your `.proto` definitions:
 
-```
+```sh
 $ protoc -I=$DIR echo.proto \
 --js_out=import_style=commonjs:$OUT_DIR \
 --grpc-web_out=import_style=commonjs,mode=grpcwebtext:$OUT_DIR
@@ -120,7 +119,7 @@ services, gRPC-Web uses
 [protocol buffers](https://developers.google.com/protocol-buffers/) to define
 its RPC service methods and their message request and response types.
 
-```
+```protobuf
 message EchoRequest {
   string message = 1;
 }
@@ -134,7 +133,6 @@ service EchoService {
       returns (stream ServerStreamingEchoResponse);
 }
 ```
-
 
 ### 2. Run the server and proxy
 
@@ -202,38 +200,60 @@ stream.on('end', function(end) {
 You can find a more in-depth tutorial from
 [this page](https://github.com/grpc/grpc-web/blob/master/net/grpc/gateway/examples/echo/tutorial.md).
 
-
-## TypeScript support
+## TypeScript Support
 
 The `grpc-web` module can now be imported as a TypeScript module. This is
 currently an experimental feature. Any feedback welcome!
 
-```js
+When using the `protoc-gen-grpc-web` protoc plugin, mentioned above, pass in
+either:
+
+ - `import_style=commonjs+dts`: existing CommonJS style stub + `.d.ts` typings
+ - `import_style=typescript`: full TypeSCript output
+
+```ts
 import * as grpcWeb from 'grpc-web';
+import {EchoServiceClient} from './echo_grpc_web_pb';
+import {EchoRequest, EchoResponse} from './echo_pb';
+
+const echoService = new EchoServiceClient('http://localhost:8080', null, null);
+
+const request = new EchoRequest();
+request.setMessage('Hello World!');
+
+const call = echoService.echo(request, {'custom-header-1': 'value1'},
+  (err: grpcWeb.Error, response: EchoResponse) => {
+    console.log(response.getMessage());
+  });
+call.on('status', (status: grpcWeb.Status) => {
+  // ...
+});
 ```
+
+See a full TypeScript example
+[here](https://github.com/grpc/grpc-web/blob/master/net/grpc/gateway/examples/echo/ts-example/client.ts).
 
 ## Proxy Interoperability
 
 Multiple proxies supports the gRPC-Web protocol. Currently, the default proxy
 is [Envoy](https://www.envoyproxy.io), which supports gRPC-Web out of the box.
 
-```
-$ docker-compose up echo-server envoy commonjs-client
+```sh
+$ docker-compose up -d echo-server envoy commonjs-client
 ```
 
 An alternative is to build Nginx that comes with this repository.
 
-```
-$ docker-compose up echo-server nginx commonjs-client
+```sh
+$ docker-compose up -d echo-server nginx commonjs-client
 ```
 
 You can also try this
 [gRPC-Web Go Proxy](https://github.com/improbable-eng/grpc-web/tree/master/go/grpcwebproxy).
 
+```sh
+$ docker-compose up -d echo-server grpcwebproxy binary-client
 ```
-$ docker-compose up echo-server grpcwebproxy binary-client
-```
-
 
 ## Acknowledgement
 
