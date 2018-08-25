@@ -23,7 +23,8 @@ Try gRPC-Web and run a quick Echo example from the browser!
 From the repo root directory:
 
 ```sh
-$ docker-compose up echo-server envoy commonjs-client
+$ docker-compose pull prereqs common echo-server envoy commonjs-client
+$ docker-compose up -d echo-server envoy commonjs-client
 ```
 
 Open a browser tab, and go to:
@@ -31,6 +32,8 @@ Open a browser tab, and go to:
 ```
 http://localhost:8081/echotest.html
 ```
+
+To shutdown: `docker-compose down`.
 
 
 ## Runtime Library

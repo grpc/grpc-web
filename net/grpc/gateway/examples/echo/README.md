@@ -26,7 +26,7 @@ This step compiles gRPC and Protobuf, and serves as the base docker image for
 the subsequent docker images.
 
 ```sh
-$ docker build -t grpc-web:prereqs \
+$ docker build -t grpcweb/prereqs \
   -f net/grpc/gateway/docker/prereqs/Dockerfile .
 ```
 
@@ -36,9 +36,9 @@ This compiles the gRPC backend server, written in C++, and listens on port
 9090.
 
 ```sh
-$ docker build -t grpc-web:echo-server \
+$ docker build -t grpcweb/echo-server \
   -f net/grpc/gateway/docker/echo_server/Dockerfile .
-$ docker run -d -p 9090:9090 --name echo-server grpc-web:echo-server
+$ docker run -d -p 9090:9090 --name echo-server grpcweb/echo-server
 ```
 
 ## Run the Envoy proxy
@@ -47,9 +47,9 @@ This step runs the Envoy proxy, and listens on port 8080. Any gRPC-Web browser
 requests will be forwarded to port 9090.
 
 ```sh
-$ docker build -t grpc-web:envoy \
+$ docker build -t grpcweb/envoy \
   -f net/grpc/gateway/docker/envoy/Dockerfile .
-$ docker run -d -p 8080:8080 --link echo-server:echo-server grpc-web:envoy
+$ docker run -d -p 8080:8080 --link echo-server:echo-server grpcweb/envoy
 ```
 
 ## Serve static JS/HTML contents
@@ -58,9 +58,9 @@ This steps compiles the front-end gRPC-Web client into a static .JS file, and
 we use a simple server to serve up the JS/HTML static contents.
 
 ```sh
-$ docker build -t grpc-web:closure-client \
+$ docker build -t grpcweb/closure-client \
   -f net/grpc/gateway/docker/closure_client/Dockerfile .
-$ docker run -d -p 80:80 grpc-web:closure-client
+$ docker run -d -p 80:80 grpcweb/closure-client
 ```
 
 ## Run the example from your browser

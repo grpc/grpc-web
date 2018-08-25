@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM grpc-web:common
+FROM grpcweb/common
 
 RUN cd /github/grpc-web-base/net/grpc/gateway/examples/echo && \
   sed -i 's/localhost:9090/echo-server:9090/g' nginx.conf
