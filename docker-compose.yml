@@ -4,28 +4,28 @@ services:
     build:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/prereqs/Dockerfile
-    image: grpc-web:prereqs
+    image: grpcweb/prereqs
   common:
     build:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/common/Dockerfile
     depends_on:
       - prereqs
-    image: grpc-web:common
+    image: grpcweb/common
   echo-server:
     build:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/echo_server/Dockerfile
     depends_on:
       - common
-    image: grpc-web:echo-server
+    image: grpcweb/echo-server
     ports:
       - "9090:9090"
   envoy:
     build:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/envoy/Dockerfile
-    image: grpc-web:envoy
+    image: grpcweb/envoy
     ports:
       - "8080:8080"
     links:
@@ -36,7 +36,7 @@ services:
       dockerfile: ./net/grpc/gateway/docker/nginx/Dockerfile
     depends_on:
       - common
-    image: grpc-web:nginx
+    image: grpcweb/nginx
     ports:
       - "8080:8080"
     links:
@@ -45,7 +45,7 @@ services:
     build:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/grpcwebproxy/Dockerfile
-    image: grpc-web:grpcwebproxy
+    image: grpcweb/grpcwebproxy
     ports:
       - "8080:8080"
     links:
@@ -56,7 +56,7 @@ services:
       dockerfile: ./net/grpc/gateway/docker/commonjs_client/Dockerfile
     depends_on:
       - common
-    image: grpc-web:commonjs-client
+    image: grpcweb/commonjs-client
     ports:
       - "8081:8081"
   closure-client:
@@ -65,7 +65,7 @@ services:
       dockerfile: ./net/grpc/gateway/docker/closure_client/Dockerfile
     depends_on:
       - common
-    image: grpc-web:closure-client
+    image: grpcweb/closure-client
     ports:
       - "80:80"
   ts-client:
@@ -74,7 +74,7 @@ services:
       dockerfile: ./net/grpc/gateway/docker/ts_client/Dockerfile
     depends_on:
       - common
-    image: grpc-web:ts-client
+    image: grpcweb/ts-client
     ports:
       - "8082:8082"
   binary-client:
@@ -83,6 +83,6 @@ services:
       dockerfile: ./net/grpc/gateway/docker/binary_client/Dockerfile
     depends_on:
       - common
-    image: grpc-web:binary-client
+    image: grpcweb/binary-client
     ports:
       - "8081:8081"

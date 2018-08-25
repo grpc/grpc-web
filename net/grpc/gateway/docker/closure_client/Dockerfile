@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM grpc-web:common
+FROM grpcweb/common
 
 RUN cd /github/grpc-web && \
   curl https://dl.google.com/closure-compiler/compiler-latest.zip \
