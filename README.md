@@ -209,7 +209,7 @@ When using the `protoc-gen-grpc-web` protoc plugin, mentioned above, pass in
 either:
 
  - `import_style=commonjs+dts`: existing CommonJS style stub + `.d.ts` typings
- - `import_style=typescript`: full TypeSCript output
+ - `import_style=typescript`: full TypeScript output
 
 ```ts
 import * as grpcWeb from 'grpc-web';
