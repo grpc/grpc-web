@@ -361,11 +361,11 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
     printer->Print(
         "client_: grpcWeb.AbstractClientBase;\n"
         "hostname_: string;\n"
-        "credentials_: any;\n"
-        "options_: any;\n\n"
+        "credentials_: {};\n"
+        "options_: { [s: string]: {}; };\n\n"
         "constructor (hostname: string,\n"
-        "             credentials: any,\n"
-        "             options: any) {\n");
+        "             credentials: {},\n"
+        "             options: { [s: string]: {}; }) {\n");
     printer->Indent();
     printer->Print("if (!options) options = {};\n");
     if (vars["mode"] == GetModeVar(Mode::GRPCWEB)) {
@@ -390,12 +390,12 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
       vars["deserialize_func_name"] = GetDeserializeMethodName(vars["mode"]);
       if (!method->client_streaming()) {
         printer->Print(vars,
-                       "methodInfo_$method_name$ = "
+                       "methodInfo$method_name$ = "
                        "new grpcWeb.AbstractClientBase.MethodInfo(\n");
         printer->Indent();
         printer->Print(vars,
                        "$output_type$,\n"
-                       "function(request: $input_type$) {\n"
+                       "(request: $input_type$) => {\n"
                        "  return request.$serialize_func_name$();\n"
                        "},\n"
                        "$output_type$.$deserialize_func_name$\n");
@@ -414,7 +414,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
                          "  '/$package_dot$$service_name$/$method_name$',\n"
                          "request,\n"
                          "metadata,\n"
-                         "this.methodInfo_$method_name$);\n");
+                         "this.methodInfo$method_name$);\n");
           printer->Outdent();
           printer->Outdent();
           printer->Print("}\n\n");
@@ -433,7 +433,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
                          "  '/$package_dot$$service_name$/$method_name$',\n"
                          "request,\n"
                          "metadata,\n"
-                         "this.methodInfo_$method_name$,\n"
+                         "this.methodInfo$method_name$,\n"
                          "callback);\n");
           printer->Outdent();
           printer->Outdent();
@@ -458,8 +458,8 @@ void PrintGrpcWebDtsFile(Printer* printer, const FileDescriptor* file) {
     printer->Indent();
     printer->Print(
         "constructor (hostname: string,\n"
-        "             credentials: any,\n"
-        "             options: any);\n\n");
+        "             credentials: {},\n"
+        "             options: { [s: string]: {}; });\n\n");
     for (int method_index = 0; method_index < service->method_count();
          ++method_index) {
       const MethodDescriptor* method = service->method(method_index);
@@ -529,7 +529,7 @@ void PrintProtoDtsFile(Printer* printer, const FileDescriptor* file) {
           js_field_type = "string";
           break;
         default:
-          js_field_type = "any";
+          js_field_type = "{}";
           break;
       }
       vars["js_field_type"] = js_field_type;
@@ -538,7 +538,7 @@ void PrintProtoDtsFile(Printer* printer, const FileDescriptor* file) {
     }
     printer->Print(vars,
                    "serializeBinary(): Uint8Array;\n"
-                   "static deserializeBinary: (bytes: any) => $class_name$;\n");
+                   "static deserializeBinary: (bytes: {}) => $class_name$;\n");
     printer->Outdent();
     printer->Print("}\n\n");
   }
@@ -548,10 +548,10 @@ void PrintFileHeader(Printer* printer, const std::map<string, string>& vars) {
   printer->Print(
       vars,
       "/**\n"
-      " * @fileoverview gRPC Web JS generated client stub for $package$\n"
+      " * @fileoverview gRPC-Web generated client stub for $package$\n"
       " * @enhanceable\n"
       " * @public\n"
-      " */\n"
+      " */\n\n"
       "// GENERATED CODE -- DO NOT EDIT!\n\n\n");
 }
 
@@ -594,6 +594,34 @@ void PrintServiceConstructor(Printer* printer,
       "   * @private @const {?Object} Options for the client\n"
       "   */\n"
       "  this.options_ = options;\n"
+      "};\n\n\n");
+}
+
+void PrintPromiseServiceConstructor(Printer* printer,
+                                    std::map<string, string> vars) {
+  printer->Print(vars,
+                 "/**\n"
+                 " * @param {string} hostname\n"
+                 " * @param {?Object} credentials\n"
+                 " * @param {?Object} options\n"
+                 " * @constructor\n"
+                 " * @struct\n"
+                 " * @final\n"
+                 " */\n"
+                 "proto.$package_dot$$service_name$PromiseClient =\n"
+                 "    function(hostname, credentials, options) {\n"
+                 "  if (!options) options = {};\n");
+  if (vars["mode"] == GetModeVar(Mode::GRPCWEB)) {
+    printer->Print(vars, "  options['format'] = '$format$';\n\n");
+  }
+  printer->Print(
+      vars,
+      "  /**\n"
+      "   * @private @const {!proto.$package_dot$$service_name$Client} The "
+      "delegate callback based client\n"
+      "   */\n"
+      "  this.delegateClient_ = new proto.$package_dot$$service_name$Client(\n"
+      "      hostname, credentials, options);\n\n"
       "};\n\n\n");
 }
 
@@ -665,6 +693,32 @@ void PrintUnaryCall(Printer* printer, std::map<string, string> vars) {
       "callback);\n");
   printer->Outdent();
   printer->Outdent();
+  printer->Outdent();
+  printer->Print("};\n\n\n");
+}
+
+void PrintPromiseUnaryCall(Printer* printer,
+                           const std::map<string, string>& vars) {
+  printer->Print(vars,
+                 "/**\n"
+                 " * @param {!proto.$in$} request The\n"
+                 " *     request proto\n"
+                 " * @param {!Object<string, string>} metadata User defined\n"
+                 " *     call metadata\n"
+                 " * @return {!Promise<!proto.$out$>}\n"
+                 " *     The XHR Node Readable Stream\n"
+                 " */\n"
+                 "proto.$package_dot$$service_name$PromiseClient.prototype"
+                 ".$js_method_name$ =\n");
+  printer->Indent();
+  printer->Print(vars,
+                 "  function(request, metadata) {\n"
+                 "return new Promise((resolve, reject) => {\n"
+                 "  this.delegateClient_.$js_method_name$(\n"
+                 "    request, metadata, (error, response) => {\n"
+                 "      error ? reject(error) : resolve(response);\n"
+                 "    });\n"
+                 "});\n");
   printer->Outdent();
   printer->Print("};\n\n\n");
 }
@@ -809,6 +863,9 @@ class GrpcCodeGenerator : public CodeGenerator {
           printer.Print(
               vars,
               "goog.provide('proto.$package_dot$$service_name$Client');\n");
+          printer.Print(vars,
+                        "goog.provide('proto.$package_dot$$service_name$"
+                        "PromiseClient');\n");
           break;
         case ImportStyle::COMMONJS:
           break;
@@ -843,6 +900,7 @@ class GrpcCodeGenerator : public CodeGenerator {
       const ServiceDescriptor* service = file->service(service_index);
       vars["service_name"] = service->name();
       PrintServiceConstructor(&printer, vars);
+      PrintPromiseServiceConstructor(&printer, vars);
 
       for (int method_index = 0;
            method_index < service->method_count();
@@ -868,6 +926,7 @@ class GrpcCodeGenerator : public CodeGenerator {
             PrintServerStreamingCall(&printer, vars);
           } else {
             PrintUnaryCall(&printer, vars);
+            PrintPromiseUnaryCall(&printer, vars);
           }
         }
       }
