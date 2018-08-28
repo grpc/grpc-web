@@ -21,20 +21,20 @@ frameworks, such as Python, Java, and Node. See the
 This example is using the `echo.proto` file from the
 [Echo Example](https://github.com/grpc/grpc-web/tree/master/net/grpc/gateway/examples/echo).
 
-1. Add `grpc-web` as a dependency using `npm`.
+ 1. Add `grpc-web` as a dependency using `npm`.
 
 ```sh
 $ npm i grpc-web
 ```
 
-2. Compile the `protoc-gen-grpc-web` protoc plugin.
+ 2. Compile the `protoc-gen-grpc-web` protoc plugin.
 
 ```sh
 $ git clone https://github.com/grpc/grpc-web
 $ cd grpc-web && sudo make install-plugin
 ```
 
-3. Generate your proto messages and the service client stub classes with
+ 3. Generate your proto messages and the service client stub classes with
 `protoc` and the `protoc-gen-grpc-web` plugin. You can set the
 `import_style=commonjs` option for both `--js_out` and `--grpc-web_out`.
 
@@ -44,7 +44,7 @@ $ protoc -I=$DIR echo.proto \
 --grpc-web_out=import_style=commonjs,mode=grpcwebtext:generated
 ```
 
-4. Start using your generated client!
+ 4. Start using your generated client!
 
 ```js
 const {EchoServiceClient} = require('./generated/echo_grpc_web_pb.js');
@@ -94,7 +94,7 @@ When using the `protoc-gen-grpc-web` protoc plugin, mentioned above, pass in
 either:
 
  - `import_style=commonjs+dts`: existing CommonJS style stub + `.d.ts` typings
- - `import_style=typescript`: full TypeSCript output
+ - `import_style=typescript`: full TypeScript output
 
 
 ```ts
