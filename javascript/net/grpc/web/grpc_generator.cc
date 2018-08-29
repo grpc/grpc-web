@@ -167,7 +167,7 @@ char ToLowerASCII(char c) {
 std::vector<string> ParseLowerUnderscore(const string& input) {
   std::vector<string> words;
   string running = "";
-  for (int i = 0; i < input.size(); i++) {
+  for (size_t i = 0; i < input.size(); i++) {
     if (input[i] == '_') {
       if (!running.empty()) {
         words.push_back(running);
@@ -185,7 +185,7 @@ std::vector<string> ParseLowerUnderscore(const string& input) {
 
 string ToUpperCamel(const std::vector<string>& words) {
   string result;
-  for (int i = 0; i < words.size(); i++) {
+  for (size_t i = 0; i < words.size(); i++) {
     string word = words[i];
     if (word[0] >= 'a' && word[0] <= 'z') {
       word[0] = (word[0] - 'a') + 'A';
@@ -503,7 +503,7 @@ void PrintProtoDtsFile(Printer* printer, const FileDescriptor* file) {
     printer->Print(vars, "export class $class_name$ {\n");
     printer->Indent();
     printer->Print("constructor ();\n");
-    for (size_t i = 0; i < it->second->field_count(); i++) {
+    for (int i = 0; i < it->second->field_count(); i++) {
       vars["js_field_name"] =
           ToUpperCamel(ParseLowerUnderscore(it->second->field(i)->name()));
       string js_field_type = "";
