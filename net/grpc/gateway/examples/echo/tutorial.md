@@ -155,13 +155,13 @@ You will need a `package.json` file
 {
   "name": "grpc-web-commonjs-example",
   "dependencies": {
-    "google-protobuf": "3",
-    "grpc-web": "^0.2.0"
+    "google-protobuf": "^3.6.1",
+    "grpc-web": "^0.4.0"
   },
   "devDependencies": {
-    "browserify": "16",
-    "webpack": "4",
-    "webpack-cli": "3"
+    "browserify": "^16.2.2",
+    "webpack": "^4.16.5",
+    "webpack-cli": "^3.1.0"
   }
 }
 ```
