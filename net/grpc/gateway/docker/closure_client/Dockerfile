@@ -26,5 +26,5 @@ RUN cd /github/grpc-web && \
 RUN cd /github/grpc-web && \
   make client && make install-example
 
-EXPOSE 80
+EXPOSE 8081
 CMD ["nginx"]

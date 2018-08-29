@@ -93,10 +93,10 @@ proto-js:
   --grpc-web_out=import_style=closure,mode=grpcwebtext:. ./echo.proto
 
 install:
-	mkdir -p $(HTML_DIR)/$(EXAMPLES_PATH)
-	cp ./echotest.html $(HTML_DIR)/$(EXAMPLES_PATH)/
-	cp ./echoapp.js $(HTML_DIR)/$(EXAMPLES_PATH)/
-	cp compiled.js $(HTML_DIR)/echo_js_bin_dev.js
+	mkdir -p $(HTML_DIR)
+	cp ./echotest.html $(HTML_DIR)
+	cp ./echoapp.js $(HTML_DIR)
+	cp ./compiled.js $(HTML_DIR)/echo_js_bin_dev.js
 
 clean:
 	rm -f *.grpc.pb.cc *.grpc.pb.h *.grpc.pb.o *.pb.cc *.pb.h *.pb.o \

@@ -67,7 +67,7 @@ services:
       - common
     image: grpcweb/closure-client
     ports:
-      - "80:80"
+      - "8081:8081"
   ts-client:
     build:
       context: ./
@@ -76,7 +76,7 @@ services:
       - common
     image: grpcweb/ts-client
     ports:
-      - "8082:8082"
+      - "8081:8081"
   binary-client:
     build:
       context: ./
