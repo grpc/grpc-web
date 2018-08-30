@@ -27,7 +27,6 @@ RUN cd $EXAMPLE_DIR/ts-example && \
   npm link grpc-web && \
   tsc && \
   npx webpack && \
-  mkdir -p /var/www/html/dist && \
   cp echotest.html /var/www/html && \
   cp dist/main.js /var/www/html/dist
 
