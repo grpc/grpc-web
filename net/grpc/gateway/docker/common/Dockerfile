@@ -32,4 +32,5 @@ RUN cd /github/grpc-web/packages/grpc-web && \
   npm link
 
 RUN cp /github/grpc-web/net/grpc/gateway/examples/echo/nginx_simple.conf \
-  /etc/nginx/nginx.conf
+  /etc/nginx/nginx.conf && \
+  mkdir -p /var/www/html/dist
