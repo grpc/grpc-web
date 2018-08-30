@@ -123,7 +123,8 @@ def _closure_grpc_web_library_impl(ctx):
 
   suppress = [
       "misplacedTypeAnnotation",
-      "unusedPrivateMembers"
+      "unusedPrivateMembers",
+      "strictDependencies",
   ]
 
   library = closure_js_library_impl(
