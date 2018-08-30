@@ -60,7 +60,7 @@ we use a simple server to serve up the JS/HTML static contents.
 ```sh
 $ docker build -t grpcweb/closure-client \
   -f net/grpc/gateway/docker/closure_client/Dockerfile .
-$ docker run -d -p 80:80 grpcweb/closure-client
+$ docker run -d -p 8081:8081 grpcweb/closure-client
 ```
 
 ## Run the example from your browser

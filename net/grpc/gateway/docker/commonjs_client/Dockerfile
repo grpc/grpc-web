@@ -25,7 +25,10 @@ $EXAMPLE_DIR/commonjs-example
 RUN cd $EXAMPLE_DIR/commonjs-example && \
   npm install && \
   npm link grpc-web && \
-  npx webpack
+  npx webpack && \
+  mkdir -p /var/www/html/dist && \
+  cp echotest.html /var/www/html && \
+  cp dist/main.js /var/www/html/dist
 
 EXPOSE 8081
 CMD ["nginx"]
