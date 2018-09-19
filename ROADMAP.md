@@ -79,7 +79,7 @@ In-process proxies will eliminate the need to deploy an extra proxy such as
 Nginx. 
 
 We have plans to add proxy support in Python, Java, Node, C++ etc. Let us know
-if you are interested in implementatin any language-specific in-process
+if you are interested in implementing any language-specific in-process
 gRPC-Web proxy.
 
 To minimize maintenance overhead, we don't have any plan to add gRPC-Web support
