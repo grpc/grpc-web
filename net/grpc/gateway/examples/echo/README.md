@@ -58,9 +58,9 @@ This steps compiles the front-end gRPC-Web client into a static .JS file, and
 we use a simple server to serve up the JS/HTML static contents.
 
 ```sh
-$ docker build -t grpcweb/closure-client \
-  -f net/grpc/gateway/docker/closure_client/Dockerfile .
-$ docker run -d -p 8081:8081 grpcweb/closure-client
+$ docker build -t grpcweb/commonjs-client  \
+  -f net/grpc/gateway/docker/commonjs_client/Dockerfile .
+$ docker run -d -p 8081:8081 grpcweb/commonjs-client
 ```
 
 ## Run the example from your browser
@@ -68,7 +68,7 @@ $ docker run -d -p 8081:8081 grpcweb/closure-client
 Finally, open a browser tab, and inspect
 
 ```
-http://localhost/net/grpc/gateway/examples/echo/echotest.html
+http://localhost:8081/echotest.html
 ```
 
 ## What's next?
