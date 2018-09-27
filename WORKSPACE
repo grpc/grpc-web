@@ -1,5 +1,7 @@
 workspace(name = "com_github_grpc_grpc_web")
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 # TODO(yannic): Update to use official repository.
 # See https://github.com/bazelbuild/rules_closure/pull/278
 http_archive(

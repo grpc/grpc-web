@@ -8,7 +8,7 @@ proto_library(
 )
 
 closure_grpc_web_library(
-    name = "echo",
+    name = "echo_closure_grpc",
     deps = [
         ":echo_proto",
     ],
