@@ -658,7 +658,6 @@ void PrintMethodInfo(Printer* printer, std::map<string, string> vars) {
 }
 
 void PrintUnaryCall(Printer* printer, std::map<string, string> vars) {
-  PrintMethodInfo(printer, vars);
   printer->Print(
       vars,
       "/**\n"
@@ -725,7 +724,6 @@ void PrintPromiseUnaryCall(Printer* printer,
 }
 
 void PrintServerStreamingCall(Printer* printer, std::map<string, string> vars) {
-  PrintMethodInfo(printer, vars);
   printer->Print(
       vars,
       "/**\n"
@@ -735,7 +733,7 @@ void PrintServerStreamingCall(Printer* printer, std::map<string, string> vars) {
       " * @return {!grpc.web.ClientReadableStream<!proto.$out$>}\n"
       " *     The XHR Node Readable Stream\n"
       " */\n"
-      "proto.$package_dot$$service_name$Client.prototype.$js_method_name$ =\n");
+      "proto.$package_dot$$service_name$$client_type$.prototype.$js_method_name$ =\n");
   printer->Indent();
   printer->Print(
       "  function(request, metadata) {\n"
@@ -923,7 +921,11 @@ class GrpcCodeGenerator : public CodeGenerator {
 
         // Client streaming is not supported yet
         if (!method->client_streaming()) {
+          PrintMethodInfo(&printer, vars);
           if (method->server_streaming()) {
+            vars["client_type"] = "Client";
+            PrintServerStreamingCall(&printer, vars);
+            vars["client_type"] = "PromiseClient";
             PrintServerStreamingCall(&printer, vars);
           } else {
             PrintUnaryCall(&printer, vars);
