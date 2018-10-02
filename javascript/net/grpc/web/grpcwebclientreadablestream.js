@@ -197,7 +197,7 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
     if (GRPC_STATUS in responseHeaders &&
         responseHeaders[GRPC_STATUS] != StatusCode.OK) {
       self.onErrorCallback_({
-        code: responseHeaders[GRPC_STATUS],
+        code: Number(responseHeaders[GRPC_STATUS]),
         message: responseHeaders[GRPC_STATUS_MESSAGE]
       });
     }
