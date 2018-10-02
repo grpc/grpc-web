@@ -76,7 +76,7 @@ Here's a quick way to get started!
 ```sh
 $ git clone https://github.com/grpc/grpc-web
 $ cd grpc-web
-$ docker-compose up echo-server envoy commonjs-client
+$ docker-compose up node-server envoy commonjs-client
 ```
 
 Open a browser tab, and go to:

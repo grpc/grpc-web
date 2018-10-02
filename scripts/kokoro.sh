@@ -44,7 +44,7 @@ cd packages/grpc-web && \
 # Bring up the Echo server and the Envoy proxy (in background).
 # The 'sleep' seems necessary for the docker containers to be fully up
 # and listening before we test the with curl requests
-docker-compose up -d echo-server envoy && sleep 5;
+docker-compose up -d node-server envoy && sleep 5;
 
 # Run a curl request and verify the output
 source ./scripts/test-proxy.sh

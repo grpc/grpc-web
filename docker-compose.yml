@@ -21,6 +21,15 @@ services:
     image: grpcweb/echo-server
     ports:
       - "9090:9090"
+  node-server:
+    build:
+      context: ./
+      dockerfile: ./net/grpc/gateway/docker/node_server/Dockerfile
+    depends_on:
+      - common
+    image: grpcweb/node-server
+    ports:
+      - "9090:9090"
   envoy:
     build:
       context: ./
@@ -29,7 +38,7 @@ services:
     ports:
       - "8080:8080"
     links:
-      - echo-server
+      - node-server
   nginx:
     build:
       context: ./
@@ -40,7 +49,7 @@ services:
     ports:
       - "8080:8080"
     links:
-      - echo-server
+      - node-server
   grpcwebproxy:
     build:
       context: ./
@@ -49,7 +58,7 @@ services:
     ports:
       - "8080:8080"
     links:
-      - echo-server
+      - node-server
   commonjs-client:
     build:
       context: ./

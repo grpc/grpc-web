@@ -23,8 +23,8 @@ Try gRPC-Web and run a quick Echo example from the browser!
 From the repo root directory:
 
 ```sh
-$ docker-compose pull prereqs common echo-server envoy commonjs-client
-$ docker-compose up -d echo-server envoy commonjs-client
+$ docker-compose pull prereqs common node-server envoy commonjs-client
+$ docker-compose up -d node-server envoy commonjs-client
 ```
 
 Open a browser tab, and go to:
@@ -50,6 +50,14 @@ You can compile the `protoc-gen-grpc-web` protoc plugin from this repo:
 
 ```sh
 $ sudo make install-plugin
+```
+
+If you don't already have `protoc` installed, you may have to do this first:
+
+```sh
+$ ./scripts/init_submodules.sh
+$ cd third_party/grpc/third_party/protobuf
+$ ./autogen.sh && ./configure && make -j8 && sudo make install
 ```
 
 
@@ -138,10 +146,10 @@ service EchoService {
 
 Next you need to have a gRPC server that implements the service interface and a
 gateway proxy that allows the client to connect to the server. Our example
-builds a simple C++ gRPC backend server and the Envoy proxy.
+builds a simple Node gRPC backend server and the Envoy proxy.
 
 For the Echo service: see the
-[service implementations](https://github.com/grpc/grpc-web/blob/master/net/grpc/gateway/examples/echo/echo_service_impl.cc).
+[service implementations](https://github.com/grpc/grpc-web/blob/master/net/grpc/gateway/examples/echo/node-server/server.js).
 
 For the Envoy proxy: see the
 [config yaml file](https://github.com/grpc/grpc-web/blob/master/net/grpc/gateway/examples/echo/envoy.yaml).
@@ -239,20 +247,20 @@ Multiple proxies supports the gRPC-Web protocol. Currently, the default proxy
 is [Envoy](https://www.envoyproxy.io), which supports gRPC-Web out of the box.
 
 ```sh
-$ docker-compose up -d echo-server envoy commonjs-client
+$ docker-compose up -d node-server envoy commonjs-client
 ```
 
 An alternative is to build Nginx that comes with this repository.
 
 ```sh
-$ docker-compose up -d echo-server nginx commonjs-client
+$ docker-compose up -d node-server nginx commonjs-client
 ```
 
 You can also try this
 [gRPC-Web Go Proxy](https://github.com/improbable-eng/grpc-web/tree/master/go/grpcwebproxy).
 
 ```sh
-$ docker-compose up -d echo-server grpcwebproxy binary-client
+$ docker-compose up -d node-server grpcwebproxy binary-client
 ```
 
 ## Acknowledgement

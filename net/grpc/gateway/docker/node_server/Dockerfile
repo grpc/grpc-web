@@ -14,11 +14,8 @@
 
 FROM grpcweb/common
 
-RUN cd /github/grpc-web-base/net/grpc/gateway/examples/echo && \
-  sed -i 's/localhost:9090/node-server:9090/g' nginx.conf
+RUN cd /github/grpc-web/net/grpc/gateway/examples/echo/node-server && \
+  npm install
 
-RUN cd /github/grpc-web-base && \
-  make standalone-proxy
-
-EXPOSE 8080
-CMD ["/github/grpc-web-base/gConnector_static/nginx.sh"]
+EXPOSE 9090
+CMD ["node", "/github/grpc-web/net/grpc/gateway/examples/echo/node-server/server.js"]
