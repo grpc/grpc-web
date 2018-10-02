@@ -26,19 +26,16 @@ service EchoService {
 
 ## Implement gRPC Backend Server
 
-Next, we implement our EchoService interface using C++ in the backend gRPC
+Next, we implement our EchoService interface using Node in the backend gRPC
 `EchoServer`. This will handle requests from clients. See the file
-[`echo_server.cc`](echo_server.cc) for details.
+[`node-server/server.js`](./node-server/server.js) for details.
 
 You can implement the server in any language supported by gRPC. Please see
 the [gRPC website][] for more details.
 
-```cpp
-Status EchoServiceImpl::Echo(ServerContext* context,
-                             const EchoRequest* request,
-                             EchoResponse* response) {
-  response->set_message(request->message());
-  return Status::OK;
+```js
+function doEcho(call, callback) {
+  callback(null, {message: call.request.message});
 }
 ```
 
@@ -80,7 +77,7 @@ this:
     type: logical_dns
     http2_protocol_options: {}
     lb_policy: round_robin
-    hosts: [{ socket_address: { address: echo-server, port_value: 9090 }}]
+    hosts: [{ socket_address: { address: node-server, port_value: 9090 }}]
 ```
 
 You may also need to add some CORS setup to make sure the browser can request

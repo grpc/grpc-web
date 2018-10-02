@@ -32,7 +32,7 @@ ADD ./etc/localhost.crt /etc
 ADD ./etc/localhost.key /etc
 
 ENTRYPOINT [ "/bin/sh", "-c", "exec /go/bin/grpcwebproxy \
-  --backend_addr=echo-server:9090 \
+  --backend_addr=node-server:9090 \
   --server_bind_address=0.0.0.0 \
   --server_http_debug_port=8080 \
   --run_http_server=true \

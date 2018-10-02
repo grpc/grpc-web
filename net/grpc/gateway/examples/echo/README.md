@@ -5,7 +5,7 @@ example. The example has 3 key components:
 
  - Front-end JS client
  - Envoy proxy
- - gRPC backend server (written in C++)
+ - gRPC backend server (written in Node)
 
 
 ## Before you start
@@ -32,13 +32,13 @@ $ docker build -t grpcweb/prereqs \
 
 ## Run the gRPC Backend server
 
-This compiles the gRPC backend server, written in C++, and listens on port
+This compiles the gRPC backend server, written in Node, and listens on port
 9090.
 
 ```sh
-$ docker build -t grpcweb/echo-server \
-  -f net/grpc/gateway/docker/echo_server/Dockerfile .
-$ docker run -d -p 9090:9090 --name echo-server grpcweb/echo-server
+$ docker build -t grpcweb/node-server \
+  -f net/grpc/gateway/docker/node_server/Dockerfile .
+$ docker run -d -p 9090:9090 --name node-server grpcweb/node-server
 ```
 
 ## Run the Envoy proxy
@@ -49,7 +49,7 @@ requests will be forwarded to port 9090.
 ```sh
 $ docker build -t grpcweb/envoy \
   -f net/grpc/gateway/docker/envoy/Dockerfile .
-$ docker run -d -p 8080:8080 --link echo-server:echo-server grpcweb/envoy
+$ docker run -d -p 8080:8080 --link node-server:node-server grpcweb/envoy
 ```
 
 ## Serve static JS/HTML contents

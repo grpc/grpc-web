@@ -30,7 +30,6 @@ using grpc::Status;
 using grpc::gateway::testing::EchoRequest;
 using grpc::gateway::testing::EchoResponse;
 using grpc::gateway::testing::EchoService;
-using grpc::gateway::testing::Empty;
 using grpc::gateway::testing::ServerStreamingEchoRequest;
 using grpc::gateway::testing::ServerStreamingEchoResponse;
 
@@ -68,12 +67,6 @@ Status EchoServiceImpl::EchoAbort(ServerContext* context,
                 "Aborted from server side.");
 }
 
-Status EchoServiceImpl::NoOp(ServerContext* context, const Empty* request,
-                             Empty* response) {
-  CopyClientMetadataToResponse(context);
-  return Status::OK;
-}
-
 Status EchoServiceImpl::ServerStreamingEcho(
     ServerContext* context, const ServerStreamingEchoRequest* request,
     ServerWriter<ServerStreamingEchoResponse>* writer) {
@@ -88,15 +81,4 @@ Status EchoServiceImpl::ServerStreamingEcho(
     writer->Write(response);
   }
   return Status::OK;
-}
-
-Status EchoServiceImpl::ServerStreamingEchoAbort(
-    ServerContext* context, const ServerStreamingEchoRequest* request,
-    ServerWriter<ServerStreamingEchoResponse>* writer) {
-  CopyClientMetadataToResponse(context);
-  ServerStreamingEchoResponse response;
-  response.set_message(request->message());
-  writer->Write(response);
-  return Status(grpc::StatusCode::ABORTED,
-                "Aborted from server side.");
 }
