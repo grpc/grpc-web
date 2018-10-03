@@ -285,4 +285,4 @@ this project!
 * [yannic](https://github.com/yannic)
 
 
-[Hello World Guide]:https://github.com/grpc/grpc-web/blob/master/net/grpc/gateway/examples/echo/helloworld/
+[Hello World Guide]:https://github.com/grpc/grpc-web/blob/master/net/grpc/gateway/examples/helloworld/

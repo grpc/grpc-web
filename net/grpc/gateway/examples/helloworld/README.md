@@ -7,7 +7,7 @@ whole, please visit the [main repo](https://github.com/grpc/grpc-web).
 All the code for this example can be found in this current directory.
 
 ```sh
-$ cd net/grpc/gateway/examples/echo/helloworld
+$ cd net/grpc/gateway/examples/helloworld
 ```
 
 ## Define the Service
