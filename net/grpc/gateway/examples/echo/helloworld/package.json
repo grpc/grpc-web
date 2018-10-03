@@ -1,0 +1,13 @@
+{
+  "name": "grpc-web-simple-example",
+  "version": "0.1.0",
+  "description": "gRPC-Web simple example",
+  "devDependencies": {
+    "@grpc/proto-loader": "^0.3.0",
+    "google-protobuf": "^3.6.1",
+    "grpc": "^1.15.0",
+    "grpc-web": "^0.4.0",
+    "webpack": "^4.16.5",
+    "webpack-cli": "^3.1.0"
+  }
+}
