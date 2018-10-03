@@ -16,9 +16,22 @@ frameworks, such as Python, Java, and Node. See the
 [roadmap](https://github.com/grpc/grpc-web/blob/master/ROADMAP.md) doc.
 
 
-## Quick Demo
+## Quick Start Guide: Hello World
 
-Try gRPC-Web and run a quick Echo example from the browser!
+You can follow the [Hello World Guide][] to get started with gRPC-Web quickly.
+
+From the guide, you will learn how to
+ - Define your service using protocol buffers
+ - Implement a simple gRPC Service using NodeJS
+ - Configure the Envoy proxy
+ - Generate protobuf message classes and client service stub for the client
+ - Compile all the JS dependencies into a static library that can be consumed
+   by the browser easily
+
+## Advanced Demo: Browser Echo App
+
+You can also try to run a more advanced Echo app from the browser with a
+streaming example.
 
 From the repo root directory:
 
@@ -270,3 +283,6 @@ this project!
 
 * [zaucy](https://github.com/zaucy)
 * [yannic](https://github.com/yannic)
+
+
+[Hello World Guide]:https://github.com/grpc/grpc-web/blob/master/net/grpc/gateway/examples/echo/helloworld/
