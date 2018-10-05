@@ -303,10 +303,11 @@ void PrintCommonJsMessagesDeps(Printer* printer, const FileDescriptor* file) {
   string package = file->package();
   vars["package_name"] = package;
 
-  printer->Print(vars, "const proto = {};\n");
   if (!package.empty()) {
     size_t offset = 0;
     size_t dotIndex = package.find('.');
+
+    printer->Print(vars, "const proto = {};\n");
 
     while (dotIndex != string::npos) {
       vars["current_package_ns"] = package.substr(0, dotIndex);
@@ -325,9 +326,15 @@ void PrintCommonJsMessagesDeps(Printer* printer, const FileDescriptor* file) {
   }
   vars["filename"] = filename;
 
-  printer->Print(
-      vars,
-      "proto.$package_name$ = require('./$filename$_pb.js');\n\n");
+  if (!package.empty()) {
+    printer->Print(
+        vars,
+        "proto.$package_name$ = require('./$filename$_pb.js');\n\n");
+  } else {
+    printer->Print(
+        vars,
+        "const proto = require('./$filename$_pb.js');\n\n");    
+  }
 }
 
 void PrintES6Imports(Printer* printer, const FileDescriptor* file) {
@@ -946,7 +953,11 @@ class GrpcCodeGenerator : public CodeGenerator {
         printer.Print("}); // goog.scope\n\n");
         break;
       case ImportStyle::COMMONJS:
-        printer.Print(vars, "module.exports = proto.$package$;\n\n");
+        if (!vars["package"].empty()) {
+          printer.Print(vars, "module.exports = proto.$package$;\n\n");        
+        } else {
+          printer.Print(vars, "module.exports = proto;\n\n");
+        }
         break;
       case ImportStyle::TYPESCRIPT:
         break;
