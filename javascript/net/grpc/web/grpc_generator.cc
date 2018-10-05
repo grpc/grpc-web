@@ -735,9 +735,15 @@ void PrintServerStreamingCall(Printer* printer, std::map<string, string> vars) {
       " */\n"
       "proto.$package_dot$$service_name$$client_type$.prototype.$js_method_name$ =\n");
   printer->Indent();
-  printer->Print(
-      "  function(request, metadata) {\n"
-      "return this.client_.serverStreaming(this.hostname_ +\n");
+  if (vars["client_type"] == "PromiseClient") {
+    printer->Print(
+        "  function(request, metadata) {\n"
+        "return this.delegateClient_.client_.serverStreaming(this.delegateClient_.hostname_ +\n");
+  } else {
+    printer->Print(
+        "  function(request, metadata) {\n"
+        "return this.client_.serverStreaming(this.hostname_ +\n");    
+  }
   printer->Indent();
   printer->Indent();
   if (vars["mode"] == GetModeVar(Mode::OP) ||
