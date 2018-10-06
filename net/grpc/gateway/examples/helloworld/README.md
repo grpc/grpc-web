@@ -112,7 +112,9 @@ static_resources:
               domains: ["*"]
               routes:
               - match: { prefix: "/" }
-                route: { cluster: greeter_service }
+                route:
+                  cluster: greeter_service
+                  max_grpc_timeout: 0s
               cors:
                 allow_origin:
                 - "*"
