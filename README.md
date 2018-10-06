@@ -221,6 +221,22 @@ stream.on('end', function(end) {
 You can find a more in-depth tutorial from
 [this page](https://github.com/grpc/grpc-web/blob/master/net/grpc/gateway/examples/echo/tutorial.md).
 
+## Setting Deadline
+
+You can set a deadline for your RPC by setting a `deadline` header. The value
+should be a Unix timestamp, in milliseconds.
+
+```js
+var deadline = new Date();
+deadline.setSeconds(deadline.getSeconds() + 1);
+
+client.sayHelloAfterDelay(request, {deadline: deadline.getTime()},
+  (err, response) => {
+    // err will be populated if the RPC exceeds the deadline
+    ...
+  });
+```
+
 ## TypeScript Support
 
 The `grpc-web` module can now be imported as a TypeScript module. This is
@@ -281,8 +297,9 @@ $ docker-compose up -d node-server grpcwebproxy binary-client
 Big thanks to the following contributors for making significant contributions to
 this project!
 
-* [zaucy](https://github.com/zaucy)
-* [yannic](https://github.com/yannic)
+* [zaucy](https://github.com/zaucy): NPM package, CommonJS
+* [yannic](https://github.com/yannic): Bazel
+* [mitar](https://github.com/mitar): Codegen Plugin
 
 
 [Hello World Guide]:https://github.com/grpc/grpc-web/blob/master/net/grpc/gateway/examples/helloworld/

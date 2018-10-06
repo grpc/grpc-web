@@ -18,10 +18,17 @@ package helloworld;
 
 service Greeter {
   rpc SayHello (HelloRequest) returns (HelloReply);
+  rpc SayRepeatHello (RepeatHelloRequest) returns (stream HelloReply);
+  rpc SayHelloAfterDelay (HelloRequest) returns (HelloReply);
 }
 
 message HelloRequest {
   string name = 1;
+}
+
+message RepeatHelloRequest {
+  string name = 1;
+  int32 count = 2;
 }
 
 message HelloReply {

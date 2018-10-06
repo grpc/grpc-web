@@ -95,14 +95,7 @@ GrpcWebClientBase.prototype.rpcCall = function(
   });
 
   xhr.headers.addAll(metadata);
-  if (this.format_ == "text") {
-    xhr.headers.set('Content-Type', 'application/grpc-web-text');
-    xhr.headers.set('Accept', 'application/grpc-web-text');
-  } else {
-    xhr.headers.set('Content-Type', 'application/grpc-web+proto');
-  }
-  xhr.headers.set('X-User-Agent', 'grpc-web-javascript/0.1');
-  xhr.headers.set('X-Grpc-Web', '1');
+  this.processHeaders_(xhr);
   if (this.suppressCorsPreflight_) {
     var headerObject = xhr.headers.toObject();
     xhr.headers.clear();
@@ -135,14 +128,7 @@ GrpcWebClientBase.prototype.serverStreaming = function(
   stream.setResponseDeserializeFn(methodInfo.responseDeserializeFn);
 
   xhr.headers.addAll(metadata);
-  if (this.format_ == "text") {
-    xhr.headers.set('Content-Type', 'application/grpc-web-text');
-    xhr.headers.set('Accept', 'application/grpc-web-text');
-  } else {
-    xhr.headers.set('Content-Type', 'application/grpc-web+proto');
-  }
-  xhr.headers.set('X-User-Agent', 'grpc-web-javascript/0.1');
-  xhr.headers.set('X-Grpc-Web', '1');
+  this.processHeaders_(xhr);
   if (this.suppressCorsPreflight_) {
     var headerObject = xhr.headers.toObject();
     xhr.headers.clear();
@@ -195,6 +181,30 @@ GrpcWebClientBase.prototype.encodeRequest_ = function(serialized) {
 };
 
 
+
+/**
+ * @private
+ * @param {!XhrIo} xhr The xhr object
+ */
+GrpcWebClientBase.prototype.processHeaders_ = function(xhr) {
+  if (this.format_ == "text") {
+    xhr.headers.set('Content-Type', 'application/grpc-web-text');
+    xhr.headers.set('Accept', 'application/grpc-web-text');
+  } else {
+    xhr.headers.set('Content-Type', 'application/grpc-web+proto');
+  }
+  xhr.headers.set('X-User-Agent', 'grpc-web-javascript/0.1');
+  xhr.headers.set('X-Grpc-Web', '1');
+  if (xhr.headers.containsKey('deadline')) {
+    var deadline = xhr.headers.get('deadline'); // in ms
+    var currentTime = (new Date()).getTime();
+    var timeout = Math.round(deadline - currentTime);
+    xhr.headers.remove('deadline');
+    if (timeout > 0) {
+      xhr.headers.set('grpc-timeout', timeout + 'm');
+    }
+  }    
+};
 
 /**
  * @private
