@@ -165,3 +165,53 @@ describe('grpc-web plugin test, with multiple input files', function() {
     assert.equal('function', typeof myClientB.doThat);
   });
 });
+
+
+describe('grpc-web plugin test, proto with no package', function() {
+  const genCodePath1 = path.resolve(
+    __dirname, GENERATED_CODE_PATH + '/nopackage_pb.js');
+  const genCodePath2 = path.resolve(
+    __dirname, GENERATED_CODE_PATH + '/nopackage_grpc_web_pb.js');
+
+  const genCodeCmd =
+    'protoc -I=./test/protos ' +
+    './test/protos/nopackage.proto ' +
+    '--js_out=import_style=commonjs:./test/generated ' +
+    '--grpc-web_out=import_style=commonjs,mode=grpcwebtext:./test/generated';
+
+  before(function() {
+    ['protoc', 'protoc-gen-grpc-web'].map(prog => {
+      if (!commandExists(prog)) {
+        assert.fail(`${prog} is not installed`);
+      }
+    });
+  });
+
+  beforeEach(function() {
+    removeDirectory(path.resolve(__dirname, GENERATED_CODE_PATH));
+    fs.mkdirSync(path.resolve(__dirname, GENERATED_CODE_PATH));
+  });
+
+  afterEach(function() {
+    removeDirectory(path.resolve(__dirname, GENERATED_CODE_PATH));
+  });
+
+  it('should exist', function() {
+    execSync(genCodeCmd);
+    assert.equal(true, fs.existsSync(genCodePath1));
+    assert.equal(true, fs.existsSync(genCodePath2));
+  });
+
+  it('should import', function() {
+    execSync(genCodeCmd);
+
+    const {HelloRequest} = require(genCodePath1);
+    var request = new HelloRequest();
+    request.setName('abc');
+    assert.equal('abc', request.getName());
+
+    const {GreeterClient} = require(genCodePath2);
+    var myClient = new GreeterClient("MyHostname", null, null);
+    assert.equal('function', typeof myClient.sayHello);
+  });
+});
