@@ -56,8 +56,8 @@ describe('grpc-web plugin test, with subdirectories', function() {
   beforeEach(function() {
     removeDirectory(path.resolve(__dirname, GENERATED_CODE_PATH));
     fs.mkdirSync(path.resolve(__dirname, GENERATED_CODE_PATH));
-    MockXMLHttpRequest = mockXmlHttpRequest.newMockXhr()
-    global.XMLHttpRequest = MockXMLHttpRequest; 
+    MockXMLHttpRequest = mockXmlHttpRequest.newMockXhr();
+    global.XMLHttpRequest = MockXMLHttpRequest;
   });
 
   afterEach(function() {
@@ -190,6 +190,8 @@ describe('grpc-web plugin test, proto with no package', function() {
   beforeEach(function() {
     removeDirectory(path.resolve(__dirname, GENERATED_CODE_PATH));
     fs.mkdirSync(path.resolve(__dirname, GENERATED_CODE_PATH));
+    MockXMLHttpRequest = mockXmlHttpRequest.newMockXhr();
+    global.XMLHttpRequest = MockXMLHttpRequest;
   });
 
   afterEach(function() {
@@ -213,5 +215,39 @@ describe('grpc-web plugin test, proto with no package', function() {
     const {GreeterClient} = require(genCodePath2);
     var myClient = new GreeterClient("MyHostname", null, null);
     assert.equal('function', typeof myClient.sayHello);
+  });
+
+  it('PromiseClient: should exist', function() {
+    execSync(genCodeCmd);
+
+    const {HelloRequest} = require(genCodePath1);
+
+    const {GreeterPromiseClient} = require(genCodePath2);
+    var myClient = new GreeterPromiseClient("MyHostname", null, null);
+    assert.equal('function', typeof myClient.sayHello);
+
+    var p = myClient.sayHello(new HelloRequest(), {});
+    assert.equal('function', typeof p.then);
+  });
+
+  it('PromiseClient: response should resolve promise', function() {
+    execSync(genCodeCmd);
+
+    const {HelloRequest} = require(genCodePath1);
+
+    const {GreeterPromiseClient} = require(genCodePath2);
+    var myClient = new GreeterPromiseClient("MyHostname", null, null);
+    assert.equal('function', typeof myClient.sayHello);
+
+    MockXMLHttpRequest.onSend = function(xhr) {
+      xhr.respond(200, {'Content-Type': 'application/grpc-web-text'},
+                  // a single data frame with 'aaa' message, encoded
+                  'AAAAAAUKA2FhYQ==');
+    };
+
+    myClient.sayHello(new HelloRequest(), {})
+            .then((response) => {
+              assert.equal('aaa', response.getMessage());
+            });
   });
 });
