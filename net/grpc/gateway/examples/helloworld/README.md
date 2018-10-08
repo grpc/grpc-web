@@ -184,7 +184,7 @@ the `client.js` files.
     "@grpc/proto-loader": "^0.3.0",
     "google-protobuf": "^3.6.1",
     "grpc": "^1.15.0",
-    "grpc-web": "^0.4.0",
+    "grpc-web": "^1.0.0",
     "webpack": "^4.16.5",
     "webpack-cli": "^3.1.0"
   }
