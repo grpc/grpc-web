@@ -153,7 +153,7 @@ You will need a `package.json` file
   "name": "grpc-web-commonjs-example",
   "dependencies": {
     "google-protobuf": "^3.6.1",
-    "grpc-web": "^0.4.0"
+    "grpc-web": "^1.0.0"
   },
   "devDependencies": {
     "browserify": "^16.2.2",
