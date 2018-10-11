@@ -1,0 +1,7 @@
+#signupbtn{
+    color:white
+}
+#signupbtn:hover{
+    color:white;
+    border-radius: 10px;
+}
