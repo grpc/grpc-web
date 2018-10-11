@@ -1,0 +1,23 @@
+#textFielddiv{
+    margin-left: 40%;
+}
+#textField{
+    width: 300px;
+}
+.paperDiv{
+    margin:0 auto;
+    width:50%;
+    margin-top:1%;
+}
+.paperList{
+    height:5%;
+}
+.todoTxt{
+    margin-left: 5%;
+}
+.spanList{
+    display: inline;
+}
+.todoTxtNotFound{
+    text-align: center;
+}
