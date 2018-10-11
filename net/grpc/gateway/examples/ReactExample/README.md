@@ -8,7 +8,7 @@ whole, please visit the [main repo](https://github.com/grpc/grpc-web).
 All the code for this example can be found in this current directory.
 
 ```sh
-$ cd net/grpc/gateway/examples/helloworld
+$ cd net/grpc/gateway/examples/ReactExample
 ```
 
 ## Define the Service
