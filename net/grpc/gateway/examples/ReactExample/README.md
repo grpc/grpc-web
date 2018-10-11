@@ -240,7 +240,7 @@ can be consumed by the browser.
 
 ```sh
 $ npm install
-$ npx run dev-build
+$ npm run dev-build
 ```
 
 Here we use `webpack` and give it an entry point `js/index.jsx`. You can also use
