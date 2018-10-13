@@ -40,7 +40,16 @@ class EchoServiceImpl final :
       grpc::ServerContext* context,
       const grpc::gateway::testing::EchoRequest* request,
       grpc::gateway::testing::EchoResponse* response) override;
+  grpc::Status NoOp(
+      grpc::ServerContext* context,
+      const grpc::gateway::testing::Empty* request,
+      grpc::gateway::testing::Empty* response) override;
   grpc::Status ServerStreamingEcho(
+      grpc::ServerContext* context,
+      const grpc::gateway::testing::ServerStreamingEchoRequest* request,
+      grpc::ServerWriter<
+      grpc::gateway::testing::ServerStreamingEchoResponse>* writer) override;
+  grpc::Status ServerStreamingEchoAbort(
       grpc::ServerContext* context,
       const grpc::gateway::testing::ServerStreamingEchoRequest* request,
       grpc::ServerWriter<
