@@ -16,12 +16,12 @@
  *
  */
 
-#include <algorithm>
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/compiler/plugin.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
+#include <algorithm>
 
 using google::protobuf::Descriptor;
 using google::protobuf::FieldDescriptor;
@@ -333,7 +333,7 @@ void PrintCommonJsMessagesDeps(Printer* printer, const FileDescriptor* file) {
   } else {
     printer->Print(
         vars,
-        "const proto = require('./$filename$_pb.js');\n\n");    
+        "const proto = require('./$filename$_pb.js');\n\n");
   }
 }
 
@@ -740,16 +740,18 @@ void PrintServerStreamingCall(Printer* printer, std::map<string, string> vars) {
       " * @return {!grpc.web.ClientReadableStream<!proto.$out$>}\n"
       " *     The XHR Node Readable Stream\n"
       " */\n"
-      "proto.$package_dot$$service_name$$client_type$.prototype.$js_method_name$ =\n");
+      "proto.$package_dot$$service_name$$client_type$.prototype."
+      "$js_method_name$ =\n");
   printer->Indent();
   if (vars["client_type"] == "PromiseClient") {
     printer->Print(
         "  function(request, metadata) {\n"
-        "return this.delegateClient_.client_.serverStreaming(this.delegateClient_.hostname_ +\n");
+        "return this.delegateClient_.client_.serverStreaming("
+        "this.delegateClient_.hostname_ +\n");
   } else {
     printer->Print(
         "  function(request, metadata) {\n"
-        "return this.client_.serverStreaming(this.hostname_ +\n");    
+        "return this.client_.serverStreaming(this.hostname_ +\n");
   }
   printer->Indent();
   printer->Indent();
@@ -954,7 +956,7 @@ class GrpcCodeGenerator : public CodeGenerator {
         break;
       case ImportStyle::COMMONJS:
         if (!vars["package"].empty()) {
-          printer.Print(vars, "module.exports = proto.$package$;\n\n");        
+          printer.Print(vars, "module.exports = proto.$package$;\n\n");
         } else {
           printer.Print(vars, "module.exports = proto;\n\n");
         }

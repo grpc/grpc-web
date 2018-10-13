@@ -33,10 +33,17 @@ var packageDefinition = protoLoader.loadSync(
 var protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
 var helloworld = protoDescriptor.helloworld;
 
+/**
+ * @param {!Object} call
+ * @param {function():?} callback
+ */
 function doSayHello(call, callback) {
   callback(null, {message: 'Hello! '+ call.request.name});
 }
 
+/**
+ * @param {!Object} call
+ */
 function doSayRepeatHello(call) {
   var senders = [];
   function sender(name) {
@@ -55,6 +62,10 @@ function doSayRepeatHello(call) {
   });
 }
 
+/**
+ * @param {!Object} call
+ * @param {function():?} callback
+ */
 function doSayHelloAfterDelay(call, callback) {
   function dummy() {
     return (cb) => {
@@ -68,6 +79,9 @@ function doSayHelloAfterDelay(call, callback) {
   });
 }
 
+/**
+ * @return {!Object} gRPC server
+ */
 function getServer() {
   var server = new grpc.Server();
   server.addProtoService(helloworld.Greeter.service, {

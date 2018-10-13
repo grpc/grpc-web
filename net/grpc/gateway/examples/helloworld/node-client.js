@@ -11,11 +11,14 @@ var packageDefinition = protoLoader.loadSync(
      defaults: true,
      oneofs: true
     });
-var protoDescriptor = grpc.loadPackageDefinition(packageDefinition)
+var protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
 var helloworld = protoDescriptor.helloworld;
 var client = new helloworld.Greeter('localhost:9090',
                                     grpc.credentials.createInsecure());
 
+/**
+ * @param {function():?} callback
+ */
 function runSayHello(callback) {
   client.sayHello({name: 'John'}, {}, (err, response) => {
     console.log(response.message);
@@ -23,6 +26,9 @@ function runSayHello(callback) {
   });
 }
 
+/**
+ * @param {function():?} callback
+ */
 function runSayRepeatHello(callback) {
   var stream = client.sayRepeatHello({name: 'John', count: 5}, {});
   stream.on('data', (response) => {
@@ -33,6 +39,9 @@ function runSayRepeatHello(callback) {
   });
 }
 
+/**
+ * @param {function():?} callback
+ */
 function runSayHelloAfterDelay(callback) {
   var deadline = new Date();
   deadline.setSeconds(deadline.getSeconds() + 1);

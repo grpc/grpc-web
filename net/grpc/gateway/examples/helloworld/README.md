@@ -254,9 +254,9 @@ in the current directory:
 These are also the 2 files that our `client.js` file imported earlier in the
 example.
 
-## Compile the Client Javascript Code
+## Compile the Client JavaScript Code
 
-Next, we need to compile the client side Javascript code into something that
+Next, we need to compile the client side JavaScript code into something that
 can be consumed by the browser.
 
 ```sh

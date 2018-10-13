@@ -1,6 +1,6 @@
 /*
  *
- * Copyright 2015 gRPC authors.
+ * Copyright 2018 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,10 @@ var packageDefinition = protoLoader.loadSync(
 var protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
 var echo = protoDescriptor.grpc.gateway.testing;
 
-
+/**
+ * @param {!Object} call
+ * @return {!Object} metadata
+ */
 function copyMetadata(call) {
   var metadata = call.metadata.getMap();
   var response_metadata = new grpc.Metadata();
@@ -43,12 +46,20 @@ function copyMetadata(call) {
   return response_metadata;
 }
 
+/**
+ * @param {!Object} call
+ * @param {function():?} callback
+ */
 function doEcho(call, callback) {
   callback(null, {
     message: call.request.message
   }, copyMetadata(call));
 }
 
+/**
+ * @param {!Object} call
+ * @param {function():?} callback
+ */
 function doEchoAbort(call, callback) {
   callback({
     code: grpc.status.ABORTED,
@@ -56,6 +67,9 @@ function doEchoAbort(call, callback) {
   });
 }
 
+/**
+ * @param {!Object} call
+ */
 function doServerStreamingEcho(call) {
   var senders = [];
   function sender(message, interval) {
@@ -77,7 +91,7 @@ function doServerStreamingEcho(call) {
 /**
  * Get a new server with the handler functions in this file bound to the methods
  * it serves.
- * @return {Server} The new server object
+ * @return {!Server} The new server object
  */
 function getServer() {
   var server = new grpc.Server();
