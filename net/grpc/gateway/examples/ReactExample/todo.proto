@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package todoPackage;
+
+service Greeter {
+  rpc Todo (HelloRequest) returns (HelloReply);
+}
+
+message HelloRequest {
+  int32 id = 1;
+  string todo = 2;
+}
+
+message HelloReply {
+  int32 id = 1;
+  string todo = 2;
+}
