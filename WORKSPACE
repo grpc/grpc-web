@@ -1,13 +1,11 @@
 workspace(name = "com_github_grpc_grpc_web")
 
-# TODO(yannic): Update to use official repository.
-# See https://github.com/bazelbuild/rules_closure/pull/278
 http_archive(
     name = "io_bazel_rules_closure",
-    sha256 = "248a7a98eb3962d9f0013e543ea79c5063a83bac7af349ebf412d844e6ab3035",
-    strip_prefix = "rules_closure-53f2cab21fa6c608f32f114387d88ffd7868c5fc",
+    sha256 = "4463509e8f86c9b7726b6b7c751132f0ca14f907cba00759b21f8577c2dcf710",
+    strip_prefix = "rules_closure-acad96981d76b60844bf815d03043619714839ad",
     urls = [
-        "https://github.com/Yannic/rules_closure/archive/53f2cab21fa6c608f32f114387d88ffd7868c5fc.zip",
+        "https://github.com/bazelbuild/rules_closure/archive/acad96981d76b60844bf815d03043619714839ad.zip",
     ],
 )
 
