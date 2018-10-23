@@ -190,7 +190,7 @@ var metadata = {'custom-header-1': 'value1'};
 var call = echoService.echo(request, metadata, function(err, response) {
   if (err) {
     console.log(err.code);
-    console.log(err.messge);
+    console.log(err.message);
   } else {
     console.log(response.getMessage());
   }
@@ -205,7 +205,7 @@ call.on('status', function(status) {
 Server-side streaming is supported!
 
 ```js
-var stream = echoService.serverStreamingEcho(streamRequest, metatada);
+var stream = echoService.serverStreamingEcho(streamRequest, metadata);
 stream.on('data', function(response) {
   console.log(response.getMessage());
 });

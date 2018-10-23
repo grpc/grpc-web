@@ -20,7 +20,7 @@ users.
 
 Like everywhere, Web platforms and technologies are constantly evolving, often
 with many inter-dependent ecosystems. As much as we like to open-source
-everything, we also need keep the balance bewteen creating a reusable and stable
+everything, we also need keep the balance between creating a reusable and stable
 open-source solution and meeting those requirements unique to Google's Web
 ecosystems or their applications (such as search). 
 
