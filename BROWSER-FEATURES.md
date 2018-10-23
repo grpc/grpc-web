@@ -15,7 +15,7 @@ we expect some of those features will evolve too or become deprecated.
   * Access-Control-Allow-Credentials to allow Authorization headers
   * Access-Control-Allow-Methods to allow POST and (preflight) OPTIONS only
   * Access-Control-Allow-Headers to whatever the preflight request carries
-* The client library is epxected to support header overwrites to avoid preflight
+* The client library is expected to support header overwrites to avoid preflight
   * https://github.com/whatwg/fetch/issues/210
 * CSP support to be specified
 
