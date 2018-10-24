@@ -4,8 +4,8 @@ gRPC-Web provides a Javascript library that lets browser clients access a gRPC
 service. You can find out much more about gRPC in its own
 [website](https://grpc.io).
 
-The current release is a Beta release, and we expect to announce
-General-Availability by Oct. 2018.
+gRPC-Web is now Generally Available, and considered stable enough for production
+use.
 
 gRPC-Web clients connect to gRPC services via a special gateway proxy: the
 current version of the library uses [Envoy](https://www.envoyproxy.io/) by
