@@ -540,6 +540,10 @@ void PrintProtoDtsFile(Printer* printer, const FileDescriptor* file) {
           js_field_type = "{}";
           break;
       }
+      if (it->second->field(i)->is_repeated()) {
+        vars["js_field_name"] += "List";
+        js_field_type += "[]";
+      }
       vars["js_field_type"] = js_field_type;
       printer->Print(vars, "get$js_field_name$(): $js_field_type$;\n");
       printer->Print(vars, "set$js_field_name$(a: $js_field_type$): void;\n");
