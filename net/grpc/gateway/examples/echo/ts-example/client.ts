@@ -101,9 +101,8 @@ class EchoApp {
     request.setMessageCount(count);
     request.setMessageInterval(EchoApp.INTERVAL);
 
-    const stream: grpcWeb.ClientReadableStream =
-        this.echoService_.serverStreamingEcho(
-            request, {'custom-header-1': 'value1'});
+    const stream = this.echoService_.serverStreamingEcho(
+        request, {'custom-header-1': 'value1'});
     const self = this;
     stream.on('data', (response: ServerStreamingEchoResponse) => {
       EchoApp.addRightMessage(response.getMessage());

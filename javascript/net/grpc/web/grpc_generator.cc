@@ -369,11 +369,11 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
     printer->Print(
         "client_: grpcWeb.AbstractClientBase;\n"
         "hostname_: string;\n"
-        "credentials_: {};\n"
-        "options_: { [s: string]: {}; };\n\n"
+        "credentials_: null | { [index: string]: string; };\n"
+        "options_: null | { [index: string]: string; };\n\n"
         "constructor (hostname: string,\n"
-        "             credentials: {},\n"
-        "             options: { [s: string]: {}; }) {\n");
+        "             credentials: null | { [index: string]: string; },\n"
+        "             options: null | { [index: string]: string; }) {\n");
     printer->Indent();
     printer->Print("if (!options) options = {};\n");
     if (vars["mode"] == GetModeVar(Mode::GRPCWEB)) {
@@ -466,8 +466,8 @@ void PrintGrpcWebDtsFile(Printer* printer, const FileDescriptor* file) {
     printer->Indent();
     printer->Print(
         "constructor (hostname: string,\n"
-        "             credentials: {},\n"
-        "             options: { [s: string]: {}; });\n\n");
+        "             credentials: null | { [index: string]: string; },\n"
+        "             options: null | { [index: string]: string; });\n\n");
     for (int method_index = 0; method_index < service->method_count();
          ++method_index) {
       const MethodDescriptor* method = service->method(method_index);
@@ -482,7 +482,8 @@ void PrintGrpcWebDtsFile(Printer* printer, const FileDescriptor* file) {
                          "request: $input_type$,\n"
                          "metadata: grpcWeb.Metadata\n");
           printer->Outdent();
-          printer->Print("): grpcWeb.ClientReadableStream;\n\n");
+          printer->Print(vars,
+                         "): grpcWeb.ClientReadableStream<$output_type$>;\n\n");
         } else {
           printer->Print(vars, "$js_method_name$(\n");
           printer->Indent();
@@ -492,7 +493,8 @@ void PrintGrpcWebDtsFile(Printer* printer, const FileDescriptor* file) {
                          "callback: (err: grpcWeb.Error,\n"
                          "           response: $output_type$) => void\n");
           printer->Outdent();
-          printer->Print("): grpcWeb.ClientReadableStream;\n\n");
+          printer->Print(vars,
+                         "): grpcWeb.ClientReadableStream<$output_type$>;\n\n");
         }
       }
     }
