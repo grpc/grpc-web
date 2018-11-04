@@ -3,31 +3,37 @@ declare module "grpc-web" {
   export interface Metadata { [s: string]: string; }
 
   export namespace AbstractClientBase {
-    class MethodInfo {
-      constructor (responseType: {},
-                   requestSerializeFn: (request: {}) => {},
-                   responseDeserializeFn: (bytes: {}) => {});
+    class MethodInfo<Request, Response> {
+      constructor (responseType: new () => Response,
+                   requestSerializeFn: (request: Request) => {},
+                   responseDeserializeFn: (bytes: {}) => Response);
     }
   }
 
   export class AbstractClientBase {
-    rpcCall (method: string,
-             request: {},
+    rpcCall<Request, Response> (method: string,
+             request: Request,
              metadata: Metadata,
-             methodInfo: AbstractClientBase.MethodInfo,
-             callback: (err: Error, response: {}) => void
-            ): ClientReadableStream;
+             methodInfo: AbstractClientBase.MethodInfo<Request, Response>,
+             callback: (err: Error, response: Response) => void
+            ): ClientReadableStream<Response>;
 
     serverStreaming (method: string,
-                     request: {},
+                     request: Request,
                      metadata: Metadata,
-                     methodInfo: AbstractClientBase.MethodInfo
-                    ): ClientReadableStream;
+                     methodInfo: AbstractClientBase.MethodInfo<Request, Response>
+                    ): ClientReadableStream<Response>;
   }
 
-  export class ClientReadableStream {
-    on (type: string,
-        callback: (...args: Array<{}>) => void): ClientReadableStream;
+  export class ClientReadableStream<Response> {
+    on (type: "error",
+        callback: (err: Error) => void): ClientReadableStream<Response>;
+    on (type: "status",
+        callback: (status: Status) => void): ClientReadableStream<Response>;
+    on (type: "data",
+        callback: (response: Response) => void): ClientReadableStream<Response>;
+    on (type: "end",
+        callback: () => void): ClientReadableStream<Response>;
     cancel (): void;
   }
 
