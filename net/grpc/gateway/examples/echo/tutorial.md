@@ -135,7 +135,7 @@ Our command generates the client stub, by default, to the file
 Now you are ready to write some JS client code. Put this in a `client.js` file.
 
 ```js
-const {EchoRequest, EchoResponse} = require('./echo_pb.js'));
+const {EchoRequest, EchoResponse} = require('./echo_pb.js');
 const {EchoServiceClient} = require('./echo_grpc_web_pb.js');
 
 var echoService = new EchoServiceClient('http://localhost:8080');
