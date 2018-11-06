@@ -235,6 +235,15 @@ string GetRootPath(const string& from_filename, const string& to_filename) {
   return result;
 }
 
+// Returns the basename of a file.
+string GetBasename(string filename) {
+  size_t last_slash = filename.find_last_of('/');
+  if (last_slash != string::npos) {
+    return filename.substr(last_slash + 1);
+  }
+  return filename;
+}
+
 // Returns the alias we assign to the module of the given .proto filename
 // when importing.
 string ModuleAlias(const string& filename) {
@@ -319,12 +328,7 @@ void PrintCommonJsMessagesDeps(Printer* printer, const FileDescriptor* file) {
   }
 
   // need to import the messages from our own file
-  string filename = StripProto(file->name());
-  size_t last_slash = filename.find_last_of('/');
-  if (last_slash != string::npos) {
-    filename = filename.substr(last_slash + 1);
-  }
-  vars["filename"] = filename;
+  vars["filename"] = GetBasename(StripProto(file->name()));
 
   if (!package.empty()) {
     printer->Print(
@@ -340,7 +344,7 @@ void PrintCommonJsMessagesDeps(Printer* printer, const FileDescriptor* file) {
 void PrintES6Imports(Printer* printer, const FileDescriptor* file) {
   std::map<string, string> vars;
   std::map<string, const Descriptor*> messages = GetAllMessages(file);
-  vars["base_name"] = StripProto(file->name());
+  vars["base_name"] = GetBasename(StripProto(file->name()));
   printer->Print("import * as grpcWeb from 'grpc-web';\n");
   printer->Print("import {\n");
   printer->Indent();
