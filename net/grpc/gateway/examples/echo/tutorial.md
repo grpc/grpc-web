@@ -67,7 +67,9 @@ this:
               domains: ["*"]
               routes:
               - match: { prefix: "/" }
-                route: { cluster: echo_service }
+                route:
+                  cluster: echo_service
+                  max_grpc_timeout: 0s
           http_filters:
           - name: envoy.grpc_web
           - name: envoy.router
