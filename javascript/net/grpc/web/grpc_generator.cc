@@ -454,15 +454,15 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
   }
 }
 
-void PrintGrpcWebDtsFile(Printer* printer, const FileDescriptor* file) {
-  PrintES6Imports(printer, file);
+void PrintGrpcWebDtsClientClass(Printer* printer, const FileDescriptor* file, const string &client_type) {
   std::map<string, string> vars;
+  vars["client_type"] = client_type;
   for (int service_index = 0; service_index < file->service_count();
        ++service_index) {
     printer->Print("export class ");
     const ServiceDescriptor* service = file->service(service_index);
     vars["service_name"] = service->name();
-    printer->Print(vars, "$service_name$Client {\n");
+    printer->Print(vars, "$service_name$$client_type$ {\n");
     printer->Indent();
     printer->Print(
         "constructor (hostname: string,\n"
@@ -485,22 +485,39 @@ void PrintGrpcWebDtsFile(Printer* printer, const FileDescriptor* file) {
           printer->Print(vars,
                          "): grpcWeb.ClientReadableStream<$output_type$>;\n\n");
         } else {
-          printer->Print(vars, "$js_method_name$(\n");
-          printer->Indent();
-          printer->Print(vars,
-                         "request: $input_type$,\n"
-                         "metadata: grpcWeb.Metadata,\n"
-                         "callback: (err: grpcWeb.Error,\n"
-                         "           response: $output_type$) => void\n");
-          printer->Outdent();
-          printer->Print(vars,
-                         "): grpcWeb.ClientReadableStream<$output_type$>;\n\n");
+          if (vars["client_type"] == "PromiseClient") {
+            printer->Print(vars, "$js_method_name$(\n");
+            printer->Indent();
+            printer->Print(vars,
+                           "request: $input_type$,\n"
+                           "metadata: grpcWeb.Metadata\n");
+            printer->Outdent();
+            printer->Print(vars,
+                           "): Promise<$output_type$>;\n\n");
+          } else {
+            printer->Print(vars, "$js_method_name$(\n");
+            printer->Indent();
+            printer->Print(vars,
+                           "request: $input_type$,\n"
+                           "metadata: grpcWeb.Metadata,\n"
+                           "callback: (err: grpcWeb.Error,\n"
+                           "           response: $output_type$) => void\n");
+            printer->Outdent();
+            printer->Print(vars,
+                           "): grpcWeb.ClientReadableStream<$output_type$>;\n\n");
+          }
         }
       }
     }
     printer->Outdent();
     printer->Print("}\n\n");
   }
+}
+
+void PrintGrpcWebDtsFile(Printer* printer, const FileDescriptor* file) {
+  PrintES6Imports(printer, file);
+  PrintGrpcWebDtsClientClass(printer, file, "Client");
+  PrintGrpcWebDtsClientClass(printer, file, "PromiseClient");
 }
 
 void PrintProtoDtsFile(Printer* printer, const FileDescriptor* file) {
