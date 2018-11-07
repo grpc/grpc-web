@@ -61,7 +61,8 @@ class Runtime {
       const string &host, const string &backend_method,
       const ngx_flag_t &channel_reuse,
       const ngx_msec_t &client_liveness_detection_interval,
-      const ngx_flag_t &backend_ssl, const string &backend_ssl_pem_root_certs,
+      const ngx_flag_t &backend_ssl, const string &backend_ssl_target_override,
+      const string &backend_ssl_pem_root_certs,
       const string &backend_ssl_pem_private_key,
       const string &backend_ssl_pem_cert_chain);
 
@@ -74,6 +75,7 @@ class Runtime {
   // channel if needed.
   grpc_channel *GetBackendChannel(const std::string &backend_address,
                                   bool use_shared_channel_pool, bool ssl,
+                                  const std::string &ssl_target_override,
                                   const std::string &ssl_pem_root_certs,
                                   const std::string &ssl_pem_private_key,
                                   const std::string &ssl_pem_cert_chain);

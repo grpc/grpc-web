@@ -123,7 +123,8 @@ std::shared_ptr<Frontend> Runtime::CreateNginxFrontend(
     const string& backend_host, const string& backend_method,
     const ngx_flag_t& channel_reuse,
     const ngx_msec_t& client_liveness_detection_interval,
-    const ngx_flag_t& backend_ssl, const string& backend_ssl_pem_root_certs,
+    const ngx_flag_t& backend_ssl, const string& backend_ssl_target_override,
+    const string& backend_ssl_pem_root_certs,
     const string& backend_ssl_pem_private_key,
     const string& backend_ssl_pem_cert_chain) {
   std::unique_ptr<GrpcBackend> backend(new GrpcBackend());
@@ -134,6 +135,7 @@ std::shared_ptr<Frontend> Runtime::CreateNginxFrontend(
     backend->set_use_shared_channel_pool(true);
   }
   backend->set_ssl(backend_ssl);
+  backend->set_ssl_target_override(backend_ssl_target_override);
   backend->set_ssl_pem_root_certs(backend_ssl_pem_root_certs);
   backend->set_ssl_pem_private_key(backend_ssl_pem_private_key);
   backend->set_ssl_pem_cert_chain(backend_ssl_pem_cert_chain);
@@ -331,6 +333,7 @@ Protocol Runtime::DetectResponseProtocol(ngx_http_request_t* http_request) {
 
 grpc_channel* Runtime::GetBackendChannel(
     const std::string& backend_address, bool use_shared_channel_pool, bool ssl,
+    const std::string& ssl_target_override,
     const std::string& ssl_pem_root_certs,
     const std::string& ssl_pem_private_key,
     const std::string& ssl_pem_cert_chain) {
@@ -347,7 +350,7 @@ grpc_channel* Runtime::GetBackendChannel(
   grpc_arg arg_ssl_target;
   arg_ssl_target.type = GRPC_ARG_STRING;
   arg_ssl_target.key = const_cast<char*>(GRPC_SSL_TARGET_NAME_OVERRIDE_ARG);
-  arg_ssl_target.value.string = const_cast<char*>("grpc.test.google.fr");
+  arg_ssl_target.value.string = const_cast<char*>(ssl_target_override.c_str());
 
   grpc_arg args[] = {arg_max_message_length, arg_ssl_target};
   grpc_channel_args channel_args;
