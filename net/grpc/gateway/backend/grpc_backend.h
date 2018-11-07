@@ -50,6 +50,9 @@ class GrpcBackend : public Backend {
     use_shared_channel_pool_ = use_shared_channel_pool;
   }
   void set_ssl(bool ssl) { ssl_ = ssl; }
+  void set_ssl_target_override(const string& ssl_target_override) {
+    ssl_target_override_ = ssl_target_override;
+  }
   void set_ssl_pem_root_certs(const string& ssl_pem_root_certs) {
     ssl_pem_root_certs_ = ssl_pem_root_certs;
   }
@@ -83,6 +86,8 @@ class GrpcBackend : public Backend {
   bool use_shared_channel_pool_;
   // True if ssl should be used.
   bool ssl_;
+  // The GRPC SSL target override.
+  string ssl_target_override_;
   // The file location which contains the root certs in pem format.
   string ssl_pem_root_certs_;
   // The file location which contains the client private key in pem format.

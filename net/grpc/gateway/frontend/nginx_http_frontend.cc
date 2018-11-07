@@ -86,6 +86,9 @@ ngx_int_t grpc_gateway_handler(ngx_http_request_t *r) {
   std::string backend_host(reinterpret_cast<char *>(r->host_start),
                            r->host_end - r->host_start);
   std::string backend_method(reinterpret_cast<char *>(r->uri.data), r->uri.len);
+  std::string backend_ssl_target_name_override(
+      reinterpret_cast<char *>(mlcf->grpc_ssl_target_name_override.data),
+      mlcf->grpc_ssl_target_name_override.len);
   std::string backend_ssl_pem_root_certs(
       reinterpret_cast<char *>(mlcf->grpc_ssl_pem_root_certs.data),
       mlcf->grpc_ssl_pem_root_certs.len);
@@ -106,7 +109,8 @@ ngx_int_t grpc_gateway_handler(ngx_http_request_t *r) {
   context->frontend = grpc::gateway::Runtime::Get().CreateNginxFrontend(
       r, backend_address, backend_host, backend_method,
       mlcf->grpc_channel_reuse, mlcf->grpc_client_liveness_detection_interval,
-      mlcf->grpc_ssl, backend_ssl_pem_root_certs, backend_ssl_pem_private_key,
+      mlcf->grpc_ssl, backend_ssl_target_name_override,
+      backend_ssl_pem_root_certs, backend_ssl_pem_private_key,
       backend_ssl_pem_cert_chain);
   ngx_http_set_ctx(r, context, grpc_gateway_module);
   ngx_pool_cleanup_t *http_cleanup =
