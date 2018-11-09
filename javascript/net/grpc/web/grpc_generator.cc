@@ -669,7 +669,7 @@ void PrintMethodInfo(Printer* printer, std::map<string, string> vars) {
       " *   !proto.$in$,\n"
       " *   !proto.$out$>}\n"
       " */\n"
-      "const methodInfo_$method_name$ = "
+      "const methodInfo_$service_name$_$method_name$ = "
       "new grpc.web.AbstractClientBase.MethodInfo(\n");
   printer->Indent();
   printer->Print(
@@ -723,7 +723,7 @@ void PrintUnaryCall(Printer* printer, std::map<string, string> vars) {
       vars,
       "request,\n"
       "metadata,\n"
-      "methodInfo_$method_name$,\n"
+      "methodInfo_$service_name$_$method_name$,\n"
       "callback);\n");
   printer->Outdent();
   printer->Outdent();
@@ -793,7 +793,7 @@ void PrintServerStreamingCall(Printer* printer, std::map<string, string> vars) {
       vars,
       "request,\n"
       "metadata,\n"
-      "methodInfo_$method_name$);\n");
+      "methodInfo_$service_name$_$method_name$);\n");
   printer->Outdent();
   printer->Outdent();
   printer->Outdent();
