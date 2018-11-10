@@ -95,7 +95,7 @@ function doServerStreamingEcho(call) {
  */
 function getServer() {
   var server = new grpc.Server();
-  server.addProtoService(echo.EchoService.service, {
+  server.addService(echo.EchoService.service, {
     echo: doEcho,
     echoAbort: doEchoAbort,
     serverStreamingEcho: doServerStreamingEcho,
