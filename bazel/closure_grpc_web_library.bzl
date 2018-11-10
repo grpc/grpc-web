@@ -4,7 +4,7 @@
 
 load(
     "@io_bazel_rules_closure//closure/compiler:closure_js_library.bzl",
-    "closure_js_library_impl",
+    "create_closure_js_library",
 )
 load(
     "@io_bazel_rules_closure//closure/private:defs.bzl",
@@ -124,22 +124,14 @@ def _closure_grpc_web_library_impl(ctx):
   suppress = [
       "misplacedTypeAnnotation",
       "unusedPrivateMembers",
-      "strictDependencies",
   ]
 
-  library = closure_js_library_impl(
-      actions = ctx.actions,
-      label = ctx.label,
-      workspace_name = ctx.workspace_name,
-
+  library = create_closure_js_library(
+      ctx = ctx,
       srcs = srcs,
       deps = deps,
-      testonly = ctx.attr.testonly,
       suppress = suppress,
       lenient = False,
-
-      closure_library_base = ctx.files._closure_library_base,
-      _ClosureWorker = ctx.executable._ClosureWorker,
   )
   return struct(
       exports = library.exports,
