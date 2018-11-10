@@ -84,7 +84,7 @@ function doSayHelloAfterDelay(call, callback) {
  */
 function getServer() {
   var server = new grpc.Server();
-  server.addProtoService(helloworld.Greeter.service, {
+  server.addService(helloworld.Greeter.service, {
     sayHello: doSayHello,
     sayRepeatHello: doSayRepeatHello,
     sayHelloAfterDelay: doSayHelloAfterDelay
