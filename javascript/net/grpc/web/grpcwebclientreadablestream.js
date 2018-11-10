@@ -195,10 +195,10 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
     }
     var responseHeaders = self.xhr_.getResponseHeaders();
     if (GRPC_STATUS in responseHeaders &&
-        responseHeaders[GRPC_STATUS] != StatusCode.OK) {
+        Number(self.xhr_.getResponseHeader(GRPC_STATUS)) != StatusCode.OK) {
       self.onErrorCallback_({
-        code: Number(responseHeaders[GRPC_STATUS]),
-        message: responseHeaders[GRPC_STATUS_MESSAGE]
+        code: Number(self.xhr_.getResponseHeader(GRPC_STATUS)),
+        message: self.xhr_.getResponseHeader(GRPC_STATUS_MESSAGE)
       });
     }
   });
