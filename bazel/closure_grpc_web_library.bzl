@@ -8,8 +8,7 @@ load(
 )
 load(
     "@io_bazel_rules_closure//closure/private:defs.bzl",
-    "CLOSURE_WORKER_ATTR",
-    "CLOSURE_LIBRARY_BASE_ATTR",
+    "CLOSURE_JS_TOOLCHAIN_ATTRS",
     "unfurl",
 )
 load(
@@ -142,7 +141,7 @@ def _closure_grpc_web_library_impl(ctx):
 
 closure_grpc_web_library = rule(
     implementation = _closure_grpc_web_library_impl,
-    attrs = {
+    attrs = dict({
         "deps": attr.label_list(
             mandatory = True,
             providers = ["proto", "closure_js_library"],
@@ -157,10 +156,6 @@ closure_grpc_web_library = rule(
             default = "grpcwebtext",
             values = ["grpcwebtext", "grpcweb"],
         ),
-
-        # Required for closure_js_library_impl
-        "_ClosureWorker": CLOSURE_WORKER_ATTR,
-        "_closure_library_base": CLOSURE_LIBRARY_BASE_ATTR,
 
         # internal only
         "_protoc": attr.label(
@@ -185,5 +180,5 @@ closure_grpc_web_library = rule(
         "_grpc_web_grpcwebclientbase": attr.label(
             default = Label("//javascript/net/grpc/web:grpcwebclientbase"),
         ),
-    },
+    }, **CLOSURE_JS_TOOLCHAIN_ATTRS),
 )
