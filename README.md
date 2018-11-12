@@ -57,7 +57,7 @@ $ npm i grpc-web
 ```
 
 
-## Code Generator Plugin
+## Code Generator Plugins
 
 You can compile the `protoc-gen-grpc-web` protoc plugin from this repo:
 
