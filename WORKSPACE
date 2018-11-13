@@ -2,10 +2,10 @@ workspace(name = "com_github_grpc_grpc_web")
 
 http_archive(
     name = "io_bazel_rules_closure",
-    sha256 = "4463509e8f86c9b7726b6b7c751132f0ca14f907cba00759b21f8577c2dcf710",
-    strip_prefix = "rules_closure-acad96981d76b60844bf815d03043619714839ad",
+    sha256 = "a8ea3251a6fd05eb3dbd05aa443a12b04cb88d80480d821bee453b18db97afaa",
+    strip_prefix = "rules_closure-8ec740d0b77ca1fb4914c857dc67ccc3f9cb3ed4",
     urls = [
-        "https://github.com/bazelbuild/rules_closure/archive/acad96981d76b60844bf815d03043619714839ad.zip",
+        "https://github.com/bazelbuild/rules_closure/archive/8ec740d0b77ca1fb4914c857dc67ccc3f9cb3ed4.zip",
     ],
 )
 
