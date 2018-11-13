@@ -31,7 +31,12 @@ done
 docker-compose build
 
 # Run all bazel unit tests
-bazel test \
+BAZEL_VERSION=0.19.1
+wget https://github.com/bazelbuild/bazel/releases/download/"${BAZEL_VERSION}"/bazel-"${BAZEL_VERSION}"-installer-linux-x86_64.sh
+chmod +x ./bazel-"${BAZEL_VERSION}"-installer-linux-x86_64.sh
+./bazel-"${BAZEL_VERSION}"-installer-linux-x86_64.sh --user
+$HOME/bin/bazel version
+$HOME/bin/bazel test \
   //javascript/net/grpc/web/... \
   //net/grpc/gateway/examples/...
 
