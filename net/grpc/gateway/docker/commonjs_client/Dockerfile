@@ -14,7 +14,7 @@
 
 FROM grpcweb/common
 
-ARG EXAMPLE_DIR=/github/grpc-web/net/grpc/gateway/examples/echo
+ARG EXAMPLE_DIR=/github/grpc-web/net/grpc/gateway/examples/helloworld
 
 RUN protoc -I=$EXAMPLE_DIR echo.proto \
 --js_out=import_style=commonjs:\

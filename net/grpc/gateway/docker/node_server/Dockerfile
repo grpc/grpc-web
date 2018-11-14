@@ -14,8 +14,8 @@
 
 FROM grpcweb/common
 
-RUN cd /github/grpc-web/net/grpc/gateway/examples/echo/node-server && \
+RUN cd /github/grpc-web/net/grpc/gateway/examples/helloworld/node-server && \
   npm install
 
 EXPOSE 9090
-CMD ["node", "/github/grpc-web/net/grpc/gateway/examples/echo/node-server/server.js"]
+CMD ["node", "/github/grpc-web/net/grpc/gateway/examples/helloworld/node-server/server.js"]
