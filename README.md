@@ -67,6 +67,15 @@ $ sudo make install-plugin
 
 If you don't already have `protoc` installed, you may have to do this first:
 
+On ubuntu:
+```sh
+apt install autoconf g++ libtool
+```
+On mac:
+```sh
+brew install autoconf automake libtool
+```
+
 ```sh
 $ ./scripts/init_submodules.sh
 $ cd third_party/grpc/third_party/protobuf
