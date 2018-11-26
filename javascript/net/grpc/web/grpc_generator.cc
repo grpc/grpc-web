@@ -24,6 +24,7 @@
 #include <algorithm>
 
 using google::protobuf::Descriptor;
+using google::protobuf::EnumDescriptor;
 using google::protobuf::FieldDescriptor;
 using google::protobuf::FileDescriptor;
 using google::protobuf::MethodDescriptor;
@@ -196,6 +197,66 @@ string ToUpperCamel(const std::vector<string>& words) {
   return result;
 }
 
+string JSFieldType(const FieldDescriptor *desc)
+{
+  string js_field_type;
+  switch (desc->type())
+  {
+  case FieldDescriptor::TYPE_DOUBLE:
+  case FieldDescriptor::TYPE_FLOAT:
+  case FieldDescriptor::TYPE_INT32:
+  case FieldDescriptor::TYPE_UINT32:
+  case FieldDescriptor::TYPE_INT64:
+  case FieldDescriptor::TYPE_UINT64:
+  case FieldDescriptor::TYPE_FIXED32:
+  case FieldDescriptor::TYPE_FIXED64:
+  case FieldDescriptor::TYPE_SINT32:
+  case FieldDescriptor::TYPE_SINT64:
+  case FieldDescriptor::TYPE_SFIXED32:
+  case FieldDescriptor::TYPE_SFIXED64:
+    js_field_type = "number";
+    break;
+  case FieldDescriptor::TYPE_BOOL:
+    js_field_type = "boolean";
+    break;
+  case FieldDescriptor::TYPE_STRING:
+    js_field_type = "string";
+    break;
+  case FieldDescriptor::TYPE_ENUM:
+    js_field_type = desc->enum_type()->name();
+    for (const Descriptor *parent = desc->containing_type(); parent != nullptr; parent = parent->containing_type())
+    {
+      js_field_type = parent->name() + "." + js_field_type;
+    }
+    break;
+  case FieldDescriptor::TYPE_MESSAGE:
+    js_field_type = desc->message_type()->name();
+    for (const Descriptor *parent = desc->message_type()->containing_type(); parent != nullptr; parent = parent->containing_type())
+    {
+      js_field_type = parent->name() + "." + js_field_type;
+    }
+    break;
+  default:
+    js_field_type = "{}";
+    break;
+  }
+  if (desc->is_repeated())
+  {
+    js_field_type += "[]";
+  }
+  return js_field_type;
+}
+
+string JSFieldName(const FieldDescriptor *desc)
+{
+  string js_field_name = ToUpperCamel(ParseLowerUnderscore(desc->name()));
+  if (desc->is_repeated())
+  {
+    js_field_name += "List";
+  }
+  return js_field_name;
+}
+
 // Returns the name of the message with a leading dot and taking into account
 // nesting, for example ".OuterMessage.InnerMessage", or returns empty if
 // descriptor is null. This function does not handle namespacing, only message
@@ -236,9 +297,11 @@ string GetRootPath(const string& from_filename, const string& to_filename) {
 }
 
 // Returns the basename of a file.
-string GetBasename(string filename) {
+string GetBasename(string filename)
+{
   size_t last_slash = filename.find_last_of('/');
-  if (last_slash != string::npos) {
+  if (last_slash != string::npos)
+  {
     return filename.substr(last_slash + 1);
   }
   return filename;
@@ -524,58 +587,80 @@ void PrintGrpcWebDtsFile(Printer* printer, const FileDescriptor* file) {
   PrintGrpcWebDtsClientClass(printer, file, "PromiseClient");
 }
 
-void PrintProtoDtsFile(Printer* printer, const FileDescriptor* file) {
+void PrintProtoDtsEnum(Printer *printer, const EnumDescriptor *desc)
+{
   std::map<string, string> vars;
-  std::map<string, const Descriptor*> messages = GetAllMessages(file);
+  vars["enum_name"] = desc->name();
 
-  for (std::map<string, const Descriptor*>::iterator it = messages.begin();
+  printer->Print(vars, "export enum $enum_name$ { \n");
+  printer->Indent();
+  for (int i = 0; i < desc->value_count(); i++)
+  {
+    vars["value_name"] = desc->value(i)->name();
+    vars["value_number"] = std::to_string(desc->value(i)->number());
+    printer->Print(vars, "$value_name$ = $value_number$,\n");
+  }
+  printer->Outdent();
+  printer->Print("}\n");
+}
+
+void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc, string prefix)
+{
+  string class_name = prefix + desc->name();
+  std::map<string, string> vars;
+  vars["class_name"] = class_name;
+
+  printer->Print(vars, "export class $class_name$ {\n");
+  printer->Indent();
+  printer->Print("constructor ();\n");
+  for (int i = 0; i < desc->field_count(); i++)
+  {
+    vars["js_field_name"] = JSFieldName(desc->field(i));
+    vars["js_field_type"] = JSFieldType(desc->field(i));
+    printer->Print(vars, "get$js_field_name$(): $js_field_type$;\n");
+    printer->Print(vars, "set$js_field_name$(a: $js_field_type$): void;\n");
+  }
+  printer->Print(vars,
+                "toObject(): $class_name$.AsObject;\n"
+                "serializeBinary(): Uint8Array;\n"
+                "static deserializeBinary: (bytes: {}) => $class_name$;\n");
+  printer->Outdent();
+  printer->Print("}\n\n");
+
+  printer->Print(vars, "export namespace $class_name$ {\n");
+  printer->Indent();
+  printer->Print("export type AsObject = {\n");
+  printer->Indent();
+  for (int i = 0; i < desc->field_count(); i++) {
+    vars["js_field_name"] = JSFieldName(desc->field(i));
+    vars["js_field_type"] = JSFieldType(desc->field(i));
+    printer->Print(vars, "$js_field_name$: $js_field_type$;\n");
+  }
+  printer->Outdent();
+  printer->Print("}\n");
+  for (int i = 0; i < desc->nested_type_count(); i++) {
+    vars["nested_name"] = desc->nested_type(i)->name();
+    printer->Print(vars, "export type $nested_name$ = $class_name$$nested_name$;\n");
+  }
+  for (int i = 0; i < desc->enum_type_count(); i++) {
+    printer->Print("\n");
+    PrintProtoDtsEnum(printer, desc->enum_type(i));
+  }
+  printer->Outdent();
+  printer->Print("}\n\n");
+
+  for (int i = 0; i < desc->nested_type_count(); i++) {
+    PrintProtoDtsMessage(printer, desc->nested_type(i), class_name);
+  }
+}
+
+void PrintProtoDtsFile(Printer *printer, const FileDescriptor *file)
+{
+  std::map<string, const Descriptor *> messages = GetAllMessages(file);
+
+  for (std::map<string, const Descriptor *>::iterator it = messages.begin();
        it != messages.end(); it++) {
-    vars["class_name"] = it->second->name();
-    printer->Print(vars, "export class $class_name$ {\n");
-    printer->Indent();
-    printer->Print("constructor ();\n");
-    for (int i = 0; i < it->second->field_count(); i++) {
-      vars["js_field_name"] =
-          ToUpperCamel(ParseLowerUnderscore(it->second->field(i)->name()));
-      string js_field_type = "";
-      switch (it->second->field(i)->type()) {
-        case FieldDescriptor::TYPE_DOUBLE:
-        case FieldDescriptor::TYPE_FLOAT:
-        case FieldDescriptor::TYPE_INT32:
-        case FieldDescriptor::TYPE_UINT32:
-        case FieldDescriptor::TYPE_INT64:
-        case FieldDescriptor::TYPE_UINT64:
-        case FieldDescriptor::TYPE_FIXED32:
-        case FieldDescriptor::TYPE_FIXED64:
-        case FieldDescriptor::TYPE_SINT32:
-        case FieldDescriptor::TYPE_SINT64:
-        case FieldDescriptor::TYPE_SFIXED32:
-        case FieldDescriptor::TYPE_SFIXED64:
-          js_field_type = "number";
-          break;
-        case FieldDescriptor::TYPE_BOOL:
-          js_field_type = "boolean";
-          break;
-        case FieldDescriptor::TYPE_STRING:
-          js_field_type = "string";
-          break;
-        default:
-          js_field_type = "{}";
-          break;
-      }
-      if (it->second->field(i)->is_repeated()) {
-        vars["js_field_name"] += "List";
-        js_field_type += "[]";
-      }
-      vars["js_field_type"] = js_field_type;
-      printer->Print(vars, "get$js_field_name$(): $js_field_type$;\n");
-      printer->Print(vars, "set$js_field_name$(a: $js_field_type$): void;\n");
-    }
-    printer->Print(vars,
-                   "serializeBinary(): Uint8Array;\n"
-                   "static deserializeBinary: (bytes: {}) => $class_name$;\n");
-    printer->Outdent();
-    printer->Print("}\n\n");
+    PrintProtoDtsMessage(printer, it->second, "");
   }
 }
 
