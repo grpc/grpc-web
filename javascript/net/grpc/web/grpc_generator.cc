@@ -494,7 +494,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
           printer->Indent();
           printer->Print(vars,
                          "request: $input_type$,\n"
-                         "metadata: grpcWeb.Metadata) {\n");
+                         "metadata?: grpcWeb.Metadata) {\n");
           printer->Print(vars, "return this.client_.serverStreaming(\n");
           printer->Indent();
           printer->Print(vars,
@@ -511,8 +511,8 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
           printer->Indent();
           printer->Print(vars,
                          "request: $input_type$,\n"
-                         "metadata: grpcWeb.Metadata,\n"
-                         "callback: (err: grpcWeb.Error,\n"
+                         "metadata?: grpcWeb.Metadata,\n"
+                         "callback?: (err: grpcWeb.Error,\n"
                          "           response: $output_type$) => void) {\n");
           printer->Print(vars, "return this.client_.rpcCall(\n");
           printer->Indent();
@@ -560,7 +560,7 @@ void PrintGrpcWebDtsClientClass(Printer* printer, const FileDescriptor* file, co
           printer->Indent();
           printer->Print(vars,
                          "request: $input_type$,\n"
-                         "metadata: grpcWeb.Metadata\n");
+                         "metadata?: grpcWeb.Metadata\n");
           printer->Outdent();
           printer->Print(vars,
                          "): grpcWeb.ClientReadableStream<$output_type$>;\n\n");
@@ -570,7 +570,7 @@ void PrintGrpcWebDtsClientClass(Printer* printer, const FileDescriptor* file, co
             printer->Indent();
             printer->Print(vars,
                            "request: $input_type$,\n"
-                           "metadata: grpcWeb.Metadata\n");
+                           "metadata?: grpcWeb.Metadata\n");
             printer->Outdent();
             printer->Print(vars,
                            "): Promise<$output_type$>;\n\n");
@@ -579,8 +579,8 @@ void PrintGrpcWebDtsClientClass(Printer* printer, const FileDescriptor* file, co
             printer->Indent();
             printer->Print(vars,
                            "request: $input_type$,\n"
-                           "metadata: grpcWeb.Metadata,\n"
-                           "callback: (err: grpcWeb.Error,\n"
+                           "metadata?: grpcWeb.Metadata,\n"
+                           "callback?: (err: grpcWeb.Error,\n"
                            "           response: $output_type$) => void\n");
             printer->Outdent();
             printer->Print(vars,
@@ -795,9 +795,9 @@ void PrintUnaryCall(Printer* printer, std::map<string, string> vars) {
       "/**\n"
       " * @param {!proto.$in$} request The\n"
       " *     request proto\n"
-      " * @param {!Object<string, string>} metadata User defined\n"
+      " * @param {?Object<string, string>} metadata User defined\n"
       " *     call metadata\n"
-      " * @param {function(?grpc.web.Error,"
+      " * @param {?function(?grpc.web.Error,"
       " ?proto.$out$)}\n"
       " *     callback The callback function(error, response)\n"
       " * @return {!grpc.web.ClientReadableStream<!proto.$out$>|undefined}\n"
@@ -835,7 +835,7 @@ void PrintPromiseUnaryCall(Printer* printer,
                  "/**\n"
                  " * @param {!proto.$in$} request The\n"
                  " *     request proto\n"
-                 " * @param {!Object<string, string>} metadata User defined\n"
+                 " * @param {?Object<string, string>} metadata User defined\n"
                  " *     call metadata\n"
                  " * @return {!Promise<!proto.$out$>}\n"
                  " *     The XHR Node Readable Stream\n"
@@ -860,7 +860,7 @@ void PrintServerStreamingCall(Printer* printer, std::map<string, string> vars) {
       vars,
       "/**\n"
       " * @param {!proto.$in$} request The request proto\n"
-      " * @param {!Object<string, string>} metadata User defined\n"
+      " * @param {?Object<string, string>} metadata User defined\n"
       " *     call metadata\n"
       " * @return {!grpc.web.ClientReadableStream<!proto.$out$>}\n"
       " *     The XHR Node Readable Stream\n"

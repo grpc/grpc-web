@@ -72,29 +72,34 @@ GrpcWebClientBase.prototype.rpcCall = function(
   var stream = new GrpcWebClientReadableStream(genericTransportInterface);
   stream.setResponseDeserializeFn(methodInfo.responseDeserializeFn);
 
-  stream.on('data', function(response) {
-    callback(null, response);
-  });
+  if (callback) {
+    stream.on('data', function(response) {
+      callback(null, response);
+    });
 
-  stream.on('status', function(status) {
-    if (status.code != StatusCode.OK) {
-      callback({
-        code: status.code,
-        message: status.details
-      }, null);
-    }
-  });
+    stream.on('status', function(status) {
+      if (status.code != StatusCode.OK) {
+        callback({
+          code: status.code,
+          message: status.details
+        }, null);
+      }
+    });
 
-  stream.on('error', function(error) {
-    if (error.code != StatusCode.OK) {
-      callback({
-        code: error.code,
-        message: error.message
-      }, null);
-    }
-  });
+    stream.on('error', function(error) {
+      if (error.code != StatusCode.OK) {
+        callback({
+          code: error.code,
+          message: error.message
+        }, null);
+      }
+    });
+  }
 
-  xhr.headers.addAll(metadata);
+  if (metadata) {
+    xhr.headers.addAll(metadata);
+  }
+  
   this.processHeaders_(xhr);
   if (this.suppressCorsPreflight_) {
     var headerObject = xhr.headers.toObject();
