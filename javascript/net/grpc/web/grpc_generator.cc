@@ -223,17 +223,15 @@ string JSFieldType(const FieldDescriptor *desc)
     js_field_type = "string";
     break;
   case FieldDescriptor::TYPE_ENUM:
-    js_field_type = desc->enum_type()->name();
-    for (const Descriptor *parent = desc->containing_type(); parent != nullptr; parent = parent->containing_type())
-    {
-      js_field_type = parent->name() + "." + js_field_type;
+    js_field_type = StripPrefixString(desc->enum_type()->full_name(), desc->enum_type()->file()->package());
+    if (!js_field_type.empty() && js_field_type[0] == '.') {
+      js_field_type = js_field_type.substr(1);
     }
     break;
   case FieldDescriptor::TYPE_MESSAGE:
-    js_field_type = desc->message_type()->name();
-    for (const Descriptor *parent = desc->message_type()->containing_type(); parent != nullptr; parent = parent->containing_type())
-    {
-      js_field_type = parent->name() + "." + js_field_type;
+    js_field_type = StripPrefixString(desc->message_type()->full_name(), desc->message_type()->file()->package());
+    if (!js_field_type.empty() && js_field_type[0] == '.') {
+      js_field_type = js_field_type.substr(1);
     }
     break;
   default:
@@ -324,6 +322,23 @@ string ModuleAlias(const string& filename) {
   return basename + "_pb";
 }
 
+void RegisterMessage(const Descriptor* desc, std::map<string, const Descriptor*>& message_types) {
+  if (message_types.count(desc->full_name())  != 0) {
+    return;
+  }
+
+  message_types[desc->full_name()] = desc;
+
+  for (int i = 0; i < desc->field_count(); i++) {
+    const FieldDescriptor* field = desc->field(i);
+    if (field->type() != FieldDescriptor::Type::TYPE_MESSAGE) {
+      continue;
+    }
+
+    RegisterMessage(field->message_type(), message_types);
+  }
+} 
+
 /* Finds all message types used in all services in the file, and returns them
  * as a map of fully qualified message type name to message descriptor */
 std::map<string, const Descriptor*> GetAllMessages(const FileDescriptor* file) {
@@ -336,10 +351,8 @@ std::map<string, const Descriptor*> GetAllMessages(const FileDescriptor* file) {
          method_index < service->method_count();
          ++method_index) {
       const MethodDescriptor *method = service->method(method_index);
-      const Descriptor *input_type = method->input_type();
-      const Descriptor *output_type = method->output_type();
-      message_types[input_type->full_name()] = input_type;
-      message_types[output_type->full_name()] = output_type;
+      RegisterMessage(method->input_type(), message_types);
+      RegisterMessage(method->output_type(), message_types);
     }
   }
 
