@@ -123,6 +123,9 @@ def _closure_grpc_web_library_impl(ctx):
   suppress = [
       "misplacedTypeAnnotation",
       "unusedPrivateMembers",
+      "reportUnknownTypes",
+      "strictDependencies",
+      "extraRequire",
   ]
 
   library = create_closure_js_library(
