@@ -74,10 +74,10 @@ AbstractClientBase.MethodInfo = function(
  * =:
  * @param {string} method The method to invoke
  * @param {REQUEST} request The request proto
- * @param {!Object<string, string>} metadata User defined call metadata
+ * @param {?Object<string, string>} metadata User defined call metadata
  * @param {!AbstractClientBase.MethodInfo<REQUEST, RESPONSE_LEAN>}
  *   methodInfo Information of this RPC method
- * @param {function(?Error, ?RESPONSE)}
+ * @param {!function(?Error, ?RESPONSE)}
  *   callback A callback function which takes (error, response)
  * @return {!ClientReadableStream<RESPONSE_LEAN>|undefined}
  *   The Client Readable Stream
