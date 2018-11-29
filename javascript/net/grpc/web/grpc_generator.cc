@@ -795,7 +795,7 @@ void PrintUnaryCall(Printer* printer, std::map<string, string> vars) {
       "/**\n"
       " * @param {!proto.$in$} request The\n"
       " *     request proto\n"
-      " * @param {Object<string, string>} metadata User defined\n"
+      " * @param {?Object<string, string>} metadata User defined\n"
       " *     call metadata\n"
       " * @param {function(?grpc.web.Error,"
       " ?proto.$out$)}\n"
