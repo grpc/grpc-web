@@ -12,10 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM grpcweb/common
+FROM grpcweb/prereqs
+
+RUN apt-get -qq install -y \
+  default-jdk
 
 RUN cd /github/grpc-web && \
-  curl https://dl.google.com/closure-compiler/compiler-latest.zip \
+  curl -sS https://dl.google.com/closure-compiler/compiler-latest.zip \
   -o /github/grpc-web/compiler-latest.zip
 
 RUN cd /github/grpc-web && \
@@ -27,4 +30,5 @@ RUN cd /github/grpc-web && \
   make client && make install-example
 
 EXPOSE 8081
-CMD ["nginx"]
+WORKDIR /var/www/html
+CMD ["python", "-m", "SimpleHTTPServer", "8081"]

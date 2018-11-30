@@ -1,26 +1,10 @@
 version: '3'
 services:
-  prereqs:
-    build:
-      context: ./
-      dockerfile: ./net/grpc/gateway/docker/prereqs/Dockerfile
-    image: grpcweb/prereqs
   common:
     build:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/common/Dockerfile
-    depends_on:
-      - prereqs
     image: grpcweb/common
-  echo-server:
-    build:
-      context: ./
-      dockerfile: ./net/grpc/gateway/docker/echo_server/Dockerfile
-    depends_on:
-      - common
-    image: grpcweb/echo-server
-    ports:
-      - "9090:9090"
   node-server:
     build:
       context: ./
@@ -39,26 +23,6 @@ services:
       - "8080:8080"
     links:
       - node-server
-  nginx:
-    build:
-      context: ./
-      dockerfile: ./net/grpc/gateway/docker/nginx/Dockerfile
-    depends_on:
-      - common
-    image: grpcweb/nginx
-    ports:
-      - "8080:8080"
-    links:
-      - node-server
-  grpcwebproxy:
-    build:
-      context: ./
-      dockerfile: ./net/grpc/gateway/docker/grpcwebproxy/Dockerfile
-    image: grpcweb/grpcwebproxy
-    ports:
-      - "8080:8080"
-    links:
-      - node-server
   commonjs-client:
     build:
       context: ./
@@ -66,32 +30,5 @@ services:
     depends_on:
       - common
     image: grpcweb/commonjs-client
-    ports:
-      - "8081:8081"
-  closure-client:
-    build:
-      context: ./
-      dockerfile: ./net/grpc/gateway/docker/closure_client/Dockerfile
-    depends_on:
-      - common
-    image: grpcweb/closure-client
-    ports:
-      - "8081:8081"
-  ts-client:
-    build:
-      context: ./
-      dockerfile: ./net/grpc/gateway/docker/ts_client/Dockerfile
-    depends_on:
-      - common
-    image: grpcweb/ts-client
-    ports:
-      - "8081:8081"
-  binary-client:
-    build:
-      context: ./
-      dockerfile: ./net/grpc/gateway/docker/binary_client/Dockerfile
-    depends_on:
-      - common
-    image: grpcweb/binary-client
     ports:
       - "8081:8081"

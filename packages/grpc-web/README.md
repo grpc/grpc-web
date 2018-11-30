@@ -27,12 +27,26 @@ This example is using the `echo.proto` file from the
 $ npm i grpc-web
 ```
 
- 2. Compile the `protoc-gen-grpc-web` protoc plugin.
+ 2. Download `protoc` and the `protoc-gen-grpc-web` protoc plugin.
 
-```sh
-$ git clone https://github.com/grpc/grpc-web
-$ cd grpc-web && sudo make install-plugin
+You can download the `protoc` binary from the official
+[protocolbuffers](https://github.com/protocolbuffers/protobuf/releases)
+release page.
+
+You can download the `protoc-gen-grpc-web` protoc plugin from our Github
+[release](https://github.com/grpc/grpc-web/releases) page.
+
+
+Make sure they are both executable and are discoverable from your PATH.
+
+For example, in MacOS, you can do:
+
 ```
+$ sudo mv ~/Downloads/protoc-gen-grpc-web-1.0.3-darwin-x86_64 \
+  /usr/local/bin/protoc-gen-grpc-web
+$ chmod +x /usr/local/bin/protoc-gen-grpc-web
+```
+
 
  3. Generate your proto messages and the service client stub classes with
 `protoc` and the `protoc-gen-grpc-web` plugin. You can set the

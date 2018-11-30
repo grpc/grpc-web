@@ -216,23 +216,22 @@ And that's it! We have all the code ready. Let's run the example!
 
 To generate the protobuf messages and client service stub class from your
 `.proto` definitions, we need the `protoc` binary and the
-`protoc-gen-grpc-web` plugin. In the meantime, you will need to compile the
-latter yourself. We hope to improve and streamline the process in the near
-future.
+`protoc-gen-grpc-web` plugin.
 
-```sh
-$ git clone https://github.com/grpc/grpc-web
-$ cd grpc-web
-$ sudo make install-plugin
+You can download the `protoc-gen-grpc-web` protoc plugin from our
+[release](https://github.com/grpc/grpc-web/releases) page:
+
+If you don't already have `protoc` installed, you will have to download it
+first from [here](https://github.com/protocolbuffers/protobuf/releases).
+
+Make sure they are both executable and are discoverable from your PATH.
+
+For example, in MacOS, you can do:
+
 ```
-
-If you do not already have `protoc` installed, you may have to do this first:
-
-```sh
-$ ./scripts/init_submodules.sh
-$ cd third_party/grpc/third_party/protobuf
-$ ./autogen.sh && ./configure && make -j8
-$ sudo make install
+$ sudo mv ~/Downloads/protoc-gen-grpc-web-1.0.3-darwin-x86_64 \
+  /usr/local/bin/protoc-gen-grpc-web
+$ chmod +x /usr/local/bin/protoc-gen-grpc-web
 ```
 
 When you have both `protoc` and `protoc-gen-grpc-web` installed, you can now

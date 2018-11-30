@@ -28,7 +28,7 @@ OUT_DIR = ./out
 PROTOBUF_PATH = third_party/grpc/third_party/protobuf
 GRPC_CPP_PLUGIN = grpc_cpp_plugin
 GRPC_CPP_PLUGIN_PATH ?= `which $(GRPC_CPP_PLUGIN)`
-GRPC_WEB_PLUGIN_PATH = $(ROOT_DIR)/$(JS_PATH)/protoc-gen-grpc-web
+GRPC_WEB_PLUGIN_PATH = /usr/local/bin/protoc-gen-grpc-web
 
 all: echo_server client package
 
@@ -83,9 +83,11 @@ proto-js:
   --js_out=$(JS_IMPORT_STYLE):$(OUT_DIR) \
   $(ROOT_DIR)/$(PROTOBUF_PATH)/src/google/protobuf/any.proto
 	$(PROTOC) -I=$(PROTOS_PATH)/protos \
+	-I=$(ROOT_DIR)/$(PROTOBUF_PATH)/src \
   --js_out=$(JS_IMPORT_STYLE):$(OUT_DIR) \
   $(PROTOS_PATH)/protos/stream_body.proto
 	$(PROTOC) -I=$(PROTOS_PATH)/protos \
+	-I=$(ROOT_DIR)/$(PROTOBUF_PATH)/src \
   --js_out=$(JS_IMPORT_STYLE):$(OUT_DIR) \
   $(PROTOS_PATH)/protos/pair.proto
 	$(PROTOC) -I=. --js_out=$(JS_IMPORT_STYLE):$(OUT_DIR) ./echo.proto

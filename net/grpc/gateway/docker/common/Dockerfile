@@ -12,25 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM grpcweb/prereqs
+FROM node:8-stretch
 
-COPY . /github/grpc-web
+RUN apt-get -qq update && apt-get -qq install -y \
+  unzip
 
-RUN cd /github/grpc-web && \
-  git checkout . && \
-  rm -rf third_party && \
-  git checkout third_party && \
-  git clean -f -d -x && \
-  ./scripts/init_submodules.sh
+RUN git clone https://github.com/grpc/grpc-web /github/grpc-web
 
-RUN cd /github/grpc-web && \
-  make install-plugin
+RUN curl -sSL https://github.com/protocolbuffers/protobuf/releases/download/v3.6.1/\
+protoc-3.6.1-linux-x86_64.zip -o /tmp/protoc.zip && \
+  cd /tmp && \
+  unzip -qq protoc.zip && \
+  cp /tmp/bin/protoc /usr/local/bin/protoc
 
-RUN cd /github/grpc-web/packages/grpc-web && \
-  npm install && \
-  npm run build && \
-  npm link
+RUN curl -sSL https://github.com/grpc/grpc-web/releases/download/1.0.3/\
+protoc-gen-grpc-web-1.0.3-linux-x86_64 -o /usr/local/bin/protoc-gen-grpc-web && \
+  chmod +x /usr/local/bin/protoc-gen-grpc-web
 
-RUN cp /github/grpc-web/net/grpc/gateway/examples/echo/nginx_simple.conf \
-  /etc/nginx/nginx.conf && \
-  mkdir -p /var/www/html/dist
+RUN mkdir -p /var/www/html/dist
