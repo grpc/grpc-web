@@ -201,59 +201,84 @@ string JSFieldType(const FieldDescriptor *desc)
 {
   string js_field_type;
   switch (desc->type())
-  {
-  case FieldDescriptor::TYPE_DOUBLE:
-  case FieldDescriptor::TYPE_FLOAT:
-  case FieldDescriptor::TYPE_INT32:
-  case FieldDescriptor::TYPE_UINT32:
-  case FieldDescriptor::TYPE_INT64:
-  case FieldDescriptor::TYPE_UINT64:
-  case FieldDescriptor::TYPE_FIXED32:
-  case FieldDescriptor::TYPE_FIXED64:
-  case FieldDescriptor::TYPE_SINT32:
-  case FieldDescriptor::TYPE_SINT64:
-  case FieldDescriptor::TYPE_SFIXED32:
-  case FieldDescriptor::TYPE_SFIXED64:
-    js_field_type = "number";
-    break;
-  case FieldDescriptor::TYPE_BOOL:
-    js_field_type = "boolean";
-    break;
-  case FieldDescriptor::TYPE_STRING:
-    js_field_type = "string";
-    break;
-  case FieldDescriptor::TYPE_ENUM:
-    js_field_type = StripPrefixString(desc->enum_type()->full_name(), desc->enum_type()->file()->package());
-    if (!js_field_type.empty() && js_field_type[0] == '.') {
-      js_field_type = js_field_type.substr(1);
-    }
-    break;
-  case FieldDescriptor::TYPE_MESSAGE:
-    js_field_type = StripPrefixString(desc->message_type()->full_name(), desc->message_type()->file()->package());
-    if (!js_field_type.empty() && js_field_type[0] == '.') {
-      js_field_type = js_field_type.substr(1);
-    }
-    break;
-  default:
-    js_field_type = "{}";
-    break;
+  { 
+    case FieldDescriptor::TYPE_DOUBLE:
+    case FieldDescriptor::TYPE_FLOAT:
+    case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_UINT32:
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_FIXED32:
+    case FieldDescriptor::TYPE_FIXED64:
+    case FieldDescriptor::TYPE_SINT32:
+    case FieldDescriptor::TYPE_SINT64:
+    case FieldDescriptor::TYPE_SFIXED32:
+    case FieldDescriptor::TYPE_SFIXED64:
+      js_field_type = "number";
+          break;
+    case FieldDescriptor::TYPE_BOOL:
+      js_field_type = "boolean";
+          break;
+    case FieldDescriptor::TYPE_STRING:
+      js_field_type = "string";
+          break;
+    case FieldDescriptor::TYPE_ENUM:
+      js_field_type = StripPrefixString(desc->enum_type()->full_name(), desc->enum_type()->file()->package());
+          if (!js_field_type.empty() && js_field_type[0] == '.') {
+            js_field_type = js_field_type.substr(1);
+          }
+          break;
+    case FieldDescriptor::TYPE_MESSAGE:
+      js_field_type = StripPrefixString(desc->message_type()->full_name(), desc->message_type()->file()->package());
+          if (!js_field_type.empty() && js_field_type[0] == '.') {
+            js_field_type = js_field_type.substr(1);
+          }
+          break;
+    default:
+        js_field_type = "{}";
+          break;
   }
-  if (desc->is_repeated())
-  {
-    js_field_type += "[]";
+  if(desc->is_map()){
+    const FieldDescriptor* map_key = desc->message_type()->field(0);
+    const FieldDescriptor* map_value = desc->message_type()->field(1);
+
+    string map_key_name = JSFieldType(map_key);
+    string map_value_name;
+
+    if(map_value->type() == FieldDescriptor::TYPE_MESSAGE){
+       map_value_name = StripPrefixString(desc->message_type()->full_name(), desc->message_type()->file()->package());
+       if (!js_field_type.empty() && js_field_type[0] == '.') {
+         js_field_type = js_field_type.substr(1);
+       }
+    }else{
+      map_value_name = JSFieldType(map_value);
+    }
+      js_field_type = "Map<";
+      js_field_type += map_key_name;
+      js_field_type += ",";
+      js_field_type += map_value_name;
+      js_field_type += ">";
+    }
+  else if (desc->is_repeated()){
+      js_field_type += "[]";
   }
+  
   return js_field_type;
 }
 
 string JSFieldName(const FieldDescriptor *desc)
 {
   string js_field_name = ToUpperCamel(ParseLowerUnderscore(desc->name()));
-  if (desc->is_repeated())
-  {
-    js_field_name += "List";
+  if(desc->is_map()) {
+    js_field_name += "Map";
   }
+  else if(desc->is_repeated()) {
+     js_field_name += "List";
+  }
+
   return js_field_name;
 }
+
 
 // Returns the name of the message with a leading dot and taking into account
 // nesting, for example ".OuterMessage.InnerMessage", or returns empty if
