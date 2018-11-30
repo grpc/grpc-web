@@ -102,7 +102,7 @@ standalone-proxy: package_static
 echo_server:
 	cd "$(ROOT_DIR)"/net/grpc/gateway/examples/echo && make echo_server
 
-client: plugin
+client:
 	cd "$(ROOT_DIR)"/net/grpc/gateway/examples/echo && make client
 
 install-example:

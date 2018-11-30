@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM grpcweb/common
+FROM grpcweb/prereqs
 
 ARG EXAMPLE_DIR=/github/grpc-web/net/grpc/gateway/examples/echo
 
@@ -31,4 +31,5 @@ RUN cd $EXAMPLE_DIR/ts-example && \
   cp dist/main.js /var/www/html/dist
 
 EXPOSE 8081
-CMD ["nginx"]
+WORKDIR /var/www/html
+CMD ["python", "-m", "SimpleHTTPServer", "8081"]

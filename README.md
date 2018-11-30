@@ -36,8 +36,8 @@ streaming example.
 From the repo root directory:
 
 ```sh
-$ docker-compose pull prereqs common node-server envoy commonjs-client
-$ docker-compose up -d node-server envoy commonjs-client
+$ docker-compose pull
+$ docker-compose up
 ```
 
 Open a browser tab, and go to:
@@ -59,27 +59,20 @@ $ npm i grpc-web
 
 ## Code Generator Plugin
 
-You can compile the `protoc-gen-grpc-web` protoc plugin from this repo:
+You can download the `protoc-gen-grpc-web` protoc plugin from our
+[release](https://github.com/grpc/grpc-web/releases) page:
 
-```sh
-$ sudo make install-plugin
+If you don't already have `protoc` installed, you will have to download it
+first from [here](https://github.com/protocolbuffers/protobuf/releases).
+
+Make sure they are both executable and are discoverable from your PATH.
+
+For example, in MacOS, you can do:
+
 ```
-
-If you don't already have `protoc` installed, you may have to do this first:
-
-On ubuntu:
-```sh
-apt install autoconf g++ libtool
-```
-On mac:
-```sh
-brew install autoconf automake libtool
-```
-
-```sh
-$ ./scripts/init_submodules.sh
-$ cd third_party/grpc/third_party/protobuf
-$ ./autogen.sh && ./configure && make -j8 && sudo make install
+$ sudo mv ~/Downloads/protoc-gen-grpc-web-1.0.3-darwin-x86_64 \
+  /usr/local/bin/protoc-gen-grpc-web
+$ chmod +x /usr/local/bin/protoc-gen-grpc-web
 ```
 
 
@@ -292,14 +285,14 @@ $ docker-compose up -d node-server envoy commonjs-client
 An alternative is to build Nginx that comes with this repository.
 
 ```sh
-$ docker-compose up -d node-server nginx commonjs-client
+$ docker-compose -f advanced.yml up -d echo-server nginx closure-client
 ```
 
 You can also try this
 [gRPC-Web Go Proxy](https://github.com/improbable-eng/grpc-web/tree/master/go/grpcwebproxy).
 
 ```sh
-$ docker-compose up -d node-server grpcwebproxy binary-client
+$ docker-compose -f advanced.yml up -d node-server grpcwebproxy binary-client
 ```
 
 ## Acknowledgement

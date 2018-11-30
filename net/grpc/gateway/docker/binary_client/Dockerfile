@@ -12,13 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM grpcweb/common
+FROM grpcweb/prereqs
 
 ARG EXAMPLE_DIR=/github/grpc-web/net/grpc/gateway/examples/echo
 
 RUN protoc -I=$EXAMPLE_DIR echo.proto \
---plugin=protoc-gen-grpc-web=\
-/github/grpc-web/javascript/net/grpc/web/protoc-gen-grpc-web \
 --js_out=import_style=commonjs:\
 $EXAMPLE_DIR/commonjs-example \
 --grpc-web_out=import_style=commonjs,mode=grpcweb:\
@@ -32,4 +30,5 @@ RUN cd $EXAMPLE_DIR/commonjs-example && \
   cp dist/main.js /var/www/html/dist
 
 EXPOSE 8081
-CMD ["nginx"]
+WORKDIR /var/www/html
+CMD ["python", "-m", "SimpleHTTPServer", "8081"]

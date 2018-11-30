@@ -16,7 +16,7 @@ FROM ubuntu:14.04
 
 ARG MAKEFLAGS=-j8
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get -qq update && apt-get -qq install -y \
   autoconf \
   automake \
   build-essential \
