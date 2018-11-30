@@ -302,7 +302,17 @@ this project!
 
 * [zaucy](https://github.com/zaucy): NPM package, CommonJS
 * [yannic](https://github.com/yannic): Bazel
-* [mitar](https://github.com/mitar): Codegen Plugin
+* [mitar](https://github.com/mitar): Codegen enhancements
+* [juanjoDiaz](https://github.com/juanjoDiaz): Codegen enhancements
+* [pumano](https://github.com/pumano): Doc fixes
+* [henriiik](https://github.com/henriiik): TypeScript
+* [rybbchao](https://github.com/rybbchao): Codgen bugfix
+* [mjduijn](https://github.com/mjduijn): Timeout example
+* [at-ishikawa](https://github.com/at-ishikawa): Codegen enhancements
+* [weilip](https://github.com/weilip): Codegen bugfix
+* [mitchdraft](https://github.com/mitchdraft): Update Node example
+* [factuno-db](https://github.com/factuno-db): Bazel, Closure
+* [shaxbee](https://github.com/shaxbee): Codegen enhancements and bugfixes
 
 
 [Hello World Guide]:https://github.com/grpc/grpc-web/blob/master/net/grpc/gateway/examples/helloworld/

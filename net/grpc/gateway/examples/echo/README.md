@@ -8,26 +8,16 @@ example. The example has 3 key components:
  - gRPC backend server (written in Node)
 
 
-## Before you start
-
-Before you start, ensure that you have the following installed exactly as per
-our [pre-requisites](../../../../../INSTALL.md):
-
- 1. Protocol buffers
- 2. gRPC
- 3. Closure compiler
-
-
 From the repo root directory:
 
 ## Build pre-requisites
 
-This step compiles gRPC and Protobuf, and serves as the base docker image for
-the subsequent docker images.
+This step downloads the necessary pre-requisites, and serves as the base docker
+image for the subsequent docker images.
 
 ```sh
-$ docker build -t grpcweb/prereqs \
-  -f net/grpc/gateway/docker/prereqs/Dockerfile .
+$ docker build -t grpcweb/common \
+  -f net/grpc/gateway/docker/common/Dockerfile .
 ```
 
 ## Run the gRPC Backend server
