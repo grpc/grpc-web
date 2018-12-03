@@ -675,6 +675,10 @@ void PrintProtoDtsFile(Printer *printer, const FileDescriptor *file)
        it != messages.end(); it++) {
     PrintProtoDtsMessage(printer, it->second, "");
   }
+  
+  for (int enum_index = 0; enum_index < file->enum_type_count(); ++enum_index) {
+    PrintProtoDtsEnum(printer, file->enum_type(enum_index));
+  }
 }
 
 void PrintFileHeader(Printer* printer, const std::map<string, string>& vars) {
