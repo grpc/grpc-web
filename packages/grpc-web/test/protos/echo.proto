@@ -34,8 +34,27 @@ message ServerStreamingEchoResponse {
   string message = 1;
 }
 
+enum Status {
+  UNKNOWN = 0;
+  SUCCESS = 1;
+}
+
+message EchoStatusRequest {
+  Status status = 1;
+}
+
+message EchoStatusResponse {
+  enum InternalStatus {
+    UNKNOWN = 0;
+    SUCCESS = 1;
+  }
+  InternalStatus status = 1;
+}
+
+
 service EchoService {
   rpc Echo(EchoRequest) returns (EchoResponse);
   rpc ServerStreamingEcho(ServerStreamingEchoRequest)
       returns (stream ServerStreamingEchoResponse);
+  rpc EchoStatus(EchoStatusRequest) returns (EchoStatusResponse);
 }
