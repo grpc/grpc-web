@@ -374,4 +374,10 @@ describe('grpc-web generated code (commonjs+dts)', function() {
     assert.equal(true, fs.existsSync(protoGenCodePath));
     assert.equal(true, fs.existsSync(protoDtsGenCodePath));
   });
+
+  it('should compile', function() {
+    execSync(genCodeCmd);
+    execSync(`tsc ${genDtsCodePath}`);
+    execSync(`tsc ${protoDtsGenCodePath}`);
+  })
 });
