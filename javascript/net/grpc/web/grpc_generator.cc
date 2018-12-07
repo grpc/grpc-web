@@ -359,6 +359,30 @@ std::map<string, const Descriptor*> GetAllMessages(const FileDescriptor* file) {
   return message_types;
 }
 
+void RegisterEnum(const EnumDescriptor* desc, std::map<string, const EnumDescriptor*>& enum_types) {
+  if (enum_types.count(desc->full_name())  != 0) {
+    return;
+  }
+
+  enum_types[desc->full_name()] = desc;
+}
+
+std::map<string, const EnumDescriptor*> GetAllTopLevelEnums(std::map<string, const Descriptor*> messages) {
+  std::map<string, const EnumDescriptor*> enum_types;
+  for (std::map<string, const Descriptor*>::iterator it = messages.begin();
+       it != messages.end(); it++) {
+    for (int i = 0; i < it->second->field_count(); i++) {
+      const FieldDescriptor* field = it->second->field(i);
+      if (field->type() != FieldDescriptor::Type::TYPE_ENUM || field->enum_type()->containing_type()) {
+        continue;
+      }
+
+      RegisterEnum(field->enum_type(), enum_types);
+    }
+  }
+  return enum_types;
+}
+
 void PrintMessagesDeps(Printer* printer, const FileDescriptor* file) {
   std::map<string, const Descriptor*> messages = GetAllMessages(file);
   std::map<string, string> vars;
@@ -674,6 +698,12 @@ void PrintProtoDtsFile(Printer *printer, const FileDescriptor *file)
   for (std::map<string, const Descriptor *>::iterator it = messages.begin();
        it != messages.end(); it++) {
     PrintProtoDtsMessage(printer, it->second, "");
+  }
+
+  std::map<string, const EnumDescriptor *> enums = GetAllTopLevelEnums(messages);
+  for (std::map<string, const EnumDescriptor *>::iterator it = enums.begin();
+       it != enums.end(); it++) {
+    PrintProtoDtsEnum(printer, it->second);
   }
 }
 

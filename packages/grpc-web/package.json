@@ -28,6 +28,7 @@
     "google-protobuf": "^3.6.1",
     "mocha": "^5.2.0",
     "mock-xmlhttprequest": "^2.0.0",
-    "require-self": "^0.2.1"
+    "require-self": "^0.2.1",
+    "typescript": "^3.2.1"
   }
 }
