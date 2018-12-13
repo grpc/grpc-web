@@ -337,7 +337,7 @@ void RegisterMessage(const Descriptor* desc, std::map<string, const Descriptor*>
 
     RegisterMessage(field->message_type(), message_types);
   }
-} 
+}
 
 /* Finds all message types used in all services in the file, and returns them
  * as a map of fully qualified message type name to message descriptor */
@@ -535,7 +535,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
           printer->Indent();
           printer->Print(vars,
                          "request: $input_type$,\n"
-                         "metadata?: grpcWeb.Metadata,\n"
+                         "metadata: grpcWeb.Metadata | null,\n"
                          "callback: (err: grpcWeb.Error,\n"
                          "           response: $output_type$) => void) {\n");
           printer->Print(vars, "return this.client_.rpcCall(\n");
