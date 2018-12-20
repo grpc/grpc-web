@@ -46,7 +46,7 @@ const closureArgs = [].concat(
   [
     `--dependency_mode=STRICT`,
     `--js_output_file=${indexPath}`,
-    `--output_wrapper="%output%module.exports = grpc.web;"`,
+    `--output_wrapper="%output%module.exports=grpc.web;"`,
   ]
 );
 
