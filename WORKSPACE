@@ -1,5 +1,7 @@
 workspace(name = "com_github_grpc_grpc_web")
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 http_archive(
     name = "io_bazel_rules_closure",
     sha256 = "a8ea3251a6fd05eb3dbd05aa443a12b04cb88d80480d821bee453b18db97afaa",
