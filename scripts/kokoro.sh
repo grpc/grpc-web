@@ -31,7 +31,7 @@ done
 docker-compose -f advanced.yml build
 
 # Run all bazel unit tests
-BAZEL_VERSION=0.19.1
+BAZEL_VERSION=0.21.0
 wget https://github.com/bazelbuild/bazel/releases/download/"${BAZEL_VERSION}"/bazel-"${BAZEL_VERSION}"-installer-linux-x86_64.sh
 chmod +x ./bazel-"${BAZEL_VERSION}"-installer-linux-x86_64.sh
 ./bazel-"${BAZEL_VERSION}"-installer-linux-x86_64.sh --user
