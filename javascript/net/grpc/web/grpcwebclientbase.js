@@ -61,6 +61,7 @@ const GrpcWebClientBase = function(opt_options) {
 
 /**
  * @override
+ * @export
  */
 GrpcWebClientBase.prototype.rpcCall = function(
     method, request, metadata, methodInfo, callback) {
@@ -116,6 +117,7 @@ GrpcWebClientBase.prototype.rpcCall = function(
 
 /**
  * @override
+ * @export
  */
 GrpcWebClientBase.prototype.serverStreaming = function(
     method, request, metadata, methodInfo) {

@@ -122,11 +122,11 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
     var grpcStatusCode = self.xhr_.getStreamingResponseHeader(GRPC_STATUS);
     var grpcStatusMessage = self.xhr_.getStreamingResponseHeader(GRPC_STATUS_MESSAGE);
     if (grpcStatusCode && self.onStatusCallback_) {
-      self.onStatusCallback_({
+      self.onStatusCallback_(/** @type {!Status} */({
         code: Number(grpcStatusCode),
         details: grpcStatusMessage || '',
         metadata: undefined,
-      });
+      }));
     }
 
     if (googString.startsWith(contentType, 'application/grpc-web-text')) {
@@ -174,11 +174,11 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
             grpcStatusMessage = trailers[GRPC_STATUS_MESSAGE];
           }
           if (self.onStatusCallback_) {
-            self.onStatusCallback_({
+            self.onStatusCallback_(/** @type {!Status} */({
               code: Number(grpcStatusCode),
               details: grpcStatusMessage,
               metadata: trailers,
-            });
+            }));
           }
         }
       }
@@ -217,6 +217,7 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
 
 /**
  * @override
+ * @export
  */
 GrpcWebClientReadableStream.prototype.on = function(
     eventType, callback) {
@@ -248,6 +249,7 @@ GrpcWebClientReadableStream.prototype.setResponseDeserializeFn =
 
 /**
  * @override
+ * @export
  */
 GrpcWebClientReadableStream.prototype.cancel = function() {
   this.xhr_.abort();

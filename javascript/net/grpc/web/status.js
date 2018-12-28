@@ -28,11 +28,16 @@ goog.module.declareLegacyNamespace();
 
 
 
-/**
- * @typedef {{
- *   code: number,
- *   details: string,
- *   metadata: (!Object<string, string>|undefined)
- * }}
- */
-exports.Status;
+/** @record */
+function Status() {}
+
+/** @export {number} */
+Status.prototype.code;
+
+/** @export {string} */
+Status.prototype.details;
+
+/** @export {(!Object<string, string>|undefined)} */
+Status.prototype.metadata;
+
+exports.Status = Status;

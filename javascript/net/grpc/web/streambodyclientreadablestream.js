@@ -139,6 +139,7 @@ const StreamBodyClientReadableStream = function(genericTransportInterface) {
 
 /**
  * @override
+ * @export
  */
 StreamBodyClientReadableStream.prototype.on = function(
     eventType, callback) {
@@ -182,6 +183,7 @@ StreamBodyClientReadableStream.prototype.setRpcStatusParseFn = function(rpcStatu
 
 /**
  * @override
+ * @export
  */
 StreamBodyClientReadableStream.prototype.cancel = function() {
   this.xhr_.abort();
