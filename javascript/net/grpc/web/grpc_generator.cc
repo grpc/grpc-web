@@ -896,9 +896,10 @@ void PrintPromiseUnaryCall(Printer* printer,
   printer->Indent();
   printer->Print(vars,
                  "  function(request, metadata) {\n"
-                 "return new Promise((resolve, reject) => {\n"
-                 "  this.delegateClient_.$js_method_name$(\n"
-                 "    request, metadata, (error, response) => {\n"
+                 "var _this = this;\n"
+                 "return new Promise(function (resolve, reject) {\n"
+                 "  _this.delegateClient_.$js_method_name$(\n"
+                 "    request, metadata, function (error, response) {\n"
                  "      error ? reject(error) : resolve(response);\n"
                  "    });\n"
                  "});\n");
