@@ -255,6 +255,34 @@ string JSFieldName(const FieldDescriptor *desc)
   return js_field_name;
 }
 
+// Like ToUpperCamel except the first letter is not converted.
+string ToCamelCase(const std::vector<string>& words)
+{
+  if words.size() == 0 {
+      return ""
+  }
+  string result = words[0]
+  for (size_t i = 1; i < words.size(); i++) {
+    string word = words[i];
+    if (word[0] >= 'a' && word[0] <= 'z') {
+      word[0] = (word[0] - 'a') + 'A';
+    }
+    result += word;
+  }
+  return result;
+}
+
+// Like JSFieldName, but with first letter not uppercased
+string CamelCaseJSFieldName(const FieldDescriptor *desc)
+{
+  string js_field_name = ToCamelCase(ParseLowerUnderscore(desc->name()));
+  if (desc->is_repeated())
+  {
+    js_field_name += "List";
+  }
+  return js_field_name;
+}
+
 // Returns the name of the message with a leading dot and taking into account
 // nesting, for example ".OuterMessage.InnerMessage", or returns empty if
 // descriptor is null. This function does not handle namespacing, only message
@@ -669,7 +697,7 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc, string prefi
   printer->Print("export type AsObject = {\n");
   printer->Indent();
   for (int i = 0; i < desc->field_count(); i++) {
-    vars["js_field_name"] = JSFieldName(desc->field(i));
+    vars["js_field_name"] = CamelCaseJSFieldName(desc->field(i));
     vars["js_field_type"] = JSFieldType(desc->field(i));
     printer->Print(vars, "$js_field_name$: $js_field_type$;\n");
   }
