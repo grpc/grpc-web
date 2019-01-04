@@ -258,18 +258,11 @@ string JSFieldName(const FieldDescriptor *desc)
 // Like ToUpperCamel except the first letter is not converted.
 string ToCamelCase(const std::vector<string>& words)
 {
-  if words.size() == 0 {
-      return ""
+  if (words.size() == 0) {
+      return "";
   }
-  string result = words[0]
-  for (size_t i = 1; i < words.size(); i++) {
-    string word = words[i];
-    if (word[0] >= 'a' && word[0] <= 'z') {
-      word[0] = (word[0] - 'a') + 'A';
-    }
-    result += word;
-  }
-  return result;
+  string result = words[0];
+  return result + ToUpperCamel(std::vector<string>(words.begin()+1, words.begin()+words.size()));
 }
 
 // Like JSFieldName, but with first letter not uppercased
