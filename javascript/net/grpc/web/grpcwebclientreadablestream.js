@@ -124,7 +124,7 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
     if (grpcStatusCode && self.onStatusCallback_) {
       self.onStatusCallback_({
         code: Number(grpcStatusCode),
-        details: grpcStatusMessage,
+        details: grpcStatusMessage || '',
         metadata: undefined,
       });
     }
