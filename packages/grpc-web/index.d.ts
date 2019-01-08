@@ -18,7 +18,7 @@ declare module "grpc-web" {
              callback: (err: Error, response: Response) => void
             ): ClientReadableStream<Response>;
 
-    serverStreaming (method: string,
+    serverStreaming<Request, Response> (method: string,
                      request: Request,
                      metadata: Metadata,
                      methodInfo: AbstractClientBase.MethodInfo<Request, Response>
