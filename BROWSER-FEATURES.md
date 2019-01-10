@@ -23,6 +23,12 @@ we expect some of those features will evolve too or become deprecated.
 
 A grpc-web gateway is recommended to overwrite the default 200 status code and map any gateway-generated or server-generated error status to standard HTTP status codes (such as 503) when it is possible. This will help with debugging and may also improve security protection for web apps.
 
+# URL query params
+
+To enable query-param based routing rules in reverse proxies and to avoid CORS preflight, a grpc-web client may "advertise" certain request data or metadata as query params. The grpc-web proxy module should remove the query params before the request is sent to the downstream gRPC server.
+
+The actual data in query params is not interpreted by grpc-web libraries. Standard URL encoding rules shoud be followed to encode those query params.
+
 # Security
 
 * XSRF, XSS policy to be published 
