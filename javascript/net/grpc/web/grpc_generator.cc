@@ -197,7 +197,37 @@ string ToUpperCamel(const std::vector<string>& words) {
   return result;
 }
 
-string JSFieldType(const FieldDescriptor *desc)
+// Returns the alias we assign to the module of the given .proto filename
+// when importing.
+string ModuleAlias(const string& filename) {
+  // This scheme could technically cause problems if a file includes any 2 of:
+  //   foo/bar_baz.proto
+  //   foo_bar_baz.proto
+  //   foo_bar/baz.proto
+  //
+  // We'll worry about this problem if/when we actually see it.  This name isn't
+  // exposed to users so we can change it later if we need to.
+  string basename = StripProto(filename);
+  ReplaceCharacters(&basename, "-", '$');
+  ReplaceCharacters(&basename, "/", '_');
+  ReplaceCharacters(&basename, ".", '_');
+  return basename + "_pb";
+}
+
+string JSMessageType(const Descriptor *desc, const FileDescriptor *file) {
+    string result;
+    if (desc->file() != file) {
+      result = ModuleAlias(desc->file()->name());
+    }
+    result += StripPrefixString(desc->full_name(), desc->file()->package());
+    if (!result.empty() && result[0] == '.') {
+      result = result.substr(1);
+    }
+
+    return result;
+}
+
+string JSFieldType(const FieldDescriptor *desc, const FileDescriptor *file)
 {
   string js_field_type;
   switch (desc->type())
@@ -229,10 +259,7 @@ string JSFieldType(const FieldDescriptor *desc)
     }
     break;
   case FieldDescriptor::TYPE_MESSAGE:
-    js_field_type = StripPrefixString(desc->message_type()->full_name(), desc->message_type()->file()->package());
-    if (!js_field_type.empty() && js_field_type[0] == '.') {
-      js_field_type = js_field_type.substr(1);
-    }
+    js_field_type = JSMessageType(desc->message_type(), file);
     break;
   default:
     js_field_type = "{}";
@@ -326,23 +353,6 @@ string GetBasename(string filename)
   return filename;
 }
 
-// Returns the alias we assign to the module of the given .proto filename
-// when importing.
-string ModuleAlias(const string& filename) {
-  // This scheme could technically cause problems if a file includes any 2 of:
-  //   foo/bar_baz.proto
-  //   foo_bar_baz.proto
-  //   foo_bar/baz.proto
-  //
-  // We'll worry about this problem if/when we actually see it.  This name isn't
-  // exposed to users so we can change it later if we need to.
-  string basename = StripProto(filename);
-  ReplaceCharacters(&basename, "-", '$');
-  ReplaceCharacters(&basename, "/", '_');
-  ReplaceCharacters(&basename, ".", '_');
-  return basename + "_pb";
-}
-
 void RegisterMessage(const Descriptor* desc, std::map<string, const Descriptor*>& message_types) {
   if (message_types.count(desc->full_name())  != 0) {
     return;
@@ -378,30 +388,6 @@ std::map<string, const Descriptor*> GetAllMessages(const FileDescriptor* file) {
   }
 
   return message_types;
-}
-
-void RegisterEnum(const EnumDescriptor* desc, std::map<string, const EnumDescriptor*>& enum_types) {
-  if (enum_types.count(desc->full_name())  != 0) {
-    return;
-  }
-
-  enum_types[desc->full_name()] = desc;
-}
-
-std::map<string, const EnumDescriptor*> GetAllTopLevelEnums(std::map<string, const Descriptor*> messages) {
-  std::map<string, const EnumDescriptor*> enum_types;
-  for (std::map<string, const Descriptor*>::iterator it = messages.begin();
-       it != messages.end(); it++) {
-    for (int i = 0; i < it->second->field_count(); i++) {
-      const FieldDescriptor* field = it->second->field(i);
-      if (field->type() != FieldDescriptor::Type::TYPE_ENUM || field->enum_type()->containing_type()) {
-        continue;
-      }
-
-      RegisterEnum(field->enum_type(), enum_types);
-    }
-  }
-  return enum_types;
 }
 
 void PrintMessagesDeps(Printer* printer, const FileDescriptor* file) {
@@ -462,22 +448,46 @@ void PrintCommonJsMessagesDeps(Printer* printer, const FileDescriptor* file) {
   }
 }
 
+void PrintES6Dependencies(Printer* printer, const FileDescriptor *file) {
+  std::map<string, string> vars;
+
+  for (int i = 0; i < file->dependency_count(); i++) {
+    const string& name = file->dependency(i)->name();
+    vars["alias"] = ModuleAlias(name);
+    vars["dep_filename"] = GetRootPath(file->name(), name) + StripProto(name);
+    // we need to give each cross-file import an alias
+    printer->Print(
+        vars,
+        "import * as $alias$ from '$dep_filename$_pb';\n");
+  }
+
+  if (file->dependency_count() != 0) {
+    printer->Print("\n");
+  }
+}
+
 void PrintES6Imports(Printer* printer, const FileDescriptor* file) {
   std::map<string, string> vars;
-  std::map<string, const Descriptor*> messages = GetAllMessages(file);
-  vars["base_name"] = GetBasename(StripProto(file->name()));
-  printer->Print("import * as grpcWeb from 'grpc-web';\n");
+
+  printer->Print("import * as grpcWeb from 'grpc-web';\n\n");
+  PrintES6Dependencies(printer, file);
+
+  if (file->message_type_count() == 0) {
+    return;
+  }
+
   printer->Print("import {\n");
   printer->Indent();
-  for (std::map<string, const Descriptor*>::iterator it = messages.begin();
-       it != messages.end(); it++) {
-    vars["class_name"] = it->second->name();
-    printer->Print(vars, "$class_name$");
-    if (std::next(it) != messages.end()) {
-      printer->Print(",\n");
-    }
+  vars["class_name"] = file->message_type(0)->name();
+  printer->Print(vars, "$class_name$");
+
+  for (int i = 1; i < file->message_type_count(); i++) {
+    vars["class_name"] = file->message_type(i)->name();
+    printer->Print(vars, ",\n$class_name$");
   }
+
   printer->Outdent();
+  vars["base_name"] = GetBasename(StripProto(file->name()));
   printer->Print(vars, "} from './$base_name$_pb';\n\n");
 }
 
@@ -517,8 +527,8 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
       const MethodDescriptor* method = service->method(method_index);
       vars["js_method_name"] = LowercaseFirstLetter(method->name());
       vars["method_name"] = method->name();
-      vars["input_type"] = method->input_type()->name();
-      vars["output_type"] = method->output_type()->name();
+      vars["input_type"] = JSMessageType(method->input_type(), file);
+      vars["output_type"] = JSMessageType(method->output_type(), file);
       vars["serialize_func_name"] = GetSerializeMethodName(vars["mode"]);
       vars["deserialize_func_name"] = GetDeserializeMethodName(vars["mode"]);
       if (!method->client_streaming()) {
@@ -597,8 +607,8 @@ void PrintGrpcWebDtsClientClass(Printer* printer, const FileDescriptor* file, co
          ++method_index) {
       const MethodDescriptor* method = service->method(method_index);
       vars["js_method_name"] = LowercaseFirstLetter(method->name());
-      vars["input_type"] = method->input_type()->name();
-      vars["output_type"] = method->output_type()->name();
+      vars["input_type"] = JSMessageType(method->input_type(), file);
+      vars["output_type"] = JSMessageType(method->output_type(), file);
       if (!method->client_streaming()) {
         if (method->server_streaming()) {
           printer->Print(vars, "$js_method_name$(\n");
@@ -662,9 +672,9 @@ void PrintProtoDtsEnum(Printer *printer, const EnumDescriptor *desc)
   printer->Print("}\n");
 }
 
-void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc, string prefix)
+void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc, const FileDescriptor *file)
 {
-  string class_name = prefix + desc->name();
+  string class_name = desc->name();
   std::map<string, string> vars;
   vars["class_name"] = class_name;
 
@@ -674,7 +684,7 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc, string prefi
   for (int i = 0; i < desc->field_count(); i++)
   {
     vars["js_field_name"] = JSFieldName(desc->field(i));
-    vars["js_field_type"] = JSFieldType(desc->field(i));
+    vars["js_field_type"] = JSFieldType(desc->field(i), file);
     printer->Print(vars, "get$js_field_name$(): $js_field_type$;\n");
     printer->Print(vars, "set$js_field_name$(a: $js_field_type$): void;\n");
   }
@@ -691,40 +701,37 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc, string prefi
   printer->Indent();
   for (int i = 0; i < desc->field_count(); i++) {
     vars["js_field_name"] = CamelCaseJSFieldName(desc->field(i));
-    vars["js_field_type"] = JSFieldType(desc->field(i));
+    vars["js_field_type"] = JSFieldType(desc->field(i), file);
     printer->Print(vars, "$js_field_name$: $js_field_type$;\n");
   }
   printer->Outdent();
   printer->Print("}\n");
+
   for (int i = 0; i < desc->nested_type_count(); i++) {
-    vars["nested_name"] = desc->nested_type(i)->name();
-    printer->Print(vars, "export type $nested_name$ = $class_name$$nested_name$;\n");
+    printer->Print("\n");
+    PrintProtoDtsMessage(printer, desc->nested_type(i), file);
   }
+
   for (int i = 0; i < desc->enum_type_count(); i++) {
     printer->Print("\n");
     PrintProtoDtsEnum(printer, desc->enum_type(i));
   }
+
   printer->Outdent();
   printer->Print("}\n\n");
 
-  for (int i = 0; i < desc->nested_type_count(); i++) {
-    PrintProtoDtsMessage(printer, desc->nested_type(i), class_name);
-  }
 }
 
 void PrintProtoDtsFile(Printer *printer, const FileDescriptor *file)
 {
-  std::map<string, const Descriptor *> messages = GetAllMessages(file);
+  PrintES6Dependencies(printer, file);
 
-  for (std::map<string, const Descriptor *>::iterator it = messages.begin();
-       it != messages.end(); it++) {
-    PrintProtoDtsMessage(printer, it->second, "");
+  for (int i = 0; i < file->message_type_count(); i++) {
+    PrintProtoDtsMessage(printer, file->message_type(i), file);
   }
 
-  std::map<string, const EnumDescriptor *> enums = GetAllTopLevelEnums(messages);
-  for (std::map<string, const EnumDescriptor *>::iterator it = enums.begin();
-       it != enums.end(); it++) {
-    PrintProtoDtsEnum(printer, it->second);
+  for (int i = 0; i < file->enum_type_count(); i++) {
+    PrintProtoDtsEnum(printer, file->enum_type(i));
   }
 }
 
