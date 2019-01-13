@@ -963,11 +963,6 @@ class GrpcCodeGenerator : public CodeGenerator {
 
   bool Generate(const FileDescriptor* file, const string& parameter,
                 GeneratorContext* context, string* error) const override {
-    if (!file->service_count()) {
-      // No services, nothing to do.
-      return true;
-    }
-
     std::vector<std::pair<string, string> > options;
     ParseGeneratorParameter(parameter, &options);
 
@@ -1035,6 +1030,19 @@ class GrpcCodeGenerator : public CodeGenerator {
       return false;
     }
 
+    if (generate_dts || import_style == ImportStyle::TYPESCRIPT) {
+      string proto_dts_file_name = StripProto(file->name()) + "_pb.d.ts";
+      std::unique_ptr<ZeroCopyOutputStream> proto_dts_output(
+          context->Open(proto_dts_file_name));
+      Printer proto_dts_printer(proto_dts_output.get(), '$');
+      PrintProtoDtsFile(&proto_dts_printer, file);
+    }
+
+    if (!file->service_count()) {
+      // No services, nothing to do.
+      return true;
+    }
+
     std::unique_ptr<ZeroCopyOutputStream> output(
         context->Open(file_name));
     Printer printer(output.get(), '$');
@@ -1042,13 +1050,6 @@ class GrpcCodeGenerator : public CodeGenerator {
 
     if (import_style == ImportStyle::TYPESCRIPT) {
       PrintTypescriptFile(&printer, file, vars);
-
-      string proto_dts_file_name = StripProto(file->name()) + "_pb.d.ts";
-      std::unique_ptr<ZeroCopyOutputStream> proto_dts_output(
-          context->Open(proto_dts_file_name));
-      Printer proto_dts_printer(proto_dts_output.get(), '$');
-      PrintProtoDtsFile(&proto_dts_printer, file);
-
       return true;
     }
 
@@ -1158,12 +1159,6 @@ class GrpcCodeGenerator : public CodeGenerator {
       Printer grpcweb_dts_printer(grpcweb_dts_output.get(), '$');
 
       PrintGrpcWebDtsFile(&grpcweb_dts_printer, file);
-
-      std::unique_ptr<ZeroCopyOutputStream> proto_dts_output(
-          context->Open(proto_dts_file_name));
-      Printer proto_dts_printer(proto_dts_output.get(), '$');
-
-      PrintProtoDtsFile(&proto_dts_printer, file);
     }
 
     return true;
