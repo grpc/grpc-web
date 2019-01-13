@@ -353,23 +353,6 @@ string GetBasename(string filename)
   return filename;
 }
 
-void RegisterMessage(const Descriptor* desc, std::map<string, const Descriptor*>& message_types) {
-  if (message_types.count(desc->full_name())  != 0) {
-    return;
-  }
-
-  message_types[desc->full_name()] = desc;
-
-  for (int i = 0; i < desc->field_count(); i++) {
-    const FieldDescriptor* field = desc->field(i);
-    if (field->type() != FieldDescriptor::Type::TYPE_MESSAGE) {
-      continue;
-    }
-
-    RegisterMessage(field->message_type(), message_types);
-  }
-}
-
 /* Finds all message types used in all services in the file, and returns them
  * as a map of fully qualified message type name to message descriptor */
 std::map<string, const Descriptor*> GetAllMessages(const FileDescriptor* file) {
@@ -382,8 +365,8 @@ std::map<string, const Descriptor*> GetAllMessages(const FileDescriptor* file) {
          method_index < service->method_count();
          ++method_index) {
       const MethodDescriptor *method = service->method(method_index);
-      RegisterMessage(method->input_type(), message_types);
-      RegisterMessage(method->output_type(), message_types);
+      message_types[method->input_type()->full_name()] = method->input_type();
+      message_types[method->output_type()->full_name()] = method->output_type();
     }
   }
 
@@ -472,22 +455,38 @@ void PrintES6Imports(Printer* printer, const FileDescriptor* file) {
   printer->Print("import * as grpcWeb from 'grpc-web';\n\n");
   PrintES6Dependencies(printer, file);
 
-  if (file->message_type_count() == 0) {
+  std::map<string, const Descriptor*> messages = GetAllMessages(file);
+  for (std::map<string, const Descriptor*>::iterator it = messages.begin(); it != messages.end();) {
+    if (it->second->file() != file) {
+      it = messages.erase(it);
+    } else {
+      it++;
+    }
+  }
+
+  if (messages.empty()) {
+    return;
+  }
+
+  std::map<string, const Descriptor*>::iterator it = messages.begin();
+  vars["base_name"] = GetBasename(StripProto(file->name()));
+  vars["class_name"] = it->second->name();
+
+  if (messages.size() == 1) {
+    printer->Print(vars, "import {$class_name$} from './$base_name$_pb';\n\n");
     return;
   }
 
   printer->Print("import {\n");
   printer->Indent();
-  vars["class_name"] = file->message_type(0)->name();
   printer->Print(vars, "$class_name$");
 
-  for (int i = 1; i < file->message_type_count(); i++) {
-    vars["class_name"] = file->message_type(i)->name();
+  for (it++; it != messages.end(); it++) {
+    vars["class_name"] = it->second->name();
     printer->Print(vars, ",\n$class_name$");
   }
 
   printer->Outdent();
-  vars["base_name"] = GetBasename(StripProto(file->name()));
   printer->Print(vars, "} from './$base_name$_pb';\n\n");
 }
 
