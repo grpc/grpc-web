@@ -1,6 +1,6 @@
 # gRPC-Web features for browser (HTML) clients
 
-Due to browser limitation, gRPC-Web supports a different transport
+Due to browser limitation, gRPC-Web uses a different transport
 than the [HTTP/2 based gRPC protocol](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md).
 The difference between the gRPC-Web
 protocol and the HTTP/2 based gRPC protocol is specified in the core gRPC repo as [PROTOCOL-WEB](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md). 
@@ -9,9 +9,11 @@ In addition to the wire-transport spec, gRPC-Web also supports features that are
 This document is the official spec for those features. As the Web platform evolves,
 we expect some of those features will evolve too or become deprecated.
 
+On the server-side, [Envoy](https://www.envoyproxy.io/) is the official proxy with out-of-box gRPC-Web support. New features will be implemented in Envoy first. For in-process gRPC-Web support, we recommend the gRPC-Web module implement only a minimum set of features, e.g. to enable local development. Those features are identified as mandatory features in this doc.
+
 # CORS support
 
-* Should follow the [CORS spec](https://developer.mozilla.org/en-US/docs/Web/HTTP/Server-Side_Access_Control)
+* Should follow the [CORS spec](https://developer.mozilla.org/en-US/docs/Web/HTTP/Server-Side_Access_Control) (Mandatory)
   * Access-Control-Allow-Credentials to allow Authorization headers
   * Access-Control-Allow-Methods to allow POST and (preflight) OPTIONS only
   * Access-Control-Allow-Headers to whatever the preflight request carries
