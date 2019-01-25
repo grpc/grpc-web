@@ -677,7 +677,7 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc, const FileDe
   std::map<string, string> vars;
   vars["class_name"] = class_name;
 
-  printer->Print(vars, "export class $class_name$ {\n");
+  printer->Print(vars, "export class $class_name$ extends jspb.Message {\n");
   printer->Indent();
   printer->Print("constructor ();\n");
   for (int i = 0; i < desc->field_count(); i++)
@@ -688,9 +688,12 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc, const FileDe
     printer->Print(vars, "set$js_field_name$(a: $js_field_type$): void;\n");
   }
   printer->Print(vars,
-                "toObject(): $class_name$.AsObject;\n"
                 "serializeBinary(): Uint8Array;\n"
-                "static deserializeBinary: (bytes: {}) => $class_name$;\n");
+                "toObject(includeInstance?: boolean): $class_name$.AsObject;\n"
+                "static toObject(includeInstance: boolean, msg: $class_name$): $class_name$.AsObject;\n"
+                "static serializeBinaryToWriter(message: $class_name$, writer: jspb.BinaryWriter): void;\n"
+                "static deserializeBinary(bytes: Uint8Array): $class_name$;\n"
+                "static deserializeBiinaryFromReader(message: $class_name$, reader: jspb.BinaryReader): $class_name$;\n");
   printer->Outdent();
   printer->Print("}\n\n");
 
@@ -723,6 +726,7 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc, const FileDe
 
 void PrintProtoDtsFile(Printer *printer, const FileDescriptor *file)
 {
+  printer->Print("import * as jspb from \"google-protobuf\"\n\n");
   PrintES6Dependencies(printer, file);
 
   for (int i = 0; i < file->message_type_count(); i++) {
