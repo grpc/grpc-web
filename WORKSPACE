@@ -4,10 +4,10 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "io_bazel_rules_closure",
-    sha256 = "577d13dcab1115949602c0297e6b18b0c546326988e4c8bbda2429645b260bba",
-    strip_prefix = "rules_closure-9889e2348259a5aad7e805547c1a0cf311cfcd91",
+    sha256 = "3098d87bb0b5be7399b402da45b360b07a401bbd6d2b0033b0c16c4d060f4d01",
+    strip_prefix = "rules_closure-d1110778a2e94bcdac5d5d00044dcb6cd07f1d51",
     urls = [
-        "https://github.com/bazelbuild/rules_closure/archive/9889e2348259a5aad7e805547c1a0cf311cfcd91.zip",
+        "https://github.com/bazelbuild/rules_closure/archive/d1110778a2e94bcdac5d5d00044dcb6cd07f1d51.zip",
     ],
 )
 
