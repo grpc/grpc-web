@@ -28,12 +28,13 @@ goog.module.declareLegacyNamespace();
 
 
 
-/**
- * @typedef {{
- *   code: (number|undefined),
- *   message: (string|undefined),
- * }}
- */
-let Error;
+/** @record */
+function Error() {}
+
+/** @export {(number|undefined)} */
+Error.prototype.code;
+
+/** @export {(string|undefined)} */
+Error.prototype.message;
 
 exports = Error;

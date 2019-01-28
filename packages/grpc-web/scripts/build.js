@@ -24,29 +24,21 @@ const cwd = process.cwd();
 const indexPath = path.relative(cwd, path.resolve(__dirname, "../index.js"));
 
 const jsPaths = [
+  "../exports.js",
   "../../../javascript",
   "../../../third_party/closure-library",
-  "../../../third_party/grpc/third_party/protobuf/js",
 ].map(jsPath => path.relative(cwd, path.resolve(__dirname, jsPath)));
-
-const grpcWebExports = [
-  "grpc.web.AbstractClientBase",
-  "grpc.web.ClientReadableStream",
-  "grpc.web.Error",
-  "grpc.web.GrpcWebClientBase",
-  "grpc.web.GrpcWebClientReadableStream",
-  "grpc.web.GrpcWebStreamParser",
-  "grpc.web.Status",
-  "grpc.web.StatusCode",
-];
 
 const closureArgs = [].concat(
   jsPaths.map(jsPath => `--js=${jsPath}`),
-  grpcWebExports.map(grpcWebExport => `--entry_point=${grpcWebExport}`),
   [
+    `--entry_point=grpc.web.Exports`,
+    `--externs=externs.js`,
     `--dependency_mode=STRICT`,
+    `--compilation_level=ADVANCED_OPTIMIZATIONS`,
+    `--generate_exports`,
+    `--export_local_property_definitions`,
     `--js_output_file=${indexPath}`,
-    `--output_wrapper="%output%module.exports = grpc.web;"`,
   ]
 );
 

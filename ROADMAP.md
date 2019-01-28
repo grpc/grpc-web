@@ -71,7 +71,7 @@ Do you need request compression? Brotli?
 ## CORS 
 
 We plan to support CORS preflight as specified in
-[PROTOCOL-WEB.md](https://github.com/grpc/grpc-web/blob/master/PROTOCOL-WEB.md).
+[PROTOCOL-WEB.md](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md).
 
 ## Local Proxies
 
