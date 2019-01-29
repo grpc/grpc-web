@@ -1,12 +1,13 @@
 {
   "dependencies": {
-    "@types/node": "^10.7.1",
+    "@types/google-protobuf": "^3.2.7",
     "@types/jquery": "^3.3.6",
+    "@types/node": "^10.7.1",
     "browserify": "^16.2.2",
-    "jquery": "^3.3.1",
-    "mock-xmlhttprequest": "^2.0.0",
     "google-protobuf": "^3.6.1",
     "grpc-web": "^1.0.0",
+    "jquery": "^3.3.1",
+    "mock-xmlhttprequest": "^2.0.0",
     "webpack": "^4.16.5",
     "webpack-cli": "^3.1.0"
   }
