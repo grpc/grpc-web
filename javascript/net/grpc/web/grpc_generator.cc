@@ -259,6 +259,11 @@ string JSFieldType(const FieldDescriptor *desc, const FileDescriptor *file)
     }
     break;
   case FieldDescriptor::TYPE_MESSAGE:
+    if (desc->is_map()) {
+      string key_type = JSFieldType(desc->message_type()->field(0), file);
+      string value_type = JSFieldType(desc->message_type()->field(1), file);
+      return "jspb.Map<" + key_type + ", " + value_type + ">";
+    }
     js_field_type = JSMessageType(desc->message_type(), file);
     break;
   default:
@@ -275,8 +280,9 @@ string JSFieldType(const FieldDescriptor *desc, const FileDescriptor *file)
 string JSFieldName(const FieldDescriptor *desc)
 {
   string js_field_name = ToUpperCamel(ParseLowerUnderscore(desc->name()));
-  if (desc->is_repeated())
-  {
+  if (desc->is_map()) {
+    js_field_name += "Map";
+  } else if (desc->is_repeated()) {
     js_field_name += "List";
   }
   return js_field_name;
@@ -296,8 +302,9 @@ string ToCamelCase(const std::vector<string>& words)
 string CamelCaseJSFieldName(const FieldDescriptor *desc)
 {
   string js_field_name = ToCamelCase(ParseLowerUnderscore(desc->name()));
-  if (desc->is_repeated())
-  {
+  if (desc->is_map()) {
+    js_field_name += "Map";
+  } else if (desc->is_repeated()) {
     js_field_name += "List";
   }
   return js_field_name;
@@ -680,12 +687,23 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc, const FileDe
   printer->Print(vars, "export class $class_name$ extends jspb.Message {\n");
   printer->Indent();
   printer->Print("constructor ();\n");
-  for (int i = 0; i < desc->field_count(); i++)
-  {
-    vars["js_field_name"] = JSFieldName(desc->field(i));
-    vars["js_field_type"] = JSFieldType(desc->field(i), file);
-    printer->Print(vars, "get$js_field_name$(): $js_field_type$;\n");
-    printer->Print(vars, "set$js_field_name$(a: $js_field_type$): void;\n");
+  for (int i = 0; i < desc->field_count(); i++) {
+    const FieldDescriptor* field = desc->field(i);
+    vars["js_field_name"] = JSFieldName(field);
+    vars["js_field_type"] = JSFieldType(field, file);
+    if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
+      printer->Print(vars, "get$js_field_name$(): $js_field_type$;\n");
+    } else {
+      printer->Print(vars, "get$js_field_name$(): $js_field_type$ | undefined;\n");
+    }
+    if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
+      printer->Print(vars, "set$js_field_name$(value: $js_field_type$): void;\n");
+    } else if (!field->is_map()) {
+      printer->Print(vars, "set$js_field_name$(value?: $js_field_type$): void;\n");
+    }
+    if (field->type() == FieldDescriptor::TYPE_MESSAGE || field->is_repeated()) {
+      printer->Print(vars, "clear$js_field_name$(): void;\n");
+    }
   }
   printer->Print(vars,
                 "serializeBinary(): Uint8Array;\n"
@@ -702,9 +720,19 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc, const FileDe
   printer->Print("export type AsObject = {\n");
   printer->Indent();
   for (int i = 0; i < desc->field_count(); i++) {
-    vars["js_field_name"] = CamelCaseJSFieldName(desc->field(i));
-    vars["js_field_type"] = JSFieldType(desc->field(i), file);
-    printer->Print(vars, "$js_field_name$: $js_field_type$;\n");
+    const FieldDescriptor* field = desc->field(i);
+    vars["js_field_name"] = CamelCaseJSFieldName(field);
+    if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
+      vars["js_field_type"] = JSFieldType(field, file);
+      printer->Print(vars, "$js_field_name$: $js_field_type$;\n");
+    } else {
+      string js_field_type = JSMessageType(field->message_type(), file) + ".AsObject";
+      if (field->is_repeated()) {
+        js_field_type += "[]";
+      }
+      vars["js_field_type"] = js_field_type;
+      printer->Print(vars, "$js_field_name$?: $js_field_type$;\n");
+    }
   }
   printer->Outdent();
   printer->Print("}\n");
