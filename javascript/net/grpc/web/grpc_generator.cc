@@ -693,7 +693,7 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc, const FileDe
                 "static toObject(includeInstance: boolean, msg: $class_name$): $class_name$.AsObject;\n"
                 "static serializeBinaryToWriter(message: $class_name$, writer: jspb.BinaryWriter): void;\n"
                 "static deserializeBinary(bytes: Uint8Array): $class_name$;\n"
-                "static deserializeBiinaryFromReader(message: $class_name$, reader: jspb.BinaryReader): $class_name$;\n");
+                "static deserializeBinaryFromReader(message: $class_name$, reader: jspb.BinaryReader): $class_name$;\n");
   printer->Outdent();
   printer->Print("}\n\n");
 
