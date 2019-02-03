@@ -218,19 +218,18 @@ string ModuleAlias(const string& filename) {
 }
 
 string JSMessageType(const Descriptor *desc, const FileDescriptor *file) {
-    string result;
-    if (desc->file() != file) {
-      result = ModuleAlias(desc->file()->name());
-    }
-    result += StripPrefixString(desc->full_name(), desc->file()->package());
-    if (!result.empty() && result[0] == '.') {
-      result = result.substr(1);
-    }
-
-    return result;
+  string result;
+  if (desc->file() != file) {
+    result = ModuleAlias(desc->file()->name());
+  }
+  result += StripPrefixString(desc->full_name(), desc->file()->package());
+  if (!result.empty() && result[0] == '.') {
+    result = result.substr(1);
+  }
+  return result;
 }
 
-string JSFieldType(const FieldDescriptor *desc, const FileDescriptor *file)
+string JSElementType(const FieldDescriptor *desc, const FileDescriptor *file)
 {
   string js_field_type;
   switch (desc->type())
@@ -269,20 +268,25 @@ string JSFieldType(const FieldDescriptor *desc, const FileDescriptor *file)
     }
     break;
   case FieldDescriptor::TYPE_MESSAGE:
-    if (desc->is_map()) {
-      string key_type = JSFieldType(desc->message_type()->field(0), file);
-      string value_type = JSFieldType(desc->message_type()->field(1), file);
-      return "jspb.Map<" + key_type + ", " + value_type + ">";
-    }
     js_field_type = JSMessageType(desc->message_type(), file);
     break;
   default:
     js_field_type = "{}";
     break;
   }
+  return js_field_type;
+}
+
+string JSFieldType(const FieldDescriptor *desc, const FileDescriptor *file) {
+  string js_field_type = JSElementType(desc, file);
+  if (desc->is_map()) {
+    string key_type = JSFieldType(desc->message_type()->field(0), file);
+    string value_type = JSFieldType(desc->message_type()->field(1), file);
+    return "jspb.Map<" + key_type + ", " + value_type + ">";
+  }
   if (desc->is_repeated())
   {
-    js_field_type = "Array<" + js_field_type + ">";
+    return "Array<" + js_field_type + ">";
   }
   return js_field_type;
 }
@@ -304,9 +308,12 @@ string AsObjectFieldType(const FieldDescriptor *desc, const FileDescriptor *file
   return field_type;
 }
 
-string JSFieldName(const FieldDescriptor *desc)
-{
-  string js_field_name = ToUpperCamel(ParseLowerUnderscore(desc->name()));
+string JSElementName(const FieldDescriptor *desc) {
+  return ToUpperCamel(ParseLowerUnderscore(desc->name()));
+}
+
+string JSFieldName(const FieldDescriptor *desc) {
+  string js_field_name = JSElementName(desc);
   if (desc->is_map()) {
     js_field_name += "Map";
   } else if (desc->is_repeated()) {
@@ -718,7 +725,6 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
 
   printer->Print(vars, "export class $class_name$ extends jspb.Message {\n");
   printer->Indent();
-  printer->Print("constructor ();\n");
   for (int i = 0; i < desc->field_count(); i++) {
     const FieldDescriptor* field = desc->field(i);
     vars["js_field_name"] = JSFieldName(field);
@@ -730,15 +736,20 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
       printer->Print(vars,
                      "get$js_field_name$(): $js_field_type$ | undefined;\n");
     }
-    if (field->type() != FieldDescriptor::TYPE_MESSAGE || field->is_repeated()) {
+    if (!field->is_map() && (field->type() != FieldDescriptor::TYPE_MESSAGE || field->is_repeated())) {
       printer->Print(vars,
                      "set$js_field_name$(value: $js_field_type$): void;\n");
     } else if (!field->is_map()) {
       printer->Print(vars,
                      "set$js_field_name$(value?: $js_field_type$): void;\n");
     }
-    if (field->is_repeated() && !field->is_map()) {
+    if (field->type() == FieldDescriptor::TYPE_MESSAGE && !field->is_repeated() && !field->is_map()) {
+      printer->Print(vars, "has$js_field_name$(): boolean;\n");
+    }
+    if (field->type() == FieldDescriptor::TYPE_MESSAGE || field->is_repeated() || field->is_map()) {
       printer->Print(vars, "clear$js_field_name$(): void;\n");
+    }
+    if (field->is_repeated() && !field->is_map()) {
       vars["js_field_name"] = JSElementName(field);
       vars["js_field_type"] = JSElementType(field, file);
       if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
@@ -749,10 +760,7 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
                        "add$js_field_name$(value?: $js_field_type$, index?: number): $js_field_type$;\n");
       }
     }
-    if (field->type() == FieldDescriptor::TYPE_MESSAGE ||
-        field->is_repeated()) {
-      printer->Print(vars, "clear$js_field_name$(): void;\n");
-    }
+
     printer->Print("\n");
   }
   printer->Print(
@@ -781,7 +789,7 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
     if (field->type() != FieldDescriptor::TYPE_MESSAGE || field->is_repeated()) {
       printer->Print(vars, "$js_field_name$: $js_field_type$,\n");
     } else {
-      printer->Print(vars, "$js_field_name$?: $js_field_type$;\n");
+      printer->Print(vars, "$js_field_name$?: $js_field_type$,\n");
     }
   }
   printer->Outdent();
