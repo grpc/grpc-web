@@ -59,6 +59,76 @@ enum ImportStyle {
   TYPESCRIPT = 2,  // import * as grpcWeb from 'grpc-web'
 };
 
+const char* kKeyword[] = {
+  "abstract",
+  "boolean",
+  "break",
+  "byte",
+  "case",
+  "catch",
+  "char",
+  "class",
+  "const",
+  "continue",
+  "debugger",
+  "default",
+  "delete",
+  "do",
+  "double",
+  "else",
+  "enum",
+  "export",
+  "extends",
+  "false",
+  "final",
+  "finally",
+  "float",
+  "for",
+  "function",
+  "goto",
+  "if",
+  "implements",
+  "import",
+  "in",
+  "instanceof",
+  "int",
+  "interface",
+  "long",
+  "native",
+  "new",
+  "null",
+  "package",
+  "private",
+  "protected",
+  "public",
+  "return",
+  "short",
+  "static",
+  "super",
+  "switch",
+  "synchronized",
+  "this",
+  "throw",
+  "throws",
+  "transient",
+  "try",
+  "typeof",
+  "var",
+  "void",
+  "volatile",
+  "while",
+  "with",
+};
+
+bool IsReserved(const string& ident) {
+  for (int i = 0; i < sizeof(kKeyword) / sizeof(kKeyword[0]); i++) {
+    if (ident == kKeyword[i]) {
+      return true;
+    }
+  }
+  return false;
+}
+
 string GetModeVar(const Mode mode) {
   switch (mode) {
     case OP:
@@ -784,7 +854,11 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
   printer->Indent();
   for (int i = 0; i < desc->field_count(); i++) {
     const FieldDescriptor* field = desc->field(i);
-    vars["js_field_name"] = CamelCaseJSFieldName(field);
+    string js_field_name = CamelCaseJSFieldName(field);
+    if (IsReserved(js_field_name)) {
+      js_field_name = "pb_" + js_field_name;
+    }
+    vars["js_field_name"] = js_field_name;
     vars["js_field_type"] = AsObjectFieldType(field, file);
     if (field->type() != FieldDescriptor::TYPE_MESSAGE || field->is_repeated()) {
       printer->Print(vars, "$js_field_name$: $js_field_type$,\n");
