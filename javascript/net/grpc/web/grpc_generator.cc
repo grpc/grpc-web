@@ -31,6 +31,7 @@ using google::protobuf::FieldDescriptor;
 using google::protobuf::FileDescriptor;
 using google::protobuf::MethodDescriptor;
 using google::protobuf::ServiceDescriptor;
+using google::protobuf::FieldOptions;
 using google::protobuf::compiler::CodeGenerator;
 using google::protobuf::compiler::GeneratorContext;
 using google::protobuf::compiler::ParseGeneratorParameter;
@@ -238,15 +239,21 @@ string JSFieldType(const FieldDescriptor *desc, const FileDescriptor *file)
   case FieldDescriptor::TYPE_FLOAT:
   case FieldDescriptor::TYPE_INT32:
   case FieldDescriptor::TYPE_UINT32:
+  case FieldDescriptor::TYPE_SINT32:
+  case FieldDescriptor::TYPE_FIXED32:
+  case FieldDescriptor::TYPE_SFIXED32:
+    js_field_type = "number";
+    break;
   case FieldDescriptor::TYPE_INT64:
   case FieldDescriptor::TYPE_UINT64:
-  case FieldDescriptor::TYPE_FIXED32:
-  case FieldDescriptor::TYPE_FIXED64:
-  case FieldDescriptor::TYPE_SINT32:
   case FieldDescriptor::TYPE_SINT64:
-  case FieldDescriptor::TYPE_SFIXED32:
+  case FieldDescriptor::TYPE_FIXED64:
   case FieldDescriptor::TYPE_SFIXED64:
-    js_field_type = "number";
+    if (desc->options().jstype() == FieldOptions::JS_STRING) {
+      js_field_type = "string";
+    } else {
+      js_field_type = "number";
+    };
     break;
   case FieldDescriptor::TYPE_BOOL:
     js_field_type = "boolean";
@@ -284,18 +291,16 @@ string AsObjectFieldType(const FieldDescriptor *desc, const FileDescriptor *file
   if (desc->type() != FieldDescriptor::TYPE_MESSAGE) {
     return JSFieldType(desc, file);
   };
-
   if (desc->is_map()) {
     const Descriptor* message = desc->message_type();
     string key_type = AsObjectFieldType(message->field(0), file);
     string value_type = AsObjectFieldType(message->field(1), file);
     return "Array<[" + key_type + ", " + value_type + "]>";
   };
-  
   string field_type = JSMessageType(desc->message_type(), file) + ".AsObject";
   if (desc->is_repeated()) {
-    field_type = "Array<" + field_type + ">";
-  }
+    return "Array<" + field_type + ">";
+  };
   return field_type;
 }
 
@@ -783,7 +788,7 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
   printer->Print("}\n");
 
   for (int i = 0; i < desc->nested_type_count(); i++) {
-    if (desc->options().map_entry()) {
+    if (desc->nested_type(i)->options().map_entry()) {
       continue;
     }
     printer->Print("\n");
