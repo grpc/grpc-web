@@ -253,7 +253,10 @@ string JSFieldType(const FieldDescriptor *desc, const FileDescriptor *file)
     js_field_type = "string";
     break;
   case FieldDescriptor::TYPE_ENUM:
-    js_field_type = StripPrefixString(desc->enum_type()->full_name(), desc->enum_type()->file()->package());
+    if (desc->enum_type()->file() != file) {
+      js_field_type = ModuleAlias(desc->enum_type()->file()->name());
+    }
+    js_field_type += StripPrefixString(desc->enum_type()->full_name(), desc->enum_type()->file()->package());
     if (!js_field_type.empty() && js_field_type[0] == '.') {
       js_field_type = js_field_type.substr(1);
     }
