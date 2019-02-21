@@ -292,7 +292,13 @@ run the 3 processes all in the background.
  `dist/main.js` we generated earlier.
  
  ```sh
- $ python -m SimpleHTTPServer 8081 &
+ $ python2 -m SimpleHTTPServer 8081 &
+ ```
+ 
+ or for Python 3.x
+ 
+ ```sh
+ $ python3 -m http.server 8081 &
  ```
  
 When these are all ready, you can open a browser tab and navigate to
