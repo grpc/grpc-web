@@ -22,6 +22,7 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <algorithm>
+#include <string>
 
 using google::protobuf::Descriptor;
 using google::protobuf::EnumDescriptor;
@@ -253,7 +254,8 @@ string JSFieldType(const FieldDescriptor *desc, const FileDescriptor *file)
     js_field_type = "string";
     break;
   case FieldDescriptor::TYPE_ENUM:
-    js_field_type = StripPrefixString(desc->enum_type()->full_name(), desc->enum_type()->file()->package());
+    js_field_type = StripPrefixString(desc->enum_type()->full_name(),
+                                      desc->enum_type()->file()->package());
     if (!js_field_type.empty() && js_field_type[0] == '.') {
       js_field_type = js_field_type.substr(1);
     }
@@ -291,11 +293,13 @@ string JSFieldName(const FieldDescriptor *desc)
 // Like ToUpperCamel except the first letter is not converted.
 string ToCamelCase(const std::vector<string>& words)
 {
-  if (words.size() == 0) {
+  if (words.empty()) {
       return "";
   }
   string result = words[0];
-  return result + ToUpperCamel(std::vector<string>(words.begin()+1, words.begin()+words.size()));
+  return result + ToUpperCamel(std::vector<string>(
+      words.begin()+1,
+      words.begin()+words.size()));
 }
 
 // Like JSFieldName, but with first letter not uppercased
@@ -463,7 +467,8 @@ void PrintES6Imports(Printer* printer, const FileDescriptor* file) {
   PrintES6Dependencies(printer, file);
 
   std::map<string, const Descriptor*> messages = GetAllMessages(file);
-  for (std::map<string, const Descriptor*>::iterator it = messages.begin(); it != messages.end();) {
+  for (std::map<string, const Descriptor*>::iterator it = messages.begin();
+       it != messages.end();) {
     if (it->second->file() != file) {
       it = messages.erase(it);
     } else {
@@ -595,7 +600,8 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
   }
 }
 
-void PrintGrpcWebDtsClientClass(Printer* printer, const FileDescriptor* file, const string &client_type) {
+void PrintGrpcWebDtsClientClass(Printer* printer, const FileDescriptor* file,
+                                const string &client_type) {
   std::map<string, string> vars;
   vars["client_type"] = client_type;
   for (int service_index = 0; service_index < file->service_count();
@@ -645,7 +651,8 @@ void PrintGrpcWebDtsClientClass(Printer* printer, const FileDescriptor* file, co
                            "           response: $output_type$) => void\n");
             printer->Outdent();
             printer->Print(vars,
-                           "): grpcWeb.ClientReadableStream<$output_type$>;\n\n");
+                           "): grpcWeb.ClientReadableStream<$output_type$>;");
+            printer->Print("\n\n");
           }
         }
       }
@@ -678,8 +685,8 @@ void PrintProtoDtsEnum(Printer *printer, const EnumDescriptor *desc)
   printer->Print("}\n");
 }
 
-void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc, const FileDescriptor *file)
-{
+void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
+                          const FileDescriptor *file) {
   string class_name = desc->name();
   std::map<string, string> vars;
   vars["class_name"] = class_name;
@@ -692,26 +699,36 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc, const FileDe
     vars["js_field_name"] = JSFieldName(field);
     vars["js_field_type"] = JSFieldType(field, file);
     if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
-      printer->Print(vars, "get$js_field_name$(): $js_field_type$;\n");
+      printer->Print(vars,
+                     "get$js_field_name$(): $js_field_type$;\n");
     } else {
-      printer->Print(vars, "get$js_field_name$(): $js_field_type$ | undefined;\n");
+      printer->Print(vars,
+                     "get$js_field_name$(): $js_field_type$ | undefined;\n");
     }
     if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
-      printer->Print(vars, "set$js_field_name$(value: $js_field_type$): void;\n");
+      printer->Print(vars,
+                     "set$js_field_name$(value: $js_field_type$): void;\n");
     } else if (!field->is_map()) {
-      printer->Print(vars, "set$js_field_name$(value?: $js_field_type$): void;\n");
+      printer->Print(vars,
+                     "set$js_field_name$(value?: $js_field_type$): void;\n");
     }
-    if (field->type() == FieldDescriptor::TYPE_MESSAGE || field->is_repeated()) {
+    if (field->type() == FieldDescriptor::TYPE_MESSAGE ||
+        field->is_repeated()) {
       printer->Print(vars, "clear$js_field_name$(): void;\n");
     }
   }
-  printer->Print(vars,
-                "serializeBinary(): Uint8Array;\n"
-                "toObject(includeInstance?: boolean): $class_name$.AsObject;\n"
-                "static toObject(includeInstance: boolean, msg: $class_name$): $class_name$.AsObject;\n"
-                "static serializeBinaryToWriter(message: $class_name$, writer: jspb.BinaryWriter): void;\n"
-                "static deserializeBinary(bytes: Uint8Array): $class_name$;\n"
-                "static deserializeBinaryFromReader(message: $class_name$, reader: jspb.BinaryReader): $class_name$;\n");
+  printer->Print(
+      vars,
+      "serializeBinary(): Uint8Array;\n"
+      "toObject(includeInstance?: boolean): "
+      "$class_name$.AsObject;\n"
+      "static toObject(includeInstance: boolean, msg: $class_name$): "
+      "$class_name$.AsObject;\n"
+      "static serializeBinaryToWriter(message: $class_name$, writer: "
+      "jspb.BinaryWriter): void;\n"
+      "static deserializeBinary(bytes: Uint8Array): $class_name$;\n"
+      "static deserializeBinaryFromReader(message: $class_name$, reader: "
+      "jspb.BinaryReader): $class_name$;\n");
   printer->Outdent();
   printer->Print("}\n\n");
 
@@ -726,7 +743,8 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc, const FileDe
       vars["js_field_type"] = JSFieldType(field, file);
       printer->Print(vars, "$js_field_name$: $js_field_type$;\n");
     } else {
-      string js_field_type = JSMessageType(field->message_type(), file) + ".AsObject";
+      string js_field_type = JSMessageType(field->message_type(), file) +
+                             ".AsObject";
       if (field->is_repeated()) {
         js_field_type += "[]";
       }
@@ -749,7 +767,6 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc, const FileDe
 
   printer->Outdent();
   printer->Print("}\n\n");
-
 }
 
 void PrintProtoDtsFile(Printer *printer, const FileDescriptor *file)
@@ -839,11 +856,22 @@ void PrintPromiseServiceConstructor(Printer* printer,
   printer->Print(
       vars,
       "  /**\n"
-      "   * @private @const {!proto.$package_dot$$service_name$Client} The "
-      "delegate callback based client\n"
+      "   * @private @const {!grpc.web.$mode$ClientBase} The client\n"
       "   */\n"
-      "  this.delegateClient_ = new proto.$package_dot$$service_name$Client(\n"
-      "      hostname, credentials, options);\n\n"
+      "  this.client_ = new grpc.web.$mode$ClientBase(options);\n\n"
+      "  /**\n"
+      "   * @private @const {string} The hostname\n"
+      "   */\n"
+      "  this.hostname_ = hostname;\n\n"
+      "  /**\n"
+      "   * @private @const {?Object} The credentials to be used to connect\n"
+      "   *    to the server\n"
+      "   */\n"
+      "  this.credentials_ = credentials;\n\n"
+      "  /**\n"
+      "   * @private @const {?Object} Options for the client\n"
+      "   */\n"
+      "  this.options_ = options;\n"
       "};\n\n\n");
 }
 
@@ -918,8 +946,7 @@ void PrintUnaryCall(Printer* printer, std::map<string, string> vars) {
   printer->Print("};\n\n\n");
 }
 
-void PrintPromiseUnaryCall(Printer* printer,
-                           const std::map<string, string>& vars) {
+void PrintPromiseUnaryCall(Printer* printer, std::map<string, string> vars) {
   printer->Print(vars,
                  "/**\n"
                  " * @param {!proto.$in$} request The\n"
@@ -927,20 +954,29 @@ void PrintPromiseUnaryCall(Printer* printer,
                  " * @param {?Object<string, string>} metadata User defined\n"
                  " *     call metadata\n"
                  " * @return {!Promise<!proto.$out$>}\n"
-                 " *     The XHR Node Readable Stream\n"
+                 " *     A native promise that resolves to the response\n"
                  " */\n"
                  "proto.$package_dot$$service_name$PromiseClient.prototype"
                  ".$js_method_name$ =\n");
   printer->Indent();
   printer->Print(vars,
                  "  function(request, metadata) {\n"
-                 "var _this = this;\n"
-                 "return new Promise(function (resolve, reject) {\n"
-                 "  _this.delegateClient_.$js_method_name$(\n"
-                 "    request, metadata, function (error, response) {\n"
-                 "      error ? reject(error) : resolve(response);\n"
-                 "    });\n"
-                 "});\n");
+                 "return this.client_.unaryCall(this.hostname_ +\n");
+  printer->Indent();
+  printer->Indent();
+  if (vars["mode"] == GetModeVar(Mode::OP) ||
+      vars["mode"] == GetModeVar(Mode::OPJSPB)) {
+    printer->Print(vars,
+                   "'/$$rpc/$package_dot$$service_name$/$method_name$',\n");
+  } else {
+    printer->Print(vars, "'/$package_dot$$service_name$/$method_name$',\n");
+  }
+  printer->Print(vars,
+                 "request,\n"
+                 "metadata || {},\n"
+                 "methodInfo_$service_name$_$method_name$);\n");
+  printer->Outdent();
+  printer->Outdent();
   printer->Outdent();
   printer->Print("};\n\n\n");
 }
@@ -958,16 +994,9 @@ void PrintServerStreamingCall(Printer* printer, std::map<string, string> vars) {
       "proto.$package_dot$$service_name$$client_type$.prototype."
       "$js_method_name$ =\n");
   printer->Indent();
-  if (vars["client_type"] == "PromiseClient") {
-    printer->Print(
-        "  function(request, metadata) {\n"
-        "return this.delegateClient_.client_.serverStreaming("
-        "this.delegateClient_.hostname_ +\n");
-  } else {
-    printer->Print(
-        "  function(request, metadata) {\n"
-        "return this.client_.serverStreaming(this.hostname_ +\n");
-  }
+  printer->Print(
+      "  function(request, metadata) {\n"
+      "return this.client_.serverStreaming(this.hostname_ +\n");
   printer->Indent();
   printer->Indent();
   if (vars["mode"] == GetModeVar(Mode::OP) ||
@@ -980,7 +1009,7 @@ void PrintServerStreamingCall(Printer* printer, std::map<string, string> vars) {
   printer->Print(
       vars,
       "request,\n"
-      "metadata,\n"
+      "metadata || {},\n"
       "methodInfo_$service_name$_$method_name$);\n");
   printer->Outdent();
   printer->Outdent();

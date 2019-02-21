@@ -91,6 +91,19 @@ GatewayClientBase.prototype.rpcCall = function(
 /**
  * @override
  */
+GatewayClientBase.prototype.unaryCall = function(
+    method, request, metadata, methodInfo) {
+  return new Promise((resolve, reject) => {
+    this.rpcCall(method, request, metadata, methodInfo, (error, response) => {
+      error ? reject(error) : resolve(response);
+    });
+  });
+};
+
+
+/**
+ * @override
+ */
 GatewayClientBase.prototype.serverStreaming = function(
     method, request, metadata, methodInfo) {
   var xhr = this.newXhr_();
