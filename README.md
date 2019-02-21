@@ -107,7 +107,8 @@ typings file will also be generated for the protobuf messages and service stub.
 `import_style=typescript`: (Experimental) The service stub will be generated
 in TypeScript.
 
-**Note: `commonjs+dts` and `typescript` only works with `--grpc-web_out=` import style.**
+**Note: `commonjs+dts` and `typescript` only works with `--grpc-web_out=`
+import style.**
 
 ### Wire Format Mode
 

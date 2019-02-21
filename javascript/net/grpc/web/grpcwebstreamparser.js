@@ -113,7 +113,7 @@ const GrpcWebStreamParser = function() {
 };
 
 
-var Parser = GrpcWebStreamParser;
+const Parser = GrpcWebStreamParser;
 
 
 /**

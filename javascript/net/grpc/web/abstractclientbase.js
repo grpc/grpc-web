@@ -92,6 +92,19 @@ AbstractClientBase.prototype.rpcCall = goog.abstractMethod;
  * @param {!Object<string, string>} metadata User defined call metadata
  * @param {!AbstractClientBase.MethodInfo<REQUEST, RESPONSE>}
  *   methodInfo Information of this RPC method
+ * @return {!Promise<!RESPONSE>}
+ *   A promise that resolves to the response message
+ */
+AbstractClientBase.prototype.unaryCall = goog.abstractMethod;
+
+
+/**
+ * @template REQUEST, RESPONSE
+ * @param {string} method The method to invoke
+ * @param {REQUEST} request The request proto
+ * @param {!Object<string, string>} metadata User defined call metadata
+ * @param {!AbstractClientBase.MethodInfo<REQUEST, RESPONSE>}
+ *   methodInfo Information of this RPC method
  * @return {!ClientReadableStream<RESPONSE>} The Client Readable Stream
  */
 AbstractClientBase.prototype.serverStreaming = goog.abstractMethod;
