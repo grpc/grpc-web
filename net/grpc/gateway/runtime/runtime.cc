@@ -343,19 +343,24 @@ grpc_channel* Runtime::GetBackendChannel(
       return result->second;
     }
   }
+  std::vector<grpc_arg> args;
   grpc_arg arg_max_message_length;
   arg_max_message_length.type = GRPC_ARG_INTEGER;
   arg_max_message_length.key = const_cast<char*>(GRPC_ARG_MAX_MESSAGE_LENGTH);
   arg_max_message_length.value.integer = 100 * 1024 * 1024;
-  grpc_arg arg_ssl_target;
-  arg_ssl_target.type = GRPC_ARG_STRING;
-  arg_ssl_target.key = const_cast<char*>(GRPC_SSL_TARGET_NAME_OVERRIDE_ARG);
-  arg_ssl_target.value.string = const_cast<char*>(ssl_target_override.c_str());
+  args.push_back(arg_max_message_length);
 
-  grpc_arg args[] = {arg_max_message_length, arg_ssl_target};
+  if (!ssl_target_override.empty()) {
+    grpc_arg arg_ssl_target;
+    arg_ssl_target.type = GRPC_ARG_STRING;
+    arg_ssl_target.key = const_cast<char*>(GRPC_SSL_TARGET_NAME_OVERRIDE_ARG);
+    arg_ssl_target.value.string =
+        const_cast<char*>(ssl_target_override.c_str());
+    args.push_back(arg_ssl_target);
+  }
   grpc_channel_args channel_args;
-  channel_args.num_args = 2;
-  channel_args.args = args;
+  channel_args.num_args = args.size();
+  channel_args.args = args.data();
 
   grpc_channel* channel = nullptr;
   if (ssl) {
