@@ -35,7 +35,6 @@ const closureArgs = [].concat(
     `--entry_point=grpc.web.Exports`,
     `--externs=externs.js`,
     `--dependency_mode=STRICT`,
-    `--compilation_level=ADVANCED_OPTIMIZATIONS`,
     `--generate_exports`,
     `--export_local_property_definitions`,
     `--js_output_file=${indexPath}`,
