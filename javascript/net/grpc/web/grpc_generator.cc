@@ -32,6 +32,7 @@ using google::protobuf::FileDescriptor;
 using google::protobuf::MethodDescriptor;
 using google::protobuf::ServiceDescriptor;
 using google::protobuf::FieldOptions;
+using google::protobuf::OneofDescriptor;
 using google::protobuf::compiler::CodeGenerator;
 using google::protobuf::compiler::GeneratorContext;
 using google::protobuf::compiler::ParseGeneratorParameter;
@@ -172,6 +173,17 @@ string UppercaseFirstLetter(string s) {
     return s;
   }
   s[0] = ::toupper(s[0]);
+  return s;
+}
+
+string Uppercase(string s) {
+  if (s.empty()) {
+    return s;
+  }
+
+  for (size_t i = 0; i < s.size(); i++) {
+    s[i] = ::toupper(s[i]);
+  }
   return s;
 }
 
@@ -788,6 +800,25 @@ void PrintProtoDtsEnum(Printer *printer, const EnumDescriptor *desc)
   printer->Print("}\n");
 }
 
+void PrintProtoDtsOneofCase(Printer *printer, const OneofDescriptor *desc)
+{
+  std::map<string, string> vars;
+  vars["oneof_name"] = ToUpperCamel(ParseLowerUnderscore(desc->name()));
+  vars["oneof_name_upper"] = Uppercase(desc->name());
+
+  printer->Print(vars, "export enum $oneof_name$Case { \n");
+  printer->Indent();
+  printer->Print(vars, "$oneof_name_upper$_NOT_SET = 0,\n");
+  for (int i = 0; i < desc->field_count(); i++) {
+    const FieldDescriptor *field = desc->field(i);
+    vars["field_name"] = Uppercase(field->name());
+    vars["field_number"] = std::to_string(field->number());
+    printer->Print(vars, "$field_name$ = $field_number$,\n");
+  }
+  printer->Outdent();
+  printer->Print("}\n");
+}
+
 void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
                           const FileDescriptor *file) {
   string class_name = desc->name();
@@ -837,9 +868,20 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
                        "index?: number): $js_field_type$;\n");
       }
     }
+    if (field->containing_oneof() != nullptr) {
+      printer->Print(vars, "has$js_field_name$(): boolean;\n");
+    }
 
     printer->Print("\n");
   }
+
+  for (int i = 0; i < desc->oneof_decl_count(); i++) {
+    const OneofDescriptor* oneof = desc->oneof_decl(i);
+    vars["js_oneof_name"] = ToUpperCamel(ParseLowerUnderscore(oneof->name()));
+    printer->Print(vars, "get$js_oneof_name$Case(): $class_name$.$js_oneof_name$Case;\n");
+    printer->Print("\n");
+  }
+
   printer->Print(
       vars,
       "serializeBinary(): Uint8Array;\n"
@@ -888,6 +930,11 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
   for (int i = 0; i < desc->enum_type_count(); i++) {
     printer->Print("\n");
     PrintProtoDtsEnum(printer, desc->enum_type(i));
+  }
+
+  for (int i = 0; i < desc->oneof_decl_count(); i++) {
+    printer->Print("\n");
+    PrintProtoDtsOneofCase(printer, desc->oneof_decl(i));
   }
 
   printer->Outdent();
