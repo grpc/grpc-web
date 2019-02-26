@@ -322,7 +322,7 @@ string JSElementType(const FieldDescriptor *desc, const FileDescriptor *file)
       js_field_type = "string";
     } else {
       js_field_type = "number";
-    };
+    }
     break;
   case FieldDescriptor::TYPE_BOOL:
     js_field_type = "boolean";
@@ -361,20 +361,21 @@ string JSFieldType(const FieldDescriptor *desc, const FileDescriptor *file) {
   return js_field_type;
 }
 
-string AsObjectFieldType(const FieldDescriptor *desc, const FileDescriptor *file) {
+string AsObjectFieldType(const FieldDescriptor *desc,
+                         const FileDescriptor *file) {
   if (desc->type() != FieldDescriptor::TYPE_MESSAGE) {
     return JSFieldType(desc, file);
-  };
+  }
   if (desc->is_map()) {
     const Descriptor* message = desc->message_type();
     string key_type = AsObjectFieldType(message->field(0), file);
     string value_type = AsObjectFieldType(message->field(1), file);
     return "Array<[" + key_type + ", " + value_type + "]>";
-  };
+  }
   string field_type = JSMessageType(desc->message_type(), file) + ".AsObject";
   if (desc->is_repeated()) {
     return "Array<" + field_type + ">";
-  };
+  }
   return field_type;
 }
 
@@ -799,35 +800,41 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
     const FieldDescriptor* field = desc->field(i);
     vars["js_field_name"] = JSFieldName(field);
     vars["js_field_type"] = JSFieldType(field, file);
-    if (field->type() != FieldDescriptor::TYPE_MESSAGE || field->is_repeated()) {
+    if (field->type() != FieldDescriptor::TYPE_MESSAGE ||
+        field->is_repeated()) {
       printer->Print(vars,
                      "get$js_field_name$(): $js_field_type$;\n");
     } else {
       printer->Print(vars,
                      "get$js_field_name$(): $js_field_type$ | undefined;\n");
     }
-    if (!field->is_map() && (field->type() != FieldDescriptor::TYPE_MESSAGE || field->is_repeated())) {
+    if (!field->is_map() && (field->type() != FieldDescriptor::TYPE_MESSAGE ||
+                             field->is_repeated())) {
       printer->Print(vars,
                      "set$js_field_name$(value: $js_field_type$): void;\n");
     } else if (!field->is_map()) {
       printer->Print(vars,
                      "set$js_field_name$(value?: $js_field_type$): void;\n");
     }
-    if (field->type() == FieldDescriptor::TYPE_MESSAGE && !field->is_repeated() && !field->is_map()) {
+    if (field->type() == FieldDescriptor::TYPE_MESSAGE && !field->is_repeated()
+        && !field->is_map()) {
       printer->Print(vars, "has$js_field_name$(): boolean;\n");
     }
-    if (field->type() == FieldDescriptor::TYPE_MESSAGE || field->is_repeated() || field->is_map()) {
+    if (field->type() == FieldDescriptor::TYPE_MESSAGE ||
+        field->is_repeated() || field->is_map()) {
       printer->Print(vars, "clear$js_field_name$(): void;\n");
     }
     if (field->is_repeated() && !field->is_map()) {
       vars["js_field_name"] = JSElementName(field);
       vars["js_field_type"] = JSElementType(field, file);
       if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
-        printer->Print(vars, 
-                       "add$js_field_name$(value: $js_field_type$, index?: number);\n");
+        printer->Print(vars,
+                       "add$js_field_name$(value: $js_field_type$, "
+                       "index?: number);\n");
       } else {
-        printer->Print(vars, 
-                       "add$js_field_name$(value?: $js_field_type$, index?: number): $js_field_type$;\n");
+        printer->Print(vars,
+                       "add$js_field_name$(value?: $js_field_type$, "
+                       "index?: number): $js_field_type$;\n");
       }
     }
 
@@ -860,7 +867,8 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
     }
     vars["js_field_name"] = js_field_name;
     vars["js_field_type"] = AsObjectFieldType(field, file);
-    if (field->type() != FieldDescriptor::TYPE_MESSAGE || field->is_repeated()) {
+    if (field->type() != FieldDescriptor::TYPE_MESSAGE ||
+        field->is_repeated()) {
       printer->Print(vars, "$js_field_name$: $js_field_type$,\n");
     } else {
       printer->Print(vars, "$js_field_name$?: $js_field_type$,\n");
