@@ -878,7 +878,9 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
   for (int i = 0; i < desc->oneof_decl_count(); i++) {
     const OneofDescriptor* oneof = desc->oneof_decl(i);
     vars["js_oneof_name"] = ToUpperCamel(ParseLowerUnderscore(oneof->name()));
-    printer->Print(vars, "get$js_oneof_name$Case(): $class_name$.$js_oneof_name$Case;\n");
+    printer->Print(
+        vars,
+        "get$js_oneof_name$Case(): $class_name$.$js_oneof_name$Case;\n");
     printer->Print("\n");
   }
 
