@@ -342,6 +342,9 @@ string JSElementType(const FieldDescriptor *desc, const FileDescriptor *file)
   case FieldDescriptor::TYPE_STRING:
     js_field_type = "string";
     break;
+  case FieldDescriptor::TYPE_BYTES:
+    js_field_type = "Uint8Array | string";
+    break;
   case FieldDescriptor::TYPE_ENUM:
     js_field_type = StripPrefixString(desc->enum_type()->full_name(),
                                       desc->enum_type()->file()->package());
@@ -839,6 +842,11 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
       printer->Print(vars,
                      "get$js_field_name$(): $js_field_type$ | undefined;\n");
     }
+    if (field->type() == FieldDescriptor::TYPE_BYTES && !field->is_repeated()) {
+      printer->Print(vars,
+                     "get$js_field_name$_asU8(): Uint8Array;\n"
+                     "get$js_field_name$_asB64(): string;\n");
+    }
     if (!field->is_map() && (field->type() != FieldDescriptor::TYPE_MESSAGE ||
                              field->is_repeated())) {
       printer->Print(vars,
@@ -861,7 +869,7 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
       if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
         printer->Print(vars,
                        "add$js_field_name$(value: $js_field_type$, "
-                       "index?: number);\n");
+                       "index?: number): void;\n");
       } else {
         printer->Print(vars,
                        "add$js_field_name$(value?: $js_field_type$, "
