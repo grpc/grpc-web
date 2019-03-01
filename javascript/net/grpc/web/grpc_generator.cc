@@ -122,7 +122,7 @@ const char* kKeyword[] = {
 };
 
 bool IsReserved(const string& ident) {
-  for (int i = 0; i < sizeof(kKeyword) / sizeof(kKeyword[0]); i++) {
+  for (size_t i = 0; i < sizeof(kKeyword) / sizeof(kKeyword[0]); i++) {
     if (ident == kKeyword[i]) {
       return true;
     }
