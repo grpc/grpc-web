@@ -1,3 +1,4 @@
+.vscode
 bazel-bin
 bazel-genfiles
 bazel-grpc-web
