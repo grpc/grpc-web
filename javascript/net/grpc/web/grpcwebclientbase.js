@@ -39,10 +39,11 @@ const googCrypt = goog.require('goog.crypt.base64');
 /**
  * Base class for gRPC web client using the application/grpc-web wire format
  * @param {?Object=} opt_options
+ * @param {boolean=} credentials
  * @constructor
  * @implements {AbstractClientBase}
  */
-const GrpcWebClientBase = function(opt_options) {
+const GrpcWebClientBase = function(opt_options, credentials) {
   /**
    * @const
    * @private {string}
@@ -56,6 +57,13 @@ const GrpcWebClientBase = function(opt_options) {
    */
   this.suppressCorsPreflight_ =
     goog.getObjectByName('suppressCorsPreflight', opt_options) || false;
+
+
+  /**
+   * @const
+   * @private {boolean}
+   */
+  this.credentials_ = !!credentials;
 };
 
 
@@ -171,7 +179,9 @@ GrpcWebClientBase.prototype.serverStreaming = function(
  * @return {!XhrIo} The created XhrIo object
  */
 GrpcWebClientBase.prototype.newXhr_ = function() {
-  return new XhrIo();
+  var xhrIo = new XhrIo();
+  xhrIo.setWithCredentials(this.credentials_);
+  return xhrIo;
 };
 
 

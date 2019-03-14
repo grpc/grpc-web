@@ -647,7 +647,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
       printer->Print(vars, "options['format'] = '$format$';\n\n");
     }
     printer->Print(vars,
-                   "this.client_ = new grpcWeb.$mode$ClientBase(options);\n"
+                   "this.client_ = new grpcWeb.$mode$ClientBase(options, credentials);\n"
                    "this.hostname_ = hostname;\n"
                    "this.credentials_ = credentials;\n"
                    "this.options_ = options;\n");
@@ -1004,7 +1004,7 @@ void PrintServiceConstructor(Printer* printer,
       "  /**\n"
       "   * @private @const {!grpc.web.$mode$ClientBase} The client\n"
       "   */\n"
-      "  this.client_ = new grpc.web.$mode$ClientBase(options);\n\n"
+      "  this.client_ = new grpc.web.$mode$ClientBase(options, credentials);\n\n"
       "  /**\n"
       "   * @private @const {string} The hostname\n"
       "   */\n"
@@ -1043,7 +1043,7 @@ void PrintPromiseServiceConstructor(Printer* printer,
       "  /**\n"
       "   * @private @const {!grpc.web.$mode$ClientBase} The client\n"
       "   */\n"
-      "  this.client_ = new grpc.web.$mode$ClientBase(options);\n\n"
+      "  this.client_ = new grpc.web.$mode$ClientBase(options, credentials);\n\n"
       "  /**\n"
       "   * @private @const {string} The hostname\n"
       "   */\n"
