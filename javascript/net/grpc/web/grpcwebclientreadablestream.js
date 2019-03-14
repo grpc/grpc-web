@@ -143,42 +143,42 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
       return;
     }
     var messages = self.parser_.parse([].slice.call(byteSource));
-    if (!messages) return;
-
-    var FrameType = GrpcWebStreamParser.FrameType;
-    for (var i = 0; i < messages.length; i++) {
-      if (FrameType.DATA in messages[i]) {
-        var data = messages[i][FrameType.DATA];
-        if (data) {
-          var response = self.responseDeserializeFn_(data);
-          if (response) {
-            self.onDataCallback_(response);
+    if (messages) {
+      var FrameType = GrpcWebStreamParser.FrameType;
+      for (var i = 0; i < messages.length; i++) {
+        if (FrameType.DATA in messages[i]) {
+          var data = messages[i][FrameType.DATA];
+          if (data) {
+            var response = self.responseDeserializeFn_(data);
+            if (response) {
+              self.onDataCallback_(response);
+            }
           }
         }
-      }
-      if (FrameType.TRAILER in messages[i]) {
-        if (messages[i][FrameType.TRAILER].length > 0) {
-          var trailerString = "";
-          for (var pos = 0; pos < messages[i][FrameType.TRAILER].length;
-            pos++) {
-            trailerString += String.fromCharCode(
-              messages[i][FrameType.TRAILER][pos]);
-          }
-          var trailers = self.parseHttp1Headers_(trailerString);
-          grpcStatusCode = StatusCode.OK;
-          grpcStatusMessage = "";
-          if (GRPC_STATUS in trailers) {
-            grpcStatusCode = trailers[GRPC_STATUS];
-          }
-          if (GRPC_STATUS_MESSAGE in trailers) {
-            grpcStatusMessage = trailers[GRPC_STATUS_MESSAGE];
-          }
-          if (self.onStatusCallback_) {
-            self.onStatusCallback_(/** @type {!Status} */({
-              code: Number(grpcStatusCode),
-              details: grpcStatusMessage,
-              metadata: trailers,
-            }));
+        if (FrameType.TRAILER in messages[i]) {
+          if (messages[i][FrameType.TRAILER].length > 0) {
+            var trailerString = "";
+            for (var pos = 0; pos < messages[i][FrameType.TRAILER].length;
+              pos++) {
+              trailerString += String.fromCharCode(
+                messages[i][FrameType.TRAILER][pos]);
+            }
+            var trailers = self.parseHttp1Headers_(trailerString);
+            grpcStatusCode = StatusCode.OK;
+            grpcStatusMessage = "";
+            if (GRPC_STATUS in trailers) {
+              grpcStatusCode = trailers[GRPC_STATUS];
+            }
+            if (GRPC_STATUS_MESSAGE in trailers) {
+              grpcStatusMessage = trailers[GRPC_STATUS_MESSAGE];
+            }
+            if (self.onStatusCallback_) {
+              self.onStatusCallback_(/** @type {!Status} */({
+                code: Number(grpcStatusCode),
+                details: grpcStatusMessage,
+                metadata: trailers,
+              }));
+            }
           }
         }
       }
