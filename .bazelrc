@@ -1,0 +1,2 @@
+# TODO(yannic): Remove once we are sure that the tests pass reliably.
+test --flaky_test_attempts=10
