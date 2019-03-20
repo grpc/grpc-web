@@ -49,26 +49,9 @@ wget https://github.com/bazelbuild/bazel/releases/download/"${BAZEL_VERSION}"/ba
 chmod +x ./bazel-"${BAZEL_VERSION}"-installer-linux-x86_64.sh
 ./bazel-"${BAZEL_VERSION}"-installer-linux-x86_64.sh --user
 $HOME/bin/bazel version
-
-# Run the bazel test command multiple times because of some flaky
-# behavior with libssl.so
-tries=15
-set +e
-for ((i=1;i<=$tries;i++));
-do
-  $HOME/bin/bazel clean
-  $HOME/bin/bazel test --cache_test_results=no \
-    //javascript/net/grpc/web/... \
-    //net/grpc/gateway/examples/...
-  ret=$?
-  if [ $ret -eq 0 ]; then
-    break
-  elif [ $i -eq $tries ]; then
-    exit 1
-  fi
-done
-set -e
-rm ./buildifier
+$HOME/bin/bazel test \
+  //javascript/net/grpc/web/... \
+  //net/grpc/gateway/examples/...
 rm ./bazel-"${BAZEL_VERSION}"-installer-linux-x86_64.sh
 
 # Build the grpc-web npm package
