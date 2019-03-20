@@ -31,6 +31,7 @@ BAZEL_FILES=$(find "${REPO_DIR}" \
     -not -path "${REPO_DIR}/third_party/*" -and \
     \( -name "BUILD.bazel" -o -name "*.bzl" \))
 ./buildifier -mode check ${BAZEL_FILES[@]}
+rm ./buildifier
 
 # These programs need to be already installed
 progs=(docker docker-compose npm curl)
