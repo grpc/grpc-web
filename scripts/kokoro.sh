@@ -51,6 +51,7 @@ chmod +x ./bazel-"${BAZEL_VERSION}"-installer-linux-x86_64.sh
 ./bazel-"${BAZEL_VERSION}"-installer-linux-x86_64.sh --user
 rm ./bazel-"${BAZEL_VERSION}"-installer-linux-x86_64.sh
 $HOME/bin/bazel version
+$HOME/bin/bazel clean
 $HOME/bin/bazel test \
   //javascript/net/grpc/web/... \
   //net/grpc/gateway/examples/...
