@@ -296,23 +296,6 @@ You can also try this
 $ docker-compose -f advanced.yml up -d node-server grpcwebproxy binary-client
 ```
 
-## Integration with Istio
-
-[Istio](https://istio.io/) enables the `envoy.grpc_web` web filter for services
-with port names prefixed with `grpc-web`. See
-[this](https://github.com/istio/istio/pull/10064) pull request on Istio for more
-details.
-
-You can also find the necessary configuration to get a gRPC-Web project up and
-running on Istio in the
-[gRPC-Web - Istio Demo](https://github.com/venilnoronha/grpc-web-istio-demo)
-repository. The
-[talk](https://grpconf19.sched.com/event/L70z/seamless-cloud-native-apps-with-grpc-web-and-istio-venil-noronha-vmware)
-and the
-[blog post](https://venilnoronha.io/seamless-cloud-native-apps-with-grpc-web-and-istio)
-on **Seamless Cloud-Native Apps with gRPC-Web and Istio** also discuss the
-motivation and the methodology for using gRPC-Web with Istio.
-
 ## Acknowledgement
 
 Big thanks to the following contributors for making significant contributions to
