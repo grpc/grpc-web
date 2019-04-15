@@ -229,7 +229,7 @@ Make sure they are both executable and are discoverable from your PATH.
 For example, in MacOS, you can do:
 
 ```
-$ sudo mv ~/Downloads/protoc-gen-grpc-web-1.0.3-darwin-x86_64 \
+$ sudo mv ~/Downloads/protoc-gen-grpc-web-1.0.4-darwin-x86_64 \
   /usr/local/bin/protoc-gen-grpc-web
 $ chmod +x /usr/local/bin/protoc-gen-grpc-web
 ```
@@ -274,27 +274,33 @@ We are ready to run the Hello World example. The following set of commands will
 run the 3 processes all in the background.
 
  1. Run the NodeJS gRPC Service. This listens at port `:9090`.
- 
+
  ```sh
  $ node server.js &
  ```
- 
+
  2. Run the Envoy proxy. The `envoy.yaml` file configures Envoy to listen to
  browser requests at port `:8080`, and forward them to port `:9090` (see
  above).
- 
+
  ```sh
  $ docker build -t helloworld/envoy -f ./envoy.Dockerfile .
  $ docker run -d -p 8080:8080 --network=host helloworld/envoy
  ```
- 
+
  3. Run the simple Web Server. This hosts the static file `index.html` and
  `dist/main.js` we generated earlier.
- 
+
  ```sh
- $ python -m SimpleHTTPServer 8081 &
+ $ python2 -m SimpleHTTPServer 8081 &
  ```
- 
+
+ or for Python 3.x
+
+ ```sh
+ $ python3 -m http.server 8081 &
+ ```
+
 When these are all ready, you can open a browser tab and navigate to
 
 ```

@@ -70,7 +70,7 @@ Make sure they are both executable and are discoverable from your PATH.
 For example, in MacOS, you can do:
 
 ```
-$ sudo mv ~/Downloads/protoc-gen-grpc-web-1.0.3-darwin-x86_64 \
+$ sudo mv ~/Downloads/protoc-gen-grpc-web-1.0.4-darwin-x86_64 \
   /usr/local/bin/protoc-gen-grpc-web
 $ chmod +x /usr/local/bin/protoc-gen-grpc-web
 ```
@@ -107,7 +107,8 @@ typings file will also be generated for the protobuf messages and service stub.
 `import_style=typescript`: (Experimental) The service stub will be generated
 in TypeScript.
 
-**Note: `commonjs+dts` and `typescript` only works with `--grpc-web_out=` import style.**
+**Note: `commonjs+dts` and `typescript` only works with `--grpc-web_out=`
+import style.**
 
 ### Wire Format Mode
 

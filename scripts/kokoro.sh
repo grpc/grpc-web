@@ -14,13 +14,27 @@
 # limitations under the License.
 set -ex
 
-cd "$(dirname "$0")"
-./init_submodules.sh
-cd ..
+SCRIPT_DIR=$(dirname "$0")
+REPO_DIR=$(realpath "${SCRIPT_DIR}/..")
+
+cd "${REPO_DIR}"
+./scripts/init_submodules.sh
 make clean
 
+# Lint bazel files.
+BUILDIFIER_VERSION=0.22.0
+wget "https://github.com/bazelbuild/buildtools/releases/download/${BUILDIFIER_VERSION}/buildifier"
+chmod +x "./buildifier"
+./buildifier -version
+BAZEL_FILES=$(find "${REPO_DIR}" \
+    -not -path "${REPO_DIR}/.git/*" -and \
+    -not -path "${REPO_DIR}/third_party/*" -and \
+    \( -name "BUILD.bazel" -o -name "*.bzl" \))
+./buildifier -mode check ${BAZEL_FILES[@]}
+rm ./buildifier
+
 # These programs need to be already installed
-progs=(docker docker-compose bazel npm curl)
+progs=(docker docker-compose npm curl)
 for p in "${progs[@]}"
 do
   command -v "$p" > /dev/null 2>&1 || \
@@ -31,15 +45,16 @@ done
 docker-compose -f advanced.yml build
 
 # Run all bazel unit tests
-BAZEL_VERSION=0.19.1
+BAZEL_VERSION=0.23.1
 wget https://github.com/bazelbuild/bazel/releases/download/"${BAZEL_VERSION}"/bazel-"${BAZEL_VERSION}"-installer-linux-x86_64.sh
 chmod +x ./bazel-"${BAZEL_VERSION}"-installer-linux-x86_64.sh
 ./bazel-"${BAZEL_VERSION}"-installer-linux-x86_64.sh --user
+rm ./bazel-"${BAZEL_VERSION}"-installer-linux-x86_64.sh
 $HOME/bin/bazel version
+$HOME/bin/bazel clean
 $HOME/bin/bazel test \
   //javascript/net/grpc/web/... \
   //net/grpc/gateway/examples/...
-rm ./bazel-"${BAZEL_VERSION}"-installer-linux-x86_64.sh
 
 # Build the grpc-web npm package
 cd packages/grpc-web && \

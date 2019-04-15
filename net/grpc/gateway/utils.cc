@@ -35,7 +35,7 @@ grpc::string Format(const char* format, ...) {
   char* buffer = reinterpret_cast<char*>(malloc(sizeof(char) * (length + 1)));
   if (vsnprintf(buffer, length + 1, format, args) < 0) {
     va_end(args);
-    return nullptr;
+    return "";
   }
   va_end(args);
   grpc::string message(buffer);

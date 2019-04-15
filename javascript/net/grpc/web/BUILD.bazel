@@ -10,7 +10,7 @@ cc_binary(
         "grpc_generator.cc",
     ],
     deps = [
-        "@com_google_protobuf//:protoc_lib"
+        "@com_google_protobuf//:protoc_lib",
     ],
 )
 
@@ -45,8 +45,8 @@ closure_js_library(
         "generictransportinterface.js",
     ],
     deps = [
-        "@io_bazel_rules_closure//closure/library/net/streams:nodereadablestream",
         "@io_bazel_rules_closure//closure/library/net:xhrio",
+        "@io_bazel_rules_closure//closure/library/net/streams:nodereadablestream",
     ],
 )
 
@@ -74,6 +74,9 @@ closure_js_library(
     srcs = [
         "grpcwebclientreadablestream.js",
     ],
+    suppress = [
+        "reportUnknownTypes",
+    ],
     deps = [
         ":clientreadablestream",
         ":generictransportinterface",
@@ -81,15 +84,12 @@ closure_js_library(
         ":status",
         ":statuscode",
         "@io_bazel_rules_closure//closure/library/crypt:base64",
-        "@io_bazel_rules_closure//closure/library/events:events",
+        "@io_bazel_rules_closure//closure/library/events",
         "@io_bazel_rules_closure//closure/library/net:errorcode",
         "@io_bazel_rules_closure//closure/library/net:eventtype",
         "@io_bazel_rules_closure//closure/library/net:xhrio",
         "@io_bazel_rules_closure//closure/library/net:xmlhttp",
         "@io_bazel_rules_closure//closure/library/string",
-    ],
-    suppress = [
-        "reportUnknownTypes",
     ],
 )
 
@@ -137,11 +137,12 @@ closure_js_test(
         "strictCheckTypes",
     ],
     deps = [
-        "@io_bazel_rules_closure//closure/library:testing",
-        "@io_bazel_rules_closure//closure/library/crypt:base64",
-        "@io_bazel_rules_closure//closure/library/events:events",
-        "@io_bazel_rules_closure//closure/library/structs:map",
         ":grpcwebclientbase",
+        "@io_bazel_rules_closure//closure/library/crypt:base64",
+        "@io_bazel_rules_closure//closure/library/events",
+        "@io_bazel_rules_closure//closure/library/structs:map",
+        "@io_bazel_rules_closure//closure/library/testing:jsunit",
+        "@io_bazel_rules_closure//closure/library/testing:testsuite",
     ],
 )
 
@@ -158,6 +159,7 @@ closure_js_test(
     ],
     deps = [
         ":grpcwebstreamparser",
-        "@io_bazel_rules_closure//closure/library:testing",
+        "@io_bazel_rules_closure//closure/library/testing:jsunit",
+        "@io_bazel_rules_closure//closure/library/testing:testsuite",
     ],
 )
