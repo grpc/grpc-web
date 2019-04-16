@@ -6,7 +6,7 @@ declare module "grpc-web" {
     class MethodInfo<Request, Response> {
       constructor (responseType: new () => Response,
                    requestSerializeFn: (request: Request) => {},
-                   responseDeserializeFn: (bytes: {}) => Response);
+                   responseDeserializeFn: (bytes: any) => Response);
     }
   }
 
