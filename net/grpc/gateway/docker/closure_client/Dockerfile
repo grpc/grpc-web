@@ -14,7 +14,7 @@
 
 FROM grpcweb/prereqs
 
-RUN apt-get -qq install -y \
+RUN apt-get -qq update && apt-get -qq install -y \
   default-jdk
 
 RUN cd /github/grpc-web && \
