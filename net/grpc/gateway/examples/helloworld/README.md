@@ -136,6 +136,13 @@ static_resources:
     hosts: [{ socket_address: { address: localhost, port_value: 9090 }}]
 ```
 
+NOTE: As per [this](https://github.com/grpc/grpc-web/issues/436): if you're running Docker on Mac/Windows, change the last line to 
+
+```yaml
+    ...
+    hosts: [{ socket_address: { address: host.docker.internal, port_value: 9090 }}]
+```
+
 To run Envoy (for later), you will need a simple Dockerfile. Put this in a
 `envoy.Dockerfile`.
 
@@ -286,6 +293,13 @@ run the 3 processes all in the background.
  ```sh
  $ docker build -t helloworld/envoy -f ./envoy.Dockerfile .
  $ docker run -d -p 8080:8080 --network=host helloworld/envoy
+ ```
+
+NOTE: Again, as per [this](https://github.com/grpc/grpc-web/issues/436): if you're running Docker on Mac/Windows, remove the --network=host option:
+
+ ```sh
+ ...
+ $ docker run -d -p 8080:8080 helloworld/envoy
  ```
 
  3. Run the simple Web Server. This hosts the static file `index.html` and
