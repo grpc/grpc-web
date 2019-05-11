@@ -18,11 +18,11 @@ package helloworld;
 
 service Greeter {
   // unary call
-  rpc SayHello (HelloRequest) returns (HelloReply);
+  rpc SayHello(HelloRequest) returns (HelloReply);
   // server streaming call
-  rpc SayRepeatHello (RepeatHelloRequest) returns (stream HelloReply);
+  rpc SayRepeatHello(RepeatHelloRequest) returns (stream HelloReply);
   // unary call - response after a length delay
-  rpc SayHelloAfterDelay (HelloRequest) returns (HelloReply);
+  rpc SayHelloAfterDelay(HelloRequest) returns (HelloReply);
 }
 
 message HelloRequest {
