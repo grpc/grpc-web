@@ -136,7 +136,8 @@ static_resources:
     hosts: [{ socket_address: { address: localhost, port_value: 9090 }}]
 ```
 
-NOTE: As per [this](https://github.com/grpc/grpc-web/issues/436): if you're running Docker on Mac/Windows, change the last line to 
+NOTE: As per [this issue](https://github.com/grpc/grpc-web/issues/436): if
+you are running Docker on Mac/Windows, change the last line to
 
 ```yaml
     ...
@@ -295,7 +296,8 @@ run the 3 processes all in the background.
  $ docker run -d -p 8080:8080 --network=host helloworld/envoy
  ```
 
-NOTE: Again, as per [this](https://github.com/grpc/grpc-web/issues/436): if you're running Docker on Mac/Windows, remove the --network=host option:
+NOTE: As per [this issue](https://github.com/grpc/grpc-web/issues/436):
+if you are running Docker on Mac/Windows, remove the `--network=host` option:
 
  ```sh
  ...
