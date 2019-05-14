@@ -46,11 +46,16 @@ const AbstractClientBase = function() {};
  * @param {function(new: RESPONSE, ...)} responseType
  * @param {function(REQUEST): ?} requestSerializeFn
  * @param {function(?): RESPONSE} responseDeserializeFn
+ * @param {string=} name
+ * @param {function(new: REQUEST, ...)=} requestType
  */
 AbstractClientBase.MethodInfo = function(
-    responseType,
-    requestSerializeFn,
-    responseDeserializeFn) {
+    responseType, requestSerializeFn, responseDeserializeFn, name,
+    requestType) {
+  /** @const */
+  this.name = name;
+  /** @const */
+  this.requestType = requestType;
   /** @const */
   this.responseType = responseType;
   /** @const */
