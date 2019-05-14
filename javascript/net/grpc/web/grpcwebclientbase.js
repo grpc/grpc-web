@@ -217,8 +217,7 @@ GrpcWebClientBase.prototype.processHeaders_ = function(xhr) {
     var timeout = Math.round(deadline - currentTime);
     xhr.headers.remove('deadline');
     if (timeout === Infinity) {
-      // Polyfill for "Number.MAX_SAFE_INTEGER"
-      var maxSafeInteger = Math.pow(2, 53) - 1;
+      var maxSafeInteger = 2147483647; // 2^31 - 1
       timeout = maxSafeInteger;
     }
     if (timeout > 0) {
