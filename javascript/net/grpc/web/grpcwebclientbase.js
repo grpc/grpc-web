@@ -217,8 +217,8 @@ GrpcWebClientBase.prototype.processHeaders_ = function(xhr) {
     var timeout = Math.round(deadline - currentTime);
     xhr.headers.remove('deadline');
     if (timeout === Infinity) {
-      var maxSafeInteger = 2147483647; // 2^31 - 1
-      timeout = maxSafeInteger;
+      // grpc-timeout header defaults to infinity if not set.
+      timeout = 0;
     }
     if (timeout > 0) {
       xhr.headers.set('grpc-timeout', timeout + 'm');
