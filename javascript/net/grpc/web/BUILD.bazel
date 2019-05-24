@@ -22,6 +22,7 @@ closure_js_library(
     deps = [
         ":clientreadablestream",
         ":error",
+        ":methoddescriptor",
     ],
 )
 
@@ -104,6 +105,13 @@ closure_js_library(
     deps = [
         "@io_bazel_rules_closure//closure/library/asserts",
         "@io_bazel_rules_closure//closure/library/net/streams:streamparser",
+    ],
+)
+
+closure_js_library(
+    name = "methoddescriptor",
+    srcs = [
+        "methoddescriptor.js",
     ],
 )
 
