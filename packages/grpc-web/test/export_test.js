@@ -7,6 +7,10 @@ describe('grpc-web export test', function() {
     assert.equal(typeof grpc.web.AbstractClientBase.MethodInfo, 'function');
   });
 
+  it('should have MethodDescriptor exported', function() {
+    assert.equal(typeof grpc.web.MethodDescriptor, 'function');
+  });
+
   it('should have GrpcWebClientBase#rpcCall() exported', function() {
     assert.equal(typeof grpc.web.GrpcWebClientBase.prototype.rpcCall, 'function');
   });
