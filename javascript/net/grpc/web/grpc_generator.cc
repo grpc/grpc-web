@@ -879,9 +879,6 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
                        "index?: number): $js_field_type$;\n");
       }
     }
-    if (field->containing_oneof() != nullptr) {
-      printer->Print(vars, "has$js_field_name$(): boolean;\n");
-    }
 
     printer->Print("\n");
   }

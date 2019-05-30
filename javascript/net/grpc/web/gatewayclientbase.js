@@ -181,8 +181,8 @@ GatewayClientBase.parseRpcStatus_ = function(data) {
   var metadata = {};
   var details = rpcStatus.getDetailsList();
   for (var i = 0; i < details.length; i++) {
-    var pair = Pair.deserializeBinary(
-      details[i].getValue());
+    var pair = details[i].unpackJspbCompat(
+      Pair, Pair.deserializeBinary, 'grpc.gateway.Pair');
     var first = googCrypt.utf8ByteArrayToString(
       pair.getFirst_asU8());
     var second = googCrypt.utf8ByteArrayToString(

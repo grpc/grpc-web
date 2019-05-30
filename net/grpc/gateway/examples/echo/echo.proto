@@ -16,8 +16,7 @@ syntax = "proto3";
 
 package grpc.gateway.testing;
 
-message Empty {
-}
+message Empty {}
 
 message EchoRequest {
   string message = 1;
@@ -67,8 +66,7 @@ service EchoService {
   rpc Echo(EchoRequest) returns (EchoResponse);
 
   // Sends back abort status.
-  rpc EchoAbort(EchoRequest) returns (EchoResponse) {
-  };
+  rpc EchoAbort(EchoRequest) returns (EchoResponse) {}
 
   // One empty request, ZERO processing, followed by one empty response
   // (minimum effort to do message serialization).
@@ -82,8 +80,7 @@ service EchoService {
   // One request followed by a sequence of responses (streamed download).
   // The server abort directly.
   rpc ServerStreamingEchoAbort(ServerStreamingEchoRequest)
-      returns (stream ServerStreamingEchoResponse) {
-  }
+      returns (stream ServerStreamingEchoResponse) {}
 
   // A sequence of requests followed by one response (streamed upload).
   // The server returns the total number of messages as the result.
