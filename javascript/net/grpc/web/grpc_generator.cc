@@ -1075,7 +1075,7 @@ void PrintMethodInfo(Printer* printer, std::map<string, string> vars) {
   printer->Print(vars,
                  "'/$package_dot$$service_name$/$method_name$',\n"
                  "$method_type$,\n"
-                 "proto.$in$,\n");
+                 "$in_type$,\n");
   printer->Print(vars,
                  "$out_type$,\n"
                  "/** @param {!proto.$in$} request */\n"
@@ -1350,6 +1350,7 @@ class GrpcCodeGenerator : public CodeGenerator {
         printer.Print(vars, "goog.require('grpc.web.ClientReadableStream');\n");
         printer.Print(vars, "goog.require('grpc.web.Error');\n");
         printer.Print(vars, "goog.require('grpc.web.MethodDescriptor');\n");
+        printer.Print(vars, "goog.require('grpc.web.MethodType');\n");
 
         PrintMessagesDeps(&printer, file);
         printer.Print("goog.scope(function() {\n\n");
@@ -1385,22 +1386,24 @@ class GrpcCodeGenerator : public CodeGenerator {
           // of the global name.
           vars["out_type"] = ModuleAlias(method->output_type()->file()->name())
                              + GetNestedMessageName(method->output_type());
+          vars["in_type"] = ModuleAlias(method->input_type()->file()->name()) +
+                            GetNestedMessageName(method->input_type());
         } else {
-          vars["out_type"] = "proto."+method->output_type()->full_name();
+          vars["out_type"] = "proto." + method->output_type()->full_name();
+          vars["in_type"] = "proto." + method->input_type()->full_name();
         }
 
         // Client streaming is not supported yet
         if (!method->client_streaming()) {
           if (method->server_streaming()) {
-            vars["method_type"] =
-                "grpc.web.MethodDescriptor.MethodType.SERVER_STREAMING";
+            vars["method_type"] = "grpc.web.MethodType.SERVER_STREAMING";
             PrintMethodInfo(&printer, vars);
             vars["client_type"] = "Client";
             PrintServerStreamingCall(&printer, vars);
             vars["client_type"] = "PromiseClient";
             PrintServerStreamingCall(&printer, vars);
           } else {
-            vars["method_type"] = "grpc.web.MethodDescriptor.MethodType.UNARY";
+            vars["method_type"] = "grpc.web.MethodType.UNARY";
             PrintMethodInfo(&printer, vars);
             PrintUnaryCall(&printer, vars);
             PrintPromiseUnaryCall(&printer, vars);
