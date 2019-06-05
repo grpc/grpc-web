@@ -121,4 +121,3 @@ AbstractClientBase.prototype.serverStreaming = goog.abstractMethod;
 
 
 exports = AbstractClientBase;
-

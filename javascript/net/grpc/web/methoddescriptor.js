@@ -7,12 +7,14 @@
 goog.module('grpc.web.MethodDescriptor');
 goog.module.declareLegacyNamespace();
 
+const MethodType = goog.require('grpc.web.MethodType');
+
 /**
  * @constructor
  * @struct
  * @template REQUEST, RESPONSE
  * @param {string} name
- * @param {!MethodDescriptor.MethodType} methodType
+ * @param {!MethodType} methodType
  * @param {function(new: REQUEST, ...)} requestType
  * @param {function(new: RESPONSE, ...)} responseType
  * @param {function(REQUEST): ?} requestSerializeFn
@@ -33,14 +35,6 @@ const MethodDescriptor = function(
   this.requestSerializeFn = requestSerializeFn;
   /** @const */
   this.responseDeserializeFn = responseDeserializeFn;
-};
-
-/**
- * @enum {string}
- */
-MethodDescriptor.MethodType = {
-  'UNARY': 'unary',
-  'SERVER_STREAMING': 'server_streaming'
 };
 
 exports = MethodDescriptor;
