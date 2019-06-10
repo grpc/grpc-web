@@ -29,6 +29,7 @@ goog.module.declareLegacyNamespace();
 
 const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
 const Error = goog.require('grpc.web.Error');
+const MethodDescriptor = goog.require('grpc.web.MethodDescriptor');
 
 
 /**
@@ -80,7 +81,8 @@ AbstractClientBase.MethodInfo = function(
  * @param {string} method The method to invoke
  * @param {REQUEST} request The request proto
  * @param {!Object<string, string>} metadata User defined call metadata
- * @param {!AbstractClientBase.MethodInfo<REQUEST, RESPONSE_LEAN>}
+ * @param {!AbstractClientBase.MethodInfo<REQUEST,
+ *     RESPONSE_LEAN>|!MethodDescriptor<REQUEST, RESPONSE_LEAN>}
  *   methodInfo Information of this RPC method
  * @param {function(?Error, ?RESPONSE)}
  *   callback A callback function which takes (error, response)
@@ -95,7 +97,8 @@ AbstractClientBase.prototype.rpcCall = goog.abstractMethod;
  * @param {string} method The method to invoke
  * @param {REQUEST} request The request proto
  * @param {!Object<string, string>} metadata User defined call metadata
- * @param {!AbstractClientBase.MethodInfo<REQUEST, RESPONSE>}
+ * @param {!AbstractClientBase.MethodInfo<REQUEST,
+ *     RESPONSE>|!MethodDescriptor<REQUEST, RESPONSE>}
  *   methodInfo Information of this RPC method
  * @return {!Promise<!RESPONSE>}
  *   A promise that resolves to the response message
@@ -108,7 +111,8 @@ AbstractClientBase.prototype.unaryCall = goog.abstractMethod;
  * @param {string} method The method to invoke
  * @param {REQUEST} request The request proto
  * @param {!Object<string, string>} metadata User defined call metadata
- * @param {!AbstractClientBase.MethodInfo<REQUEST, RESPONSE>}
+ * @param {!AbstractClientBase.MethodInfo<REQUEST,
+ *     RESPONSE>|!MethodDescriptor<REQUEST, RESPONSE>}
  *   methodInfo Information of this RPC method
  * @return {!ClientReadableStream<RESPONSE>} The Client Readable Stream
  */
@@ -117,4 +121,3 @@ AbstractClientBase.prototype.serverStreaming = goog.abstractMethod;
 
 
 exports = AbstractClientBase;
-
