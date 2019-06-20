@@ -16,6 +16,8 @@ FROM grpcweb/prereqs
 
 ARG EXAMPLE_DIR=/github/grpc-web/net/grpc/gateway/examples/echo
 
+COPY net/grpc/gateway/examples/echo/ts-example/ $EXAMPLE_DIR/ts-example/
+
 RUN npm install -g tsc typescript
 
 RUN protoc -I=$EXAMPLE_DIR echo.proto \

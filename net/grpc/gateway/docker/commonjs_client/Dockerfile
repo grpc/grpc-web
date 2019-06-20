@@ -16,6 +16,8 @@ FROM grpcweb/common
 
 ARG EXAMPLE_DIR=/github/grpc-web/net/grpc/gateway/examples/echo
 
+COPY net/grpc/gateway/examples/echo/commonjs-example/ $EXAMPLE_DIR/commonjs-example/
+
 RUN protoc -I=$EXAMPLE_DIR echo.proto \
 --js_out=import_style=commonjs:\
 $EXAMPLE_DIR/commonjs-example \
