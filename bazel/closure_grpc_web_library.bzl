@@ -41,7 +41,7 @@ def _proto_include_path(proto):
     return path
 
 def _proto_include_paths(protos):
-    return depset([_proto_include_path(proto) for proto in protos])
+    return [_proto_include_path(proto) for proto in protos]
 
 def _generate_closure_grpc_web_src_progress_message(name):
     # TODO(yannic): Add a better message?
@@ -60,7 +60,7 @@ def _generate_closure_grpc_web_srcs(
         "-I%s" % p
         for p in _proto_include_paths(
             [f for f in all_sources],
-        ).to_list()
+        )
     ]
 
     grpc_web_out_common_options = ",".join([
