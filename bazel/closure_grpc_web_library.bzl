@@ -55,12 +55,12 @@ def _generate_closure_grpc_web_srcs(
         mode,
         sources,
         transitive_sources):
-    all_sources = [src for src in sources] + [src for src in transitive_sources]
+    all_sources = [src for src in sources] + [src for src in transitive_sources.to_list()]
     proto_include_paths = [
         "-I%s" % p
         for p in _proto_include_paths(
             [f for f in all_sources],
-        )
+        ).to_list()
     ]
 
     grpc_web_out_common_options = ",".join([
