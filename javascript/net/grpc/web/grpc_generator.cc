@@ -801,7 +801,7 @@ void PrintProtoDtsEnum(Printer *printer, const EnumDescriptor *desc)
   printer->Indent();
   for (int i = 0; i < desc->value_count(); i++)
   {
-    vars["value_name"] = desc->value(i)->name();
+    vars["value_name"] = Uppercase(desc->value(i)->name());
     vars["value_number"] = std::to_string(desc->value(i)->number());
     printer->Print(vars, "$value_name$ = $value_number$,\n");
   }
