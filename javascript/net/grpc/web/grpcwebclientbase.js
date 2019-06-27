@@ -216,10 +216,14 @@ GrpcWebClientBase.prototype.processHeaders_ = function(xhr) {
     var currentTime = (new Date()).getTime();
     var timeout = Math.round(deadline - currentTime);
     xhr.headers.remove('deadline');
+    if (timeout === Infinity) {
+      // grpc-timeout header defaults to infinity if not set.
+      timeout = 0;
+    }
     if (timeout > 0) {
       xhr.headers.set('grpc-timeout', timeout + 'm');
     }
-  }    
+  }
 };
 
 /**
