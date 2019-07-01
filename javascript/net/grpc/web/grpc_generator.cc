@@ -645,6 +645,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
         "             options?: null | { [index: string]: string; }) {\n");
     printer->Indent();
     printer->Print("if (!options) options = {};\n");
+    printer->Print("if (!credentials) credentials = {};");
     if (vars["mode"] == GetModeVar(Mode::GRPCWEB)) {
       printer->Print(vars, "options['format'] = '$format$';\n\n");
     }
