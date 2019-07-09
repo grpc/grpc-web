@@ -149,7 +149,7 @@ or if your version of Docker on Mac older then v18.03.0, change it to:
 ```yaml
     ...
     hosts: [{ socket_address: { address: docker.for.mac.localhost, port_value: 9090 }}]
-``` 
+```
 
 To run Envoy (for later), you will need a simple Dockerfile. Put this in a
 `envoy.Dockerfile`.
