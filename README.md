@@ -302,7 +302,7 @@ Big thanks to the following contributors for making significant contributions to
 this project!
 
 * [zaucy](https://github.com/zaucy): NPM package, CommonJS
-* [yannic](https://github.com/yannic): Bazel
+* [Yannic](https://github.com/Yannic): Bazel
 * [mitar](https://github.com/mitar): Codegen enhancements
 * [juanjoDiaz](https://github.com/juanjoDiaz): Codegen enhancements
 * [pumano](https://github.com/pumano): Doc fixes
