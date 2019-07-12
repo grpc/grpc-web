@@ -23,7 +23,7 @@ directly as part of the gRPC server implementation. The added complexity to the 
 # HTTP port
 
 We expect that gRPC-Web requests are handled on a separate port. If the HTTP stack supports both HTTP/2 and HTTP/1.1, port sharing could be supported. 
-However, since CORS is a mandatory feature for gRPC-Web proxies, porting sharing is optional for in-process proxies.
+However, since CORS is a mandatory feature for gRPC-Web proxies, port sharing is optional for in-process proxies.
 
 
 
