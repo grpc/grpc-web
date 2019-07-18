@@ -300,7 +300,7 @@ run the 3 processes all in the background.
 
  ```sh
  $ docker build -t helloworld/envoy -f ./envoy.Dockerfile .
- $ docker run -d -p 8080:8080 --network=host helloworld/envoy
+ $ docker run -d -p 8080:8080 -p 9901:9901 --network=host helloworld/envoy
  ```
 
 NOTE: As per [this issue](https://github.com/grpc/grpc-web/issues/436):
@@ -334,4 +334,9 @@ Open up the developer console and you should see the following printed out:
 
 ```
 Hello! World
+```
+
+You can also browse to the envoy admin via
+```
+localhost:9901
 ```
