@@ -1377,21 +1377,28 @@ class GrpcCodeGenerator : public CodeGenerator {
            method_index < service->method_count();
            ++method_index) {
         const MethodDescriptor* method = service->method(method_index);
+        const Descriptor* input_type = method->input_type();
+        const Descriptor* output_type = method->output_type();
         vars["js_method_name"] = LowercaseFirstLetter(method->name());
         vars["method_name"] = method->name();
-        vars["in"] = method->input_type()->full_name();
-        vars["out"] = method->output_type()->full_name();
+        vars["in"] = input_type->full_name();
+        vars["out"] = output_type->full_name();
+
+        // Cross-file ref in CommonJS needs to use the module alias instead
+        // of the global name.
         if (import_style == ImportStyle::COMMONJS &&
-            method->output_type()->file() != file) {
-          // Cross-file ref in CommonJS needs to use the module alias instead
-          // of the global name.
-          vars["out_type"] = ModuleAlias(method->output_type()->file()->name())
-                             + GetNestedMessageName(method->output_type());
-          vars["in_type"] = ModuleAlias(method->input_type()->file()->name()) +
-                            GetNestedMessageName(method->input_type());
+            input_type->file() != file) {
+          vars["in_type"] = ModuleAlias(input_type->file()->name()) +
+                            GetNestedMessageName(input_type);
         } else {
-          vars["out_type"] = "proto." + method->output_type()->full_name();
-          vars["in_type"] = "proto." + method->input_type()->full_name();
+          vars["in_type"] = "proto." + input_type->full_name();
+        }
+        if (import_style == ImportStyle::COMMONJS &&
+            output_type->file() != file) {
+          vars["out_type"] = ModuleAlias(output_type->file()->name()) +
+                             GetNestedMessageName(output_type);
+        } else {
+          vars["out_type"] = "proto." + output_type->full_name();
         }
 
         // Client streaming is not supported yet
