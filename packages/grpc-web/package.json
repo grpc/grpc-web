@@ -26,6 +26,8 @@
     "command-exists": "^1.2.7",
     "google-closure-compiler": "^20180716.0.0",
     "google-protobuf": "^3.6.1",
+    "gulp": "^4.0.0",
+    "gulp-eval": "^1.0.0",
     "mocha": "^5.2.0",
     "mock-xmlhttprequest": "^2.0.0",
     "require-self": "^0.2.1",

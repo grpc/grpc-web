@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package Foo;
+
+import "models.proto";
+
+message SimpleRequest {
+  string message = 1;
+}
+
+service FooService {
+  rpc EchoEmpty(SimpleRequest) returns (models.SimpleMessage);
+}
