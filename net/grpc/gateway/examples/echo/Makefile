@@ -73,7 +73,7 @@ compiled-js:
   --js $(ROOT_DIR)/third_party/closure-library \
   --js $(ROOT_DIR)/$(PROTOBUF_PATH)/js \
   --entry_point=goog:proto.grpc.gateway.testing.EchoServiceClient \
-  --dependency_mode=STRICT \
+  --dependency_mode=PRUNE \
   --js_output_file compiled.js
 	cd $(ROOT_DIR)/$(PROTOBUF_PATH) && git checkout .
 
