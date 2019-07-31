@@ -56,6 +56,14 @@ const GrpcWebClientBase = function(opt_options) {
    */
   this.suppressCorsPreflight_ =
     goog.getObjectByName('suppressCorsPreflight', opt_options) || false;
+
+
+  /**
+   * @const
+   * @private {boolean}
+   */
+  this.withCredentials_ =
+    goog.getObjectByName('withCredentials', opt_options) || false;  
 };
 
 
@@ -66,6 +74,7 @@ const GrpcWebClientBase = function(opt_options) {
 GrpcWebClientBase.prototype.rpcCall = function(
     method, request, metadata, methodInfo, callback) {
   var xhr = this.newXhr_();
+  xhr.setWithCredentials(this.withCredentials_);
 
   var genericTransportInterface = {
     xhr: xhr,
@@ -136,6 +145,7 @@ GrpcWebClientBase.prototype.unaryCall = function(
 GrpcWebClientBase.prototype.serverStreaming = function(
     method, request, metadata, methodInfo) {
   var xhr = this.newXhr_();
+  xhr.setWithCredentials(this.withCredentials_);
 
   var genericTransportInterface = {
     xhr: xhr,
