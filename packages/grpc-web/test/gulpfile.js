@@ -1,6 +1,7 @@
 const gulp = require('gulp');
 const gulpEval = require('gulp-eval');
-gulp.task('default', () =>
-  gulp.src('./foo_grpc_web_pb.js')
+
+gulp.task('gen-code-eval-test', () =>
+  gulp.src('./generated/foo_grpc_web_pb.js')
       .pipe(gulpEval())
 );

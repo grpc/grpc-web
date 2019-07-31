@@ -21,14 +21,14 @@ const execSync = require('child_process').execSync;
 const commandExists = require('command-exists').sync;
 const fs = require('fs');
 const path = require('path');
+const removeDirectory = require('./common.js').removeDirectory;
+const GENERATED_CODE_PATH = require('./common.js').GENERATED_CODE_PATH;
 
 describe('grpc-web generated code eval test (commonjs+dts)', function() {
-  const genCodePath = path.resolve(__dirname, './foo_grpc_web_pb.js');
-
   const genCodeCmd =
     'protoc -I=./test/protos foo.proto models.proto ' +
-    '--js_out=import_style=commonjs:./test ' +
-    '--grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:./test';
+    '--js_out=import_style=commonjs:./test/generated ' +
+    '--grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:./test/generated';
 
   before(function() {
     ['protoc', 'protoc-gen-grpc-web'].map(prog => {
@@ -39,23 +39,16 @@ describe('grpc-web generated code eval test (commonjs+dts)', function() {
   });
 
   beforeEach(function() {
-    [genCodePath].map(f => {
-       if (fs.existsSync(f)) {
-         fs.unlinkSync(f);
-       }
-     });
+    removeDirectory(path.resolve(__dirname, GENERATED_CODE_PATH));
+    fs.mkdirSync(path.resolve(__dirname, GENERATED_CODE_PATH));
   });
 
   afterEach(function() {
-    [genCodePath].map(f => {
-       if (fs.existsSync(f)) {
-         fs.unlinkSync(f);
-       }
-     });
+    removeDirectory(path.resolve(__dirname, GENERATED_CODE_PATH));
   });
 
   it('should eval', function() {
     execSync(genCodeCmd);
-    execSync(`npx gulp --gulpfile ./test/gulpfile.js`);
+    execSync(`npx gulp --gulpfile ./test/gulpfile.js gen-code-eval-test`);
   })
 });
