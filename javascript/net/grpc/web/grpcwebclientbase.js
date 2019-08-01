@@ -63,7 +63,7 @@ const GrpcWebClientBase = function(opt_options) {
    * @private {boolean}
    */
   this.withCredentials_ =
-    goog.getObjectByName('withCredentials', opt_options) || false;  
+    goog.getObjectByName('withCredentials', opt_options) || false;
 };
 
 
