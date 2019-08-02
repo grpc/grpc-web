@@ -25,8 +25,8 @@ protoc-3.7.1-linux-x86_64.zip -o /tmp/protoc.zip && \
   unzip -qq protoc.zip && \
   cp /tmp/bin/protoc /usr/local/bin/protoc
 
-RUN curl -sSL https://github.com/grpc/grpc-web/releases/download/1.0.5/\
-protoc-gen-grpc-web-1.0.5-linux-x86_64 -o /usr/local/bin/protoc-gen-grpc-web && \
+RUN curl -sSL https://github.com/grpc/grpc-web/releases/download/1.0.6/\
+protoc-gen-grpc-web-1.0.6-linux-x86_64 -o /usr/local/bin/protoc-gen-grpc-web && \
   chmod +x /usr/local/bin/protoc-gen-grpc-web
 
 RUN mkdir -p /var/www/html/dist
