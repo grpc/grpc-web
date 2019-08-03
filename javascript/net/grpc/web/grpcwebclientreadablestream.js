@@ -101,6 +101,12 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
 
   /**
    * @private
+   * @type {boolean} Whether the stream has been aborted
+   */
+  this.aborted_ = false;
+
+  /**
+   * @private
    * @type {number} The stream parser position
    */
   this.pos_ = 0;
@@ -118,16 +124,6 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
     var contentType = self.xhr_.getStreamingResponseHeader('Content-Type');
     if (!contentType) return;
     contentType = contentType.toLowerCase();
-
-    var grpcStatusCode = self.xhr_.getStreamingResponseHeader(GRPC_STATUS);
-    var grpcStatusMessage = self.xhr_.getStreamingResponseHeader(GRPC_STATUS_MESSAGE);
-    if (grpcStatusCode && self.onStatusCallback_) {
-      self.onStatusCallback_(/** @type {!Status} */({
-        code: Number(grpcStatusCode),
-        details: grpcStatusMessage || '',
-        metadata: undefined,
-      }));
-    }
 
     if (googString.startsWith(contentType, 'application/grpc-web-text')) {
       var responseText = self.xhr_.getResponseText();
@@ -157,15 +153,15 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
         }
         if (FrameType.TRAILER in messages[i]) {
           if (messages[i][FrameType.TRAILER].length > 0) {
-            var trailerString = "";
+            var trailerString = '';
             for (var pos = 0; pos < messages[i][FrameType.TRAILER].length;
               pos++) {
               trailerString += String.fromCharCode(
                 messages[i][FrameType.TRAILER][pos]);
             }
             var trailers = self.parseHttp1Headers_(trailerString);
-            grpcStatusCode = StatusCode.OK;
-            grpcStatusMessage = "";
+            var grpcStatusCode = StatusCode.OK;
+            var grpcStatusMessage = '';
             if (GRPC_STATUS in trailers) {
               grpcStatusCode = trailers[GRPC_STATUS];
             }
@@ -194,22 +190,53 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
   });
 
   events.listen(this.xhr_, EventType.COMPLETE, function(e) {
-    if (!self.onErrorCallback_) return;
     var lastErrorCode = self.xhr_.getLastErrorCode();
+    var grpcStatusCode;
+    var grpcStatusMessage = '';
+
+    // There's an XHR level error
     if (lastErrorCode != ErrorCode.NO_ERROR) {
-      self.onErrorCallback_({
-        code: StatusCode.UNAVAILABLE,
-        message: ErrorCode.getDebugMessage(lastErrorCode)
-      });
+      switch (lastErrorCode) {
+        case ErrorCode.ABORT:
+          grpcStatusCode = StatusCode.ABORTED
+          break;
+        case ErrorCode.TIMEOUT:
+          grpcStatusCode = StatusCode.DEADLINE_EXCEEDED
+          break;
+        default:
+          grpcStatusCode = StatusCode.UNAVAILABLE
+      }
+      if (grpcStatusCode == StatusCode.ABORTED && self.aborted_) {
+        return;
+      }
+      if (self.onErrorCallback_) {
+        self.onErrorCallback_({
+          code: grpcStatusCode,
+          message: ErrorCode.getDebugMessage(lastErrorCode)
+        });
+      }
       return;
     }
+
+    // Check whethere there are grpc specific response headers
     var responseHeaders = self.xhr_.getResponseHeaders();
-    if (GRPC_STATUS in responseHeaders &&
-        Number(self.xhr_.getResponseHeader(GRPC_STATUS)) != StatusCode.OK) {
-      self.onErrorCallback_({
-        code: Number(self.xhr_.getResponseHeader(GRPC_STATUS)),
-        message: self.xhr_.getResponseHeader(GRPC_STATUS_MESSAGE)
-      });
+    if (GRPC_STATUS in responseHeaders) {
+      grpcStatusCode = self.xhr_.getResponseHeader(GRPC_STATUS);
+      if (GRPC_STATUS_MESSAGE in responseHeaders) {
+        grpcStatusMessage = self.xhr_.getResponseHeader(GRPC_STATUS_MESSAGE);
+      }
+      if (Number(grpcStatusCode) != StatusCode.OK && self.onErrorCallback_) {
+        self.onErrorCallback_({
+          code: Number(grpcStatusCode),
+          message: grpcStatusMessage,
+        });
+      }
+      if (self.onStatusCallback_) {
+        self.onStatusCallback_(/** @type {!Status} */({
+          code: Number(grpcStatusCode),
+          details: grpcStatusMessage,
+        }));
+      }
     }
   });
 };
@@ -252,6 +279,7 @@ GrpcWebClientReadableStream.prototype.setResponseDeserializeFn =
  * @export
  */
 GrpcWebClientReadableStream.prototype.cancel = function() {
+  this.aborted_ = true;
   this.xhr_.abort();
 };
 
