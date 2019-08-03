@@ -198,13 +198,13 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
     if (lastErrorCode != ErrorCode.NO_ERROR) {
       switch (lastErrorCode) {
         case ErrorCode.ABORT:
-          grpcStatusCode = StatusCode.ABORTED
+          grpcStatusCode = StatusCode.ABORTED;
           break;
         case ErrorCode.TIMEOUT:
-          grpcStatusCode = StatusCode.DEADLINE_EXCEEDED
+          grpcStatusCode = StatusCode.DEADLINE_EXCEEDED;
           break;
         default:
-          grpcStatusCode = StatusCode.UNAVAILABLE
+          grpcStatusCode = StatusCode.UNAVAILABLE;
       }
       if (grpcStatusCode == StatusCode.ABORTED && self.aborted_) {
         return;
