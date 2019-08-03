@@ -18,9 +18,10 @@
 
 var PROTO_PATH = __dirname + '/../echo.proto';
 
+var assert = require('assert');
 var async = require('async');
 var _ = require('lodash');
-var grpc = require('grpc');
+var grpc = require('@grpc/grpc-js');
 var protoLoader = require('@grpc/proto-loader');
 var packageDefinition = protoLoader.loadSync(
     PROTO_PATH,
@@ -89,8 +90,8 @@ function doServerStreamingEcho(call) {
 }
 
 /**
- * Get a new server with the handler functions in this file bound to the methods
- * it serves.
+ * Get a new server with the handler functions in this file bound to the
+ * methods it serves.
  * @return {!Server} The new server object
  */
 function getServer() {
@@ -106,8 +107,11 @@ function getServer() {
 if (require.main === module) {
   // If this is run as a script, start a server on an unused port
   var echoServer = getServer();
-  echoServer.bind('0.0.0.0:9090', grpc.ServerCredentials.createInsecure());
-  echoServer.start();
+  echoServer.bindAsync('0.0.0.0:9090', grpc.ServerCredentials.createInsecure(),
+                       (err, port) => {
+    assert.ifError(err);
+    echoServer.start();
+  });
 }
 
 exports.getServer = getServer;
