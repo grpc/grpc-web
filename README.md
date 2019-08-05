@@ -75,7 +75,6 @@ $ sudo mv ~/Downloads/protoc-gen-grpc-web-1.0.6-darwin-x86_64 \
 $ chmod +x /usr/local/bin/protoc-gen-grpc-web
 ```
 
-
 ## Client Configuration Options
 
 Typically, you will run the following command to generate the proto messages
