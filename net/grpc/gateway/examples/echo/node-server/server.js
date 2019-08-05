@@ -107,11 +107,11 @@ function getServer() {
 if (require.main === module) {
   // If this is run as a script, start a server on an unused port
   var echoServer = getServer();
-  echoServer.bindAsync('0.0.0.0:9090', grpc.ServerCredentials.createInsecure(),
-                       (err, port) => {
-    assert.ifError(err);
-    echoServer.start();
-  });
+  echoServer.bindAsync(
+      '0.0.0.0:9090', grpc.ServerCredentials.createInsecure(), (err, port) => {
+        assert.ifError(err);
+        echoServer.start();
+      });
 }
 
 exports.getServer = getServer;

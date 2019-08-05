@@ -80,14 +80,15 @@ class EchoApp {
     const request = new EchoRequest();
     request.setMessage('error');
     this.echoService.echoAbort(
-      request, {}, (err: grpcWeb.Error, response: EchoResponse) => {
-        if (err) {
-          if (err.code !== grpcWeb.StatusCode.OK) {
-            EchoApp.addRightMessage(
-              'Error code: ' + err.code + ' "' + decodeURI(err.message) + '"');
+        request, {}, (err: grpcWeb.Error, response: EchoResponse) => {
+          if (err) {
+            if (err.code !== grpcWeb.StatusCode.OK) {
+              EchoApp.addRightMessage(
+                  'Error code: ' + err.code + ' "' + decodeURI(err.message) +
+                  '"');
+            }
           }
-        }
-      });
+        });
   }
 
   cancel() {

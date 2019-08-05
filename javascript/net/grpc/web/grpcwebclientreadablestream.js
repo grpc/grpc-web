@@ -232,7 +232,7 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
         });
       }
       if (self.onStatusCallback_) {
-        self.onStatusCallback_(/** @type {!Status} */({
+        self.onStatusCallback_(/** @type {!Status} */ ({
           code: Number(grpcStatusCode),
           details: grpcStatusMessage,
         }));
