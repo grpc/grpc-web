@@ -32,13 +32,9 @@ class EchoApp {
   static readonly INTERVAL = 500;  // ms
   static readonly MAX_STREAM_MESSAGES = 50;
 
-  echoService_: EchoServiceClient;
-  stream: grpcWeb.ClientReadableStream<ServerStreamingEchoResponse> | null;
+  stream?: grpcWeb.ClientReadableStream<ServerStreamingEchoResponse>;
 
-  constructor(echoService: EchoServiceClient) {
-    this.echoService_ = echoService;
-    this.stream = null;
-  }
+  constructor(public echoService: EchoServiceClient) {}
 
   static addMessage(message: string, cssClass: string) {
     $('#first').after($('<div/>').addClass('row').append($('<h2/>').append(
@@ -57,7 +53,7 @@ class EchoApp {
     EchoApp.addLeftMessage(msg);
     const request = new EchoRequest();
     request.setMessage(msg);
-    const call = this.echoService_.echo(
+    const call = this.echoService.echo(
         request, {'custom-header-1': 'value1'},
         (err: grpcWeb.Error, response: EchoResponse) => {
           if (err) {
@@ -83,7 +79,7 @@ class EchoApp {
     EchoApp.addLeftMessage('Error');
     const request = new EchoRequest();
     request.setMessage('error');
-    this.echoService_.echoAbort(
+    this.echoService.echoAbort(
       request, {}, (err: grpcWeb.Error, response: EchoResponse) => {
         if (err) {
           if (err.code !== grpcWeb.StatusCode.OK) {
@@ -111,7 +107,7 @@ class EchoApp {
     request.setMessageCount(count);
     request.setMessageInterval(EchoApp.INTERVAL);
 
-    this.stream = this.echoService_.serverStreamingEcho(
+    this.stream = this.echoService.serverStreamingEcho(
         request, {'custom-header-1': 'value1'});
     const self = this;
     this.stream.on('data', (response: ServerStreamingEchoResponse) => {
