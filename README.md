@@ -71,8 +71,8 @@ For example, in MacOS, you can do:
 
 ```
 $ sudo mv ~/Downloads/protoc-gen-grpc-web-1.0.6-darwin-x86_64 \
-  /usr/local/bin/protoc-gen-grpc-web
-$ chmod +x /usr/local/bin/protoc-gen-grpc-web
+  /usr/local/bin/protoc-gen-grpc_web
+$ chmod +x /usr/local/bin/protoc-gen-grpc_web
 ```
 
 ## Client Configuration Options
