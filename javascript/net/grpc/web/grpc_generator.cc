@@ -50,8 +50,7 @@ enum Mode {
   OP = 0,          // first party google3 one platform services
   GATEWAY = 1,     // open-source gRPC Gateway
   OPJSPB = 2,      // first party google3 one platform services with JSPB
-  FRAMEWORKS = 3,  // first party google3 AF services with AF data add-ons
-  GRPCWEB = 4,     // client using the application/grpc-web wire format
+  GRPCWEB = 3,     // client using the application/grpc-web wire format
 };
 
 enum ImportStyle {
@@ -138,8 +137,6 @@ string GetModeVar(const Mode mode) {
       return "Gateway";
     case OPJSPB:
       return "OPJspb";
-    case FRAMEWORKS:
-      return "Frameworks";
     case GRPCWEB:
       return "GrpcWeb";
   }
@@ -147,16 +144,14 @@ string GetModeVar(const Mode mode) {
 }
 
 string GetDeserializeMethodName(const string& mode_var) {
-  if (mode_var == GetModeVar(Mode::OPJSPB) ||
-      mode_var == GetModeVar(Mode::FRAMEWORKS)) {
+  if (mode_var == GetModeVar(Mode::OPJSPB)) {
     return "deserialize";
   }
   return "deserializeBinary";
 }
 
 string GetSerializeMethodName(const string& mode_var) {
-  if (mode_var == GetModeVar(Mode::OPJSPB) ||
-      mode_var == GetModeVar(Mode::FRAMEWORKS)) {
+  if (mode_var == GetModeVar(Mode::OPJSPB)) {
     return "serialize";
   }
   return "serializeBinary";
@@ -1278,8 +1273,6 @@ class GrpcCodeGenerator : public CodeGenerator {
       vars["format"] = (mode == "grpcweb") ? "binary" : "text";
     } else if (mode == "jspb") {
       vars["mode"] = GetModeVar(Mode::OPJSPB);
-    } else if (mode == "frameworks") {
-      vars["mode"] = GetModeVar(Mode::FRAMEWORKS);
     } else {
       *error = "options: invalid mode - " + mode;
       return false;
