@@ -165,6 +165,17 @@ string LowercaseFirstLetter(string s) {
   return s;
 }
 
+string Lowercase(string s) {
+  if (s.empty()) {
+    return s;
+  }
+
+  for (size_t i = 0; i < s.size(); i++) {
+    s[i] = ::tolower(s[i]);
+  }
+  return s;
+}
+
 string UppercaseFirstLetter(string s) {
   if (s.empty()) {
     return s;
@@ -975,6 +986,62 @@ void PrintFileHeader(Printer* printer, const std::map<string, string>& vars) {
       "// GENERATED CODE -- DO NOT EDIT!\n\n\n");
 }
 
+void PrintMethodDescriptorFile(Printer* printer,
+                               std::map<string, string> vars) {
+  printer->Print(
+      vars,
+      "/**\n"
+      " * @fileoverview gRPC-Web generated MethodDescriptors for $package$\n"
+      " * @enhanceable\n"
+      " * @public\n"
+      " */\n\n"
+      "// GENERATED CODE -- DO NOT EDIT!\n\n\n");
+
+  printer->Print(vars,
+                 "goog.provide('proto.$package_dot$$class_name$.$"
+                 "method_name$MethodDescriptor');\n\n");
+  printer->Print(vars, "goog.require('grpc.web.MethodDescriptor');\n");
+  printer->Print(vars, "goog.require('grpc.web.MethodType');\n");
+  printer->Print(vars, "goog.require('$in_type$');\n");
+  printer->Print(vars, "goog.require('$out_type$');\n");
+  printer->Print(vars, "\n\ngoog.scope(function() {\n\n");
+
+  printer->Print(
+      vars,
+      "/**\n"
+      " * @const\n"
+      " * @type {!grpc.web.MethodDescriptor<\n"
+      " *   !proto.$in$,\n"
+      " *   !proto.$out$>}\n"
+      " */\n"
+      "proto.$package_dot$$class_name$.$method_name$MethodDescriptor = \n");
+  printer->Indent();
+  printer->Indent();
+  printer->Print(vars, "new grpc.web.MethodDescriptor(\n");
+  printer->Indent();
+  printer->Indent();
+  printer->Print(vars,
+                 "'/$package_dot$$service_name$/$method_name$',\n"
+                 "$method_type$,\n"
+                 "$in_type$,\n");
+  printer->Print(vars,
+                 "$out_type$,\n"
+                 "/** @param {!proto.$in$} request */\n"
+                 "function(request) {\n");
+  printer->Print(
+      ("  return request." + GetSerializeMethodName(vars["mode"]) + "();\n")
+          .c_str());
+  printer->Print("},\n");
+  printer->Print(
+      vars, ("$out_type$." + GetDeserializeMethodName(vars["mode"])).c_str());
+  printer->Print(vars, ");\n\n\n");
+  printer->Outdent();
+  printer->Outdent();
+  printer->Outdent();
+  printer->Outdent();
+  printer->Print("}); // goog.scope\n\n");
+}
+
 void PrintServiceConstructor(Printer* printer,
                              std::map<string, string> vars) {
   printer->Print(
@@ -1232,6 +1299,10 @@ class GrpcCodeGenerator : public CodeGenerator {
     std::vector<std::pair<string, string> > options;
     ParseGeneratorParameter(parameter, &options);
 
+    // TODO(jenntyjiang): this variable will be read from the bazel rule after
+    // tree artifacts has been applied.
+    bool descriptor_only = false;
+
     string file_name;
     string mode;
     string import_style_str;
@@ -1307,8 +1378,39 @@ class GrpcCodeGenerator : public CodeGenerator {
       return true;
     }
 
-    std::unique_ptr<ZeroCopyOutputStream> output(
-        context->Open(file_name));
+    // Only supports closure for now.
+    if (descriptor_only && import_style == ImportStyle::CLOSURE) {
+      for (int i = 0; i < file->service_count(); ++i) {
+        const ServiceDescriptor* service = file->service(i);
+        vars["service_name"] = service->name();
+        vars["class_name"] = LowercaseFirstLetter(service->name());
+
+        for (int method_index = 0; method_index < service->method_count();
+             ++method_index) {
+          const MethodDescriptor* method = service->method(method_index);
+          string method_file_name = Lowercase(service->name()) + "_" +
+                                    Lowercase(method->name()) +
+                                    "_methoddescriptor.js";
+          std::unique_ptr<ZeroCopyOutputStream> output(
+              context->Open(method_file_name));
+          Printer printer(output.get(), '$');
+
+          vars["method_name"] = method->name();
+          vars["in"] = method->input_type()->full_name();
+          vars["in_type"] = "proto." + method->input_type()->full_name();
+          vars["out"] = method->output_type()->full_name();
+          vars["out_type"] = "proto." + method->output_type()->full_name();
+          vars["method_type"] = method->server_streaming()
+                                    ? "grpc.web.MethodType.SERVER_STREAMING"
+                                    : "grpc.web.MethodType.UNARY";
+
+          PrintMethodDescriptorFile(&printer, vars);
+        }
+      }
+      return true;
+    }
+
+    std::unique_ptr<ZeroCopyOutputStream> output(context->Open(file_name));
     Printer printer(output.get(), '$');
     PrintFileHeader(&printer, vars);
 
@@ -1358,16 +1460,14 @@ class GrpcCodeGenerator : public CodeGenerator {
         break;
     }
 
-    for (int service_index = 0;
-         service_index < file->service_count();
+    for (int service_index = 0; service_index < file->service_count();
          ++service_index) {
       const ServiceDescriptor* service = file->service(service_index);
       vars["service_name"] = service->name();
       PrintServiceConstructor(&printer, vars);
       PrintPromiseServiceConstructor(&printer, vars);
 
-      for (int method_index = 0;
-           method_index < service->method_count();
+      for (int method_index = 0; method_index < service->method_count();
            ++method_index) {
         const MethodDescriptor* method = service->method(method_index);
         const Descriptor* input_type = method->input_type();
