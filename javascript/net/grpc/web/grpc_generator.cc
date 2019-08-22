@@ -19,10 +19,12 @@
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/compiler/plugin.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/descriptor.pb.h>
+
 #include <algorithm>
+#include <iterator>
 #include <string>
 
 using google::protobuf::Descriptor;
@@ -1125,33 +1127,35 @@ void PrintPromiseServiceConstructor(Printer* printer,
 
 void PrintMethodInfo(Printer* printer, std::map<string, string> vars) {
   // Print MethodDescriptor.
-  printer->Print(vars,
-                 "/**\n"
-                 " * @const\n"
-                 " * @type {!grpc.web.MethodDescriptor<\n"
-                 " *   !proto.$in$,\n"
-                 " *   !proto.$out$>}\n"
-                 " */\n"
-                 "const methodDescriptor_$service_name$_$method_name$ = "
-                 "new grpc.web.MethodDescriptor(\n");
-  printer->Indent();
-  printer->Print(vars,
-                 "'/$package_dot$$service_name$/$method_name$',\n"
-                 "$method_type$,\n"
-                 "$in_type$,\n");
-  printer->Print(vars,
-                 "$out_type$,\n"
-                 "/** @param {!proto.$in$} request */\n"
-                 "function(request) {\n");
-  printer->Print(
-      ("  return request." + GetSerializeMethodName(vars["mode"]) + "();\n")
-          .c_str());
-  printer->Print("},\n");
-  printer->Print(
-      vars,
-      ("$out_type$." + GetDeserializeMethodName(vars["mode"]) + "\n").c_str());
-  printer->Outdent();
-  printer->Print(vars, ");\n\n\n");
+  if (vars["gen_multiple_files"] == "false") {
+    printer->Print(vars,
+                   "/**\n"
+                   " * @const\n"
+                   " * @type {!grpc.web.MethodDescriptor<\n"
+                   " *   !proto.$in$,\n"
+                   " *   !proto.$out$>}\n"
+                   " */\n"
+                   "const methodDescriptor_$service_name$_$method_name$ = "
+                   "new grpc.web.MethodDescriptor(\n");
+    printer->Indent();
+    printer->Print(vars,
+                   "'/$package_dot$$service_name$/$method_name$',\n"
+                   "$method_type$,\n"
+                   "$in_type$,\n");
+    printer->Print(vars,
+                   "$out_type$,\n"
+                   "/** @param {!proto.$in$} request */\n"
+                   "function(request) {\n");
+    printer->Print(
+        ("  return request." + GetSerializeMethodName(vars["mode"]) + "();\n")
+            .c_str());
+    printer->Print("},\n");
+    printer->Print(
+        vars, ("$out_type$." + GetDeserializeMethodName(vars["mode"]) + "\n")
+                  .c_str());
+    printer->Outdent();
+    printer->Print(vars, ");\n\n\n");
+  }
 
   // Print AbstractClientBase.MethodInfo, which will be deprecated.
   printer->Print(vars,
@@ -1211,7 +1215,7 @@ void PrintUnaryCall(Printer* printer, std::map<string, string> vars) {
   printer->Print(vars,
                  "request,\n"
                  "metadata || {},\n"
-                 "methodDescriptor_$service_name$_$method_name$,\n"
+                 "$method_descriptor$,\n"
                  "callback);\n");
   printer->Outdent();
   printer->Outdent();
@@ -1247,7 +1251,7 @@ void PrintPromiseUnaryCall(Printer* printer, std::map<string, string> vars) {
   printer->Print(vars,
                  "request,\n"
                  "metadata || {},\n"
-                 "methodDescriptor_$service_name$_$method_name$);\n");
+                 "$method_descriptor$);\n");
   printer->Outdent();
   printer->Outdent();
   printer->Outdent();
@@ -1282,7 +1286,7 @@ void PrintServerStreamingCall(Printer* printer, std::map<string, string> vars) {
   printer->Print(vars,
                  "request,\n"
                  "metadata || {},\n"
-                 "methodDescriptor_$service_name$_$method_name$);\n");
+                 "$method_descriptor$);\n");
   printer->Outdent();
   printer->Outdent();
   printer->Outdent();
@@ -1299,15 +1303,12 @@ class GrpcCodeGenerator : public CodeGenerator {
     std::vector<std::pair<string, string> > options;
     ParseGeneratorParameter(parameter, &options);
 
-    // TODO(jenntyjiang): this variable will be read from the bazel rule after
-    // tree artifacts has been applied.
-    bool descriptor_only = false;
-
     string file_name;
     string mode;
     string import_style_str;
     ImportStyle import_style;
     bool generate_dts = false;
+    bool gen_multiple_files = false;
 
     for (size_t i = 0; i < options.size(); ++i) {
       if (options[i].first == "out") {
@@ -1316,6 +1317,8 @@ class GrpcCodeGenerator : public CodeGenerator {
         mode = options[i].second;
       } else if (options[i].first == "import_style") {
         import_style_str = options[i].second;
+      } else if (options[i].first == "multiple_files") {
+        gen_multiple_files = options[i].second == "true";
       } else {
         *error = "unsupported options: " + options[i].first;
         return false;
@@ -1331,6 +1334,7 @@ class GrpcCodeGenerator : public CodeGenerator {
     }
 
     std::map<string, string> vars;
+    std::map<string, string> method_descriptors;
     string package = file->package();
     vars["package"] = package;
     vars["package_dot"] = package.empty() ? "" : package + '.';
@@ -1379,7 +1383,7 @@ class GrpcCodeGenerator : public CodeGenerator {
     }
 
     // Only supports closure for now.
-    if (descriptor_only && import_style == ImportStyle::CLOSURE) {
+    if (gen_multiple_files && import_style == ImportStyle::CLOSURE) {
       for (int i = 0; i < file->service_count(); ++i) {
         const ServiceDescriptor* service = file->service(i);
         vars["service_name"] = service->name();
@@ -1405,9 +1409,11 @@ class GrpcCodeGenerator : public CodeGenerator {
                                     : "grpc.web.MethodType.UNARY";
 
           PrintMethodDescriptorFile(&printer, vars);
+          method_descriptors[service->name() + "." + method->name()] =
+              "proto." + vars["package_dot"] + vars["class_name"] + "." +
+              vars["method_name"] + "MethodDescriptor";
         }
       }
-      return true;
     }
 
     std::unique_ptr<ZeroCopyOutputStream> output(context->Open(file_name));
@@ -1441,6 +1447,14 @@ class GrpcCodeGenerator : public CodeGenerator {
 
     switch (import_style) {
       case ImportStyle::CLOSURE:
+        if (gen_multiple_files) {
+          std::map<string, string>::iterator it;
+          for (it = method_descriptors.begin(); it != method_descriptors.end();
+               it++) {
+            vars["import_mtd"] = it->second;
+            printer.Print(vars, "goog.require('$import_mtd$');\n");
+          }
+        }
         printer.Print(vars, "goog.require('grpc.web.$mode$ClientBase');\n");
         printer.Print(vars, "goog.require('grpc.web.AbstractClientBase');\n");
         printer.Print(vars, "goog.require('grpc.web.ClientReadableStream');\n");
@@ -1476,6 +1490,11 @@ class GrpcCodeGenerator : public CodeGenerator {
         vars["method_name"] = method->name();
         vars["in"] = input_type->full_name();
         vars["out"] = output_type->full_name();
+        vars["gen_multiple_files"] = gen_multiple_files ? "true" : "false";
+        vars["method_descriptor"] =
+            gen_multiple_files
+                ? method_descriptors[service->name() + "." + method->name()]
+                : "methodDescriptor_" + service->name() + "_" + method->name();
 
         // Cross-file ref in CommonJS needs to use the module alias instead
         // of the global name.
