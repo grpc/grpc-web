@@ -203,6 +203,9 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
         case ErrorCode.TIMEOUT:
           grpcStatusCode = StatusCode.DEADLINE_EXCEEDED;
           break;
+        case ErrorCode.HTTP_ERROR:
+          grpcStatusCode = StatusCode.fromHttpStatus(self.xhr_.getStatus());
+          break;
         default:
           grpcStatusCode = StatusCode.UNAVAILABLE;
       }
