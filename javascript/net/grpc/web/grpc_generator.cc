@@ -484,15 +484,35 @@ string GetRootPath(const string& from_filename, const string& to_filename) {
   return result;
 }
 
-// Returns the basename of a file.
-string GetBasename(string filename)
-{
-  size_t last_slash = filename.find_last_of('/');
-  if (last_slash != string::npos)
-  {
-    return filename.substr(last_slash + 1);
+// Splits path immediately following the final slash, separating it into a
+// directory and file name component.
+// If there is no slash in path, Split returns an empty directory and
+// basename set to path.
+// Output values have the property that path = directory + basename.
+void PathSplit(const string& path, string* directory, string* basename) {
+  string::size_type last_slash = path.rfind('/');
+  if (last_slash == string::npos) {
+    if (directory) {
+      *directory = "";
+    }
+    if (basename) {
+      *basename = path;
+    }
+  } else {
+    if (directory) {
+      *directory = path.substr(0, last_slash + 1);
+    }
+    if (basename) {
+      *basename = path.substr(last_slash + 1);
+    }
   }
-  return filename;
+}
+
+// Returns the basename of a file.
+string GetBasename(string filename) {
+  string basename;
+  PathSplit(filename, NULL, &basename);
+  return basename;
 }
 
 /* Finds all message types used in all services in the file, and returns them
@@ -1362,8 +1382,12 @@ class GrpcCodeGenerator : public CodeGenerator {
       generate_dts = true;
     } else if (import_style_str == "typescript") {
       import_style = ImportStyle::TYPESCRIPT;
-      file_name =
-          UppercaseFirstLetter(StripProto(file->name())) + "ServiceClientPb.ts";
+
+      string directory;
+      string basename;
+
+      PathSplit(file->name(), &directory, &basename);
+      file_name = directory + UppercaseFirstLetter(StripProto(basename)) + "ServiceClientPb.ts";
     } else {
       *error = "options: invalid import_style - " + import_style_str;
       return false;
