@@ -238,6 +238,26 @@ void ReplaceCharacters(string *s, const char *remove, char replacewith) {
   }
 }
 
+// Returns name in PascalCase to SCREAMING_SNAKE_CASE.
+// e.g 'EchoServiceConfig' -> 'ECHO_SERVICE_CONFIG'
+string PascalToConstCase(const string& s) {
+  if (s.empty()) {
+    return s;
+  }
+  // Ignore the first character. It's already uppercase and doesn't need an
+  // underscore.
+  string result;
+  result.push_back(s[0]);
+  for (int i = 1; i < s.size(); ++i) {
+    if (s[i] >= 'A' && s[i] <= 'Z') {
+      result.push_back('_');
+      result.push_back(s[i]);
+    } else {
+      result.push_back(s[i] - 'a' + 'A');
+    }
+  }
+  return result;
+}
 
 // The following function was copied from
 // google/protobuf/src/google/protobuf/compiler/cpp/cpp_helpers.cc
@@ -631,6 +651,149 @@ void PrintES6Imports(Printer* printer, const FileDescriptor* file) {
 
   printer->Outdent();
   printer->Print(vars, "} from './$base_name$_pb';\n\n");
+}
+
+void PrintAngularServiceImports(Printer* printer, const FileDescriptor* file,
+                                const string base_file_name) {
+  printer->Print(
+      "import {Injectable, InjectionToken, Inject} from '@angular/core';\n");
+  printer->Print("import {Observable} from 'rxjs';\n\n");
+
+  if (!file->service_count()) {
+    return;
+  }
+
+  std::map<string, string> vars;
+  vars["base_file_name"] = base_file_name;
+
+  const ServiceDescriptor* service = file->service(0);
+  vars["service_name"] = service->name();
+
+  if (file->service_count() == 1) {
+    printer->Print(
+        vars, "import {$service_name$Client} from './$base_file_name$';\n\n");
+    return;
+  }
+
+  printer->Print("import {\n");
+  printer->Indent();
+  printer->Print(vars, "$service_name$");
+
+  for (int service_index = 1; service_index < file->service_count();
+       ++service_index) {
+    const ServiceDescriptor* service = file->service(service_index);
+    vars["service_name"] = service->name();
+    printer->Print(vars, ",\n$service_name$Client");
+  }
+
+  printer->Outdent();
+  printer->Print(vars, "} from './$base_file_name$';\n\n");
+}
+
+void PrintAngularServiceMethod(Printer* printer, const MethodDescriptor* method,
+                               std::map<string, string> vars) {
+  if (!method->client_streaming()) {
+    printer->Print(vars,
+                   "$js_method_name$(\n"
+                   "  request: $input_type$,\n"
+                   "  metadata?: grpcWeb.Metadata\n"
+                   "): Observable<$output_type$> {\n");
+    printer->Indent();
+    printer->Print("return new Observable(subscriber => {\n");
+    printer->Indent();
+
+    if (method->server_streaming()) {
+      vars["stream_object"] = "stream";
+      printer->Print(
+          vars,
+          "const $stream_object$ = this.client.$js_method_name$(request, "
+          "metadata);\n"
+          "$stream_object$.on('data', (response) => "
+          "subscriber.next(response));\n"
+          "$stream_object$.on('error', (err) => subscriber.error(err));\n"
+          "$stream_object$.on('status', (status) => {\n"
+          "  if (status.code != grpcWeb.StatusCode.OK) {\n"
+          "    subscriber.error({code: status.code, message: "
+          "status.details});\n"
+          "  }\n"
+          "});\n"
+          "$stream_object$.on('end', () => subscriber.complete());\n");
+    } else {
+      vars["stream_object"] = "call";
+      printer->Print(
+          vars,
+          "const callback = (err, response) => {\n"
+          "  if (err) {\n"
+          "    subscriber.error(err);\n"
+          "  } else {\n"
+          "    subscriber.next(response);\n"
+          "    subscriber.complete();\n"
+          "  }\n"
+          "};\n"
+          "const $stream_object$ = this.client.$js_method_name$(request, "
+          "metadata, callback);\n");
+    }
+    printer->Print(vars,
+                   "return () => { if ($stream_object$) { "
+                   "$stream_object$.cancel(); } }\n");
+    printer->Outdent();
+    printer->Print("});\n");
+    printer->Outdent();
+    printer->Print("}\n\n");
+  }
+}
+
+void PrintAngularServiceClass(Printer* printer, const FileDescriptor* file) {
+  for (int service_index = 0; service_index < file->service_count();
+       ++service_index) {
+    std::map<string, string> vars;
+    const ServiceDescriptor* service = file->service(service_index);
+    vars["service_name"] = service->name();
+    printer->Print(vars, "export interface $service_name$Config {\n");
+    printer->Print(
+        "  hostname: string;\n"
+        "  credentials: null | { [index: string]: string; };\n"
+        "  options: null | { [index: string]: string; };\n");
+    printer->Print("};\n");
+    vars["config_name"] = PascalToConstCase(service->name()) + "_CONFIG";
+    printer->Print(
+        vars,
+        "export const $config_name$ = new "
+        "InjectionToken<$service_name$Config>('$config_name$');\n\n");
+
+    printer->Print(
+        "@Injectable({\n"
+        "  providedIn: 'root',\n"
+        "})\n");
+    printer->Print(vars, "export class $service_name$ {\n");
+    printer->Indent();
+    printer->Print(vars,
+                   "private client: $service_name$Client;\n\n"
+                   "constructor(@Inject($config_name$) private config: "
+                   "$service_name$Config) {\n"
+                   "  this.client = new $service_name$Client(\n"
+                   "    this.config.hostname,\n"
+                   "    this.config.credentials,\n"
+                   "    this.config.options);\n"
+                   "}\n\n");
+    for (int method_index = 0; method_index < service->method_count();
+         ++method_index) {
+      const MethodDescriptor* method = service->method(method_index);
+      vars["js_method_name"] = LowercaseFirstLetter(method->name());
+      vars["input_type"] = JSMessageType(method->input_type(), file);
+      vars["output_type"] = JSMessageType(method->output_type(), file);
+      PrintAngularServiceMethod(printer, method, vars);
+    }
+    printer->Outdent();
+    printer->Print("}\n");
+  }
+}
+
+void PrintAngularServiceFile(Printer* printer, const FileDescriptor* file,
+                             const string base_file_name) {
+  PrintAngularServiceImports(printer, file, base_file_name);
+  PrintES6Imports(printer, file);
+  PrintAngularServiceClass(printer, file);
 }
 
 void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
@@ -1309,6 +1472,7 @@ class GrpcCodeGenerator : public CodeGenerator {
     ImportStyle import_style;
     bool generate_dts = false;
     bool gen_multiple_files = false;
+    bool generate_angular = false;
 
     for (size_t i = 0; i < options.size(); ++i) {
       if (options[i].first == "out") {
@@ -1317,6 +1481,8 @@ class GrpcCodeGenerator : public CodeGenerator {
         mode = options[i].second;
       } else if (options[i].first == "import_style") {
         import_style_str = options[i].second;
+      } else if (options[i].first == "framework") {
+        generate_angular = options[i].second == "angular";
       } else if (options[i].first == "multiple_files") {
         gen_multiple_files = options[i].second == "true";
       } else {
@@ -1357,6 +1523,10 @@ class GrpcCodeGenerator : public CodeGenerator {
       import_style = ImportStyle::CLOSURE;
     } else if (import_style_str == "commonjs") {
       import_style = ImportStyle::COMMONJS;
+      // Generate Typescript declarations for Angular.
+      if (generate_angular) {
+        generate_dts = true;
+      }
     } else if (import_style_str == "commonjs+dts") {
       import_style = ImportStyle::COMMONJS;
       generate_dts = true;
@@ -1557,6 +1727,21 @@ class GrpcCodeGenerator : public CodeGenerator {
       Printer grpcweb_dts_printer(grpcweb_dts_output.get(), '$');
 
       PrintGrpcWebDtsFile(&grpcweb_dts_printer, file);
+    }
+
+    if (generate_angular && import_style != ImportStyle::CLOSURE) {
+      string angular_service_file_name =
+          StripProto(file->name()) + ".service.pb.ts";
+
+      std::unique_ptr<ZeroCopyOutputStream> angular_service_output(
+          context->Open(angular_service_file_name));
+      Printer angular_service_printer(angular_service_output.get(), '$');
+
+      PrintFileHeader(&angular_service_printer, vars);
+
+      const string base_file_name = StripSuffixString(
+          file_name, import_style == TYPESCRIPT ? ".ts" : ".js");
+      PrintAngularServiceFile(&angular_service_printer, file, base_file_name);
     }
 
     return true;

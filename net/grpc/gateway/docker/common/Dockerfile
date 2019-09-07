@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM node:8-stretch
+FROM node:10-stretch
 
 RUN apt-get -qq update && apt-get -qq install -y \
   unzip

@@ -1,0 +1,22 @@
+<div fxLayout="row" fxLayoutAlign="center center" fxLayoutGap="20px">
+  <mat-form-field>
+    <input matInput #msg (keyup.enter)="onSend(msg.value); msg.value = ''">
+    <mat-hint>Example: "Hello", "4 Hello"</mat-hint>
+  </mat-form-field>
+  <button mat-raised-button color="primary" (click)="onSend(msg.value); msg.value = ''">
+    Send
+  </button>
+</div>
+
+<mat-grid-list cols="2" rowHeight="40px" fxLayoutAlign="center center">
+  <mat-chip-list>
+    <mat-grid-tile *ngFor="let message of messages">
+      <mat-chip *ngIf='message.text && message.isRequest' color="accent" selected>
+        {{message.text}}
+      </mat-chip>
+      <mat-chip *ngIf='message.text && !message.isRequest'>
+        {{message.text}}
+      </mat-chip>
+    </mat-grid-tile>
+  </mat-chip-list>
+</mat-grid-list>

@@ -76,3 +76,7 @@ docker-compose down
 # Run unit tests from npm package
 docker run --rm grpcweb/prereqs /bin/bash \
   /github/grpc-web/scripts/docker-run-tests.sh
+
+ANGULAR_DIR="/github/grpc-web/net/grpc/gateway/examples/echo/angular-example"
+docker run -w $ANGULAR_DIR grpcweb/angular-client \
+  ng test --watch=false --browsers=ChromeHeadlessNoSandbox
