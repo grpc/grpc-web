@@ -21,9 +21,20 @@ const GenericClient = function() {};
  *     this RPC method
  * @param {!Metadata} metadata The user defined request metadata.
  * @return {!Promise<!UnaryResponse<RESPONSE>>} A promise that resolves to the
- *     response message
+ *     response message and metadata
  * @template REQUEST, RESPONSE
  */
 GenericClient.prototype.unaryCall = goog.abstractMethod;
+
+/**
+ * @param {!REQUEST} request The request proto message
+ * @param {!MethodDescriptor<REQUEST, RESPONSE>} methodDescriptor Information of
+ *     this RPC method
+ * @param {!Metadata=} metadata The user defined request metadata.
+ * @return {!Promise<RESPONSE>} A promise that resolves to the
+ *     response message
+ * @template REQUEST, RESPONSE
+ */
+GenericClient.prototype.call = goog.abstractMethod;
 
 exports = GenericClient;
