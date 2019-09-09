@@ -485,7 +485,8 @@ string GetRootPath(const string& from_filename, const string& to_filename) {
 }
 
 // Splits path immediately following the final slash, separating it into a
-// directory and file name component.
+// directory and file name component. Directory will contain the last
+// slash, if it's not empty.
 // If there is no slash in path, Split returns an empty directory and
 // basename set to path.
 // Output values have the property that path = directory + basename.
@@ -511,7 +512,7 @@ void PathSplit(const string& path, string* directory, string* basename) {
 // Returns the basename of a file.
 string GetBasename(string filename) {
   string basename;
-  PathSplit(filename, NULL, &basename);
+  PathSplit(filename, nullptr, &basename);
   return basename;
 }
 
@@ -1387,7 +1388,8 @@ class GrpcCodeGenerator : public CodeGenerator {
       string basename;
 
       PathSplit(file->name(), &directory, &basename);
-      file_name = directory + UppercaseFirstLetter(StripProto(basename)) + "ServiceClientPb.ts";
+      file_name = directory + UppercaseFirstLetter(StripProto(basename)) +
+                  "ServiceClientPb.ts";
     } else {
       *error = "options: invalid import_style - " + import_style_str;
       return false;
