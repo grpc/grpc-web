@@ -159,6 +159,13 @@ string GetSerializeMethodName(const string& mode_var) {
   return "serializeBinary";
 }
 
+std::string GetSerializeMethodReturnType(const string& mode_var) {
+  if (mode_var == GetModeVar(Mode::OPJSPB)) {
+    return "string";
+  }
+  return "!Uint8Array";
+}
+
 string LowercaseFirstLetter(string s) {
   if (s.empty()) {
     return s;
@@ -1049,11 +1056,16 @@ void PrintMethodDescriptorFile(Printer* printer,
                  "$in_type$,\n");
   printer->Print(vars,
                  "$out_type$,\n"
-                 "/** @param {!proto.$in$} request */\n"
+                 "/**\n"
+                 " * @param {!proto.$in$} request\n");
+  printer->Print(
+      (" * @return {" + GetSerializeMethodReturnType(vars["mode"]) + "}\n")
+      .c_str());
+  printer->Print(" */\n"
                  "function(request) {\n");
   printer->Print(
       ("  return request." + GetSerializeMethodName(vars["mode"]) + "();\n")
-          .c_str());
+      .c_str());
   printer->Print("},\n");
   printer->Print(
       vars, ("$out_type$." + GetDeserializeMethodName(vars["mode"])).c_str());
@@ -1095,15 +1107,6 @@ void PrintServiceConstructor(Printer* printer,
       "   * @private @const {string} The hostname\n"
       "   */\n"
       "  this.hostname_ = hostname;\n\n"
-      "  /**\n"
-      "   * @private @const {?Object} The credentials to be used to connect\n"
-      "   *    to the server\n"
-      "   */\n"
-      "  this.credentials_ = credentials;\n\n"
-      "  /**\n"
-      "   * @private @const {?Object} Options for the client\n"
-      "   */\n"
-      "  this.options_ = options;\n"
       "};\n\n\n");
 }
 
@@ -1134,15 +1137,6 @@ void PrintPromiseServiceConstructor(Printer* printer,
       "   * @private @const {string} The hostname\n"
       "   */\n"
       "  this.hostname_ = hostname;\n\n"
-      "  /**\n"
-      "   * @private @const {?Object} The credentials to be used to connect\n"
-      "   *    to the server\n"
-      "   */\n"
-      "  this.credentials_ = credentials;\n\n"
-      "  /**\n"
-      "   * @private @const {?Object} Options for the client\n"
-      "   */\n"
-      "  this.options_ = options;\n"
       "};\n\n\n");
 }
 
@@ -1165,7 +1159,12 @@ void PrintMethodInfo(Printer* printer, std::map<string, string> vars) {
                    "$in_type$,\n");
     printer->Print(vars,
                    "$out_type$,\n"
-                   "/** @param {!proto.$in$} request */\n"
+                   "/**\n"
+                   " * @param {!proto.$in$} request\n");
+    printer->Print(
+        (" * @return {" + GetSerializeMethodReturnType(vars["mode"]) + "}\n")
+        .c_str());
+    printer->Print(" */\n"
                    "function(request) {\n");
     printer->Print(
         ("  return request." + GetSerializeMethodName(vars["mode"]) + "();\n")
@@ -1192,7 +1191,12 @@ void PrintMethodInfo(Printer* printer, std::map<string, string> vars) {
 
   printer->Print(vars,
                  "$out_type$,\n"
-                 "/** @param {!proto.$in$} request */\n"
+                 "/**\n"
+                 " * @param {!proto.$in$} request\n");
+  printer->Print(
+      (" * @return {" + GetSerializeMethodReturnType(vars["mode"]) + "}\n")
+      .c_str());
+  printer->Print(" */\n"
                  "function(request) {\n");
   printer->Print(
       ("  return request." + GetSerializeMethodName(vars["mode"]) + "();\n")
