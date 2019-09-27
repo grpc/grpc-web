@@ -19,8 +19,8 @@ RUN apt-get -qq update && apt-get -qq install -y \
 
 RUN git clone https://github.com/grpc/grpc-web /github/grpc-web
 
-RUN curl -sSL https://github.com/protocolbuffers/protobuf/releases/download/v3.7.1/\
-protoc-3.7.1-linux-x86_64.zip -o /tmp/protoc.zip && \
+RUN curl -sSL https://github.com/protocolbuffers/protobuf/releases/download/v3.8.0/\
+protoc-3.8.0-linux-x86_64.zip -o /tmp/protoc.zip && \
   cd /tmp && \
   unzip -qq protoc.zip && \
   cp /tmp/bin/protoc /usr/local/bin/protoc
