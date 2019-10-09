@@ -18,7 +18,7 @@ RUN apt-get -qq update && apt-get -qq install -y \
   default-jdk
 
 RUN cd /github/grpc-web && \
-  curl -sS https://dl.google.com/closure-compiler/compiler-latest.zip \
+  curl -sS https://dl.google.com/closure-compiler/compiler-20190909.zip \
   -o /github/grpc-web/compiler-latest.zip
 
 RUN cd /github/grpc-web && \

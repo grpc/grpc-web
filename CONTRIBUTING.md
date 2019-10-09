@@ -3,6 +3,10 @@
 We definitely welcome patches and contribution to gRPC-Web! Here is some guideline
 and information about how to do so.
 
+Please read the gRPC
+organization's [governance rules](https://github.com/grpc/grpc-community/blob/master/governance.md)
+and [contribution guidelines](https://github.com/grpc/grpc-community/blob/master/CONTRIBUTING.md) before proceeding.
+
 ## Getting started
 
 ### Legal requirements
