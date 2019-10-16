@@ -16,25 +16,25 @@ FROM grpcweb/common
 
 ARG MAKEFLAGS=-j8
 
-COPY . /github/grpc-web
+WORKDIR /github/grpc-web
 
-RUN cd /github/grpc-web && \
-  git checkout . && \
+COPY . .
+
+RUN git checkout . && \
   git clean -f -d -x && \
   rm -rf third_party && \
   git checkout third_party && \
   ./scripts/init_submodules.sh
 
-RUN cd /github/grpc-web/packages/grpc-web && \
+RUN cd ./packages/grpc-web && \
   npm install && \
   npm run build && \
   npm link
 
-RUN cd /github/grpc-web/third_party/grpc && \
+RUN cd ./third_party/grpc && \
   make install
 
-RUN cd /github/grpc-web/third_party/grpc/third_party/protobuf && \
+RUN cd ./third_party/grpc/third_party/protobuf && \
   make install
 
-RUN cd /github/grpc-web && \
-  make install-plugin
+RUN make install-plugin
