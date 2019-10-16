@@ -17,11 +17,12 @@ FROM grpcweb/prereqs
 RUN apt-get -qq install -y \
   zip
 
-RUN cd /github/grpc-web/net/grpc/gateway/examples/echo && \
+WORKDIR /github/grpc-web
+
+RUN cd ./net/grpc/gateway/examples/echo && \
   sed -i 's/localhost:9090/echo-server:9090/g' nginx.conf
 
-RUN cd /github/grpc-web && \
-  make standalone-proxy
+RUN make standalone-proxy
 
 EXPOSE 8080
-CMD ["/github/grpc-web/gConnector_static/nginx.sh"]
+CMD ["./gConnector_static/nginx.sh"]

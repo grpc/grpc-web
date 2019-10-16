@@ -17,18 +17,17 @@ FROM grpcweb/prereqs
 RUN apt-get -qq update && apt-get -qq install -y \
   default-jdk
 
-RUN cd /github/grpc-web && \
-  curl -sS https://dl.google.com/closure-compiler/compiler-20190909.zip \
-  -o /github/grpc-web/compiler-latest.zip
+WORKDIR /github/grpc-web
 
-RUN cd /github/grpc-web && \
-  rm -f /github/grpc-web/closure-compiler.jar && \
-  unzip -p -qq -o /github/grpc-web/compiler-latest.zip *.jar > \
-  /github/grpc-web/closure-compiler.jar
+RUN curl -sS https://dl.google.com/closure-compiler/compiler-20190909.zip \
+  -o compiler-latest.zip
 
-RUN cd /github/grpc-web && \
-  make client && make install-example
+RUN rm -f closure-compiler.jar && \
+  unzip -p -qq -o compiler-latest.zip *.jar > closure-compiler.jar
+
+RUN make client && make install-example
+
+WORKDIR /var/www/html
 
 EXPOSE 8081
-WORKDIR /var/www/html
 CMD ["python", "-m", "SimpleHTTPServer", "8081"]

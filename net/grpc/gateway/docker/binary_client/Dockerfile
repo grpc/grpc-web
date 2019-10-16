@@ -14,21 +14,21 @@
 
 FROM grpcweb/prereqs
 
-ARG EXAMPLE_DIR=/github/grpc-web/net/grpc/gateway/examples/echo
+WORKDIR /github/grpc-web/net/grpc/gateway/examples/echo
 
-RUN protoc -I=$EXAMPLE_DIR echo.proto \
---js_out=import_style=commonjs:\
-$EXAMPLE_DIR/commonjs-example \
---grpc-web_out=import_style=commonjs,mode=grpcweb:\
-$EXAMPLE_DIR/commonjs-example
+RUN protoc -I=. echo.proto \
+--js_out=import_style=commonjs:./commonjs-example \
+--grpc-web_out=import_style=commonjs,mode=grpcweb:./commonjs-example
 
-RUN cd $EXAMPLE_DIR/commonjs-example && \
-  npm install && \
+WORKDIR /github/grpc-web/net/grpc/gateway/examples/echo/commonjs-example
+
+RUN npm install && \
   npm link grpc-web && \
   npx webpack && \
   cp echotest.html /var/www/html && \
   cp dist/main.js /var/www/html/dist
 
-EXPOSE 8081
 WORKDIR /var/www/html
+
+EXPOSE 8081
 CMD ["python", "-m", "SimpleHTTPServer", "8081"]
