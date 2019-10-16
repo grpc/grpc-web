@@ -128,9 +128,27 @@ const StreamBodyClientReadableStream = function(genericTransportInterface) {
   this.xhrNodeReadableStream_.on('error', function() {
     if (!self.onErrorCallback_) return;
     var lastErrorCode = self.xhr_.getLastErrorCode();
-    if (lastErrorCode == ErrorCode.NO_ERROR) return;
+
+    var grpcStatusCode;
+    switch (lastErrorCode) {
+      case ErrorCode.NO_ERROR:
+        grpcStatusCode = StatusCode.UNKNOWN;
+        break;
+      case ErrorCode.ABORT:
+        grpcStatusCode = StatusCode.ABORTED;
+        break;
+      case ErrorCode.TIMEOUT:
+        grpcStatusCode = StatusCode.DEADLINE_EXCEEDED;
+        break;
+      case ErrorCode.HTTP_ERROR:
+        grpcStatusCode = StatusCode.fromHttpStatus(self.xhr_.getStatus());
+        break;
+      default:
+        grpcStatusCode = StatusCode.UNAVAILABLE;
+    }
+
     self.onErrorCallback_({
-      code: StatusCode.UNAVAILABLE,
+      code: grpcStatusCode,
       message: ErrorCode.getDebugMessage(lastErrorCode)
     });
   });
