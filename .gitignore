@@ -6,3 +6,4 @@ bazel-out
 bazel-testlogs
 *.o
 protoc-gen-*
+.DS_Store
