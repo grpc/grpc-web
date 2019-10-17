@@ -179,14 +179,6 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
         }
       }
     }
-
-    var readyState = self.xhr_.getReadyState();
-    if (readyState == XmlHttp.ReadyState.COMPLETE) {
-      if (self.onEndCallback_) {
-        self.onEndCallback_();
-      }
-      return;
-    }
   });
 
   events.listen(this.xhr_, EventType.COMPLETE, function(e) {
@@ -221,6 +213,8 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
       return;
     }
 
+    var errorEmitted = false;
+
     // Check whethere there are grpc specific response headers
     var responseHeaders = self.xhr_.getResponseHeaders();
     if (GRPC_STATUS in responseHeaders) {
@@ -233,12 +227,19 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
           code: Number(grpcStatusCode),
           message: grpcStatusMessage,
         });
+        errorEmitted = true;
       }
       if (self.onStatusCallback_) {
         self.onStatusCallback_(/** @type {!Status} */ ({
           code: Number(grpcStatusCode),
           details: grpcStatusMessage,
         }));
+      }
+    }
+
+    if (!errorEmitted) {
+      if (self.onEndCallback_) {
+        self.onEndCallback_();
       }
     }
   });
