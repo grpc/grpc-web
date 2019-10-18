@@ -37,7 +37,6 @@ const EventType = goog.require('goog.net.EventType');
 const GrpcWebStreamParser = goog.require('grpc.web.GrpcWebStreamParser');
 const StatusCode = goog.require('grpc.web.StatusCode');
 const XhrIo = goog.require('goog.net.XhrIo');
-const XmlHttp = goog.require('goog.net.XmlHttp');
 const events = goog.require('goog.events');
 const googCrypt = goog.require('goog.crypt.base64');
 const googString = goog.require('goog.string');
