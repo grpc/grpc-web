@@ -19,6 +19,9 @@ RUN apt-get -qq install -y \
 
 WORKDIR /github/grpc-web
 
+COPY ./Makefile ./Makefile
+COPY ./net ./net
+
 RUN cd ./net/grpc/gateway/examples/echo && \
   sed -i 's/localhost:9090/echo-server:9090/g' nginx.conf
 

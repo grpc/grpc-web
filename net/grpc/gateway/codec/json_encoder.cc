@@ -21,11 +21,11 @@
 #include <string>
 
 #include "google/protobuf/any.pb.h"
+#include "google/rpc/status.pb.h"
 #include "net/grpc/gateway/protos/pair.pb.h"
-#include "net/grpc/gateway/protos/stream_body.pb.h"
 #include "net/grpc/gateway/runtime/constants.h"
-#include "third_party/grpc/include/grpcpp/support/config.h"
 #include "third_party/grpc/include/grpc/slice.h"
+#include "third_party/grpc/include/grpcpp/support/config.h"
 
 namespace grpc {
 namespace gateway {
@@ -81,7 +81,7 @@ void JsonEncoder::EncodeStatus(const grpc::Status& status,
       pair.set_first(trailer.first);
       pair.set_second(trailer.second.data(), trailer.second.length());
       // TODO(fengli): Change to open source protobuf.
-      pair.SerializeToString(any->mutable_value());
+      any->set_value(pair.SerializeAsString());
     }
   }
 

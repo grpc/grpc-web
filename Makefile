@@ -19,8 +19,15 @@ protos:
 --cpp_out="$(GRPC_GATEWAY_PROTOS)"
 	cd "$(ROOT_DIR)" && LD_LIBRARY_PATH="$(PROTO_LIB):$(GRPC_LIB)" "$(PROTOC)" \
 --proto_path="$(GRPC_GATEWAY_PROTOS)" \
---proto_path="$(PROTO_SRC)" "$(GRPC_GATEWAY_PROTOS)/stream_body.proto" \
+--proto_path="$(ROOT_DIR)/third_party/grpc/src/proto/grpc/status" \
+--proto_path="$(PROTO_SRC)" "status.proto" \
 --cpp_out="$(GRPC_GATEWAY_PROTOS)"
+	mkdir -p "$(ROOT_DIR)"/google/rpc
+	cd "$(ROOT_DIR)" && LD_LIBRARY_PATH="$(PROTO_LIB):$(GRPC_LIB)" "$(PROTOC)" \
+--proto_path="$(GRPC_GATEWAY_PROTOS)" \
+--proto_path="$(ROOT_DIR)/third_party/grpc/src/proto/grpc/status" \
+--proto_path="$(PROTO_SRC)" "status.proto" \
+--cpp_out="$(ROOT_DIR)/google/rpc"
 
 NGINX_DIR := third_party/nginx
 NGINX_LD_OPT := -L"$(PROTO_LIB)" -L"$(GRPC_LIB)" -lgrpc++ \
