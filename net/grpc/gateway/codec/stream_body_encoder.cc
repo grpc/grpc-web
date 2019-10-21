@@ -19,14 +19,15 @@
 #include "net/grpc/gateway/codec/stream_body_encoder.h"
 
 #include <stddef.h>
+
 #include <cstdint>
 #include <cstring>
 #include <string>
 #include <vector>
 
 #include "google/protobuf/any.pb.h"
+#include "google/rpc/status.pb.h"
 #include "net/grpc/gateway/protos/pair.pb.h"
-#include "net/grpc/gateway/protos/stream_body.pb.h"
 #include "net/grpc/gateway/runtime/constants.h"
 #include "third_party/grpc/include/grpcpp/support/slice.h"
 
@@ -114,7 +115,7 @@ void StreamBodyEncoder::EncodeStatus(const grpc::Status& status,
                                      const Trailers* trailers,
                                      std::vector<Slice>* result,
                                      bool add_padding) {
-  google::rpc::Status status_proto;
+  ::google::rpc::Status status_proto;
   status_proto.set_code(status.error_code());
   status_proto.set_message(status.error_message());
   if (trailers != nullptr) {
@@ -124,7 +125,7 @@ void StreamBodyEncoder::EncodeStatus(const grpc::Status& status,
       Pair pair;
       pair.set_first(trailer.first);
       pair.set_second(trailer.second.data(), trailer.second.length());
-      pair.SerializeToString(any->mutable_value());
+      any->set_value(pair.SerializeAsString());
     }
   }
 
