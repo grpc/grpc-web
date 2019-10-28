@@ -19,10 +19,6 @@ RUN apt-get -qq update && apt-get -qq install -y \
 
 WORKDIR /github/grpc-web
 
-COPY ./Makefile ./Makefile
-RUN rm -rf ./net/grpc/gateway/protos
-COPY ./net ./net
-
 RUN curl -sS https://dl.google.com/closure-compiler/compiler-20190909.zip \
   -o compiler-latest.zip
 
