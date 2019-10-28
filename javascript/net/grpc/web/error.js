@@ -37,4 +37,7 @@ Error.prototype.code;
 /** @export {(string|undefined)} */
 Error.prototype.message;
 
+/** @export {{Metadata}} */
+Error.prototype.metadata;
+
 exports = Error;
