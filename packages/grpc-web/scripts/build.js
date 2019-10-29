@@ -42,7 +42,8 @@ const closureArgs = [].concat(
   ]
 );
 
-const closureCommand = "google-closure-compiler " + closureArgs.join(' ');
+const closureCompilerBin = path.resolve(__dirname, "../node_modules/.bin/google-closure-compiler");
+const closureCommand = closureCompilerBin + " " + closureArgs.join(' ');
 
 console.log(closureCommand);
 let child = exec(closureCommand);

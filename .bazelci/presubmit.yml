@@ -1,0 +1,20 @@
+---
+# TODO(yannic): Enable buildifier and test on Windows and RBE (both unsupported by rules_closure).
+platforms:
+  macos:
+    build_targets:
+      - //...
+    test_targets:
+      - //...
+
+  ubuntu1604:
+    build_targets:
+      - //...
+    test_targets:
+      - //...
+
+  ubuntu1804:
+    build_targets:
+      - //...
+    test_targets:
+      - //...

@@ -37,7 +37,6 @@ const EventType = goog.require('goog.net.EventType');
 const GrpcWebStreamParser = goog.require('grpc.web.GrpcWebStreamParser');
 const StatusCode = goog.require('grpc.web.StatusCode');
 const XhrIo = goog.require('goog.net.XhrIo');
-const XmlHttp = goog.require('goog.net.XmlHttp');
 const events = goog.require('goog.events');
 const googCrypt = goog.require('goog.crypt.base64');
 const googString = goog.require('goog.string');
@@ -179,14 +178,6 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
         }
       }
     }
-
-    var readyState = self.xhr_.getReadyState();
-    if (readyState == XmlHttp.ReadyState.COMPLETE) {
-      if (self.onEndCallback_) {
-        self.onEndCallback_();
-      }
-      return;
-    }
   });
 
   events.listen(this.xhr_, EventType.COMPLETE, function(e) {
@@ -221,6 +212,8 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
       return;
     }
 
+    var errorEmitted = false;
+
     // Check whethere there are grpc specific response headers
     var responseHeaders = self.xhr_.getResponseHeaders();
     if (GRPC_STATUS in responseHeaders) {
@@ -232,13 +225,22 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
         self.onErrorCallback_({
           code: Number(grpcStatusCode),
           message: grpcStatusMessage,
+          metadata: responseHeaders
         });
+        errorEmitted = true;
       }
       if (self.onStatusCallback_) {
         self.onStatusCallback_(/** @type {!Status} */ ({
           code: Number(grpcStatusCode),
           details: grpcStatusMessage,
+          metadata: responseHeaders
         }));
+      }
+    }
+
+    if (!errorEmitted) {
+      if (self.onEndCallback_) {
+        self.onEndCallback_();
       }
     }
   });

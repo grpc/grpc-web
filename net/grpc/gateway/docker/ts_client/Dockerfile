@@ -14,22 +14,24 @@
 
 FROM grpcweb/prereqs
 
-ARG EXAMPLE_DIR=/github/grpc-web/net/grpc/gateway/examples/echo
-
 RUN npm install -g tsc typescript
 
-RUN protoc -I=$EXAMPLE_DIR echo.proto \
---js_out=import_style=commonjs:$EXAMPLE_DIR/ts-example \
---grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:$EXAMPLE_DIR/ts-example
+WORKDIR /github/grpc-web/net/grpc/gateway/examples/echo
 
-RUN cd $EXAMPLE_DIR/ts-example && \
-  npm install && \
+RUN protoc -I=. echo.proto \
+--js_out=import_style=commonjs:./ts-example \
+--grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:./ts-example
+
+WORKDIR /github/grpc-web/net/grpc/gateway/examples/echo/ts-example
+
+RUN npm install && \
   npm link grpc-web && \
   tsc && \
   npx webpack && \
   cp echotest.html /var/www/html && \
   cp dist/main.js /var/www/html/dist
 
-EXPOSE 8081
 WORKDIR /var/www/html
+
+EXPOSE 8081
 CMD ["python", "-m", "SimpleHTTPServer", "8081"]

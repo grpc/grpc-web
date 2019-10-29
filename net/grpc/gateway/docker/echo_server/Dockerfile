@@ -14,8 +14,11 @@
 
 FROM grpcweb/prereqs
 
-RUN cd /github/grpc-web && \
-  make echo_server
+WORKDIR /github/grpc-web
+
+RUN make echo_server
+
+WORKDIR /github/grpc-web/net/grpc/gateway/examples/echo
 
 EXPOSE 9090
-CMD ["/github/grpc-web/net/grpc/gateway/examples/echo/echo_server"]
+CMD ["./echo_server"]

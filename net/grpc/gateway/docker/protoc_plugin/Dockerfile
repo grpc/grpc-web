@@ -29,15 +29,16 @@ RUN apt-get -qq update && apt-get -qq install -y \
   software-properties-common \
   zip
 
-RUN git clone https://github.com/grpc/grpc-web /github/grpc-web
+WORKDIR /github/grpc-web
 
-COPY ./javascript /github/grpc-web/javascript
+RUN git clone https://github.com/grpc/grpc-web .
 
-RUN cd /github/grpc-web && \
-  ./scripts/init_submodules.sh
+COPY ./javascript ./javascript
 
-RUN cd /github/grpc-web/third_party/grpc/third_party/protobuf && \
+RUN ./scripts/init_submodules.sh
+
+RUN cd ./third_party/grpc/third_party/protobuf && \
   ./autogen.sh && ./configure && make && make install
 
-RUN cd /github/grpc-web/javascript/net/grpc/web && \
+RUN cd ./javascript/net/grpc/web && \
   make protoc-gen-grpc-web
