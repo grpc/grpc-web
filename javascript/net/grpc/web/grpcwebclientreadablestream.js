@@ -225,7 +225,6 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
         self.onErrorCallback_({
           code: Number(grpcStatusCode),
           message: grpcStatusMessage,
-          metadata: responseHeaders
         });
         errorEmitted = true;
       }
@@ -233,7 +232,6 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
         self.onStatusCallback_(/** @type {!Status} */ ({
           code: Number(grpcStatusCode),
           details: grpcStatusMessage,
-          metadata: responseHeaders
         }));
       }
     }

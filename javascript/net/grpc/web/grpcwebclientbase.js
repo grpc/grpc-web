@@ -90,8 +90,7 @@ GrpcWebClientBase.prototype.rpcCall = function(
     if (status.code != StatusCode.OK) {
       callback({
         code: status.code,
-        message: status.details,
-        metadata: status.metadata
+        message: status.details
       }, null);
     }
   });
@@ -100,8 +99,7 @@ GrpcWebClientBase.prototype.rpcCall = function(
     if (error.code != StatusCode.OK) {
       callback({
         code: error.code,
-        message: error.message,
-        metadata: error.metadata
+        message: error.message
       }, null);
     }
   });
