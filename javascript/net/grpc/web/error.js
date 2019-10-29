@@ -26,6 +26,7 @@ goog.module('grpc.web.Error');
 
 goog.module.declareLegacyNamespace();
 
+const Metadata = goog.require('grpc.web.Metadata');
 
 
 /** @record */
@@ -36,5 +37,8 @@ Error.prototype.code;
 
 /** @export {(string|undefined)} */
 Error.prototype.message;
+
+/** @export {(?Metadata|undefined)} */
+Error.prototype.metadata;
 
 exports = Error;
