@@ -16,6 +16,6 @@ set -ex
 
 cd "$(dirname "$0")"/..
 git submodule update --init
-cd third_party/closure-library && git checkout tags/v20171112 -f && cd ../..
+cd third_party/closure-library && git checkout tags/v20190909 -f && cd ../..
 cd third_party/openssl && git checkout tags/OpenSSL_1_0_2h -f && cd ../..
 cd third_party/grpc && git checkout 2de2e8d -f && git submodule update --init && cd ../..
