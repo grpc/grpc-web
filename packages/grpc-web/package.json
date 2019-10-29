@@ -24,8 +24,8 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "command-exists": "^1.2.7",
-    "google-closure-compiler": "^20180716.0.0",
-    "google-protobuf": "^3.6.1",
+    "google-closure-compiler": "^20190909.0.0",
+    "google-protobuf": "^3.8.0",
     "gulp": "^4.0.0",
     "gulp-eval": "^1.0.0",
     "mocha": "^5.2.0",
