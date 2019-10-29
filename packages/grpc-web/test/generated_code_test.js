@@ -219,7 +219,7 @@ describe('grpc-web generated code (commonjs+grpcwebtext)', function() {
     });
   });
 
-  it('should receive error from trailers', function(done) {
+  it('should receive error', function(done) {
     execSync(genCodeCmd);
     const {EchoServiceClient} = require(genCodePath);
     const {EchoRequest} = require(protoGenCodePath);
@@ -228,46 +228,14 @@ describe('grpc-web generated code (commonjs+grpcwebtext)', function() {
     request.setMessage('aaa');
     MockXMLHttpRequest.onSend = function(xhr) {
       xhr.respond(200, {'Content-Type': 'application/grpc-web-text'},
-                  // a trailer frame with content 'grpc-status:10,grpc-message:bbb,custom-header:ccc
-                  // ZGRk is the base64 format for ddd
-                  'gAAAADVncnBjLXN0YXR1czoxMA0KZ3JwYy1tZXNzYWdlOmJiYg0KY3VzdG9tLWhlYWRlcjpjY2MNCg==');
+                  // a trailer frame with content 'grpc-status:10'
+                  'gAAAABBncnBjLXN0YXR1czoxMA0K');
     };
     var call = echoService.echo(request, {'custom-header-1':'value1'},
                                 function(err, response) {
                                   assert.equal(10, err.code);
-                                  assert.equal('bbb', err.message);
-                                  assert.equal('ccc', err.metadata['custom-header']);
                                   done();
                                 });
-  });
-
-  it('should receive error from response headers', function(done) {
-    execSync(genCodeCmd);
-    const {EchoServiceClient} = require(genCodePath);
-    const {EchoRequest} = require(protoGenCodePath);
-    var echoService = new EchoServiceClient('MyHostname', null, null);
-    var request = new EchoRequest();
-    request.setMessage('aaa');
-    MockXMLHttpRequest.onSend = function(xhr) {
-      xhr.respond(200, {
-        'Content-Type': 'application/grpc-web-text',
-        'grpc-status': 10,
-        'grpc-message': 'bbb',
-        'custom-header': 'ccc',
-      }, '');
-    };
-    var count = 0;
-    var call = echoService.echo(request, {'custom-header-1':'value1'},
-      function(err, response) {
-        assert.equal(10, err.code);
-        assert.equal('bbb', err.message);
-        assert.equal('ccc', err.metadata['custom-header']);
-        count++;
-        // Called twice because of status and error callback
-        if (count === 2) {
-          done();
-        }
-      });
   });
 });
 
