@@ -175,15 +175,27 @@ Parser.prototype.error_ = function(inputBytes, pos, errorMsg) {
 
 
 /**
+ * Parse the new input.
+ *
+ * Note that there is no Parser state to indicate the end of a stream.
+ *
+ * @param {string|!ArrayBuffer|!Uint8Array|!Array<number>} input The input data
  * @throws {!Error} Throws an error message if the input is invalid.
- * @override
+ * @return {?Array<string|!Object>} any parsed objects (atomic messages)
+ *    in an array, or null if more data needs be read to parse any new object.
  */
 GrpcWebStreamParser.prototype.parse = function(input) {
-  asserts.assert(input instanceof Array || input instanceof ArrayBuffer);
+  asserts.assert(input instanceof Array || input instanceof ArrayBuffer || input instanceof Uint8Array);
 
   var parser = this;
-  var inputBytes = (input instanceof Array) ? input : new Uint8Array(input);
+  var inputBytes;
   var pos = 0;
+
+  if (input instanceof Uint8Array || input instanceof Array) {
+    inputBytes = input
+  } else {
+    inputBytes = new Uint8Array(input)
+  }
 
   while (pos < inputBytes.length) {
     switch (parser.state_) {
