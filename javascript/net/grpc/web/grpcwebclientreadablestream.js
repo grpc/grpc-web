@@ -137,7 +137,7 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
     } else {
       return;
     }
-    var messages = self.parser_.parse([].slice.call(byteSource));
+    var messages = self.parser_.parse(byteSource);
     if (messages) {
       var FrameType = GrpcWebStreamParser.FrameType;
       for (var i = 0; i < messages.length; i++) {
