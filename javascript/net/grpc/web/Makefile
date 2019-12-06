@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-CXX = g++
+CXX ?= g++
 CPPFLAGS += -I/usr/local/include -pthread
 CXXFLAGS += -std=c++11
 LDFLAGS += -L/usr/local/lib -lprotoc -lprotobuf -lpthread -ldl
