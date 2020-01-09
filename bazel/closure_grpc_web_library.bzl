@@ -135,7 +135,7 @@ def _closure_grpc_web_library_impl(ctx):
         "reportUnknownTypes",
         "strictDependencies",
         "extraRequire",
-        "superfluousSuppress,
+        "superfluousSuppress",
     ]
 
     library = create_closure_js_library(
