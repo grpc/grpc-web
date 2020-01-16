@@ -23,7 +23,7 @@
 #include <cstring>
 #include <fstream>
 
-#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/message_lite.h"
 #include "net/grpc/gateway/backend/grpc_backend.h"
 #include "net/grpc/gateway/codec/b64_proto_decoder.h"
 #include "net/grpc/gateway/codec/b64_proto_encoder.h"

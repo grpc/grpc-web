@@ -38,6 +38,9 @@ closure_js_library(
     srcs = [
         "error.js",
     ],
+    deps = [
+        ":metadata",
+    ],
 )
 
 closure_js_library(
@@ -105,6 +108,13 @@ closure_js_library(
     deps = [
         "@io_bazel_rules_closure//closure/library/asserts",
         "@io_bazel_rules_closure//closure/library/net/streams:streamparser",
+    ],
+)
+
+closure_js_library(
+    name = "metadata",
+    srcs = [
+        "metadata.js",
     ],
 )
 
