@@ -216,6 +216,7 @@ And finally a simple `index.html` file.
 <script src="./dist/main.js"></script>
 </head>
 <body>
+  <p>Open up the developer console and see the logs for the output.</p>
 </body>
 </html>
 ```
