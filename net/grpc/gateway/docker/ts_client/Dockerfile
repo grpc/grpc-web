@@ -14,7 +14,7 @@
 
 FROM grpcweb/prereqs
 
-RUN npm install -g tsc typescript
+RUN npm install -g typescript
 
 WORKDIR /github/grpc-web/net/grpc/gateway/examples/echo
 
