@@ -1484,13 +1484,14 @@ class GrpcCodeGenerator : public CodeGenerator {
             vars["import_mtd"] = it->second;
             printer.Print(vars, "goog.require('$import_mtd$');\n");
           }
+        } else {
+          printer.Print(vars, "goog.require('grpc.web.MethodDescriptor');\n");
+          printer.Print(vars, "goog.require('grpc.web.MethodType');\n");
         }
         printer.Print(vars, "goog.require('grpc.web.$mode$ClientBase');\n");
         printer.Print(vars, "goog.require('grpc.web.AbstractClientBase');\n");
         printer.Print(vars, "goog.require('grpc.web.ClientReadableStream');\n");
         printer.Print(vars, "goog.require('grpc.web.Error');\n");
-        printer.Print(vars, "goog.require('grpc.web.MethodDescriptor');\n");
-        printer.Print(vars, "goog.require('grpc.web.MethodType');\n");
 
         PrintMessagesDeps(&printer, file);
         printer.Print("goog.scope(function() {\n\n");
