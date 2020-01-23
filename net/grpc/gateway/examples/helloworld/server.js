@@ -46,18 +46,24 @@ function doSayHello(call, callback) {
  */
 function doSayRepeatHello(call) {
   var senders = [];
-  function sender(name) {
+  function sender(name, interval, messageSize) {
     return (callback) => {
+      var message = ('Y'.repeat(1024)).repeat(messageSize);
+      console.log('name, interval, messageSize', name, interval, messageSize);
+      console.log('message.length', message.length);
+
       call.write({
-        message: 'Hey! ' + name
+        message: message,
       });
-      _.delay(callback, 500); // in ms
+      _.delay(callback, interval); // in ms
     };
   }
+  console.log('call.request', call.request);
   for (var i = 0; i < call.request.count; i++) {
-    senders[i] = sender(call.request.name + i);
+    senders[i] = sender(call.request.name + i, call.request.interval, call.request.message_size);
   }
   async.series(senders, () => {
+    console.log('end');
     call.end();
   });
 }

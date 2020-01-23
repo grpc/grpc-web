@@ -32,6 +32,8 @@ message HelloRequest {
 message RepeatHelloRequest {
   string name = 1;
   int32 count = 2;
+  int32 interval = 3;
+  int32 message_size = 4;
 }
 
 message HelloReply {
