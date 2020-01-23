@@ -34,19 +34,15 @@ var client = new GreeterClient('http://' + window.location.hostname + ':8080',
 
 // server streaming call
 var streamRequest = new RepeatHelloRequest();
-streamRequest.setName('5-1002');
+streamRequest.setName('name');
 streamRequest.setCount(1000);
 streamRequest.setInterval(100);  // in ms
 streamRequest.setMessageSize(100); // in KB
 
 var stream = client.sayRepeatHello(streamRequest, {});
-var count = 0;
 stream.on('data', (response) => {
-  // console.log('data');
+  console.log('data');
   // console.log(response.getMessage());
-  if (count++ % 1000 === 0) {
-    console.log(new Date(), 'count', count);
-  }
 });
   
 
