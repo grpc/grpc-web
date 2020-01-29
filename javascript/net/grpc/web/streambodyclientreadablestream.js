@@ -153,13 +153,13 @@ const StreamBodyClientReadableStream = function(genericTransportInterface) {
         grpcStatusCode = StatusCode.UNAVAILABLE;
     }
 
-    self.onErrorCallback_({
-      code: grpcStatusCode,
-      // TODO(armiller): get the message from the response?
-      // GoogleRpcStatus.deserialize(rawResponse).getMessage()?
-      // Perhaps do the same status logic as in on('data') above?
-      message: ErrorCode.getDebugMessage(lastErrorCode)
-    });
+    // TODO(armiller): get the message from the response?
+    // GoogleRpcStatus.deserialize(rawResponse).getMessage()?
+    // Perhaps do the same status logic as in on('data') above?
+    var message = ErrorCode.getDebugMessage(lastErrorCode);
+    var errorObject = /** @type {!GrpcWebError} */ (new Error(message));
+    errorObject.code = grpcStatusCode;
+    self.onErrorCallback_(errorObject);
   });
 };
 

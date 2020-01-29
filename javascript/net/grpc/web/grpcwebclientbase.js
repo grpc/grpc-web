@@ -30,8 +30,8 @@ goog.module.declareLegacyNamespace();
 
 const AbstractClientBase = goog.require('grpc.web.AbstractClientBase');
 const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
-const Error = goog.require('grpc.web.Error');
 const GrpcWebClientReadableStream = goog.require('grpc.web.GrpcWebClientReadableStream');
+const GrpcWebError = goog.require('grpc.web.Error');
 const HttpCors = goog.require('goog.net.rpc.HttpCors');
 const MethodType = goog.require('grpc.web.MethodType');
 const Request = goog.require('grpc.web.Request');
@@ -183,8 +183,8 @@ GrpcWebClientBase.prototype.startStream_ = function(request, hostname) {
  * @static
  * @template RESPONSE
  * @param {!ClientReadableStream<RESPONSE>} stream
- * @param {function(?Error, ?RESPONSE, ?Status=, ?Metadata=)|
- *     function(?Error,?RESPONSE)} callback
+ * @param {function(?GrpcWebError, ?RESPONSE, ?Status=, ?Metadata=)|
+ *     function(?GrpcWebError,?RESPONSE)} callback
  * @param {boolean} useUnaryResponse
  */
 GrpcWebClientBase.setCallback_ = function(stream, callback, useUnaryResponse) {
@@ -194,19 +194,19 @@ GrpcWebClientBase.setCallback_ = function(stream, callback, useUnaryResponse) {
 
   stream.on('error', function(error) {
     if (error.code != StatusCode.OK) {
-      callback(error, null);
+      var errorObject = /** @type {!GrpcWebError} */ (new Error(error.message));
+      errorObject.code = error.code;
+      errorObject.metadata = error.metadata;
+      callback(errorObject, null);
     }
   });
 
   stream.on('status', function(status) {
     if (status.code != StatusCode.OK) {
-      callback(
-          {
-            code: status.code,
-            message: status.details,
-            metadata: status.metadata
-          },
-          null);
+      var errorObject = /** @type {!GrpcWebError} */ (new Error(status.details));
+      errorObject.code = status.code;
+      errorObject.metadata = status.metadata;
+      callback(errorObject, null);
     } else if (useUnaryResponse) {
       callback(null, null, status);
     }
