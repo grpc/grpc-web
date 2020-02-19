@@ -229,7 +229,7 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
         });
         errorEmitted = true;
       }
-      if (self.onStatusCallback_) {
+      if (!errorEmitted && self.onStatusCallback_) {
         self.onStatusCallback_(/** @type {!Status} */ ({
           code: Number(grpcStatusCode),
           details: grpcStatusMessage,

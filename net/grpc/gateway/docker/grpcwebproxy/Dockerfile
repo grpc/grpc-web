@@ -17,7 +17,7 @@ FROM golang:alpine
 RUN apk add --no-cache curl git ca-certificates && \
   rm -rf /var/lib/apt/lists/*
 
-ARG VERSION=0.11.0
+ARG VERSION=0.12.0
 
 WORKDIR /tmp
 
@@ -31,7 +31,7 @@ RUN mv grpc-web-$VERSION grpc-web
 
 WORKDIR /go/src/github.com/improbable-eng/grpc-web
 
-RUN dep ensure --vendor-only && \
+RUN dep ensure && \
   go install ./go/grpcwebproxy
 
 ADD ./etc/localhost.crt /etc

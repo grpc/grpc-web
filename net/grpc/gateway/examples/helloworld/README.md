@@ -116,8 +116,8 @@ static_resources:
                   cluster: greeter_service
                   max_grpc_timeout: 0s
               cors:
-                allow_origin:
-                - "*"
+                allow_origin_string_match:
+                - prefix: "*"
                 allow_methods: GET, PUT, DELETE, POST, OPTIONS
                 allow_headers: keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,custom-header-1,x-accept-content-transfer-encoding,x-accept-response-streaming,x-user-agent,x-grpc-web,grpc-timeout
                 max_age: "1728000"
@@ -216,6 +216,7 @@ And finally a simple `index.html` file.
 <script src="./dist/main.js"></script>
 </head>
 <body>
+  <p>Open up the developer console and see the logs for the output.</p>
 </body>
 </html>
 ```

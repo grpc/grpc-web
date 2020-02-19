@@ -21,7 +21,7 @@ var PROTO_PATH = __dirname + '/../echo.proto';
 var assert = require('assert');
 var async = require('async');
 var _ = require('lodash');
-var grpc = require('@grpc/grpc-js');
+var grpc = require('grpc');
 var protoLoader = require('@grpc/proto-loader');
 var packageDefinition = protoLoader.loadSync(
     PROTO_PATH,
