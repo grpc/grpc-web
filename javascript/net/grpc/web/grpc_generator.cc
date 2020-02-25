@@ -722,8 +722,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
           printer->Print(vars, "return this.client_.serverStreaming(\n");
           printer->Indent();
           printer->Print(vars,
-                         "this.hostname_ +\n"
-                         "  '/$package_dot$$service_name$/$method_name$',\n"
+                         "new URL('/$package_dot$$service_name$/$method_name$', this.hostname_).toString()\n"
                          "request,\n"
                          "metadata || {},\n"
                          "this.methodInfo$method_name$);\n");
@@ -761,8 +760,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
           printer->Print(vars, "return this.client_.rpcCall(\n");
           printer->Indent();
           printer->Print(vars,
-                         "this.hostname_ +\n"
-                         "  '/$package_dot$$service_name$/$method_name$',\n"
+                         "new URL('/$package_dot$$service_name$/$method_name$', this.hostname_).toString()\n"
                          "request,\n"
                          "metadata || {},\n"
                          "this.methodInfo$method_name$,\n"
