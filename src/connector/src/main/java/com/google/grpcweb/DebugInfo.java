@@ -5,7 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 
-public class DebugInfo {
+class DebugInfo {
   private static final Logger LOGGER = Logger.getLogger(DebugInfo.class.getName());
 
   public void printRequest(HttpServletRequest req) {
