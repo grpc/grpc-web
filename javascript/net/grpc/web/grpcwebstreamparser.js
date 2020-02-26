@@ -192,9 +192,9 @@ GrpcWebStreamParser.prototype.parse = function(input) {
   var pos = 0;
 
   if (input instanceof Uint8Array || input instanceof Array) {
-    inputBytes = input
+    inputBytes = input;
   } else {
-    inputBytes = new Uint8Array(input)
+    inputBytes = new Uint8Array(input);
   }
 
   while (pos < inputBytes.length) {
