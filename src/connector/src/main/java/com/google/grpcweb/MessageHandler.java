@@ -11,8 +11,8 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.io.IOUtils;
 
-public class GrpcWebHandler {
-  private static final Logger LOGGER = Logger.getLogger(GrpcWebHandler.class.getName());
+class MessageHandler {
+  private static final Logger LOGGER = Logger.getLogger(MessageHandler.class.getName());
 
   enum ContentType {
     GRPC_WEB_PROTO,

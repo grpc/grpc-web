@@ -5,7 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-public class Reflect {
+class Reflect {
   private static final Logger LOGGER = Logger.getLogger(Reflect.class.getName());
 
   public Reflect() {}
@@ -13,7 +13,7 @@ public class Reflect {
   /**
    * get class and method.
    */
-  public Pair<Class, String> getClassAndMethod(HttpServletRequest req)
+  Pair<Class, String> getClassAndMethod(HttpServletRequest req)
       throws IllegalArgumentException {
     String pathInfo = req.getPathInfo();
     if (!pathInfo.startsWith("/$rpc/")) {

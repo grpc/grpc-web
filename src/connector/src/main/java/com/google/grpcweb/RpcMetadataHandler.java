@@ -1,11 +1,16 @@
 package com.google.grpcweb;
 
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import java.lang.reflect.Method;
 
-public class RpcMetadataHandler {
-  public static Object getRpcStub(Class cls, int grpcPortNum) {
+class RpcMetadataHandler {
+  private final Factory mFactory;
+
+  RpcMetadataHandler(Factory factory) {
+    mFactory = factory;
+  }
+
+  Object getRpcStub(Class cls) {
     Method newBlockingStubMethod;
     try {
       newBlockingStubMethod = cls.getDeclaredMethod("newBlockingStub",
@@ -15,10 +20,7 @@ public class RpcMetadataHandler {
     }
 
     // invoke the newBlockingStub() method
-    final ManagedChannel channel =
-        ManagedChannelBuilder.forAddress("localhost", grpcPortNum)
-            .usePlaintext()
-            .build();
+    ManagedChannel channel = mFactory.getGrpcServiceConnectionManager().getChannel();
     Object stub;
     try {
       stub = newBlockingStubMethod.invoke(null, channel);
@@ -35,7 +37,7 @@ public class RpcMetadataHandler {
   /**
    * Find method with one param!
    */
-  public static Method getRpcMethod(Object stub, String rpcMethodName) {
+  static Method getRpcMethod(Object stub, String rpcMethodName) {
     Method rpcMethodObj = null;
     for (Method m : stub.getClass().getMethods()) {
       if (m.getName().equals(rpcMethodName) && (m.getParameterCount() == 1)) {
