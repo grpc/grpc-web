@@ -183,6 +183,7 @@ Parser.prototype.error_ = function(inputBytes, pos, errorMsg) {
  * @throws {!Error} Throws an error message if the input is invalid.
  * @return {?Array<string|!Object>} any parsed objects (atomic messages)
  *    in an array, or null if more data needs be read to parse any new object.
+ * @override
  */
 GrpcWebStreamParser.prototype.parse = function(input) {
   asserts.assert(input instanceof Array || input instanceof ArrayBuffer || input instanceof Uint8Array);
