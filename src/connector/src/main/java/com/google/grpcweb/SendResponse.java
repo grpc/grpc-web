@@ -4,11 +4,11 @@ import java.io.IOException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
-public class SendResponse {
+class SendResponse {
   /**
    * Write response out.
    */
-  public void writeResponse(HttpServletResponse response, byte[] out) throws IOException {
+  void writeResponse(HttpServletResponse response, byte[] out) throws IOException {
     ServletOutputStream oStream = response.getOutputStream();
     oStream.write((byte) 0x00);
     oStream.write(lengthToBytes(out.length));

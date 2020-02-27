@@ -20,7 +20,7 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-maven-plugin</artifactId>
-      <version>9.4.0.M0</version>
+      <version>9.4.26.v20200117</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
@@ -90,7 +90,7 @@
           </execution>
         </executions>
         <configuration>
-          <mainClass>com.google.grpcweb.example.EchoService</mainClass>
+          <mainClass>com.google.grpcweb.example.TestEchoService</mainClass>
         </configuration>
       </plugin>
       <plugin>
