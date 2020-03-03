@@ -2,19 +2,12 @@
 # |closure_proto_library|, licensed under Apache 2.
 # https://github.com/bazelbuild/rules_closure/blob/3555e5ba61fdcc17157dd833eaf7d19b313b1bca/closure/protobuf/closure_proto_library.bzl
 
-load(
-    "@io_bazel_rules_closure//closure/compiler:closure_js_library.bzl",
-    "create_closure_js_library",
-)
-load(
-    "@io_bazel_rules_closure//closure/private:defs.bzl",
-    "CLOSURE_JS_TOOLCHAIN_ATTRS",
-    "unfurl",
-)
-load(
-    "@io_bazel_rules_closure//closure/protobuf:closure_proto_library.bzl",
-    "closure_proto_aspect",
-)
+"""Starlark rules for using gRPC-Web with Bazel and `rules_closure`."""
+
+load("@io_bazel_rules_closure//closure/compiler:closure_js_library.bzl", "create_closure_js_library")
+load("@io_bazel_rules_closure//closure/private:defs.bzl", "CLOSURE_JS_TOOLCHAIN_ATTRS", "unfurl")  # buildifier: disable=bzl-visibility
+load("@io_bazel_rules_closure//closure/protobuf:closure_proto_library.bzl", "closure_proto_aspect")
+load("@rules_proto//proto:defs.bzl", "ProtoInfo")
 
 # This was borrowed from Rules Go, licensed under Apache 2.
 # https://github.com/bazelbuild/rules_go/blob/67f44035d84a352cffb9465159e199066ecb814c/proto/compiler.bzl#L72
@@ -109,41 +102,35 @@ def _closure_grpc_web_library_impl(ctx):
         # TODO(yannic): Revisit this restriction.
         fail(_error_multiple_deps, "deps")
 
-    dep = ctx.attr.deps[0]
-
+    proto_info = ctx.attr.deps[0][ProtoInfo]
     srcs = _generate_closure_grpc_web_srcs(
         actions = ctx.actions,
         protoc = ctx.executable._protoc,
         protoc_gen_grpc_web = ctx.executable._protoc_gen_grpc_web,
         import_style = ctx.attr.import_style,
         mode = ctx.attr.mode,
-        sources = dep[ProtoInfo].direct_sources,
-        transitive_sources = dep[ProtoInfo].transitive_imports,
+        sources = proto_info.direct_sources,
+        transitive_sources = proto_info.transitive_imports,
     )
 
     deps = unfurl(ctx.attr.deps, provider = "closure_js_library")
-    deps += [
-        ctx.attr._grpc_web_abstractclientbase,
-        ctx.attr._grpc_web_clientreadablestream,
-        ctx.attr._grpc_web_error,
-        ctx.attr._grpc_web_grpcwebclientbase,
-    ]
-
-    suppress = [
-        "misplacedTypeAnnotation",
-        "unusedPrivateMembers",
-        "reportUnknownTypes",
-        "strictDependencies",
-        "extraRequire",
-    ]
-
+    deps.append(ctx.attr._runtime)
     library = create_closure_js_library(
         ctx = ctx,
         srcs = srcs,
         deps = deps,
-        suppress = suppress,
+        suppress = [
+            "misplacedTypeAnnotation",
+            "unusedPrivateMembers",
+            "reportUnknownTypes",
+            "strictDependencies",
+            "extraRequire",
+        ],
         lenient = False,
     )
+
+    # `rules_closure` still uses the legacy provider syntax.
+    # buildifier: disable=rule-impl-return
     return struct(
         exports = library.exports,
         closure_js_library = library.closure_js_library,
@@ -169,29 +156,24 @@ closure_grpc_web_library = rule(
             values = ["grpcwebtext", "grpcweb"],
         ),
 
-        # internal only
-        # TODO(yannic): Convert to toolchain.
+        # Internal only.
+
+        # TODO(yannic): Switch to using `proto_toolchain` after
+        # https://github.com/bazelbuild/rules_proto/pull/25 lands.
         "_protoc": attr.label(
             default = Label("@com_google_protobuf//:protoc"),
             executable = True,
             cfg = "host",
         ),
+
+        # TODO(yannic): Create `grpc_web_toolchain`.
         "_protoc_gen_grpc_web": attr.label(
             default = Label("//javascript/net/grpc/web:protoc-gen-grpc-web"),
             executable = True,
             cfg = "host",
         ),
-        "_grpc_web_abstractclientbase": attr.label(
-            default = Label("//javascript/net/grpc/web:abstractclientbase"),
-        ),
-        "_grpc_web_clientreadablestream": attr.label(
-            default = Label("//javascript/net/grpc/web:clientreadablestream"),
-        ),
-        "_grpc_web_error": attr.label(
-            default = Label("//javascript/net/grpc/web:error"),
-        ),
-        "_grpc_web_grpcwebclientbase": attr.label(
-            default = Label("//javascript/net/grpc/web:grpcwebclientbase"),
+        "_runtime": attr.label(
+            default = Label("//javascript/net/grpc/web:closure_grpcweb_runtime"),
         ),
     }, **CLOSURE_JS_TOOLCHAIN_ATTRS),
 )
