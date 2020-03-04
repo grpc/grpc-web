@@ -921,10 +921,10 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
     if (!field->is_map() && (field->type() != FieldDescriptor::TYPE_MESSAGE ||
                              field->is_repeated())) {
       printer->Print(vars,
-                     "set$js_field_name$(value: $js_field_type$): void;\n");
+                     "set$js_field_name$(value: $js_field_type$): $class_name$;\n");
     } else if (!field->is_map()) {
       printer->Print(vars,
-                     "set$js_field_name$(value?: $js_field_type$): void;\n");
+                     "set$js_field_name$(value?: $js_field_type$): $class_name$;\n");
     }
     if (field->type() == FieldDescriptor::TYPE_MESSAGE && !field->is_repeated()
         && !field->is_map()) {
@@ -932,7 +932,7 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
     }
     if (field->type() == FieldDescriptor::TYPE_MESSAGE ||
         field->is_repeated() || field->is_map()) {
-      printer->Print(vars, "clear$js_field_name$(): void;\n");
+      printer->Print(vars, "clear$js_field_name$(): $class_name$;\n");
     }
     if (field->is_repeated() && !field->is_map()) {
       vars["js_field_name"] = JSElementName(field);
@@ -940,7 +940,7 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
       if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
         printer->Print(vars,
                        "add$js_field_name$(value: $js_field_type$, "
-                       "index?: number): void;\n");
+                       "index?: number): $class_name$;\n");
       } else {
         printer->Print(vars,
                        "add$js_field_name$(value?: $js_field_type$, "
