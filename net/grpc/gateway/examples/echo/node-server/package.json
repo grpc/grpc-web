@@ -2,10 +2,10 @@
   "name": "grpc-web-node-server-example",
   "version": "0.1.0",
   "dependencies": {
-    "@grpc/proto-loader": "^0.3.0",
-    "async": "^1.5.2",
-    "google-protobuf": "^3.6.0",
-    "grpc": "^1.24.0",
-    "lodash": "^4.6.1"
+    "@grpc/proto-loader": "^0.5.3",
+    "async": "^3.2.0",
+    "google-protobuf": "^3.11.4",
+    "grpc": "^1.24.2",
+    "lodash": "^4.17.15"
   }
 }

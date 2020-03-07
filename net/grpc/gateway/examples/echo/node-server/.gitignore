@@ -1,2 +1,4 @@
-node_modules/
-package-lock.json
+node_modules
+echo_grpc_web_pb.js
+echo_pb.js
+dist

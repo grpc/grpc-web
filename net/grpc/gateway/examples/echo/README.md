@@ -10,14 +10,15 @@ example. The example has 3 key components:
 
 From the repo root directory:
 
-## Build pre-requisites
-
-This step downloads the necessary pre-requisites, and serves as the base docker
-image for the subsequent docker images.
+## With docker-compose
 
 ```sh
-$ docker build -t grpcweb/common \
-  -f net/grpc/gateway/docker/common/Dockerfile .
+$ docker-compose up --build
+```
+
+Then open a browser tab, and inspect:
+````
+http://localhost:8081
 ```
 
 ## Run the gRPC Backend server
@@ -26,8 +27,7 @@ This compiles the gRPC backend server, written in Node, and listens on port
 9090.
 
 ```sh
-$ docker build -t grpcweb/node-server \
-  -f net/grpc/gateway/docker/node_server/Dockerfile .
+$ docker build -t grpcweb/node-server --target=node-server .
 $ docker run -d -p 9090:9090 --name node-server grpcweb/node-server
 ```
 
@@ -37,8 +37,7 @@ This step runs the Envoy proxy, and listens on port 8080. Any gRPC-Web browser
 requests will be forwarded to port 9090.
 
 ```sh
-$ docker build -t grpcweb/envoy \
-  -f net/grpc/gateway/docker/envoy/Dockerfile .
+$ docker build -t grpcweb/envoy --target=envoy .
 $ docker run -d -p 8080:8080 --link node-server:node-server grpcweb/envoy
 ```
 
@@ -48,8 +47,7 @@ This steps compiles the front-end gRPC-Web client into a static .JS file, and
 we use a simple server to serve up the JS/HTML static contents.
 
 ```sh
-$ docker build -t grpcweb/commonjs-client  \
-  -f net/grpc/gateway/docker/commonjs_client/Dockerfile .
+$ docker build -t grpcweb/commonjs-client --target=commonjs-client .
 $ docker run -d -p 8081:8081 grpcweb/commonjs-client
 ```
 
@@ -58,7 +56,7 @@ $ docker run -d -p 8081:8081 grpcweb/commonjs-client
 Finally, open a browser tab, and inspect
 
 ```
-http://localhost:8081/echotest.html
+http://localhost:8081
 ```
 
 ## What's next?

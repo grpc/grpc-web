@@ -1,4 +1,4 @@
-node_modules
+**node_modules
 echo_grpc_web_pb.js
 echo_pb.js
 dist

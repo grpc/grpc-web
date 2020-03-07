@@ -1,4 +1,4 @@
-version: '3'
+version: '3.4'
 services:
   common:
     build:
@@ -22,23 +22,19 @@ services:
     ports:
       - "9090:9090"
   node-server:
-    build:
-      context: ./
-      dockerfile: ./net/grpc/gateway/docker/node_server/Dockerfile
-    depends_on:
-      - common
     image: grpcweb/node-server
+    build:
+      context: .
+      target: node-server
     ports:
       - "9090:9090"
   envoy:
     build:
-      context: ./
-      dockerfile: ./net/grpc/gateway/docker/envoy/Dockerfile
+      context: .
+      target: envoy
     image: grpcweb/envoy
     ports:
       - "8080:8080"
-    links:
-      - node-server
   nginx:
     build:
       context: ./
@@ -60,12 +56,10 @@ services:
     links:
       - node-server
   commonjs-client:
-    build:
-      context: ./
-      dockerfile: ./net/grpc/gateway/docker/commonjs_client/Dockerfile
-    depends_on:
-      - common
     image: grpcweb/commonjs-client
+    build:
+      context: .
+      target: commonjs-client 
     ports:
       - "8081:8081"
   closure-client:
