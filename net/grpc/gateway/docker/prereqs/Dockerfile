@@ -12,7 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM grpcweb/common
+FROM node:10-stretch
+
+RUN curl -sSL https://github.com/protocolbuffers/protobuf/releases/download/v3.11.4/protoc-3.11.4-linux-x86_64.zip -o protoc.zip \
+  && unzip -qq protoc.zip \
+  && rm protoc.zip \
+  && curl -sSL https://github.com/grpc/grpc-web/releases/download/1.0.7/protoc-gen-grpc-web-1.0.7-linux-x86_64 -o /usr/local/bin/protoc-gen-grpc-web \
+  && chmod +x /usr/local/bin/protoc-gen-grpc-web 
 
 ARG MAKEFLAGS=-j8
 

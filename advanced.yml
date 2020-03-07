@@ -1,16 +1,9 @@
 version: '3.4'
 services:
-  common:
-    build:
-      context: ./
-      dockerfile: ./net/grpc/gateway/docker/common/Dockerfile
-    image: grpcweb/common
   prereqs:
     build:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/prereqs/Dockerfile
-    depends_on:
-      - common
     image: grpcweb/prereqs
   echo-server:
     build:
