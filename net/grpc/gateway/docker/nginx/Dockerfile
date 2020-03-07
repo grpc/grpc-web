@@ -14,9 +14,6 @@
 
 FROM grpcweb/prereqs
 
-RUN apt-get -qq install -y \
-  zip
-
 WORKDIR /github/grpc-web
 
 RUN cd ./net/grpc/gateway/examples/echo && \
