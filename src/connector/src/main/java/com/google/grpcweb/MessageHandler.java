@@ -64,10 +64,9 @@ class MessageHandler {
 
     Object inputObj;
     try {
-      // PUNT use MessageDeframer. ignore the first 5 bytes
-      inputObj = parseFromObj.invoke(null, Arrays.copyOfRange(in, 5, in.length));
+      inputObj = parseFromObj.invoke(null, in);
     } catch (InvocationTargetException | IllegalAccessException e) {
-      throw new IllegalArgumentException("Couldn't invoke parseFrom " + e.getMessage());
+      throw new IllegalArgumentException(e);
     }
 
     if (inputObj == null || !inputArgClass.isInstance(inputObj)) {
@@ -93,8 +92,11 @@ class MessageHandler {
   private Object handleRpcInvocationForProtoContentType(HttpServletRequest req,
       Object stub, Method rpcMethod) throws IOException {
     ServletInputStream in = req.getInputStream();
-    byte[] inBytes = IOUtils.toByteArray(in);
-    Object inObj = getInputProtobufObj(rpcMethod, inBytes);
+    MessageDeframer deframer = new MessageDeframer();
+    if (!deframer.processInput(in)) {
+      return null;
+    }
+    Object inObj = getInputProtobufObj(rpcMethod, deframer.getMessageBytes());
 
     Class returnClassType = rpcMethod.getReturnType();
     LOGGER.fine("returnClassType is : " + returnClassType.getName());
