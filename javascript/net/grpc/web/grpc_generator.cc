@@ -1013,7 +1013,9 @@ void PrintFileHeader(Printer* printer, const std::map<string, string>& vars) {
       " * @enhanceable\n"
       " * @public\n"
       " */\n\n"
-      "// GENERATED CODE -- DO NOT EDIT!\n\n\n");
+      "// GENERATED CODE -- DO NOT EDIT!\n\n\n"
+      "/* eslint-disable */"
+      "//@ts-nocheck\n\n\n");
 }
 
 void PrintMethodDescriptorFile(Printer* printer,
@@ -1025,7 +1027,9 @@ void PrintMethodDescriptorFile(Printer* printer,
       " * @enhanceable\n"
       " * @public\n"
       " */\n\n"
-      "// GENERATED CODE -- DO NOT EDIT!\n\n\n");
+      "// GENERATED CODE -- DO NOT EDIT!\n\n\n"
+      "/* eslint-disable */"
+      "//@ts-nocheck\n\n\n");
 
   printer->Print(vars,
                  "goog.provide('proto.$package_dot$$class_name$.$"
