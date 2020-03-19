@@ -1,4 +1,6 @@
-# grpc-web java connector
+grpc-web Java in-process Proxy code.
+Outline of the code at this point.
 
-## About This Repository
-This repo is for Java in-process (jar) code to add support for grpc-web protocol in grpc services.
+This code can handle a single binary message containing one frame.
+Will be fleshing this out lot more this week and next.
+stay tuned!

@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package com.google.grpcweb.example;
+
+option java_multiple_files = true;
+
+message EchoRequest {
+  string message = 1;
+}
+
+message EchoResponse {
+  string message = 1;
+  int32 message_count = 2;
+}
+
+// A simple echo service.
+service EchoService {
+  // One request followed by one response
+  // The server returns the client message as-is.
+  rpc EchoBack(EchoRequest) returns (EchoResponse);
+}
