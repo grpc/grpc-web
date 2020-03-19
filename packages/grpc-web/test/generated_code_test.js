@@ -258,7 +258,7 @@ describe('grpc-web generated code (closure+grpcwebtext)', function() {
     jsPaths.map(jsPath => `--js=${jsPath}`),
     [
       `--entry_point=goog:proto.grpc.gateway.testing.EchoAppClient`,
-      `--dependency_mode=STRICT`,
+      `--dependency_mode=PRUNE`,
       `--js_output_file ./test/generated/compiled.js`,
       `--output_wrapper="%output%module.exports = proto.grpc.gateway.testing;"`,
     ]
