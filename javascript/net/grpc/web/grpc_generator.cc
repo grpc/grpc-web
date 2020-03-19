@@ -738,9 +738,27 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
           printer->Indent();
           printer->Print(vars,
                          "request: $input_type$,\n"
+                         "metadata: grpcWeb.Metadata | null): Promise<$output_type$>;\n\n");
+          printer->Outdent();
+
+          printer->Print(vars, "$js_method_name$(\n");
+          printer->Indent();
+          printer->Print(vars,
+                         "request: $input_type$,\n"
                          "metadata: grpcWeb.Metadata | null,\n"
                          "callback: (err: grpcWeb.Error,\n"
+                         "           response: $output_type$) => void): grpcWeb.ClientReadableStream<$output_type$>;\n\n");
+          printer->Outdent();
+
+          printer->Print(vars, "$js_method_name$(\n");
+          printer->Indent();
+          printer->Print(vars,
+                         "request: $input_type$,\n"
+                         "metadata: grpcWeb.Metadata | null,\n"
+                         "callback?: (err: grpcWeb.Error,\n"
                          "           response: $output_type$) => void) {\n");
+          printer->Print(vars, "if (callback !== undefined) {\n");
+          printer->Indent();
           printer->Print(vars, "return this.client_.rpcCall(\n");
           printer->Indent();
           printer->Print(vars,
@@ -751,6 +769,16 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
                          "this.methodInfo$method_name$,\n"
                          "callback);\n");
           printer->Outdent();
+          printer->Outdent();
+          printer->Print(vars,
+                         "}\n"
+                         "return this.client_.unaryCall(\n");
+          printer->Print(vars,
+                         "this.hostname_ +\n"
+                         "  '/$package_dot$$service_name$/$method_name$',\n"
+                         "request,\n"
+                         "metadata || {},\n"
+                         "this.methodInfo$method_name$);\n");
           printer->Outdent();
           printer->Print("}\n\n");
         }
@@ -893,10 +921,10 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
     if (!field->is_map() && (field->type() != FieldDescriptor::TYPE_MESSAGE ||
                              field->is_repeated())) {
       printer->Print(vars,
-                     "set$js_field_name$(value: $js_field_type$): void;\n");
+                     "set$js_field_name$(value: $js_field_type$): $class_name$;\n");
     } else if (!field->is_map()) {
       printer->Print(vars,
-                     "set$js_field_name$(value?: $js_field_type$): void;\n");
+                     "set$js_field_name$(value?: $js_field_type$): $class_name$;\n");
     }
     if (field->type() == FieldDescriptor::TYPE_MESSAGE && !field->is_repeated()
         && !field->is_map()) {
@@ -904,7 +932,7 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
     }
     if (field->type() == FieldDescriptor::TYPE_MESSAGE ||
         field->is_repeated() || field->is_map()) {
-      printer->Print(vars, "clear$js_field_name$(): void;\n");
+      printer->Print(vars, "clear$js_field_name$(): $class_name$;\n");
     }
     if (field->is_repeated() && !field->is_map()) {
       vars["js_field_name"] = JSElementName(field);
@@ -912,7 +940,7 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
       if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
         printer->Print(vars,
                        "add$js_field_name$(value: $js_field_type$, "
-                       "index?: number): void;\n");
+                       "index?: number): $class_name$;\n");
       } else {
         printer->Print(vars,
                        "add$js_field_name$(value?: $js_field_type$, "
