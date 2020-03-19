@@ -1,6 +1,6 @@
 {
   "name": "grpc-web",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "author": "Google Inc.",
   "description": "gRPC-Web Client Runtime Library",
   "homepage": "https://grpc.io/",
@@ -30,7 +30,7 @@
     "gulp-eval": "^1.0.0",
     "mocha": "^5.2.0",
     "mock-xmlhttprequest": "^2.0.0",
-    "require-self": "^0.2.1",
-    "typescript": "^3.2.1"
+    "require-self": "0.2.1",
+    "typescript": "~3.7.0"
   }
 }

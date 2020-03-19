@@ -738,9 +738,27 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
           printer->Indent();
           printer->Print(vars,
                          "request: $input_type$,\n"
+                         "metadata: grpcWeb.Metadata | null): Promise<$output_type$>;\n\n");
+          printer->Outdent();
+
+          printer->Print(vars, "$js_method_name$(\n");
+          printer->Indent();
+          printer->Print(vars,
+                         "request: $input_type$,\n"
                          "metadata: grpcWeb.Metadata | null,\n"
                          "callback: (err: grpcWeb.Error,\n"
+                         "           response: $output_type$) => void): grpcWeb.ClientReadableStream<$output_type$>;\n\n");
+          printer->Outdent();
+
+          printer->Print(vars, "$js_method_name$(\n");
+          printer->Indent();
+          printer->Print(vars,
+                         "request: $input_type$,\n"
+                         "metadata: grpcWeb.Metadata | null,\n"
+                         "callback?: (err: grpcWeb.Error,\n"
                          "           response: $output_type$) => void) {\n");
+          printer->Print(vars, "if (callback !== undefined) {\n");
+          printer->Indent();
           printer->Print(vars, "return this.client_.rpcCall(\n");
           printer->Indent();
           printer->Print(vars,
@@ -751,6 +769,16 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
                          "this.methodInfo$method_name$,\n"
                          "callback);\n");
           printer->Outdent();
+          printer->Outdent();
+          printer->Print(vars,
+                         "}\n"
+                         "return this.client_.unaryCall(\n");
+          printer->Print(vars,
+                         "this.hostname_ +\n"
+                         "  '/$package_dot$$service_name$/$method_name$',\n"
+                         "request,\n"
+                         "metadata || {},\n"
+                         "this.methodInfo$method_name$);\n");
           printer->Outdent();
           printer->Print("}\n\n");
         }
