@@ -738,7 +738,8 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
           printer->Indent();
           printer->Print(vars,
                          "request: $input_type$,\n"
-                         "metadata: grpcWeb.Metadata | null): Promise<$output_type$>;\n\n");
+                         "metadata: grpcWeb.Metadata | null): "
+                         "Promise<$output_type$>;\n\n");
           printer->Outdent();
 
           printer->Print(vars, "$js_method_name$(\n");
@@ -747,7 +748,8 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
                          "request: $input_type$,\n"
                          "metadata: grpcWeb.Metadata | null,\n"
                          "callback: (err: grpcWeb.Error,\n"
-                         "           response: $output_type$) => void): grpcWeb.ClientReadableStream<$output_type$>;\n\n");
+                         "           response: $output_type$) => void): "
+                         "grpcWeb.ClientReadableStream<$output_type$>;\n\n");
           printer->Outdent();
 
           printer->Print(vars, "$js_method_name$(\n");
@@ -921,10 +923,12 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
     if (!field->is_map() && (field->type() != FieldDescriptor::TYPE_MESSAGE ||
                              field->is_repeated())) {
       printer->Print(vars,
-                     "set$js_field_name$(value: $js_field_type$): $class_name$;\n");
+                     "set$js_field_name$(value: $js_field_type$): "
+                     "$class_name$;\n");
     } else if (!field->is_map()) {
       printer->Print(vars,
-                     "set$js_field_name$(value?: $js_field_type$): $class_name$;\n");
+                     "set$js_field_name$(value?: $js_field_type$): "
+                     "$class_name$;\n");
     }
     if (field->type() == FieldDescriptor::TYPE_MESSAGE && !field->is_repeated()
         && !field->is_map()) {
@@ -1042,8 +1046,8 @@ void PrintFileHeader(Printer* printer, const std::map<string, string>& vars) {
       " * @public\n"
       " */\n\n"
       "// GENERATED CODE -- DO NOT EDIT!\n\n\n"
-      "/* eslint-disable */"
-      "//@ts-nocheck\n\n\n");
+      "/* eslint-disable */\n"
+      "// @ts-nocheck\n\n\n");
 }
 
 void PrintMethodDescriptorFile(Printer* printer,
@@ -1056,8 +1060,8 @@ void PrintMethodDescriptorFile(Printer* printer,
       " * @public\n"
       " */\n\n"
       "// GENERATED CODE -- DO NOT EDIT!\n\n\n"
-      "/* eslint-disable */"
-      "//@ts-nocheck\n\n\n");
+      "/* eslint-disable */\n"
+      "// @ts-nocheck\n\n\n");
 
   printer->Print(vars,
                  "goog.provide('proto.$package_dot$$class_name$.$"
