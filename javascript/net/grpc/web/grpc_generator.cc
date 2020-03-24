@@ -1069,7 +1069,9 @@ void PrintMethodDescriptorFile(Printer* printer,
   printer->Print(vars, "goog.require('grpc.web.MethodDescriptor');\n");
   printer->Print(vars, "goog.require('grpc.web.MethodType');\n");
   printer->Print(vars, "goog.require('$in_type$');\n");
-  printer->Print(vars, "goog.require('$out_type$');\n");
+  if (vars["out_type"] != vars["in_type"]) {
+    printer->Print(vars, "goog.require('$out_type$');\n");
+  }
   printer->Print(vars, "\n\ngoog.scope(function() {\n\n");
 
   printer->Print(
