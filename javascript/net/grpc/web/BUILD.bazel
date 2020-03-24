@@ -33,8 +33,19 @@ closure_js_library(
     deps = [
         ":clientreadablestream",
         ":error",
-        ":methoddescriptor",
+        ":requester",
     ],
+)
+
+closure_js_library(
+    name = "calloptions",
+    srcs = [
+        "calloptions.js",
+    ],
+    suppress = [
+        "reportUnknownTypes",
+    ],
+    visibility = ["//visibility:public"],
 )
 
 closure_js_library(
@@ -137,22 +148,29 @@ closure_js_library(
 )
 
 closure_js_library(
-    name = "methoddescriptor",
-    srcs = [
-        "methoddescriptor.js",
-    ],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":methodtype",
-    ],
-)
-
-closure_js_library(
     name = "methodtype",
     srcs = [
         "methodtype.js",
     ],
     visibility = ["//visibility:public"],
+)
+
+closure_js_library(
+    name = "requester",
+    srcs = [
+        "methoddescriptor.js",
+        "request.js",
+        "requestinternal.js",
+    ],
+    suppress = [
+        "reportUnknownTypes",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":calloptions",
+        ":metadata",
+        ":methodtype",
+    ],
 )
 
 closure_js_library(
