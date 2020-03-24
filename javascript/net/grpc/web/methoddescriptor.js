@@ -7,7 +7,11 @@
 goog.module('grpc.web.MethodDescriptor');
 goog.module.declareLegacyNamespace();
 
+const CallOptions = goog.require('grpc.web.CallOptions');
+const Metadata = goog.require('grpc.web.Metadata');
 const MethodType = goog.require('grpc.web.MethodType');
+const Request = goog.require('grpc.web.Request');
+const RequestInternal = goog.require('grpc.web.RequestInternal');
 
 /**
  * @constructor
@@ -35,6 +39,18 @@ const MethodDescriptor = function(
   this.requestSerializeFn = requestSerializeFn;
   /** @const */
   this.responseDeserializeFn = responseDeserializeFn;
+};
+
+/**
+ * @template REQUEST, RESPONSE
+ * @param {REQUEST} requestMessage
+ * @param {!Metadata=} metadata
+ * @param {!CallOptions=} callOptions
+ * @return {!Request<REQUEST, RESPONSE>}
+ */
+MethodDescriptor.prototype.createRequest = function(
+    requestMessage, metadata = {}, callOptions = new CallOptions()) {
+  return new RequestInternal(requestMessage, this, metadata, callOptions);
 };
 
 exports = MethodDescriptor;
