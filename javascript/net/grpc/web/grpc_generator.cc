@@ -1356,6 +1356,97 @@ void PrintServerStreamingCall(Printer* printer, std::map<string, string> vars) {
   printer->Print("};\n\n\n");
 }
 
+class GeneratorOptions {
+ public:
+  GeneratorOptions();
+
+  bool ParseFromOptions(const string& parameter, string* error);
+  bool ParseFromOptions(const std::vector<std::pair<string, string>>& options,
+                        string* error);
+
+  // Returns the name of the output file for |proto_file|.
+  string OutputFile(const string& proto_file) const;
+
+  string mode() const { return mode_; }
+  ImportStyle import_style() const { return import_style_; }
+  bool generate_dts() const { return generate_dts_; }
+  bool multiple_files() const { return multiple_files_; }
+
+ private:
+  string file_name_;
+  string mode_;
+  ImportStyle import_style_;
+  bool generate_dts_;
+  bool multiple_files_;
+};
+
+GeneratorOptions::GeneratorOptions()
+    : file_name_(""),
+      mode_(""),
+      import_style_(ImportStyle::CLOSURE),
+      generate_dts_(false),
+      multiple_files_(false){};
+
+bool GeneratorOptions::ParseFromOptions(const string& parameter,
+                                        string* error) {
+  std::vector<std::pair<string, string>> options;
+  ParseGeneratorParameter(parameter, &options);
+  return ParseFromOptions(options, error);
+}
+
+bool GeneratorOptions::ParseFromOptions(
+    const std::vector<std::pair<string, string>>& options, string* error) {
+  for (const std::pair<string, string>& option : options) {
+    if ("out" == option.first) {
+      file_name_ = option.second;
+    } else if ("mode" == option.first) {
+      mode_ = option.second;
+    } else if ("import_style" == option.first) {
+      if ("closure" == option.second) {
+        import_style_ = ImportStyle::CLOSURE;
+      } else if ("commonjs" == option.second) {
+        import_style_ = ImportStyle::COMMONJS;
+      } else if ("commonjs+dts" == option.second) {
+        import_style_ = ImportStyle::COMMONJS;
+        generate_dts_ = true;
+      } else if ("typescript" == option.second) {
+        import_style_ = ImportStyle::TYPESCRIPT;
+        generate_dts_ = true;
+      } else {
+        *error = "options: invalid import_style - " + option.second;
+        return false;
+      }
+    } else if ("multiple_files" == option.first) {
+      multiple_files_ = "true" == option.second;
+    } else {
+      *error = "unsupported option: " + option.first;
+      return false;
+    }
+  }
+
+  if (mode_.empty()) {
+    *error = "options: mode is required";
+    return false;
+  }
+
+  return true;
+}
+
+string GeneratorOptions::OutputFile(const string& proto_file) const {
+  if (ImportStyle::TYPESCRIPT == import_style()) {
+    // Never use the value from the 'out' option when generating TypeScript.
+    string directory;
+    string basename;
+    PathSplit(proto_file, &directory, &basename);
+    return directory + UppercaseFirstLetter(StripProto(basename)) +
+           "ServiceClientPb.ts";
+  }
+  if (!file_name_.empty()) {
+    return file_name_;
+  }
+  return StripProto(proto_file) + "_grpc_web_pb.js";
+}
+
 class GrpcCodeGenerator : public CodeGenerator {
  public:
   GrpcCodeGenerator() {}
@@ -1363,36 +1454,8 @@ class GrpcCodeGenerator : public CodeGenerator {
 
   bool Generate(const FileDescriptor* file, const string& parameter,
                 GeneratorContext* context, string* error) const override {
-    std::vector<std::pair<string, string> > options;
-    ParseGeneratorParameter(parameter, &options);
-
-    string file_name;
-    string mode;
-    string import_style_str;
-    ImportStyle import_style;
-    bool generate_dts = false;
-    bool gen_multiple_files = false;
-
-    for (size_t i = 0; i < options.size(); ++i) {
-      if (options[i].first == "out") {
-        file_name = options[i].second;
-      } else if (options[i].first == "mode") {
-        mode = options[i].second;
-      } else if (options[i].first == "import_style") {
-        import_style_str = options[i].second;
-      } else if (options[i].first == "multiple_files") {
-        gen_multiple_files = options[i].second == "true";
-      } else {
-        *error = "unsupported options: " + options[i].first;
-        return false;
-      }
-    }
-
-    if (file_name.empty()) {
-      file_name = StripProto(file->name()) + "_grpc_web_pb.js";
-    }
-    if (mode.empty()) {
-      *error = "options: mode is required";
+    GeneratorOptions generator_options;
+    if (!generator_options.ParseFromOptions(parameter, error)) {
       return false;
     }
 
@@ -1402,42 +1465,24 @@ class GrpcCodeGenerator : public CodeGenerator {
     vars["package"] = package;
     vars["package_dot"] = package.empty() ? "" : package + '.';
 
-    if (mode == "binary") {
+    if ("binary" == generator_options.mode()) {
       vars["mode"] = GetModeVar(Mode::OP);
-    } else if (mode == "base64") {
+    } else if ("base64" == generator_options.mode()) {
       vars["mode"] = GetModeVar(Mode::GATEWAY);
-    } else if (mode == "grpcweb" || mode == "grpcwebtext") {
+    } else if ("grpcweb" == generator_options.mode()) {
       vars["mode"] = GetModeVar(Mode::GRPCWEB);
-      vars["format"] = (mode == "grpcweb") ? "binary" : "text";
-    } else if (mode == "jspb") {
+      vars["format"] = "binary";
+    } else if ("grpcwebtext" == generator_options.mode()) {
+      vars["mode"] = GetModeVar(Mode::GRPCWEB);
+      vars["format"] = "text";
+    } else if ("jspb" == generator_options.mode()) {
       vars["mode"] = GetModeVar(Mode::OPJSPB);
     } else {
-      *error = "options: invalid mode - " + mode;
+      *error = "options: invalid mode - " + generator_options.mode();
       return false;
     }
 
-    if (import_style_str == "closure" || import_style_str.empty()) {
-      import_style = ImportStyle::CLOSURE;
-    } else if (import_style_str == "commonjs") {
-      import_style = ImportStyle::COMMONJS;
-    } else if (import_style_str == "commonjs+dts") {
-      import_style = ImportStyle::COMMONJS;
-      generate_dts = true;
-    } else if (import_style_str == "typescript") {
-      import_style = ImportStyle::TYPESCRIPT;
-
-      string directory;
-      string basename;
-
-      PathSplit(file->name(), &directory, &basename);
-      file_name = directory + UppercaseFirstLetter(StripProto(basename)) +
-                  "ServiceClientPb.ts";
-    } else {
-      *error = "options: invalid import_style - " + import_style_str;
-      return false;
-    }
-
-    if (generate_dts || import_style == ImportStyle::TYPESCRIPT) {
+    if (generator_options.generate_dts()) {
       string proto_dts_file_name = StripProto(file->name()) + "_pb.d.ts";
       std::unique_ptr<ZeroCopyOutputStream> proto_dts_output(
           context->Open(proto_dts_file_name));
@@ -1451,7 +1496,8 @@ class GrpcCodeGenerator : public CodeGenerator {
     }
 
     // Only supports closure for now.
-    if (gen_multiple_files && import_style == ImportStyle::CLOSURE) {
+    if (generator_options.multiple_files() &&
+        ImportStyle::CLOSURE == generator_options.import_style()) {
       for (int i = 0; i < file->service_count(); ++i) {
         const ServiceDescriptor* service = file->service(i);
         vars["service_name"] = service->name();
@@ -1484,11 +1530,12 @@ class GrpcCodeGenerator : public CodeGenerator {
       }
     }
 
-    std::unique_ptr<ZeroCopyOutputStream> output(context->Open(file_name));
+    std::unique_ptr<ZeroCopyOutputStream> output(
+        context->Open(generator_options.file_name(file->name())));
     Printer printer(output.get(), '$');
     PrintFileHeader(&printer, vars);
 
-    if (import_style == ImportStyle::TYPESCRIPT) {
+    if (ImportStyle::TYPESCRIPT == generator_options.import_style()) {
       PrintTypescriptFile(&printer, file, vars);
       return true;
     }
@@ -1496,7 +1543,7 @@ class GrpcCodeGenerator : public CodeGenerator {
     for (int i = 0; i < file->service_count(); ++i) {
       const ServiceDescriptor* service = file->service(i);
       vars["service_name"] = service->name();
-      switch (import_style) {
+      switch (generator_options.import_style()) {
         case ImportStyle::CLOSURE:
           printer.Print(
               vars,
@@ -1513,9 +1560,9 @@ class GrpcCodeGenerator : public CodeGenerator {
     }
     printer.Print("\n");
 
-    switch (import_style) {
+    switch (generator_options.import_style()) {
       case ImportStyle::CLOSURE:
-        if (gen_multiple_files) {
+        if (generator_options.multiple_files()) {
           std::map<string, string>::iterator it;
           for (it = method_descriptors.begin(); it != method_descriptors.end();
                it++) {
@@ -1559,22 +1606,23 @@ class GrpcCodeGenerator : public CodeGenerator {
         vars["method_name"] = method->name();
         vars["in"] = input_type->full_name();
         vars["out"] = output_type->full_name();
-        vars["gen_multiple_files"] = gen_multiple_files ? "true" : "false";
+        vars["gen_multiple_files"] =
+            generator_options.multiple_files() ? "true" : "false";
         vars["method_descriptor"] =
-            gen_multiple_files
+            generator_options.multiple_files()
                 ? method_descriptors[service->name() + "." + method->name()]
                 : "methodDescriptor_" + service->name() + "_" + method->name();
 
         // Cross-file ref in CommonJS needs to use the module alias instead
         // of the global name.
-        if (import_style == ImportStyle::COMMONJS &&
+        if (ImportStyle::COMMONJS == generator_options.import_style() &&
             input_type->file() != file) {
           vars["in_type"] = ModuleAlias(input_type->file()->name()) +
                             GetNestedMessageName(input_type);
         } else {
           vars["in_type"] = "proto." + input_type->full_name();
         }
-        if (import_style == ImportStyle::COMMONJS &&
+        if (ImportStyle::COMMONJS == generator_options.import_style() &&
             output_type->file() != file) {
           vars["out_type"] = ModuleAlias(output_type->file()->name()) +
                              GetNestedMessageName(output_type);
@@ -1601,7 +1649,7 @@ class GrpcCodeGenerator : public CodeGenerator {
       }
     }
 
-    switch (import_style) {
+    switch (generator_options.import_style()) {
       case ImportStyle::CLOSURE:
         printer.Print("}); // goog.scope\n\n");
         break;
@@ -1616,7 +1664,7 @@ class GrpcCodeGenerator : public CodeGenerator {
         break;
     }
 
-    if (generate_dts) {
+    if (generator_options.generate_dts()) {
       string grpcweb_dts_file_name =
           StripProto(file->name()) + "_grpc_web_pb.d.ts";
       string proto_dts_file_name = StripProto(file->name()) + "_pb.d.ts";
