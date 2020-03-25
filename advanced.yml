@@ -95,3 +95,12 @@ services:
     image: grpcweb/binary-client
     ports:
       - "8081:8081"
+  angular-client:
+    build:
+      context: ./
+      dockerfile: ./net/grpc/gateway/docker/angular_client/Dockerfile
+    depends_on:
+      - prereqs
+    image: grpcweb/angular-client
+    ports:
+      - "8081:8081"
