@@ -7,6 +7,7 @@ goog.module('grpc.web.UnaryResponse');
 goog.module.declareLegacyNamespace();
 
 const Metadata = goog.require('grpc.web.Metadata');
+const {Status} = goog.require('grpc.web.Status');
 
 /**
  * @template RESPONSE
@@ -15,8 +16,9 @@ class UnaryResponse {
   /**
    * @param {RESPONSE} responseMessage
    * @param {!Metadata=} metadata
+   * @param {?Status=} status
    */
-  constructor(responseMessage, metadata = {}) {
+  constructor(responseMessage, metadata, status) {
     /**
      * @const {RESPONSE}
      * @private
@@ -27,7 +29,13 @@ class UnaryResponse {
      * @const {!Metadata}
      * @private
      */
-    this.metadata_ = metadata;
+    this.metadata_ = metadata || {};
+
+    /**
+     * @const {?Status}
+     * @private
+     */
+    this.status_ = status ? status : null;
   }
 
   /** @return {RESPONSE} */
@@ -38,6 +46,15 @@ class UnaryResponse {
   /** @return {!Metadata} */
   getMetadata() {
     return this.metadata_;
+  }
+
+  /**
+   * gRPC status. Trailer metadata returned from a gRPC server is in
+   * status.metadata.
+   * @return {?Status}
+   */
+  getStatus() {
+    return this.status_;
   }
 }
 
