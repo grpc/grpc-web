@@ -1531,7 +1531,7 @@ class GrpcCodeGenerator : public CodeGenerator {
     }
 
     std::unique_ptr<ZeroCopyOutputStream> output(
-        context->Open(generator_options.file_name(file->name())));
+        context->Open(generator_options.OutputFile(file->name())));
     Printer printer(output.get(), '$');
     PrintFileHeader(&printer, vars);
 
