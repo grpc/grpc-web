@@ -1385,7 +1385,7 @@ GeneratorOptions::GeneratorOptions()
       mode_(""),
       import_style_(ImportStyle::CLOSURE),
       generate_dts_(false),
-      multiple_files_(false) {}
+      multiple_files_(false){}
 
 bool GeneratorOptions::ParseFromOptions(const string& parameter,
                                         string* error) {
