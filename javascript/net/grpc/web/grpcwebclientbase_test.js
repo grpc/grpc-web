@@ -103,7 +103,39 @@ testSuite({
       assertEquals(3, error.code);
     });
     dataCallback();
+  },
+
+  testRpcResponseHeader: function() {
+    var client = new GrpcWebClientBase();
+    client.newXhr_ = function() {
+      return new MockXhr({
+        // This parses to [ { DATA: [4,5,6] }, { TRAILER: "a: b" } ]
+        response: googCrypt.encodeByteArray(new Uint8Array([
+          0, 0, 0, 0, 3, 4, 5, 6, 128, 0, 0, 0, 4, 97, 58, 32, 98
+        ])),
+      });
+    };
+
+    expectUnaryHeaders();
+    var call = client.rpcCall(FAKE_METHOD, {}, {}, {
+      requestSerializeFn : function(request) {
+        return REQUEST_BYTES;
+      },
+      responseDeserializeFn : function(bytes) {
+        assertElementsEquals([4,5,6], [].slice.call(bytes));
+        return {"field1": PROTO_FIELD_VALUE};
+      }
+    }, function(error, response) {
+      assertNull(error);
+      assertEquals(PROTO_FIELD_VALUE, response.field1);
+    });
+    call.on('metadata', (metadata) => {
+      assertEquals(metadata['sample-initial-metadata-1'],
+                   'sample-initial-metadata-val');
+    });
+    dataCallback();
   }
+
 });
 
 
@@ -160,7 +192,7 @@ MockXhr.prototype.getResponseText = function() {
  * @return {string} response
  */
 MockXhr.prototype.getResponseHeaders = function() {
-  return {};
+  return {'sample-initial-metadata-1': 'sample-initial-metadata-val'};
 };
 
 
