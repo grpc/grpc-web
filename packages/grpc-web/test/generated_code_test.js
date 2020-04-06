@@ -202,10 +202,11 @@ describe('grpc-web generated code (commonjs+grpcwebtext)', function() {
     var request = new EchoRequest();
     request.setMessage('aaa');
     MockXMLHttpRequest.onSend = function(xhr) {
-      xhr.respond(200, {'Content-Type': 'application/grpc-web-text'},
-                  // a single data frame with an 'aaa' message, followed by,
-                  // a trailer frame with content 'grpc-status:0'
-                  'AAAAAAUKA2FhYYAAAAAPZ3JwYy1zdGF0dXM6MA0K');
+      xhr.respond(
+        200, {'Content-Type': 'application/grpc-web-text'},
+        // a single data frame with an 'aaa' message, followed by,
+        // a trailer frame with content 'grpc-status: 0\d\ax-custom-1: ababab'
+        'AAAAAAUKA2FhYYAAAAAkZ3JwYy1zdGF0dXM6IDANCngtY3VzdG9tLTE6IGFiYWJhYg0K');
     };
     var call = echoService.echo(request, {'custom-header-1':'value1'},
                                 function(err, response) {
@@ -213,8 +214,9 @@ describe('grpc-web generated code (commonjs+grpcwebtext)', function() {
                                 });
     call.on('status', function(status) {
       assert.equal('object', typeof status.metadata);
-      assert.equal(true, 'grpc-status' in status.metadata);
-      assert.equal(0, parseInt(status.metadata['grpc-status']));
+      assert.equal(false, 'grpc-status' in status.metadata);
+      assert.equal(true, 'x-custom-1' in status.metadata);
+      assert.equal('ababab', status.metadata['x-custom-1']);
       done();
     });
   });
