@@ -95,3 +95,12 @@ services:
     image: grpcweb/binary-client
     ports:
       - "8081:8081"
+  interop:
+    build:
+      context: ./
+      dockerfile: ./net/grpc/gateway/docker/interop/Dockerfile
+    depends_on:
+      - prereqs
+    image: grpcweb/interop
+    ports:
+      - "8081:8081"
