@@ -48,6 +48,12 @@ const {Status} = goog.require('grpc.web.Status');
 const GRPC_STATUS = "grpc-status";
 const GRPC_STATUS_MESSAGE = "grpc-message";
 
+/** @type {!Array<string>} */
+const EXCLUDED_RESPONSE_HEADERS = [
+  'content-type',
+  GRPC_STATUS,
+  GRPC_STATUS_MESSAGE
+];
 
 /**
  * A stream that the client can read from. Used for calls that are streaming
@@ -85,6 +91,12 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
    * @type {function(!Status)|null} The status callback
    */
   this.onStatusCallback_ = null;
+
+  /**
+   * @private
+   * @type {function(!Metadata)|null} The metadata callback
+   */
+  this.onMetadataCallback_ = null;
 
   /**
    * @private
@@ -163,9 +175,11 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
             var grpcStatusMessage = '';
             if (GRPC_STATUS in trailers) {
               grpcStatusCode = trailers[GRPC_STATUS];
+              delete trailers[GRPC_STATUS];
             }
             if (GRPC_STATUS_MESSAGE in trailers) {
               grpcStatusMessage = trailers[GRPC_STATUS_MESSAGE];
+              delete trailers[GRPC_STATUS_MESSAGE];
             }
             if (self.onStatusCallback_) {
               self.onStatusCallback_(/** @type {!Status} */({
@@ -184,6 +198,17 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
     var lastErrorCode = self.xhr_.getLastErrorCode();
     var grpcStatusCode;
     var grpcStatusMessage = '';
+    var initialMetadata = /** @type {!Metadata} */ ({});
+
+    var responseHeaders = self.xhr_.getResponseHeaders();
+    if (self.onMetadataCallback_) {
+      Object.keys(responseHeaders).forEach((header_) => {
+        if (!(EXCLUDED_RESPONSE_HEADERS.includes(header_))) {
+          initialMetadata[header_] = responseHeaders[header_];
+        }
+      });
+      self.onMetadataCallback_(initialMetadata);
+    }
 
     // There's an XHR level error
     if (lastErrorCode != ErrorCode.NO_ERROR) {
@@ -215,7 +240,6 @@ const GrpcWebClientReadableStream = function(genericTransportInterface) {
     var errorEmitted = false;
 
     // Check whethere there are grpc specific response headers
-    var responseHeaders = self.xhr_.getResponseHeaders();
     if (GRPC_STATUS in responseHeaders) {
       grpcStatusCode = self.xhr_.getResponseHeader(GRPC_STATUS);
       if (GRPC_STATUS_MESSAGE in responseHeaders) {
@@ -258,6 +282,8 @@ GrpcWebClientReadableStream.prototype.on = function(
     this.onDataCallback_ = callback;
   } else if (eventType == 'status') {
     this.onStatusCallback_ = callback;
+  } else if (eventType == 'metadata') {
+    this.onMetadataCallback_ = callback;
   } else if (eventType == 'end') {
     this.onEndCallback_ = callback;
   } else if (eventType == 'error') {
