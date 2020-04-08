@@ -317,15 +317,12 @@ string ModuleAlias(const string& filename) {
 }
 
 string JSMessageType(const Descriptor *desc, const FileDescriptor *file) {
-  string result;
+  string module_prefix;
   if (desc->file() != file) {
-    result = ModuleAlias(desc->file()->name());
+    module_prefix = ModuleAlias(desc->file()->name()) + ".";
   }
-  result += StripPrefixString(desc->full_name(), desc->file()->package());
-  if (!result.empty() && result[0] == '.') {
-    result = result.substr(1);
-  }
-  return result;
+
+  return module_prefix + desc->name();
 }
 
 string JSElementType(const FieldDescriptor *desc, const FileDescriptor *file)
