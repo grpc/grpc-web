@@ -29,10 +29,14 @@ closure_js_library(
     srcs = [
         "abstractclientbase.js",
     ],
+    suppress = [
+        "reportUnknownTypes",
+    ],
     visibility = ["//visibility:public"],
     deps = [
         ":clientreadablestream",
         ":error",
+        ":methodtype",
         ":requester",
     ],
 )
@@ -91,8 +95,14 @@ closure_js_library(
     visibility = ["//visibility:public"],
     deps = [
         ":abstractclientbase",
+        ":clientreadablestream",
+        ":error",
         ":grpcwebclientreadablestream",
+        ":methodtype",
+        ":requester",
+        ":status",
         ":statuscode",
+        ":unaryresponse",
         "@io_bazel_rules_closure//closure/library/crypt:base64",
         "@io_bazel_rules_closure//closure/library/net:xhrio",
         "@io_bazel_rules_closure//closure/library/net/rpc:httpcors",
@@ -187,6 +197,21 @@ closure_js_library(
         "statuscode.js",
     ],
     visibility = ["//visibility:public"],
+)
+
+closure_js_library(
+    name = "unaryresponse",
+    srcs = [
+        "unaryresponse.js",
+    ],
+    suppress = [
+        "reportUnknownTypes",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":metadata",
+        ":status",
+    ],
 )
 
 closure_js_test(

@@ -29,11 +29,17 @@ goog.module.declareLegacyNamespace();
 
 
 const AbstractClientBase = goog.require('grpc.web.AbstractClientBase');
+const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
+const Error = goog.require('grpc.web.Error');
 const GrpcWebClientReadableStream = goog.require('grpc.web.GrpcWebClientReadableStream');
 const HttpCors = goog.require('goog.net.rpc.HttpCors');
+const MethodType = goog.require('grpc.web.MethodType');
+const Request = goog.require('grpc.web.Request');
 const StatusCode = goog.require('grpc.web.StatusCode');
+const UnaryResponse = goog.require('grpc.web.UnaryResponse');
 const XhrIo = goog.require('goog.net.XhrIo');
 const googCrypt = goog.require('goog.crypt.base64');
+const {Status} = goog.require('grpc.web.Status');
 
 
 /**
@@ -72,56 +78,13 @@ const GrpcWebClientBase = function(opt_options) {
  * @export
  */
 GrpcWebClientBase.prototype.rpcCall = function(
-    method, request, metadata, methodInfo, callback) {
-  var xhr = this.newXhr_();
-  xhr.setWithCredentials(this.withCredentials_);
-
-  var genericTransportInterface = {
-    xhr: xhr,
-  };
-  var stream = new GrpcWebClientReadableStream(genericTransportInterface);
-  stream.setResponseDeserializeFn(methodInfo.responseDeserializeFn);
-
-  stream.on('data', function(response) {
-    callback(null, response);
-  });
-
-  stream.on('status', function(status) {
-    if (status.code != StatusCode.OK) {
-      callback({
-        code: status.code,
-        message: status.details,
-        metadata: status.metadata
-      }, null);
-    }
-  });
-
-  stream.on('error', function(error) {
-    if (error.code != StatusCode.OK) {
-      callback({
-        code: error.code,
-        message: error.message,
-        metadata: error.metadata
-      }, null);
-    }
-  });
-
-  xhr.headers.addAll(metadata);
-  this.processHeaders_(xhr);
-  if (this.suppressCorsPreflight_) {
-    var headerObject = xhr.headers.toObject();
-    xhr.headers.clear();
-    method = GrpcWebClientBase.setCorsOverride_(method, headerObject);
-  }
-
-  var serialized = methodInfo.requestSerializeFn(request);
-  var payload = this.encodeRequest_(serialized);
-  if (this.format_ == "text") {
-    payload = googCrypt.encodeByteArray(payload);
-  } else if (this.format_ == "binary") {
-    xhr.setResponseType(XhrIo.ResponseType.ARRAY_BUFFER);
-  }
-  xhr.send(method, 'POST', payload);
+    method, requestMessage, metadata, methodDescriptor, callback) {
+  methodDescriptor = AbstractClientBase.ensureMethodDescriptor(
+      method, requestMessage, MethodType.UNARY, methodDescriptor);
+  var hostname = AbstractClientBase.getHostname(method, methodDescriptor);
+  var stream = this.startStream_(
+      methodDescriptor.createRequest(requestMessage, metadata), hostname);
+  GrpcWebClientBase.setCallback_(stream, callback, false);
   return stream;
 };
 
@@ -131,12 +94,32 @@ GrpcWebClientBase.prototype.rpcCall = function(
  * @export
  */
 GrpcWebClientBase.prototype.unaryCall = function(
-    method, request, metadata, methodInfo) {
-  return new Promise((resolve, reject) => {
-    this.rpcCall(method, request, metadata, methodInfo, (error, response) => {
-      error ? reject(error) : resolve(response);
-    });
+    method, requestMessage, metadata, methodDescriptor) {
+  methodDescriptor = AbstractClientBase.ensureMethodDescriptor(
+      method, requestMessage, MethodType.UNARY, methodDescriptor);
+  var hostname = AbstractClientBase.getHostname(method, methodDescriptor);
+  var request = methodDescriptor.createRequest(requestMessage, metadata);
+  var unaryResponse = new Promise((resolve, reject) => {
+    var stream = this.startStream_(request, hostname);
+    var unaryMetadata;
+    var unaryStatus;
+    var unaryMsg;
+    GrpcWebClientBase.setCallback_(
+        stream, (error, response, status, metadata) => {
+          if (error) {
+            reject(error);
+          } else if (response) {
+            unaryMsg = response;
+          } else if (status) {
+            unaryStatus = status;
+          } else if (metadata) {
+            unaryMetadata = metadata;
+          } else {
+            resolve(new UnaryResponse(unaryMsg, unaryMetadata, unaryStatus));
+          }
+        }, true);
   });
+  return unaryResponse.then((response) => response.getResponseMessage());
 };
 
 
@@ -145,7 +128,26 @@ GrpcWebClientBase.prototype.unaryCall = function(
  * @export
  */
 GrpcWebClientBase.prototype.serverStreaming = function(
-    method, request, metadata, methodInfo) {
+    method, requestMessage, metadata, methodDescriptor) {
+  methodDescriptor = AbstractClientBase.ensureMethodDescriptor(
+      method, requestMessage, MethodType.SERVER_STREAMING, methodDescriptor);
+  var hostname = AbstractClientBase.getHostname(method, methodDescriptor);
+  return this.startStream_(
+      methodDescriptor.createRequest(requestMessage, metadata), hostname);
+};
+
+
+/**
+ * @private
+ * @template REQUEST, RESPONSE
+ * @param {!Request<REQUEST, RESPONSE>} request
+ * @param {string} hostname
+ * @return {!ClientReadableStream<RESPONSE>}
+ */
+GrpcWebClientBase.prototype.startStream_ = function(request, hostname) {
+  var methodDescriptor = request.getMethodDescriptor();
+  var path = hostname + methodDescriptor.name;
+
   var xhr = this.newXhr_();
   xhr.setWithCredentials(this.withCredentials_);
 
@@ -153,28 +155,73 @@ GrpcWebClientBase.prototype.serverStreaming = function(
     xhr: xhr,
   };
   var stream = new GrpcWebClientReadableStream(genericTransportInterface);
-  stream.setResponseDeserializeFn(methodInfo.responseDeserializeFn);
+  stream.setResponseDeserializeFn(methodDescriptor.responseDeserializeFn);
 
-  xhr.headers.addAll(metadata);
+  xhr.headers.addAll(request.getMetadata());
   this.processHeaders_(xhr);
   if (this.suppressCorsPreflight_) {
     var headerObject = xhr.headers.toObject();
     xhr.headers.clear();
-    method = GrpcWebClientBase.setCorsOverride_(method, headerObject);
+    path = GrpcWebClientBase.setCorsOverride_(path, headerObject);
   }
 
-  var serialized = methodInfo.requestSerializeFn(request);
+  var serialized =
+      methodDescriptor.requestSerializeFn(request.getRequestMessage());
   var payload = this.encodeRequest_(serialized);
-  if (this.format_ == "text") {
+  if (this.format_ == 'text') {
     payload = googCrypt.encodeByteArray(payload);
-  } else if (this.format_ == "binary") {
+  } else if (this.format_ == 'binary') {
     xhr.setResponseType(XhrIo.ResponseType.ARRAY_BUFFER);
   }
-  xhr.send(method, 'POST', payload);
-
+  xhr.send(path, 'POST', payload);
   return stream;
 };
 
+
+/**
+ * @private
+ * @static
+ * @template RESPONSE
+ * @param {!ClientReadableStream<RESPONSE>} stream
+ * @param {function(?Error, ?RESPONSE, ?Status=, ?Metadata=)|
+ *     function(?Error,?RESPONSE)} callback
+ * @param {boolean} useUnaryResponse
+ */
+GrpcWebClientBase.setCallback_ = function(stream, callback, useUnaryResponse) {
+  stream.on('data', function(response) {
+    callback(null, response);
+  });
+
+  stream.on('error', function(error) {
+    if (error.code != StatusCode.OK) {
+      callback(error, null);
+    }
+  });
+
+  stream.on('status', function(status) {
+    if (status.code != StatusCode.OK) {
+      callback(
+          {
+            code: status.code,
+            message: status.details,
+            metadata: status.metadata
+          },
+          null);
+    } else if (useUnaryResponse) {
+      callback(null, null, status);
+    }
+  });
+
+  if (useUnaryResponse) {
+    stream.on('metadata', function(metadata) {
+      callback(null, null, null, metadata);
+    });
+
+    stream.on('end', function() {
+      callback(null, null);
+    });
+  }
+};
 
 /**
  * Create a new XhrIo object
@@ -185,8 +232,6 @@ GrpcWebClientBase.prototype.serverStreaming = function(
 GrpcWebClientBase.prototype.newXhr_ = function() {
   return new XhrIo();
 };
-
-
 
 /**
  * Encode the grpc-web request
@@ -207,8 +252,6 @@ GrpcWebClientBase.prototype.encodeRequest_ = function(serialized) {
   payload.set(serialized, 5);
   return payload;
 };
-
-
 
 /**
  * @private
