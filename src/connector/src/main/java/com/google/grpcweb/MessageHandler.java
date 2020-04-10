@@ -1,29 +1,31 @@
 package com.google.grpcweb;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
-import org.apache.commons.io.IOUtils;
 
 class MessageHandler {
   private static final Logger LOGGER = Logger.getLogger(MessageHandler.class.getName());
 
+  @VisibleForTesting
   enum ContentType {
-    GRPC_WEB_PROTO,
-    GRPC_WEB_PROTO_TEXT;
+    GRPC_WEB_BINARY,
+    GRPC_WEB_TEXT;
   }
 
   private static Map<String, ContentType> GRPC_GCP_CONTENT_TYPES =
      new HashMap<String, ContentType>() {{
-         put("application/grpc-web", ContentType.GRPC_WEB_PROTO);
-         put("application/grpc-web+proto", ContentType.GRPC_WEB_PROTO_TEXT);
-       }};
+         put("application/grpc-web", ContentType.GRPC_WEB_BINARY);
+         put("application/grpc-web+proto", ContentType.GRPC_WEB_BINARY);
+         put("application/grpc-web-text", ContentType.GRPC_WEB_TEXT);
+         put("application/grpc-web-text+proto", ContentType.GRPC_WEB_TEXT);
+     }};
 
   /**
    * Validate the content-type
@@ -32,13 +34,6 @@ class MessageHandler {
     String contentType = req.getContentType();
     if (contentType == null || !GRPC_GCP_CONTENT_TYPES.containsKey(contentType)) {
       throw new IllegalArgumentException("This content type is not used for grpc-web: "
-          + contentType);
-    }
-
-    // PUNT implement text streaming
-    if (contentType.equalsIgnoreCase("application/grpc-web-text")
-        || contentType.equalsIgnoreCase("application/grpc-web-text+proto")) {
-      throw new IllegalArgumentException("this content type is not yet implemented: "
           + contentType);
     }
     return GRPC_GCP_CONTENT_TYPES.get(contentType);
@@ -82,18 +77,9 @@ class MessageHandler {
   Object invokeRpcAndGetResult(HttpServletRequest req, ContentType contentType,
       Object stub, Method rpcMethod)
       throws IOException {
-    if (contentType != ContentType.GRPC_WEB_PROTO) {
-      // Can't handle this content type yet! but this has already been checked.
-      return null;
-    }
-    return handleRpcInvocationForProtoContentType(req, stub, rpcMethod);
-  }
-
-  private Object handleRpcInvocationForProtoContentType(HttpServletRequest req,
-      Object stub, Method rpcMethod) throws IOException {
     ServletInputStream in = req.getInputStream();
     MessageDeframer deframer = new MessageDeframer();
-    if (!deframer.processInput(in)) {
+    if (!deframer.processInput(in, contentType)) {
       return null;
     }
     Object inObj = getInputProtobufObj(rpcMethod, deframer.getMessageBytes());
@@ -104,6 +90,7 @@ class MessageHandler {
     try {
       outObj = rpcMethod.invoke(stub, inObj);
     } catch (InvocationTargetException | IllegalAccessException e) {
+      e.printStackTrace();
       throw new IllegalArgumentException(e);
     }
     if (!returnClassType.isInstance(outObj)) {

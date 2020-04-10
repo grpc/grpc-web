@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 class DebugInfo {
   private static final Logger LOGGER = Logger.getLogger(DebugInfo.class.getName());
 
-  public void printRequest(HttpServletRequest req) {
+  static void printRequest(HttpServletRequest req) {
     if (!LOGGER.isLoggable(Level.FINE)) return;
 
     StringBuilder sb = new StringBuilder();
@@ -37,6 +37,7 @@ class DebugInfo {
     sb.append("\n\t ServerName: ").append(req.getServerName());
     sb.append("\n\t ServerPort: ").append(req.getServerPort());
     sb.append("\n\t ServletPath: ").append(req.getServletPath());
+    sb.append("\n\t Method: ").append(req.getMethod());
     LOGGER.fine(sb.toString());
   }
 }

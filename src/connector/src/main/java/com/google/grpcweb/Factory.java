@@ -6,27 +6,23 @@ package com.google.grpcweb;
  *
  * This is primarily to make unittesting easier for callers of objects supplied by this factory.
  */
-class Factory {
-  private final DebugInfo mDebugInfo;
-  private final Reflect mReflect;
-  private final SendResponse mSendResponse;
+public class Factory {
   private final GrpcServiceConnectionManager mGrpcServiceConnectionManager;
+  private static Factory mInstance;
 
-  public Factory(int grpcPortNum) {
-    mDebugInfo = new DebugInfo();
-    mReflect = new Reflect();
-    mSendResponse = new SendResponse();
+  public synchronized static void createSingleton(int grpcPortNum) {
+    if (mInstance == null) {
+      mInstance = new Factory(grpcPortNum);
+    }
+  }
+
+  static Factory getInstance() { return mInstance;}
+
+  private Factory(int grpcPortNum) {
     mGrpcServiceConnectionManager = new GrpcServiceConnectionManager(grpcPortNum);
   }
 
-  DebugInfo getDebugInfo() { return mDebugInfo;}
-  Reflect getReflect() { return mReflect;}
-  MessageHandler getMessageHandler() { return new MessageHandler();}
-  SendResponse getSendResponse() {return mSendResponse;}
   GrpcServiceConnectionManager getGrpcServiceConnectionManager() {
     return mGrpcServiceConnectionManager;
-  }
-  RpcMetadataHandler getRpcMetadataHandler() {
-    return new RpcMetadataHandler(this);
   }
 }
