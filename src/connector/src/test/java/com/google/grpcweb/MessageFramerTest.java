@@ -30,4 +30,5 @@ public class MessageFramerTest {
     int len = ByteBuffer.wrap(prefix, 1, 4).getInt();
     assertEquals(source.length(), len);
   }
+  // PUNT add more tests: Empty frame, zero frames
 }
