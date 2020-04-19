@@ -128,6 +128,12 @@ const StreamBodyClientReadableStream = function(genericTransportInterface) {
   this.xhrNodeReadableStream_.on('error', function() {
     if (!self.onErrorCallback_) return;
     var lastErrorCode = self.xhr_.getLastErrorCode();
+    if (lastErrorCode === ErrorCode.NO_ERROR && !self.xhr_.isSuccess()) {
+      // The lastErrorCode on the XHR isn't useful in this case, but the XHR
+      // status is. Full details about the failure should be available in the
+      // status handler.
+      lastErrorCode = ErrorCode.HTTP_ERROR;
+    }
 
     var grpcStatusCode;
     switch (lastErrorCode) {
@@ -149,6 +155,9 @@ const StreamBodyClientReadableStream = function(genericTransportInterface) {
 
     self.onErrorCallback_({
       code: grpcStatusCode,
+      // TODO(armiller): get the message from the response?
+      // GoogleRpcStatus.deserialize(rawResponse).getMessage()?
+      // Perhaps do the same status logic as in on('data') above?
       message: ErrorCode.getDebugMessage(lastErrorCode)
     });
   });

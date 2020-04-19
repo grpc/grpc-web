@@ -23,11 +23,11 @@ class RequestHandler extends AbstractHandler {
   public void handle(
       String target, Request baseRequest, HttpServletRequest req, HttpServletResponse response)
       throws IOException, ServletException {
+    mFactory.getDebugInfo().printRequest(req);
     response.setContentType("text/html; charset=utf-8");
     baseRequest.setHandled(true);
 
     try {
-      mFactory.getDebugInfo().printRequest(req);
 
       // From the request, get the rpc-method name and class name and then get their corresponding
       // concrete objects.

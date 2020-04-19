@@ -5,9 +5,8 @@
 goog.module('grpc.web.GenericClient');
 goog.module.declareLegacyNamespace();
 
-const CallOptions = goog.require('grpc.web.CallOptions');
-const Metadata = goog.require('grpc.web.Metadata');
 const MethodDescriptor = goog.require('grpc.web.MethodDescriptor');
+const Request = goog.require('grpc.web.Request');
 const UnaryResponse = goog.require('grpc.web.UnaryResponse');
 
 /**
@@ -17,31 +16,26 @@ const GenericClient = function() {};
 
 
 /**
- * @param {!REQUEST} request The request proto message
- * @param {!MethodDescriptor<REQUEST, RESPONSE>} methodDescriptor Information of
- *     this RPC method
- * @param {!Metadata} metadata The user defined request metadata.
- * @param {!CallOptions} callOptions
+ * @param {!Request<REQUEST, RESPONSE>} request The wrapped gRPC-Web request
  * @return {!Promise<!UnaryResponse<RESPONSE>>} A promise that resolves to the
  *     response message and metadata
  * @template REQUEST, RESPONSE
  * @abstract
  */
-GenericClient.prototype.unaryCall = function(
-    request, methodDescriptor, metadata, callOptions) {};
+GenericClient.prototype.unaryCall = function(request) {};
 
 /**
- * @param {!REQUEST} request The request proto message
+ * Simplified version of GenericClient.prototype.unaryCall. Users are expected
+ * to use this method if they don't have the need to customize metadata and
+ * callOptions .
+ * @param {!REQUEST} requestMessage The request message
  * @param {!MethodDescriptor<REQUEST, RESPONSE>} methodDescriptor Information of
  *     this RPC method
- * @param {!Metadata=} metadata The user defined request metadata.
- * @param {!CallOptions=} callOptions
  * @return {!Promise<RESPONSE>} A promise that resolves to the
  *     response message
  * @template REQUEST, RESPONSE
  * @abstract
  */
-GenericClient.prototype.call = function(
-    request, methodDescriptor, metadata = {}, callOptions) {};
+GenericClient.prototype.call = function(requestMessage, methodDescriptor) {};
 
 exports = GenericClient;

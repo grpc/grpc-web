@@ -52,3 +52,35 @@ describe('grpc-web generated code eval test (commonjs+dts)', function() {
     execSync(`npx gulp --gulpfile ./test/gulpfile.js gen-code-eval-test`);
   })
 });
+
+
+describe('grpc-web generated code eval test (typescript)', function() {
+  const genTsCodePath = path.resolve(__dirname, './generated/FooServiceClientPb.ts');
+
+  const genCodeCmd =
+    'protoc -I=./test/protos foo.proto models.proto ' +
+    '--js_out=import_style=commonjs:./test/generated ' +
+    '--grpc-web_out=import_style=typescript,mode=grpcwebtext:./test/generated';
+
+  before(function() {
+    ['protoc', 'protoc-gen-grpc-web'].map(prog => {
+      if (!commandExists(prog)) {
+        assert.fail(`${prog} is not installed`);
+      }
+    });
+  });
+
+  beforeEach(function() {
+    removeDirectory(path.resolve(__dirname, GENERATED_CODE_PATH));
+    fs.mkdirSync(path.resolve(__dirname, GENERATED_CODE_PATH));
+  });
+
+  afterEach(function() {
+    removeDirectory(path.resolve(__dirname, GENERATED_CODE_PATH));
+  });
+
+  it('should eval', function() {
+    execSync(genCodeCmd);
+    execSync(`tsc ${genTsCodePath}`);
+  });
+});

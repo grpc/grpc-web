@@ -1,16 +1,26 @@
-package(default_visibility = ["//visibility:public"])
-
-load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_binary")
-load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_library")
-load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_test")
+load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_library", "closure_js_test")
+load("@rules_cc//cc:defs.bzl", "cc_binary")
 
 cc_binary(
     name = "protoc-gen-grpc-web",
     srcs = [
         "grpc_generator.cc",
     ],
+    visibility = ["//visibility:public"],
     deps = [
         "@com_google_protobuf//:protoc_lib",
+    ],
+)
+
+# Runtime for `import_style=closure` and `mode={grpcweb,grpcwebtext}`
+closure_js_library(
+    name = "closure_grpcweb_runtime",
+    visibility = ["//visibility:public"],
+    exports = [
+        ":abstractclientbase",
+        ":clientreadablestream",
+        ":error",
+        ":grpcwebclientbase",
     ],
 )
 
@@ -19,11 +29,27 @@ closure_js_library(
     srcs = [
         "abstractclientbase.js",
     ],
+    suppress = [
+        "reportUnknownTypes",
+    ],
+    visibility = ["//visibility:public"],
     deps = [
         ":clientreadablestream",
         ":error",
-        ":methoddescriptor",
+        ":methodtype",
+        ":requester",
     ],
+)
+
+closure_js_library(
+    name = "calloptions",
+    srcs = [
+        "calloptions.js",
+    ],
+    suppress = [
+        "reportUnknownTypes",
+    ],
+    visibility = ["//visibility:public"],
 )
 
 closure_js_library(
@@ -31,6 +57,7 @@ closure_js_library(
     srcs = [
         "clientreadablestream.js",
     ],
+    visibility = ["//visibility:public"],
 )
 
 closure_js_library(
@@ -38,6 +65,7 @@ closure_js_library(
     srcs = [
         "error.js",
     ],
+    visibility = ["//visibility:public"],
     deps = [
         ":metadata",
     ],
@@ -48,6 +76,7 @@ closure_js_library(
     srcs = [
         "generictransportinterface.js",
     ],
+    visibility = ["//visibility:public"],
     deps = [
         "@io_bazel_rules_closure//closure/library/net:xhrio",
         "@io_bazel_rules_closure//closure/library/net/streams:nodereadablestream",
@@ -63,10 +92,17 @@ closure_js_library(
         "checkTypes",
         "reportUnknownTypes",
     ],
+    visibility = ["//visibility:public"],
     deps = [
         ":abstractclientbase",
+        ":clientreadablestream",
+        ":error",
         ":grpcwebclientreadablestream",
+        ":methodtype",
+        ":requester",
+        ":status",
         ":statuscode",
+        ":unaryresponse",
         "@io_bazel_rules_closure//closure/library/crypt:base64",
         "@io_bazel_rules_closure//closure/library/net:xhrio",
         "@io_bazel_rules_closure//closure/library/net/rpc:httpcors",
@@ -81,6 +117,7 @@ closure_js_library(
     suppress = [
         "reportUnknownTypes",
     ],
+    visibility = ["//visibility:public"],
     deps = [
         ":clientreadablestream",
         ":generictransportinterface",
@@ -105,6 +142,7 @@ closure_js_library(
     suppress = [
         "reportUnknownTypes",
     ],
+    visibility = ["//visibility:public"],
     deps = [
         "@io_bazel_rules_closure//closure/library/asserts",
         "@io_bazel_rules_closure//closure/library/net/streams:streamparser",
@@ -116,22 +154,32 @@ closure_js_library(
     srcs = [
         "metadata.js",
     ],
-)
-
-closure_js_library(
-    name = "methoddescriptor",
-    srcs = [
-        "methoddescriptor.js",
-    ],
-    deps = [
-        ":methodtype",
-    ],
+    visibility = ["//visibility:public"],
 )
 
 closure_js_library(
     name = "methodtype",
     srcs = [
         "methodtype.js",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+closure_js_library(
+    name = "requester",
+    srcs = [
+        "methoddescriptor.js",
+        "request.js",
+        "requestinternal.js",
+    ],
+    suppress = [
+        "reportUnknownTypes",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":calloptions",
+        ":metadata",
+        ":methodtype",
     ],
 )
 
@@ -140,12 +188,29 @@ closure_js_library(
     srcs = [
         "status.js",
     ],
+    visibility = ["//visibility:public"],
 )
 
 closure_js_library(
     name = "statuscode",
     srcs = [
         "statuscode.js",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+closure_js_library(
+    name = "unaryresponse",
+    srcs = [
+        "unaryresponse.js",
+    ],
+    suppress = [
+        "reportUnknownTypes",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":metadata",
+        ":status",
     ],
 )
 

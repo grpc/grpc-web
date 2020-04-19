@@ -1,3 +1,4 @@
+load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//bazel:closure_grpc_web_library.bzl", "closure_grpc_web_library")
 
 proto_library(

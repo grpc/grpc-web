@@ -1,25 +1,61 @@
 /**
- * @fileoverview gRPC web client UnaryResponse returned the by grpc unary calls.
- * It consists of response message and response metadata(headers).
+ * @fileoverview gRPC web client UnaryResponse returned by grpc unary calls.
+ * Response meassage and metadata are included in UnaryResponse.
  */
 
 goog.module('grpc.web.UnaryResponse');
 goog.module.declareLegacyNamespace();
 
 const Metadata = goog.require('grpc.web.Metadata');
+const {Status} = goog.require('grpc.web.Status');
 
 /**
- * @constructor
- * @struct
  * @template RESPONSE
- * @param {RESPONSE} message
- * @param {!Metadata=} metadata
  */
-const UnaryResponse = function(message, metadata) {
-  /** @const {RESPONSE} */
-  this.message = message;
-  /** @const {!Metadata|undefined} */
-  this.metadata = metadata;
-};
+class UnaryResponse {
+  /**
+   * @param {RESPONSE} responseMessage
+   * @param {!Metadata=} metadata
+   * @param {?Status=} status
+   */
+  constructor(responseMessage, metadata, status) {
+    /**
+     * @const {RESPONSE}
+     * @private
+     */
+    this.responseMessage_ = responseMessage;
+
+    /**
+     * @const {!Metadata}
+     * @private
+     */
+    this.metadata_ = metadata || {};
+
+    /**
+     * @const {?Status}
+     * @private
+     */
+    this.status_ = status ? status : null;
+  }
+
+  /** @return {RESPONSE} */
+  getResponseMessage() {
+    return this.responseMessage_;
+  }
+
+  /** @return {!Metadata} */
+  getMetadata() {
+    return this.metadata_;
+  }
+
+  /**
+   * gRPC status. Trailer metadata returned from a gRPC server is in
+   * status.metadata.
+   * @return {?Status}
+   */
+  getStatus() {
+    return this.status_;
+  }
+}
 
 exports = UnaryResponse;

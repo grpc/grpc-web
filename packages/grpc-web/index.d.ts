@@ -11,6 +11,12 @@ declare module "grpc-web" {
   }
 
   export class AbstractClientBase {
+    unaryCall<Request, Response> (method: string,
+             request: Request,
+             metadata: Metadata,
+             methodInfo: AbstractClientBase.MethodInfo<Request, Response>
+            ): Promise<Response>;
+
     rpcCall<Request, Response> (method: string,
              request: Request,
              metadata: Metadata,

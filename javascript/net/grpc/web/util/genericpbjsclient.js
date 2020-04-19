@@ -62,6 +62,8 @@ var GenericPbjsClient = function(hostname) {
  *
  * @param {!Object} method The method (a Protobuf.js Method object)
  * @return {string} The full name of the service containing the method
+ * @suppress {missingProperties}
+ * @suppress {strictMissingProperties}
  */
 function getServiceName(method) {
   var fullName = method.parent.fullName;
@@ -80,6 +82,8 @@ function getServiceName(method) {
  * @param {!Object<string, string>} metadata User defined call metadata
  * @param {function(?Error, ?Object)} callback A callback function
  *     which takes (error, response)
+ * @suppress {missingProperties}
+ * @suppress {strictMissingProperties}
  */
 GenericPbjsClient.prototype.rpcCall = function(
     method, request, metadata, callback) {
