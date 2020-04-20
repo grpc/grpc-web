@@ -1,6 +1,7 @@
 {
   "name": "grpc-web-node-server-example",
   "version": "0.1.0",
+  "main": "server.js",
   "dependencies": {
     "@grpc/proto-loader": "^0.3.0",
     "async": "^1.5.2",
