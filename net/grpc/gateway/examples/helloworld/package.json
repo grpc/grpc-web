@@ -2,6 +2,7 @@
   "name": "grpc-web-simple-example",
   "version": "0.1.0",
   "description": "gRPC-Web simple example",
+  "main": "server.js",
   "devDependencies": {
     "@grpc/proto-loader": "^0.3.0",
     "async": "^1.5.2",
