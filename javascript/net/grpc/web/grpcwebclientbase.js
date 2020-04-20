@@ -40,6 +40,8 @@ const UnaryResponse = goog.require('grpc.web.UnaryResponse');
 const XhrIo = goog.require('goog.net.XhrIo');
 const googCrypt = goog.require('goog.crypt.base64');
 const {Status} = goog.require('grpc.web.Status');
+const {StreamInterceptor, UnaryInterceptor} = goog.require('grpc.web.Interceptor');
+
 
 
 /**
@@ -70,6 +72,20 @@ const GrpcWebClientBase = function(opt_options) {
    */
   this.withCredentials_ =
     goog.getObjectByName('withCredentials', opt_options) || false;
+  /**
+   * @const {!Array<!StreamInterceptor>}
+   * @private
+   */
+  this.streamInterceptors_ =
+      goog.getObjectByName('streamInterceptors', opt_options) || [];
+
+
+  /**
+   * @const {!Array<!UnaryInterceptor>}
+   * @private
+   */
+  this.unaryInterceptors_ =
+      goog.getObjectByName('unaryInterceptors', opt_options) || [];
 };
 
 
@@ -82,8 +98,11 @@ GrpcWebClientBase.prototype.rpcCall = function(
   methodDescriptor = AbstractClientBase.ensureMethodDescriptor(
       method, requestMessage, MethodType.UNARY, methodDescriptor);
   var hostname = AbstractClientBase.getHostname(method, methodDescriptor);
-  var stream = this.startStream_(
-      methodDescriptor.createRequest(requestMessage, metadata), hostname);
+  var invoker = GrpcWebClientBase.runInterceptors_(
+      (request) => this.startStream_(request, hostname),
+      this.streamInterceptors_);
+  var stream = /** @type {!ClientReadableStream<?>} */ (invoker.call(
+      this, methodDescriptor.createRequest(requestMessage, metadata)));
   GrpcWebClientBase.setCallback_(stream, callback, false);
   return stream;
 };
@@ -98,8 +117,7 @@ GrpcWebClientBase.prototype.unaryCall = function(
   methodDescriptor = AbstractClientBase.ensureMethodDescriptor(
       method, requestMessage, MethodType.UNARY, methodDescriptor);
   var hostname = AbstractClientBase.getHostname(method, methodDescriptor);
-  var request = methodDescriptor.createRequest(requestMessage, metadata);
-  var unaryResponse = new Promise((resolve, reject) => {
+  var initialInvoker = (request) => new Promise((resolve, reject) => {
     var stream = this.startStream_(request, hostname);
     var unaryMetadata;
     var unaryStatus;
@@ -119,6 +137,10 @@ GrpcWebClientBase.prototype.unaryCall = function(
           }
         }, true);
   });
+  var invoker = GrpcWebClientBase.runInterceptors_(
+      initialInvoker, this.unaryInterceptors_);
+  var unaryResponse = /** @type {!Promise<?>} */ (invoker.call(
+      this, methodDescriptor.createRequest(requestMessage, metadata)));
   return unaryResponse.then((response) => response.getResponseMessage());
 };
 
@@ -132,8 +154,11 @@ GrpcWebClientBase.prototype.serverStreaming = function(
   methodDescriptor = AbstractClientBase.ensureMethodDescriptor(
       method, requestMessage, MethodType.SERVER_STREAMING, methodDescriptor);
   var hostname = AbstractClientBase.getHostname(method, methodDescriptor);
-  return this.startStream_(
-      methodDescriptor.createRequest(requestMessage, metadata), hostname);
+  var invoker = GrpcWebClientBase.runInterceptors_(
+      (request) => this.startStream_(request, hostname),
+      this.streamInterceptors_);
+  return /** @type {!ClientReadableStream<?>} */ (invoker.call(
+      this, methodDescriptor.createRequest(requestMessage, metadata)));
 };
 
 
@@ -293,5 +318,23 @@ GrpcWebClientBase.setCorsOverride_ = function(method, headerObject) {
     method, HttpCors.HTTP_HEADERS_PARAM_NAME, headerObject));
 };
 
-
+/**
+ * @private
+ * @static
+ * @template REQUEST, RESPONSE
+ * @param {function(!Request<REQUEST,RESPONSE>):
+ *     (!Promise<RESPONSE>|!ClientReadableStream<RESPONSE>)} invoker
+ * @param {!Array<!UnaryInterceptor|!StreamInterceptor>}
+ *     interceptors
+ * @return {function(!Request<REQUEST,RESPONSE>):
+ *     (!Promise<RESPONSE>|!ClientReadableStream<RESPONSE>)}
+ */
+GrpcWebClientBase.runInterceptors_ = function(invoker, interceptors) {
+  let curInvoker = invoker;
+  interceptors.forEach((interceptor) => {
+    const lastInvoker = curInvoker;
+    curInvoker = (request) => interceptor.intercept(request, lastInvoker);
+  });
+  return curInvoker;
+};
 exports = GrpcWebClientBase;

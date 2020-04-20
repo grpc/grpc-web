@@ -98,6 +98,7 @@ closure_js_library(
         ":clientreadablestream",
         ":error",
         ":grpcwebclientreadablestream",
+        ":interceptor",
         ":methodtype",
         ":requester",
         ":status",
@@ -146,6 +147,19 @@ closure_js_library(
     deps = [
         "@io_bazel_rules_closure//closure/library/asserts",
         "@io_bazel_rules_closure//closure/library/net/streams:streamparser",
+    ],
+)
+
+closure_js_library(
+    name = "interceptor",
+    srcs = [
+        "interceptor.js",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":clientreadablestream",
+        ":requester",
+        ":unaryresponse",
     ],
 )
 
@@ -230,7 +244,9 @@ closure_js_test(
         "strictCheckTypes",
     ],
     deps = [
+        ":clientreadablestream",
         ":grpcwebclientbase",
+        ":interceptor",
         "@io_bazel_rules_closure//closure/library/crypt:base64",
         "@io_bazel_rules_closure//closure/library/events",
         "@io_bazel_rules_closure//closure/library/structs:map",
