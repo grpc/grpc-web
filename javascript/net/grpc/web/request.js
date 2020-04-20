@@ -14,19 +14,29 @@ const MethodDescriptor = goog.requireType('grpc.web.MethodDescriptor');
  * @template REQUEST, RESPONSE
  */
 class Request {
-  /** @return {REQUEST} */
+  /**
+   * @export
+   * @return {REQUEST}
+   */
   getRequestMessage() {}
 
-  /** @return {!MethodDescriptor<REQUEST, RESPONSE>}*/
+  /**
+   * @export
+   * @return {!MethodDescriptor<REQUEST, RESPONSE>}
+   */
   getMethodDescriptor() {}
 
-  /** @return {!Metadata} */
+  /**
+   * @export
+   * @return {!Metadata}
+   */
   getMetadata() {}
 
   /**
    * Client CallOptions. Note that CallOptions has not been implemented in
    * grpc.web.AbstractClientbase yet, but will be used in
    * grpc.web.GenericClient.
+   * @export
    * @return {!CallOptions|undefined}
    */
   getCallOptions() {}
