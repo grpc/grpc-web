@@ -165,33 +165,45 @@ function doUnimplementedMethod(done) {
 
 
 var testCases = {
-  'empty_unary': doEmptyUnary,
-  'large_unary': doLargeUnary,
-  'server_streaming': doServerStreaming,
-  'custom_metadata': doCustomMetadata,
-  'status_code_and_message': doStatusCodeAndMessage,
-  'unimplemented_method': doUnimplementedMethod
+  'empty_unary': {testFunc: doEmptyUnary},
+  'large_unary': {testFunc: doLargeUnary},
+  'server_streaming': {testFunc: doServerStreaming,
+                       skipBinaryMode: true},
+  'custom_metadata': {testFunc: doCustomMetadata},
+  'status_code_and_message': {testFunc: doStatusCodeAndMessage},
+  'unimplemented_method': {testFunc: doUnimplementedMethod}
 };
 
-if (typeof window === 'undefined') {
+if (typeof window === 'undefined') { // Running from Node
   console.log('Running from Node...');
 
   // Fill in XHR runtime
   global.XMLHttpRequest = require("xhr2");
 
+  var parseArgs = require('minimist');
+  var argv = parseArgs(process.argv, {
+    string: ['mode']
+  });
+  if (argv.mode == 'binary') {
+    console.log('Testing grpc-web mode (binary)...');
+  } else {
+    console.log('Testing grpc-web-text mode...');
+  }
+  
   describe('grpc-web interop tests', function() {
     Object.keys(testCases).forEach((testCase) => {
-      it('should pass '+testCase, testCases[testCase]);
+      if (argv.mode == 'binary' && testCases[testCase].skipBinaryMode) return;
+      it('should pass '+testCase, testCases[testCase].testFunc);
     });
   });
 } else {
   console.log('Running from browser...');
 
   Object.keys(testCases).forEach((testCase) => {
-    var test = testCases[testCase];
+    var testFunc = testCases[testCase].testFunc;
 
     var doneCalled = false;
-    test((err) => {
+    testFunc((err) => {
       if (err) {
         throw err;
       } else {

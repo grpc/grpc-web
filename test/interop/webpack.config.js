@@ -1,4 +1,4 @@
 module.exports = {
   mode: "production",
-  entry: "./client.js",
+  entry: "./interop_client.js",
 };
