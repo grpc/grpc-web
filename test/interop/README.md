@@ -9,14 +9,20 @@ for details about gRPC interop tests in general and the list of test cases.
 Run interop tests
 -----------------
 
+### Build some docker images
+
+```sh
+$ cd grpc-web
+$ docker-compose -f advanced.yml build common prereqs node-interop-server interop-client
+```
+
+
 ### Run the Node interop server
 
 An interop server implemented in Node is hosted in the `grpc/grpc-node` repo.
-There might be a bit of set up you need to do before running the command below.
 
 ```sh
-$ cd grpc-node/test
-$ node --require ./fixtures/native_native interop/interop_server.js --port=7074
+$ docker run -d --network=host -p 7074:7074 grpcweb/node-interop-server
 ```
 
 
@@ -26,19 +32,25 @@ An `envoy.yaml` file is provided in this directory to direct traffic for these
 tests.
 
 ```sh
-$ cd grpc-web
-$ docker run -it --rm -v $(pwd)/test/interop/envoy.yaml:/etc/envoy/envoy.yaml:ro \
-  --network=host -p 8080:8080 envoyproxy/envoy:latest
+$ docker run -d -v $(pwd)/test/interop/envoy.yaml:/etc/envoy/envoy.yaml:ro \
+  --network=host -p 8080:8080 envoyproxy/envoy:v1.14.1
 ```
 
 
 ### Run the gRPC-Web browser client
 
+You can either run the interop client as `npm test`, like this:
 
 ```sh
-$ cd grpc-web
-$ docker-compose -f advanced.yml build common prereqs interop
-$ docker-compose -f advanced.yml up interop
+$ cd test/interop
+$ npm install
+$ npm test
+```
+
+Or from the browser:
+
+```sh
+$ docker-compose -f advanced.yml up interop-client
 ```
 
 Open up the browser and go to `http://localhost:8081/index.html` and open up
