@@ -92,15 +92,27 @@ pid2=$(docker run -d --network=host -p 7074:7074 grpcweb/node-interop-server)
 
 cd test/interop && \
   npm install && \
-  npm link grpc-web && \
-  protoc -I=../.. src/proto/grpc/testing/test.proto \
+  npm link grpc-web
+
+# Test grpc-web-text mode
+protoc -I=../.. src/proto/grpc/testing/test.proto \
   src/proto/grpc/testing/empty.proto \
   src/proto/grpc/testing/messages.proto \
   --plugin=protoc-gen-grpc-web=$(pwd)/../../javascript/net/grpc/web/protoc-gen-grpc-web \
   --js_out=import_style=commonjs:. \
   --grpc-web_out=import_style=commonjs,mode=grpcwebtext:. && \
-  npm test && \
-  cd ../..
+  npm test
+
+# Test grpc-web mode (binary)
+protoc -I=../.. src/proto/grpc/testing/test.proto \
+  src/proto/grpc/testing/empty.proto \
+  src/proto/grpc/testing/messages.proto \
+  --plugin=protoc-gen-grpc-web=$(pwd)/../../javascript/net/grpc/web/protoc-gen-grpc-web \
+  --js_out=import_style=commonjs:. \
+  --grpc-web_out=import_style=commonjs,mode=grpcweb:. && \
+  npm test -- --mode=binary
+
+cd ../..
 
 # Clean up
 docker rm -f $pid1
