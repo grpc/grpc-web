@@ -17,9 +17,11 @@ set -ex
 SCRIPT_DIR=$(dirname "$0")
 REPO_DIR=$(realpath "${SCRIPT_DIR}/..")
 
+# Set up
 cd "${REPO_DIR}"
 ./scripts/init_submodules.sh
 make clean
+
 
 # These programs need to be already installed
 progs=(docker docker-compose npm curl)
@@ -28,6 +30,7 @@ do
   command -v "$p" > /dev/null 2>&1 || \
     { echo >&2 "$p is required but not installed. Aborting."; exit 1; }
 done
+
 
 # Lint bazel files.
 BUILDIFIER_VERSION=1.0.0
@@ -57,18 +60,16 @@ $HOME/bin/bazel test \
   //javascript/net/grpc/web/... \
   //net/grpc/gateway/examples/...
 
-# Build the protoc plugin
-make plugin
 
 # Build the grpc-web npm package
 cd packages/grpc-web && \
   npm install && \
-  npm run build && \
-  npm link && \
   cd ../..
+
 
 # Build all relevant docker images. They should all build successfully.
 docker-compose -f advanced.yml build
+
 
 # Bring up the Echo server and the Envoy proxy (in background).
 # The 'sleep' seems necessary for the docker containers to be fully up
@@ -81,41 +82,24 @@ source ./scripts/test-proxy.sh
 # Remove all docker containers
 docker-compose down
 
+
 # Run unit tests from npm package
 docker run --rm grpcweb/prereqs /bin/bash \
   /github/grpc-web/scripts/docker-run-tests.sh
+
 
 # Run interop tests
 pid1=$(docker run -d -v $(pwd)/test/interop/envoy.yaml:/etc/envoy/envoy.yaml:ro \
   --network=host -p 8080:8080 envoyproxy/envoy:v1.14.1)
 pid2=$(docker run -d --network=host -p 7074:7074 grpcweb/node-interop-server)
 
-cd test/interop && \
-  npm install && \
-  npm link grpc-web
+docker run --network=host --rm grpcweb/prereqs /bin/bash \
+  /github/grpc-web/scripts/docker-run-interop-tests.sh
 
-# Test grpc-web-text mode
-protoc -I=../.. src/proto/grpc/testing/test.proto \
-  src/proto/grpc/testing/empty.proto \
-  src/proto/grpc/testing/messages.proto \
-  --plugin=protoc-gen-grpc-web=$(pwd)/../../javascript/net/grpc/web/protoc-gen-grpc-web \
-  --js_out=import_style=commonjs:. \
-  --grpc-web_out=import_style=commonjs,mode=grpcwebtext:. && \
-  npm test
-
-# Test grpc-web mode (binary)
-protoc -I=../.. src/proto/grpc/testing/test.proto \
-  src/proto/grpc/testing/empty.proto \
-  src/proto/grpc/testing/messages.proto \
-  --plugin=protoc-gen-grpc-web=$(pwd)/../../javascript/net/grpc/web/protoc-gen-grpc-web \
-  --js_out=import_style=commonjs:. \
-  --grpc-web_out=import_style=commonjs,mode=grpcweb:. && \
-  npm test -- --mode=binary
-
-cd ../..
-
-# Clean up
 docker rm -f $pid1
 docker rm -f $pid2
+
+
+# Clean up
 git clean -f -d -x
 echo 'Completed'
