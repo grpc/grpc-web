@@ -90,8 +90,8 @@ docker run --rm grpcweb/prereqs /bin/bash \
 
 # Run interop tests
 pid1=$(docker run -d -v $(pwd)/test/interop/envoy.yaml:/etc/envoy/envoy.yaml:ro \
-  --network=host -p 8080:8080 envoyproxy/envoy:v1.14.1)
-pid2=$(docker run -d --network=host -p 7074:7074 grpcweb/node-interop-server)
+  --network=host envoyproxy/envoy:v1.14.1)
+pid2=$(docker run -d --network=host grpcweb/node-interop-server)
 
 docker run --network=host --rm grpcweb/prereqs /bin/bash \
   /github/grpc-web/scripts/docker-run-interop-tests.sh

@@ -14,6 +14,9 @@
 # limitations under the License.
 set -ex
 
+# This script is intended to be run with the base image from
+# net/grpc/gateway/docker/prereqs/Dockerfile
+
 cd /github/grpc-web/test/interop && \
   npm install && \
   npm link grpc-web
