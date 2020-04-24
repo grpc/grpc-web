@@ -22,7 +22,7 @@ $ docker-compose -f advanced.yml build common prereqs node-interop-server intero
 An interop server implemented in Node is hosted in the `grpc/grpc-node` repo.
 
 ```sh
-$ docker run -d --network=host -p 7074:7074 grpcweb/node-interop-server
+$ docker run -d --network=host grpcweb/node-interop-server
 ```
 
 
@@ -33,7 +33,7 @@ tests.
 
 ```sh
 $ docker run -d -v $(pwd)/test/interop/envoy.yaml:/etc/envoy/envoy.yaml:ro \
-  --network=host -p 8080:8080 envoyproxy/envoy:v1.14.1
+  --network=host envoyproxy/envoy:v1.14.1
 ```
 
 
@@ -42,9 +42,8 @@ $ docker run -d -v $(pwd)/test/interop/envoy.yaml:/etc/envoy/envoy.yaml:ro \
 You can either run the interop client as `npm test`, like this:
 
 ```sh
-$ cd test/interop
-$ npm install
-$ npm test
+$ docker run --network=host --rm grpcweb/prereqs /bin/bash \
+  /github/grpc-web/scripts/docker-run-interop-tests.sh
 ```
 
 Or from the browser:
