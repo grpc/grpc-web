@@ -30,6 +30,15 @@ services:
     image: grpcweb/node-server
     ports:
       - "9090:9090"
+  node-interop-server:
+    build:
+      context: ./
+      dockerfile: ./net/grpc/gateway/docker/node_interop_server/Dockerfile
+    depends_on:
+      - common
+    image: grpcweb/node-interop-server
+    ports:
+      - "7074:7074"
   envoy:
     build:
       context: ./
@@ -93,5 +102,14 @@ services:
     depends_on:
       - prereqs
     image: grpcweb/binary-client
+    ports:
+      - "8081:8081"
+  interop-client:
+    build:
+      context: ./
+      dockerfile: ./net/grpc/gateway/docker/interop_client/Dockerfile
+    depends_on:
+      - prereqs
+    image: grpcweb/interop-client
     ports:
       - "8081:8081"
