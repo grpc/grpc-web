@@ -14,16 +14,20 @@ intermediaries to negotiate the HTTP version, which is mostly transparent to the
 
 # Proxy or not
 
-For most languages, the gRPC-Web module will handle the gRPC-Web request, do the translation, and then proxy the request using a gPRP client 
-to the gRPC server via a local socket. The gRPC-Web support is totally transparent to the gRPC server.
+For most languages, the gRPC-Web module will handle the gRPC-Web request, perform the translation, and then proxy the request using a gRPC client 
+to the gRPC server via a local socket. The gRPC-Web support is fully transparent to the gRPC server.
 
-For some languages, such as Swift, if the gRPC server implementation uses the same HTTP stack as gRPC-Web, then gRPC-Web may be supported 
-directly as part of the gRPC server implementation. The added complexity to the gRPC iteslf is still a concern.
+For some languages, such as Swift, .NET, if the gRPC server implementation uses the same HTTP stack that the gRPC-Web module uses, then gRPC-Web may be supported 
+directly as part of the gRPC server implementation. The added complexity to the gRPC implementation itself is still a concern.
 
 # HTTP port
 
 We expect that gRPC-Web requests are handled on a separate port. If the HTTP stack supports both HTTP/2 and HTTP/1.1, port sharing could be supported. 
-However, since CORS is a mandatory feature for gRPC-Web proxies, port sharing is optional for in-process proxies.
+However, since CORS is a mandatory feature for gRPC-Web proxies, port sharing should be optional for in-process proxies.
+
+# Core features
+
+The gRPC-Web module should implement only the [core gRPC-Web features](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md) and leave to the HTTP/Web stack provided by the language platform to handle [Web-framework-level features](https://github.com/grpc/grpc-web/blob/master/BROWSER-FEATURES.md) such as XSRF, CORS policies. Some of those features may be incompatible with what Envoy supports.
 
 
 
