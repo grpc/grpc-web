@@ -14,11 +14,11 @@ intermediaries to negotiate the HTTP version, which is mostly transparent to the
 
 # Proxy or not
 
-For most languages, the gRPC-Web module will handle the gRPC-Web request, do the translation, and then proxy the request using a gPRP client 
-to the gRPC server via a local socket. The gRPC-Web support is totally transparent to the gRPC server.
+For most languages, the gRPC-Web module will handle the gRPC-Web request, perform the translation, and then proxy the request using a gRPC client 
+to the gRPC server via a local socket. The gRPC-Web support is fully transparent to the gRPC server.
 
 For some languages, such as Swift, .NET, if the gRPC server implementation uses the same HTTP stack that the gRPC-Web module uses, then gRPC-Web may be supported 
-directly as part of the gRPC server implementation. The added complexity to the gRPC implementation iteslf is still a concern.
+directly as part of the gRPC server implementation. The added complexity to the gRPC implementation itself is still a concern.
 
 # HTTP port
 
