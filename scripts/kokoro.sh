@@ -68,7 +68,14 @@ cd packages/grpc-web && \
 
 
 # Build all relevant docker images. They should all build successfully.
-docker-compose -f advanced.yml build
+if [[ "$MASTER" == "1" ]]; then
+  # Build all for continuous_integration
+  docker-compose -f advanced.yml build
+else
+  # Only build a subset of necessary docker images for presubmit runs
+  docker-compose -f advanced.yml build common prereqs envoy \
+    node-server node-interop-server
+fi
 
 
 # Bring up the Echo server and the Envoy proxy (in background).
@@ -89,7 +96,8 @@ docker run --rm grpcweb/prereqs /bin/bash \
 
 
 # Run interop tests
-pid1=$(docker run -d -v "$(pwd)"/test/interop/envoy.yaml:/etc/envoy/envoy.yaml:ro \
+pid1=$(docker run -d \
+  -v "$(pwd)"/test/interop/envoy.yaml:/etc/envoy/envoy.yaml:ro \
   --network=host envoyproxy/envoy:v1.14.1)
 pid2=$(docker run -d --network=host grpcweb/node-interop-server)
 
