@@ -70,11 +70,10 @@ cd packages/grpc-web && \
 # Build all relevant docker images. They should all build successfully.
 if [[ "$MASTER" == "1" ]]; then
   # Build all for continuous_integration
-  docker-compose -f advanced.yml build
+  docker-compose build
 else
   # Only build a subset of necessary docker images for presubmit runs
-  docker-compose -f advanced.yml build common prereqs envoy \
-    node-server node-interop-server
+  docker-compose build common prereqs envoy node-server node-interop-server
 fi
 
 
