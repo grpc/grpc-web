@@ -36,8 +36,8 @@ streaming example.
 From the repo root directory:
 
 ```sh
-$ docker-compose pull
-$ docker-compose up
+$ docker-compose pull node-server envoy commonjs-client
+$ docker-compose up node-server envoy commonjs-client
 ```
 
 Open a browser tab, and go to:
@@ -311,14 +311,14 @@ $ docker-compose up -d node-server envoy commonjs-client
 An alternative is to build Nginx that comes with this repository.
 
 ```sh
-$ docker-compose -f advanced.yml up -d echo-server nginx closure-client
+$ docker-compose up -d echo-server nginx closure-client
 ```
 
 You can also try this
 [gRPC-Web Go Proxy](https://github.com/improbable-eng/grpc-web/tree/master/go/grpcwebproxy).
 
 ```sh
-$ docker-compose -f advanced.yml up -d node-server grpcwebproxy binary-client
+$ docker-compose up -d node-server grpcwebproxy binary-client
 ```
 
 ## Acknowledgement
