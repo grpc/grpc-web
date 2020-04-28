@@ -41,12 +41,12 @@ List of Tests
 | empty_unary | &#10003; | &#10003; |
 | cacheable_unary | TBD | TBD |
 | large_unary | &#10003; | &#10003; |
-| client_compressed_unary | TBD | TBD |
-| server_compressed_unary | TBD | TBD |
+| client_compressed_unary | &#10003; | &#10003; |
+| server_compressed_unary | &#10003; | &#10003; |
 | client_streaming | &#10007; | &#10007; |
 | client_compressed_streaming | &#10007; | &#10007; |
 | server_streaming | &#10003; | &#10007; |
-| server_compressed_streaming | TBD | &#10007; |
+| server_compressed_streaming | &#10003; | &#10007; |
 | ping_pong | &#10007; | &#10007; |
 | empty_stream | &#10007; | &#10007; |
 | compute_engine_creds | TBD | TBD |
@@ -55,8 +55,8 @@ List of Tests
 | per_rpc_creds | TBD | TBD |
 | google_default_credentials | TBD | TBD |
 | compute_engine_channel_credentials | TBD | TBD |
-| custom_metadata | &#10003; | &#10003; |
-| status_code_and_message | &#10003; | &#10003; |
+| custom_metadata * | &#10003; | &#10003; |
+| status_code_and_message * | &#10003; | &#10003; |
 | special_status_message | &#10003; | &#10003; |
 | unimplemented_method | &#10003; | &#10003; |
 | unimplemented_service | &#10003; | &#10003; |
@@ -64,6 +64,7 @@ List of Tests
 | cancel_after_first_response | &#10007; | &#10007; |
 | timeout_on_sleeping_server | &#10007; | &#10007; |
 
+\* only need to implement the UnaryCall RPC
 
 gRPC-Web specific considerations
 --------------------------------
