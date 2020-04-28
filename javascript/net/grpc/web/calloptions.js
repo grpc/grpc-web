@@ -22,7 +22,8 @@ const CallOptions = function(options) {
  * Add a new CallOption or override an existing one.
  *
  * @param {string} name name of the CallOption that should be added/overridden.
- * @param {!Object} value value of the CallOption
+ * @param {VALUE} value value of the CallOption
+ * @template VALUE
  */
 CallOptions.prototype.setOption = function(name, value) {
   this.properties_[name] = value;
@@ -46,6 +47,13 @@ CallOptions.prototype.get = function(name) {
  */
 CallOptions.prototype.removeOption = function(name) {
   delete this.properties_[name];
+};
+
+/**
+ * @return {!Array<string>}
+ */
+CallOptions.prototype.getKeys = function() {
+  return Object.keys(this.properties_);
 };
 
 exports = CallOptions;

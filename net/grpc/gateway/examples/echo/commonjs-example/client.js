@@ -26,6 +26,13 @@ grpc.web = require('grpc-web');
 /** Sample interceptor implementation */
 const StreamResponseInterceptor = function() {};
 
+/**
+ * @template REQUEST, RESPONSE
+ * @param {!Request<REQUEST, RESPONSE>} request
+ * @param {function(!Request<REQUEST,RESPONSE>):!ClientReadableStream<RESPONSE>}
+ *     invoker
+ * @return {!ClientReadableStream<RESPONSE>}
+ */
 StreamResponseInterceptor.prototype.intercept = function(request, invoker) {
   const InterceptedStream = function(stream) {
     this.stream = stream;
