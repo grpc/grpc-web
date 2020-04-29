@@ -35,8 +35,9 @@ if [[ "$MASTER" == "1" ]]; then
   # Build all for continuous_integration
   docker-compose build
 else
-  # Only build a subset of necessary docker images for presubmit runs
-  docker-compose build common prereqs envoy node-server
+  # Only build a subset of docker images for presubmit runs
+  docker-compose build common prereqs envoy node-server \
+    commonjs-client ts-client
 fi
 
 

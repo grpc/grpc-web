@@ -31,7 +31,7 @@ done
 
 
 # Build all relevant docker images. They should all build successfully.
-docker-compose build common prereqs node-interop-server
+docker-compose build common prereqs node-interop-server interop-client
 
 
 # Run interop tests
