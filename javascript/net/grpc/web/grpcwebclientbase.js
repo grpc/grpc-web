@@ -104,6 +104,7 @@ GrpcWebClientBase.prototype.rpcCall = function(
   var stream = /** @type {!ClientReadableStream<?>} */ (invoker.call(
       this, methodDescriptor.createRequest(requestMessage, metadata)));
   GrpcWebClientBase.setCallback_(stream, callback, false);
+  console.log('1');
   return stream;
 };
 
