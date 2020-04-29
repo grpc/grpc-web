@@ -213,6 +213,7 @@ GrpcWebClientBase.prototype.startStream_ = function(request, hostname) {
  * @param {boolean} useUnaryResponse
  */
 GrpcWebClientBase.setCallback_ = function(stream, callback, useUnaryResponse) {
+  console.log('1');
   stream.on('data', function(response) {
     callback(null, response);
   });
