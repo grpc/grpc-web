@@ -17,6 +17,8 @@ set -ex
 SCRIPT_DIR=$(dirname "$0")
 cd "${SCRIPT_DIR}"
 
+export MASTER=1
+
 ./run_basic_tests.sh
 
 ./run_interop_tests.sh
