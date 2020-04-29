@@ -19,8 +19,6 @@ REPO_DIR=$(realpath "${SCRIPT_DIR}/..")
 
 # Set up
 cd "${REPO_DIR}"
-./scripts/init_submodules.sh
-make clean
 
 
 # These programs need to be already installed

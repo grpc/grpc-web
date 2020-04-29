@@ -14,6 +14,15 @@
 # limitations under the License.
 set -ex
 
+# This script is intended to be run within the base image from
+# net/grpc/gateway/docker/prereqs/Dockerfile
+
+cd /github/grpc-web && \
+  bazel clean && \
+  bazel test --cache_test_results=no \
+    //javascript/net/grpc/web/... \
+    //net/grpc/gateway/examples/...
+
 cd /github/grpc-web/packages/grpc-web && \
   npm run prepare && \
   npm test
