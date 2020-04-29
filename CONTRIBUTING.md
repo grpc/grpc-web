@@ -19,7 +19,7 @@ In order to protect both you and ourselves, you will need to sign the
 The basic build script should run to completion.
 
 ```sh
-$ ./scripts/kokoro.sh
+$ MASTER=1 ./scripts/kokoro.sh
 ```
 
 More details to come.

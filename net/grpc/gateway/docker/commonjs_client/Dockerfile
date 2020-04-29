@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM grpcweb/common
+FROM grpcweb/prereqs
 
 WORKDIR /github/grpc-web/net/grpc/gateway/examples/echo
 
@@ -23,6 +23,7 @@ RUN protoc -I=. echo.proto \
 WORKDIR /github/grpc-web/net/grpc/gateway/examples/echo/commonjs-example
 
 RUN npm install && \
+  npm link grpc-web && \
   npx webpack && \
   cp echotest.html /var/www/html && \
   cp dist/main.js /var/www/html/dist

@@ -12,12 +12,19 @@ services:
     depends_on:
       - common
     image: grpcweb/prereqs
+  grpc-base:
+    build:
+      context: ./
+      dockerfile: ./net/grpc/gateway/docker/grpc_base/Dockerfile
+    depends_on:
+      - prereqs
+    image: grpcweb/grpc-base
   echo-server:
     build:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/echo_server/Dockerfile
     depends_on:
-      - prereqs
+      - grpc-base
     image: grpcweb/echo-server
     ports:
       - "9090:9090"
@@ -53,7 +60,7 @@ services:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/nginx/Dockerfile
     depends_on:
-      - prereqs
+      - grpc-base
     image: grpcweb/nginx
     ports:
       - "8080:8080"
@@ -73,7 +80,7 @@ services:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/commonjs_client/Dockerfile
     depends_on:
-      - common
+      - prereqs
     image: grpcweb/commonjs-client
     ports:
       - "8081:8081"

@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM grpcweb/grpc-base
+FROM grpcweb/prereqs
 
 WORKDIR /github/grpc-web
 
-RUN make echo_server
+RUN cd third_party/grpc && \
+  make install
 
-WORKDIR /github/grpc-web/net/grpc/gateway/examples/echo
-
-EXPOSE 9090
-CMD ["./echo_server"]
+RUN cd third_party/grpc/third_party/protobuf && \
+  make install
