@@ -249,6 +249,7 @@ closure_js_test(
         ":interceptor",
         "@io_bazel_rules_closure//closure/library/crypt:base64",
         "@io_bazel_rules_closure//closure/library/events",
+        "@io_bazel_rules_closure//closure/library/net:eventtype",
         "@io_bazel_rules_closure//closure/library/structs:map",
         "@io_bazel_rules_closure//closure/library/testing:jsunit",
         "@io_bazel_rules_closure//closure/library/testing:testsuite",

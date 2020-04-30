@@ -79,14 +79,14 @@ testSuite({
       }
     }, function(error, response) {
       assertNull(error);
-      assertEquals(PROTO_FIELD_VALUE, response.field1);
+      assertEquals(PROTO_FIELD_VALUE, response['field1']);
     });
     dataCallback();
   },
 
   testStreamInterceptor: function() {
     var interceptor = new StreamResponseInterceptor();
-    var client = new GrpcWebClientBase({streamInterceptors: [interceptor]});
+    var client = new GrpcWebClientBase({'streamInterceptors': [interceptor]});
     client.newXhr_ = function() {
       return new MockXhr({
         // This parses to [ { DATA: [4,5,6] }, { TRAILER: "a: b" } ]
@@ -108,7 +108,7 @@ testSuite({
         },
         function(error, response) {
           assertNull(error);
-          assertEquals('field2', response.field2);
+          assertEquals('field2', response['field2']);
         });
     dataCallback();
   },
@@ -161,7 +161,7 @@ testSuite({
       }
     }, function(error, response) {
       assertNull(error);
-      assertEquals(PROTO_FIELD_VALUE, response.field1);
+      assertEquals(PROTO_FIELD_VALUE, response['field1']);
     });
     call.on('metadata', (metadata) => {
       assertEquals(metadata['sample-initial-metadata-1'],
@@ -292,7 +292,7 @@ StreamResponseInterceptor.prototype.intercept = function(request, invoker) {
   InterceptedStream.prototype.on = function(eventType, callback) {
     if (eventType == 'data') {
       const newCallback = (response) => {
-        response.field2 = 'field2';
+        response['field2'] = 'field2';
         callback(response);
       };
       this.stream.on(eventType, newCallback);
