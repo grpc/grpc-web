@@ -19,6 +19,7 @@ goog.module('grpc.web.GrpcWebClientBaseTest');
 goog.setTestOnly('grpc.web.GrpcWebClientBaseTest');
 
 const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
+var EventType = goog.require('goog.net.EventType');
 var GrpcWebClientBase = goog.require('grpc.web.GrpcWebClientBase');
 var Map = goog.require('goog.structs.Map');
 var googCrypt = goog.require('goog.crypt.base64');
@@ -43,8 +44,10 @@ var dataCallback;
 
 testSuite({
   setUp: function() {
-    googEvents.listen = function(a, b, listener, d, e) {
-      dataCallback = listener;
+    googEvents.listen = function(a, event_type, listener, d, e) {
+      if (event_type == EventType.READY_STATE_CHANGE) {
+        dataCallback = listener;
+      }
       return;
     };
   },
@@ -216,6 +219,15 @@ MockXhr.prototype.setWithCredentials = function(withCredentials) {
  */
 MockXhr.prototype.getResponseText = function() {
   return this.mockValues.response;
+};
+
+
+/**
+ * @param {string} key header key
+ * @return {string} content-type
+ */
+MockXhr.prototype.getStreamingResponseHeader = function(key) {
+  return 'application/grpc-web-text';
 };
 
 
