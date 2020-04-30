@@ -801,7 +801,7 @@ void PrintGrpcWebDtsClientClass(Printer* printer, const FileDescriptor* file,
     printer->Indent();
     printer->Print(
         "constructor (hostname: string,\n"
-        "             credentials?: null | { [index: string]: string; },\n"
+        "             credentials?: null  { [index: string]: string; },\n"
         "             options?: null | { [index: string]: string; });\n\n");
     for (int method_index = 0; method_index < service->method_count();
          ++method_index) {
