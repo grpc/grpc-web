@@ -15,9 +15,19 @@
 FROM grpcweb/grpc-base
 
 RUN apt-get -qq install -y \
-  zip
+  cmake zip
 
 WORKDIR /github/grpc-web
+
+RUN cd third_party/grpc/third_party && \
+  ln -s ./abseil-cpp/absl absl
+
+RUN cd third_party/grpc/third_party/abseil-cpp && \
+  git remote update && \
+  git checkout df3ea78 -b 20200225.1 && \
+  cmake . && \
+  make && \
+  make install
 
 RUN cd ./net/grpc/gateway/examples/echo && \
   sed -i 's/localhost:9090/echo-server:9090/g' nginx.conf
