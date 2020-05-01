@@ -27,6 +27,7 @@ RUN git checkout . && \
   git checkout third_party && \
   ./scripts/init_submodules.sh
 
+COPY ./Makefile ./Makefile
 COPY ./javascript ./javascript
 COPY ./net ./net
 COPY ./packages ./packages
