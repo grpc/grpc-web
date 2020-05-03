@@ -1,13 +1,11 @@
 package com.google.grpcweb;
 
 import com.google.common.annotations.VisibleForTesting;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 
 class MessageHandler {
@@ -36,14 +34,18 @@ class MessageHandler {
       throw new IllegalArgumentException("This content type is not used for grpc-web: "
           + contentType);
     }
-    return GRPC_GCP_CONTENT_TYPES.get(contentType);
+    return getContentType(contentType);
+  }
+
+  static ContentType getContentType(String type) {
+    return GRPC_GCP_CONTENT_TYPES.get(type);
   }
 
   /**
    * Find the input arg protobuf class for the given rpc-method.
    * Convert the given bytes to the input protobuf. return that.
    */
-  private Object getInputProtobufObj(Method rpcMethod, byte[] in) {
+  Object getInputProtobufObj(Method rpcMethod, byte[] in) {
     Class[] inputArgs = rpcMethod.getParameterTypes();
     Class inputArgClass = inputArgs[0];
     LOGGER.fine("inputArgClass name: " + inputArgClass.getName());
@@ -69,35 +71,5 @@ class MessageHandler {
           "Input obj is **not** instance of the correct input class type");
     }
     return inputObj;
-  }
-
-  /**
-   * Invoke the rpc-method and get the result.
-   */
-  Object invokeRpcAndGetResult(HttpServletRequest req, ContentType contentType,
-      Object stub, Method rpcMethod)
-      throws IOException {
-    ServletInputStream in = req.getInputStream();
-    MessageDeframer deframer = new MessageDeframer();
-    if (!deframer.processInput(in, contentType)) {
-      return null;
-    }
-    Object inObj = getInputProtobufObj(rpcMethod, deframer.getMessageBytes());
-
-    Class returnClassType = rpcMethod.getReturnType();
-    LOGGER.fine("returnClassType is : " + returnClassType.getName());
-    Object outObj;
-    try {
-      outObj = rpcMethod.invoke(stub, inObj);
-    } catch (InvocationTargetException | IllegalAccessException e) {
-      e.printStackTrace();
-      throw new IllegalArgumentException(e);
-    }
-    if (!returnClassType.isInstance(outObj)) {
-      throw new IllegalArgumentException(
-          "return obj is **not** instance of the correct output class type: "
-          + returnClassType.getName());
-    }
-    return outObj;
   }
 }

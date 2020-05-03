@@ -17,8 +17,7 @@ class MessageDeframer {
   private static final Logger LOGGER = Logger.getLogger(MessageDeframer.class.getName());
   static final byte DATA_BYTE = (byte) 0x00;
 
-  // TODO: Max value of Java int is = (2GB - 1). Max POST size can be 2GB or even 4GB.
-  // fix this code to be able to handle upto 4GB input size.
+  // TODO: fix this code to be able to handle upto 4GB input size.
   private int mLength = 0;
   private int mReadSoFar = 0;
 

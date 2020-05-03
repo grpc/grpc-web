@@ -10,19 +10,19 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jetty.servlets.CrossOriginFilter;
+import com.google.common.net.HttpHeaders;
 
 public class CorsFilter implements Filter {
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
       throws IOException, ServletException {
-    this.handle((HttpServletRequest)request, (HttpServletResponse)response, chain);
+    this.handle((HttpServletRequest)request, (HttpServletResponse)response);
     chain.doFilter(request, response);
   }
 
-  private void handle(HttpServletRequest req, HttpServletResponse resp, FilterChain chain)
+  private void handle(HttpServletRequest req, HttpServletResponse resp)
       throws IOException, ServletException {
-    resp.setHeader(CrossOriginFilter.ACCESS_CONTROL_ALLOW_HEADERS_HEADER,
+    resp.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS,
         StringUtils.joinWith(",",
             "user-agent",
             "cache-control",
@@ -36,13 +36,13 @@ public class CorsFilter implements Filter {
             "x-grpc-test-echo-trailing-bin",
             "x-grpc-web",
             "x-user-agent"));
-    resp.setHeader(CrossOriginFilter.ACCESS_CONTROL_ALLOW_ORIGIN_HEADER,
+    resp.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN,
         req.getHeader("Origin"));
-    resp.setHeader(CrossOriginFilter.ACCESS_CONTROL_REQUEST_HEADERS_HEADER,
+    resp.setHeader(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS,
         "content-type,x-grpc-web");
-    resp.setHeader(CrossOriginFilter.ALLOWED_METHODS_PARAM,
+    resp.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS,
         "OPTIONS,GET,POST,HEAD");
-    resp.setHeader(CrossOriginFilter.ACCESS_CONTROL_EXPOSE_HEADERS_HEADER,
+    resp.setHeader(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS,
         StringUtils.joinWith(",",
             "x-grpc-test-echo-initial",
             "x-grpc-test-echo-trailing-bin",

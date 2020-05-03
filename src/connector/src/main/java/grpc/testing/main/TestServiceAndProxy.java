@@ -28,7 +28,7 @@ public class TestServiceAndProxy {
     return grpcServer;
   }
 
-  private static void listenForGrpcWebReq(int grpcPort, int grpcWebPort) throws Exception {
+  private static void listenForGrpcWebReq(int grpcWebPort) throws Exception {
     // Start a jetty server to listen on the grpc-web port#
     org.eclipse.jetty.server.Server jServer = new org.eclipse.jetty.server.Server(grpcWebPort);
     ServletHandler handler = new ServletHandler();
@@ -43,7 +43,7 @@ public class TestServiceAndProxy {
   public static void main(String[] args) throws Exception {
     Factory.createSingleton(GRPC_PORT);
     Server grpcServer = startGrpcService(GRPC_PORT);
-    listenForGrpcWebReq(GRPC_PORT, GRPC_WEB_PORT);
+    listenForGrpcWebReq(GRPC_WEB_PORT);
     grpcServer.awaitTermination();
   }
 }
