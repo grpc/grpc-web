@@ -17,9 +17,6 @@ public class GrpcWebTrafficServlet extends HttpServlet {
   protected void doGet(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException {
     new RequestHandler(mFactory).handle(request, response);
-    // response.setContentType("text/html");
-    // response.setStatus(HttpServletResponse.SC_OK);
-    // response.getWriter().println("<h1>Hello SimpleServlet</h1>");
   }
 
   @Override

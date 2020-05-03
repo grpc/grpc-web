@@ -1,9 +1,13 @@
 package com.google.grpcweb;
 
 import io.grpc.ManagedChannel;
-import java.io.IOException;
+import io.grpc.Status;
+import io.grpc.stub.StreamObserver;
 import java.lang.reflect.Method;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -20,40 +24,48 @@ class RequestHandler {
     mMessageHandler = new MessageHandler();
   }
 
-  public void handle(HttpServletRequest req, HttpServletResponse response)
-      throws IOException {
+  public void handle(final HttpServletRequest req, final HttpServletResponse resp) {
     DebugInfo.printRequest(req);
     MessageHandler.ContentType contentType = mMessageHandler.validateContentType(req);
+    SendResponse sendResponse = new SendResponse(req, resp);
 
     try {
       // From the request, get the rpc-method name and class name and then get their corresponding
       // concrete objects.
-      Pair<Class, String> classAndMethod = getClassAndMethod(req);
+      Pair<String, String> classAndMethodNames = getClassAndMethod(req);
+      String className = classAndMethodNames.getLeft();
+      String methodName = classAndMethodNames.getRight();
+      Class cls = getClassObject(className);
+      if (cls == null) {
+        // incorrect classname specified in the request.
+        sendResponse.returnUnimplementedStatusCode();
+        return;
+      }
 
-      // get the BlockingStub for the rpc call
-      Object rpcStub = getRpcStub(classAndMethod.getLeft());
+      // get the stubs for the rpc call and the method to be called within the stubs
+      Object asyncStub = getRpcStub(cls, "newStub");
+      Method asyncStubCall = getRpcMethod(asyncStub, methodName);
 
-      // get the rpc-method to be called from the BlockingStub Object..
-      Method rpcMethod = getRpcMethod(rpcStub, classAndMethod.getRight());
+      // Get the input object bytes
+      ServletInputStream in = req.getInputStream();
+      MessageDeframer deframer = new MessageDeframer();
+      Object inObj = null;
+      if (deframer.processInput(in, contentType)) {
+        inObj = mMessageHandler.getInputProtobufObj(asyncStubCall, deframer.getMessageBytes());
+      }
 
-      // invoke the gRPC call and get the protobuf result obj
-      Object result = mMessageHandler.invokeRpcAndGetResult(req, contentType,
-                                                           rpcStub, rpcMethod);
-
-      byte[] outB = (result == null)
-          ? new byte[0]
-          : ((com.google.protobuf.GeneratedMessageV3) result).toByteArray();
-
-      // Write response out
-      SendResponse.writeResponse(response, outB);
-      response.setStatus(HttpServletResponse.SC_OK);
-    } catch (IllegalArgumentException e) {
+      // Invoke the rpc call
+      CountDownLatch latch = new CountDownLatch(1);
+      asyncStubCall.invoke(asyncStub, inObj,
+          new GrpcCallResponseReceiver(sendResponse, latch));
+      latch.await(500, TimeUnit.MILLISECONDS);
+    } catch (Exception e) {
       LOGGER.info(e.getMessage());
-      response.setStatus(HttpServletResponse.SC_OK);
+      resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
     }
   }
 
-  private Pair<Class, String> getClassAndMethod(HttpServletRequest req)
+  private Pair<String, String> getClassAndMethod(HttpServletRequest req)
       throws IllegalArgumentException {
     String pathInfo = req.getPathInfo();
     // pathInfo starts with "/". ignore that first char.
@@ -66,56 +78,71 @@ class RequestHandler {
     String rpcMethodNameRecvd = rpcClassAndMethodTokens[1];
     String rpcMethodName = rpcMethodNameRecvd.substring(0, 1).toLowerCase()
         + rpcMethodNameRecvd.substring(1);
-    LOGGER.fine("Recvd method name = " + rpcMethodName
-        + ", Rpc class name = " + rpcClassName);
-    Class rpcClass;
-    try {
-      rpcClass = Class.forName(rpcClassName + "Grpc");
-    } catch (ClassNotFoundException e) {
-      throw new IllegalArgumentException(e);
-    }
-    return new ImmutablePair<>(rpcClass, rpcMethodName);
+    return new ImmutablePair<>(rpcClassName, rpcMethodName);
   }
 
-  private Object getRpcStub(Class cls) {
-    Method newBlockingStubMethod;
+  private Class<?> getClassObject(String className) {
+    Class rpcClass = null;
     try {
-      newBlockingStubMethod = cls.getDeclaredMethod("newBlockingStub",
-          io.grpc.Channel.class);
-    } catch (NoSuchMethodException e) {
+      rpcClass = Class.forName(className + "Grpc");
+    } catch (ClassNotFoundException e) {
+      LOGGER.info("no such class " + className);
+    }
+    return rpcClass;
+  }
+
+  private Object getRpcStub(Class cls, String stubName) {
+    try {
+      Method m = cls.getDeclaredMethod(stubName, io.grpc.Channel.class);
+      ManagedChannel channel = mFactory.getGrpcServiceConnectionManager().getChannel();
+      return m.invoke(null, channel);
+    } catch (Exception e) {
+      LOGGER.warning("Error when fetching " + stubName + " for: " + cls.getName());
       throw new IllegalArgumentException(e);
     }
-
-    // invoke the newBlockingStub() method
-    ManagedChannel channel = mFactory.getGrpcServiceConnectionManager().getChannel();
-    Object stub;
-    try {
-      stub = newBlockingStubMethod.invoke(null, channel);
-    } catch (Exception e) {
-      throw new IllegalArgumentException("invoking newBlockingStubMethod: " + e.getMessage());
-    }
-
-    if (stub == null) {
-      throw new IllegalArgumentException("Unexpected: stb = null!");
-    }
-    return stub;
   }
 
   /**
-   * Find the matching method with one param in the stub class.
+   * Find the matching method in the stub class.
    */
   private Method getRpcMethod(Object stub, String rpcMethodName) {
-    Method rpcMethodObj = null;
     for (Method m : stub.getClass().getMethods()) {
-      if (m.getName().equals(rpcMethodName) && (m.getParameterCount() == 1)) {
-        rpcMethodObj = m;
-        break;
+      if (m.getName().equals(rpcMethodName)) {
+        return m;
       }
     }
+    throw new IllegalArgumentException("Couldn't find rpcmethod: " + rpcMethodName);
+  }
 
-    if (rpcMethodObj == null) {
-      throw new IllegalArgumentException("Couldn't find rpcmethod");
+  private static class GrpcCallResponseReceiver<Object> implements StreamObserver {
+    private final SendResponse sendResponse;
+    private final CountDownLatch latch;
+
+    GrpcCallResponseReceiver(SendResponse s, CountDownLatch c) {
+      sendResponse = s;
+      latch = c;
     }
-    return rpcMethodObj;
+
+    @Override
+    public void onNext(java.lang.Object resp) {
+      // TODO verify that the resp object is of Class instance returnedCls.
+      byte[] outB = ((com.google.protobuf.GeneratedMessageV3)resp).toByteArray();
+      sendResponse.writeResponse(outB);
+    }
+
+    @Override
+    public void onError(Throwable t) {
+      Status s = Status.fromThrowable(t);
+      LOGGER.info("status is " + s.toString());
+      sendResponse.writeError(s);
+      latch.countDown();
+    }
+
+    @Override
+    public void onCompleted() {
+      sendResponse.writeGrpcStatusTrailer(Status.OK);
+      sendResponse.writeOk();
+      latch.countDown();
+    }
   }
 }
