@@ -19,6 +19,7 @@ goog.module('grpc.web.GrpcWebClientBaseTest');
 goog.setTestOnly('grpc.web.GrpcWebClientBaseTest');
 
 const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
+var EventType = goog.require('goog.net.EventType');
 var GrpcWebClientBase = goog.require('grpc.web.GrpcWebClientBase');
 var Map = goog.require('goog.structs.Map');
 var googCrypt = goog.require('goog.crypt.base64');
@@ -43,8 +44,10 @@ var dataCallback;
 
 testSuite({
   setUp: function() {
-    googEvents.listen = function(a, b, listener, d, e) {
-      dataCallback = listener;
+    googEvents.listen = function(a, event_type, listener, d, e) {
+      if (event_type == EventType.READY_STATE_CHANGE) {
+        dataCallback = listener;
+      }
       return;
     };
   },
@@ -76,14 +79,14 @@ testSuite({
       }
     }, function(error, response) {
       assertNull(error);
-      assertEquals(PROTO_FIELD_VALUE, response.field1);
+      assertEquals(PROTO_FIELD_VALUE, response['field1']);
     });
     dataCallback();
   },
 
   testStreamInterceptor: function() {
     var interceptor = new StreamResponseInterceptor();
-    var client = new GrpcWebClientBase({streamInterceptors: [interceptor]});
+    var client = new GrpcWebClientBase({'streamInterceptors': [interceptor]});
     client.newXhr_ = function() {
       return new MockXhr({
         // This parses to [ { DATA: [4,5,6] }, { TRAILER: "a: b" } ]
@@ -105,7 +108,7 @@ testSuite({
         },
         function(error, response) {
           assertNull(error);
-          assertEquals('field2', response.field2);
+          assertEquals('field2', response['field2']);
         });
     dataCallback();
   },
@@ -158,7 +161,7 @@ testSuite({
       }
     }, function(error, response) {
       assertNull(error);
-      assertEquals(PROTO_FIELD_VALUE, response.field1);
+      assertEquals(PROTO_FIELD_VALUE, response['field1']);
     });
     call.on('metadata', (metadata) => {
       assertEquals(metadata['sample-initial-metadata-1'],
@@ -216,6 +219,15 @@ MockXhr.prototype.setWithCredentials = function(withCredentials) {
  */
 MockXhr.prototype.getResponseText = function() {
   return this.mockValues.response;
+};
+
+
+/**
+ * @param {string} key header key
+ * @return {string} content-type
+ */
+MockXhr.prototype.getStreamingResponseHeader = function(key) {
+  return 'application/grpc-web-text';
 };
 
 
@@ -280,7 +292,7 @@ StreamResponseInterceptor.prototype.intercept = function(request, invoker) {
   InterceptedStream.prototype.on = function(eventType, callback) {
     if (eventType == 'data') {
       const newCallback = (response) => {
-        response.field2 = 'field2';
+        response['field2'] = 'field2';
         callback(response);
       };
       this.stream.on(eventType, newCallback);

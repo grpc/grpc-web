@@ -1,4 +1,3 @@
-#!/bin/bash
 # Copyright 2018 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,11 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-set -ex
 
-cd "$(dirname "$0")"/..
-git submodule --quiet update --init
-cd third_party/closure-library && git checkout tags/v20190909 -f && cd ../..
-cd third_party/openssl && git checkout tags/OpenSSL_1_0_2h -f && cd ../..
-cd third_party/grpc && git checkout 2de2e8d -f && \
-  git submodule --quiet update --init && cd ../..
+FROM grpcweb/prereqs
+
+WORKDIR /github/grpc-web
+
+RUN cd third_party/grpc && \
+  make install
+
+RUN cd third_party/grpc/third_party/protobuf && \
+  make install

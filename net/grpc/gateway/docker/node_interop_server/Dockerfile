@@ -17,7 +17,7 @@ FROM grpcweb/common
 WORKDIR /github/grpc-node
 
 RUN git clone https://github.com/grpc/grpc-node . && \
-  git submodule update --init --recursive
+  git submodule --quiet update --init --recursive
 
 RUN cd packages/grpc-native-core && \
   npm install --build-from-source --unsafe-perm && \

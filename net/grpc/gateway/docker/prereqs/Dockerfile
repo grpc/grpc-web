@@ -15,26 +15,41 @@
 FROM grpcweb/common
 
 ARG MAKEFLAGS=-j8
+ARG BUILDIFIER_VERSION=1.0.0
+ARG BAZEL_VERSION=2.2.0
+
+RUN echo "\nloglevel=error\n" >> $HOME/.npmrc
 
 WORKDIR /github/grpc-web
 
-COPY . .
+COPY ./Makefile ./Makefile
+COPY ./bazel ./bazel
+COPY ./javascript ./javascript
+COPY ./net ./net
+COPY ./packages ./packages
+COPY ./scripts ./scripts
+COPY ./test ./test
 
-RUN git checkout . && \
-  git clean -f -d -x && \
-  rm -rf third_party && \
-  git checkout third_party && \
-  ./scripts/init_submodules.sh
+RUN ./scripts/init_submodules.sh
 
 RUN cd ./packages/grpc-web && \
   npm install && \
   npm run build && \
   npm link
 
-RUN cd ./third_party/grpc && \
-  make install
+RUN wget -nv -O buildifier \
+  https://github.com/bazelbuild/buildtools/releases/download/$BUILDIFIER_VERSION/buildifier && \
+  chmod +x ./buildifier && \
+  ./buildifier --mode=check --lint=warn --warnings=all -r bazel javascript net && \
+  rm ./buildifier
 
-RUN cd ./third_party/grpc/third_party/protobuf && \
-  make install
+RUN wget -nv -O bazel-installer.sh \
+  https://github.com/bazelbuild/bazel/releases/download/$BAZEL_VERSION/\
+bazel-$BAZEL_VERSION-installer-linux-x86_64.sh && \
+  chmod +x ./bazel-installer.sh && \
+  ./bazel-installer.sh && \
+  rm ./bazel-installer.sh
 
-RUN make install-plugin
+RUN bazel build javascript/net/grpc/web/... && \
+  cp $(bazel info bazel-genfiles)/javascript/net/grpc/web/protoc-gen-grpc-web \
+  /usr/local/bin/protoc-gen-grpc-web
