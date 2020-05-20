@@ -5,7 +5,9 @@ import com.google.grpcweb.Factory;
 import com.google.grpcweb.GrpcWebTrafficServlet;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import io.grpc.ServerInterceptors;
 import java.util.EnumSet;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 import javax.servlet.DispatcherType;
 import org.eclipse.jetty.servlet.ServletHandler;
@@ -20,8 +22,12 @@ public class TestServiceAndProxy {
   private static final int GRPC_WEB_PORT = 8080;
 
   private static Server startGrpcService(int port) throws Exception {
+
     Server grpcServer = ServerBuilder.forPort(port)
-        .addService(new TestService())
+        .addService(
+            ServerInterceptors.intercept(
+                new TestServiceImpl(Executors.newSingleThreadScheduledExecutor()),
+                TestServiceImpl.interceptors()))
         .build();
     grpcServer.start();
     LOGGER.info("****  started gRPC Service on port# " + port);
