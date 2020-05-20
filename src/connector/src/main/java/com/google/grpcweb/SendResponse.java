@@ -1,8 +1,10 @@
 package com.google.grpcweb;
 
 import com.google.grpcweb.MessageHandler.ContentType;
+import io.grpc.Metadata;
 import io.grpc.Status;
 import java.io.IOException;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -14,48 +16,68 @@ class SendResponse {
 
   private final String mContentType;
   private final HttpServletResponse mResp;
+  private boolean isFinalResponseSent = false;
 
   SendResponse(HttpServletRequest req, HttpServletResponse resp) {
     mContentType = req.getContentType();
     mResp = resp;
   }
-  /**
-   * Write response out.
-   */
-  void writeResponse(byte[] out) {
-    setHeaders();
-    writeResponse(out, MessageFramer.Type.DATA);
-  }
 
-  void returnUnimplementedStatusCode() {
-    setHeaders();
-    writeGrpcStatusTrailer(Status.UNIMPLEMENTED);
-    writeOk();
-  }
-
-  void writeOk() {
-    mResp.setStatus(HttpServletResponse.SC_OK);
-  }
-
-  private void setHeaders() {
+  synchronized void writeHeaders(Metadata headers) {
+    if (isFinalResponseSent) return;
     mResp.setContentType(mContentType);
     mResp.setHeader("transfer-encoding", "chunked");
     mResp.setHeader("trailer", "grpc-status,grpc-message");
+    if (headers == null) return;
+    Map<String, String> ht = MetadataUtil.getHttpHeadersFromMetadata(headers);
+    StringBuffer sb = new StringBuffer();
+    for (String key : ht.keySet()) {
+      mResp.setHeader(key, ht.get(key));
+    }
   }
 
-  void writeError(Status s) {
-    setHeaders();
-    writeGrpcStatusTrailer(s);
+  synchronized void returnUnimplementedStatusCode() {
+    if (isFinalResponseSent) return;
+    writeHeaders(null);
+    writeStatusTrailer(Status.UNIMPLEMENTED);
+    isFinalResponseSent = true;
+  }
+
+  synchronized void writeError(Status s) {
+    if (isFinalResponseSent) return;
+    writeHeaders(null);
+    writeStatusTrailer(s);
+    isFinalResponseSent = true;
+  }
+
+  synchronized void writeStatusTrailer(Status status) {
+    writeTrailer(status, null);
+  }
+
+  synchronized void writeTrailer(Status status, Metadata trailer) {
+    if (isFinalResponseSent) return;
+    StringBuffer sb = new StringBuffer();
+    if (trailer != null) {
+      Map<String, String> ht = MetadataUtil.getHttpHeadersFromMetadata(trailer);
+      for (String key : ht.keySet()) {
+        sb.append(String.format("%s:%s\r\n", key, ht.get(key)));
+      }
+    }
+    sb.append(String.format("grpc-status:%d\r\n", status.getCode().value()));
+    if (status.getDescription() != null && !status.getDescription().isEmpty()) {
+      sb.append(String.format("grpc-message:%s\r\n", status.getDescription()));
+    }
+    LOG.fine("writing trailer: " + sb.toString());
+    writeResponse(sb.toString().getBytes(), MessageFramer.Type.TRAILER);
     writeOk();
   }
 
-  void writeGrpcStatusTrailer(Status status) {
-    String trailer = String.format("grpc-status:%d\r\ngrpc-message:%s\r\n",
-        status.getCode().value(), status.getDescription());
-    writeResponse(trailer.getBytes(), MessageFramer.Type.TRAILER);
+  synchronized void writeResponse(byte[] out) {
+    writeResponse(out, MessageFramer.Type.DATA);
   }
 
   private void writeResponse(byte[] out, MessageFramer.Type type) {
+    if (isFinalResponseSent) return;
     try {
       // PUNT multiple frames not handled
       byte[] prefix = new MessageFramer().getPrefix(out, type);
@@ -72,11 +94,12 @@ class SendResponse {
       }
     } catch (IOException e) {
       // TODO what to do here?
-      LOG.info("can't write?");
+      LOG.warning("can't write?");
     }
   }
 
-  private void logPrefix(byte[] p) {
-    LOG.info("LENGTH : " + p.length + ", " + p[0] + ", " + p[1] + ", " + p[2] + ", " + p[3] + ", " + p[4]);
+  private void writeOk() {
+    mResp.setStatus(HttpServletResponse.SC_OK);
+    isFinalResponseSent = true;
   }
 }

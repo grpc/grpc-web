@@ -1,7 +1,9 @@
 package com.google.grpcweb;
 
-import io.grpc.ManagedChannel;
+import io.grpc.Channel;
+import io.grpc.Metadata;
 import io.grpc.Status;
+import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
 import java.lang.reflect.Method;
 import java.util.concurrent.CountDownLatch;
@@ -14,14 +16,14 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 class RequestHandler {
-  private static final Logger LOGGER = Logger.getLogger(RequestHandler.class.getName());
+  private static final Logger LOG = Logger.getLogger(RequestHandler.class.getName());
 
-  private final Factory mFactory;
   private final MessageHandler mMessageHandler;
+  private final GrpcServiceConnectionManager mGrpcServiceConnectionManager;
 
   RequestHandler(Factory factory) {
-    mFactory = factory;
     mMessageHandler = new MessageHandler();
+    mGrpcServiceConnectionManager = factory.getGrpcServiceConnectionManager();
   }
 
   public void handle(final HttpServletRequest req, final HttpServletResponse resp) {
@@ -42,10 +44,19 @@ class RequestHandler {
         return;
       }
 
-      // get the stubs for the rpc call and the method to be called within the stubs
-      Object asyncStub = getRpcStub(cls, "newStub");
-      Method asyncStubCall = getRpcMethod(asyncStub, methodName);
+      // Create a ClientInterceptor object
+      CountDownLatch latch = new CountDownLatch(1);
+      GrpcWebClientInterceptor interceptor =
+          new GrpcWebClientInterceptor(resp, latch, sendResponse);
+      Channel channel = mGrpcServiceConnectionManager.getChannelWithClientInterceptor(interceptor);
 
+      // get the stub for the rpc call and the method to be called within the stub
+      io.grpc.stub.AbstractStub asyncStub = getRpcStub(channel, cls, "newStub");
+      Metadata headers = MetadataUtil.getHtpHeaders(req);
+      if (!headers.keys().isEmpty()) {
+        asyncStub = MetadataUtils.attachHeaders(asyncStub, headers);
+      }
+      Method asyncStubCall = getRpcMethod(asyncStub, methodName);
       // Get the input object bytes
       ServletInputStream in = req.getInputStream();
       MessageDeframer deframer = new MessageDeframer();
@@ -55,12 +66,13 @@ class RequestHandler {
       }
 
       // Invoke the rpc call
-      CountDownLatch latch = new CountDownLatch(1);
       asyncStubCall.invoke(asyncStub, inObj,
           new GrpcCallResponseReceiver(sendResponse, latch));
-      latch.await(500, TimeUnit.MILLISECONDS);
+      if (!latch.await(500, TimeUnit.MILLISECONDS)) {
+        LOG.warning("grpc call took too long!");
+      }
     } catch (Exception e) {
-      LOGGER.info(e.getMessage());
+      LOG.info("Exception occurred: " + e.getMessage());
       resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
     }
   }
@@ -86,18 +98,17 @@ class RequestHandler {
     try {
       rpcClass = Class.forName(className + "Grpc");
     } catch (ClassNotFoundException e) {
-      LOGGER.info("no such class " + className);
+      LOG.info("no such class " + className);
     }
     return rpcClass;
   }
 
-  private Object getRpcStub(Class cls, String stubName) {
+  private io.grpc.stub.AbstractStub getRpcStub(Channel ch, Class cls, String stubName) {
     try {
       Method m = cls.getDeclaredMethod(stubName, io.grpc.Channel.class);
-      ManagedChannel channel = mFactory.getGrpcServiceConnectionManager().getChannel();
-      return m.invoke(null, channel);
+      return (io.grpc.stub.AbstractStub) m.invoke(null, ch);
     } catch (Exception e) {
-      LOGGER.warning("Error when fetching " + stubName + " for: " + cls.getName());
+      LOG.warning("Error when fetching " + stubName + " for: " + cls.getName());
       throw new IllegalArgumentException(e);
     }
   }
@@ -133,15 +144,13 @@ class RequestHandler {
     @Override
     public void onError(Throwable t) {
       Status s = Status.fromThrowable(t);
-      LOGGER.info("status is " + s.toString());
       sendResponse.writeError(s);
       latch.countDown();
     }
 
     @Override
     public void onCompleted() {
-      sendResponse.writeGrpcStatusTrailer(Status.OK);
-      sendResponse.writeOk();
+      sendResponse.writeStatusTrailer(Status.OK);
       latch.countDown();
     }
   }

@@ -1,5 +1,4 @@
-
-// Copyright 2015-2016 gRPC authors.
+// Copyright 2015 The gRPC Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,28 +14,26 @@
 
 // Message definitions to be used by integration test service definitions.
 
+// *******************  DO NOT EDIT
+// This is copy of the following:
+//  github.com/grpc/grpc-java/blob/master/interop-testing/src/main/proto/grpc/testing/messages.proto
+
 syntax = "proto3";
 
 package grpc.testing;
 
-// TODO(dgq): Go back to using well-known types once
-// https://github.com/grpc/grpc/issues/6980 has been fixed.
-// import "google/protobuf/wrappers.proto";
+option java_package = "grpc.testing";
+
+// TODO(jihuncho): Use well-known types once all languages are synced.
 message BoolValue {
   // The bool value.
   bool value = 1;
 }
 
-// The type of payload that should be returned.
-enum PayloadType {
-  // Compressable text format.
-  COMPRESSABLE = 0;
-}
-
 // A block of data, to simply increase gRPC message size.
 message Payload {
-  // The type of data in body.
-  PayloadType type = 1;
+  reserved 1;
+
   // Primary contents of payload.
   bytes body = 2;
 }
@@ -65,9 +62,7 @@ enum GrpclbRouteType {
 
 // Unary request.
 message SimpleRequest {
-  // Desired payload type in the response from the server.
-  // If response_type is RANDOM, server randomly chooses one from other formats.
-  PayloadType response_type = 1;
+  reserved 1;
 
   // Desired payload size in the response from the server.
   int32 response_size = 2;
@@ -95,9 +90,6 @@ message SimpleRequest {
 
   // Whether SimpleResponse should include server_id.
   bool fill_server_id = 9;
-
-  // Whether SimpleResponse should include grpclb_route_type.
-  bool fill_grpclb_route_type = 10;
 }
 
 // Unary response, as configured by the request.
@@ -109,15 +101,17 @@ message SimpleResponse {
   string username = 2;
   // OAuth scope.
   string oauth_scope = 3;
-
   // Server ID. This must be unique among different server instances,
   // but the same across all RPC's made to a particular server instance.
   string server_id = 4;
   // gRPCLB Path.
   GrpclbRouteType grpclb_route_type = 5;
-
   // Server hostname.
   string hostname = 6;
+}
+
+message SimpleContext {
+  string value = 1;
 }
 
 // Client-streaming request.
@@ -158,11 +152,7 @@ message ResponseParameters {
 
 // Server-streaming request.
 message StreamingOutputCallRequest {
-  // Desired payload type in the response from the server.
-  // If response_type is RANDOM, the payload from each response in the stream
-  // might be of different types. This is to simulate a mixed type of payload
-  // stream.
-  PayloadType response_type = 1;
+  reserved 1;
 
   // Configuration for each expected response message.
   repeated ResponseParameters response_parameters = 2;

@@ -1,5 +1,4 @@
-
-// Copyright 2015 gRPC authors.
+// Copyright 2015 The gRPC Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,9 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-syntax = "proto3";
+// *******************  DO NOT EDIT
+// This is copy of the following:
+//  github.com/grpc/grpc-java/blob/master/interop-testing/src/main/proto/grpc/testing/empty.proto
+
+syntax = "proto2";
 
 package grpc.testing;
+
+option java_package = "grpc.testing";
+option java_outer_classname = "EmptyProtos";
 
 // An empty message that you can re-use to avoid defining duplicated empty
 // messages in your project. A typical example is to use it as argument or the

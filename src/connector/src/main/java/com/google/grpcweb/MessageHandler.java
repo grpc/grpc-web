@@ -5,12 +5,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 
 class MessageHandler {
-  private static final Logger LOGGER = Logger.getLogger(MessageHandler.class.getName());
-
   @VisibleForTesting
   enum ContentType {
     GRPC_WEB_BINARY,
@@ -48,7 +45,6 @@ class MessageHandler {
   Object getInputProtobufObj(Method rpcMethod, byte[] in) {
     Class[] inputArgs = rpcMethod.getParameterTypes();
     Class inputArgClass = inputArgs[0];
-    LOGGER.fine("inputArgClass name: " + inputArgClass.getName());
 
     // use the inputArg classtype to create a protobuf object
     Method parseFromObj;

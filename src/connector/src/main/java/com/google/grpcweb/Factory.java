@@ -7,8 +7,8 @@ package com.google.grpcweb;
  * This is primarily to make unittesting easier for callers of objects supplied by this factory.
  */
 public class Factory {
-  private final GrpcServiceConnectionManager mGrpcServiceConnectionManager;
   private static Factory mInstance;
+  private int mGrpPortNum;
 
   public synchronized static void createSingleton(int grpcPortNum) {
     if (mInstance == null) {
@@ -19,10 +19,10 @@ public class Factory {
   static Factory getInstance() { return mInstance;}
 
   private Factory(int grpcPortNum) {
-    mGrpcServiceConnectionManager = new GrpcServiceConnectionManager(grpcPortNum);
+    mGrpPortNum = grpcPortNum;
   }
 
   GrpcServiceConnectionManager getGrpcServiceConnectionManager() {
-    return mGrpcServiceConnectionManager;
+    return new GrpcServiceConnectionManager(mGrpPortNum);
   }
 }
