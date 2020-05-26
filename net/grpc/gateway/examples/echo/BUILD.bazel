@@ -1,3 +1,4 @@
+load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_binary")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//bazel:closure_grpc_web_library.bzl", "closure_grpc_web_library")
 
@@ -9,8 +10,21 @@ proto_library(
 )
 
 closure_grpc_web_library(
-    name = "echo",
+    name = "echo_es6",
+    import_style = "es6",
     deps = [
         ":echo_proto",
+    ],
+)
+
+# A (very simple) inegration test.
+closure_js_binary(
+    name = "echo_es6_bin",
+    entry_points = [
+        "goog:proto.grpc.gateway.testing.EchoServiceClient",
+        "/net/grpc/gateway/examples/echo/echo.pb.grpc-web.js",
+    ],
+    deps = [
+        ":echo_es6",
     ],
 )
