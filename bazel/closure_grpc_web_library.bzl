@@ -36,11 +36,16 @@ def _proto_include_path(proto):
 def _proto_include_paths(protos):
     return [_proto_include_path(proto) for proto in protos]
 
-def _generate_closure_grpc_web_src_progress_message(name):
+def _generate_closure_grpc_web_src_progress_message(proto):
     # TODO(yannic): Add a better message?
-    return "Generating GRPC Web %s" % name
+    return "Generating GRPC Web for %s" % proto
+
+def _assert(condition, message):
+    if not condition:
+        fail(message)
 
 def _generate_closure_grpc_web_srcs(
+        label,
         actions,
         protoc,
         protoc_gen_grpc_web,
@@ -48,48 +53,56 @@ def _generate_closure_grpc_web_srcs(
         mode,
         sources,
         transitive_sources):
-    all_sources = [src for src in sources] + [src for src in transitive_sources.to_list()]
-    proto_include_paths = [
-        "-I%s" % p
-        for p in _proto_include_paths(
-            [f for f in all_sources],
-        )
-    ]
+    args = actions.args()
 
-    grpc_web_out_common_options = ",".join([
-        "import_style={}".format(import_style),
-        "mode={}".format(mode),
-    ])
+    args.add("--plugin", "protoc-gen-grpc-web=" + protoc_gen_grpc_web.path)
+
+    args.add_all(_proto_include_paths(transitive_sources.to_list()), format_each = "-I%s")
+
+    args.add("--grpc-web_opt", "mode=" + mode)
+    if "es6" == import_style:
+        args.add("--grpc-web_opt", "import_style=experimental_closure_es6")
+    else:
+        args.add("--grpc-web_opt", "import_style=" + import_style)
+
+    root = None
 
     files = []
+    es6_files = []
     for src in sources:
-        name = "{}.grpc.js".format(
-            ".".join(src.path.split("/")[-1].split(".")[:-1]),
-        )
-        js = actions.declare_file(name)
+        basename = src.basename[:-(len(src.extension) + 1)]
+
+        js = actions.declare_file(basename + "_grpc_web_pb.js", sibling = src)
         files.append(js)
 
-        args = proto_include_paths + [
-            "--plugin=protoc-gen-grpc-web={}".format(protoc_gen_grpc_web.path),
-            "--grpc-web_out={options},out={out_file}:{path}".format(
-                options = grpc_web_out_common_options,
-                out_file = name,
-                path = js.path[:js.path.rfind("/")],
-            ),
-            src.path,
-        ]
-
-        actions.run(
-            tools = [protoc_gen_grpc_web],
-            inputs = all_sources,
-            outputs = [js],
-            executable = protoc,
-            arguments = args,
-            progress_message =
-                _generate_closure_grpc_web_src_progress_message(name),
+        _assert(
+            ((root == None) or (root == js.root.path)),
+            "proto sources do not have the same root: '{}' != '{}'".format(root, js.root.path),
         )
+        root = js.root.path
 
-    return files
+        if "es6" == import_style:
+            es6 = actions.declare_file(basename + ".pb.grpc-web.js", sibling = src)
+            es6_files.append(es6)
+
+            _assert(root == es6.root.path, "ES6 file should have same root: '{}' != '{}'".format(root, es6.root.path))
+
+    _assert(root, "At least one source file is required")
+
+    args.add("--grpc-web_out", root)
+    args.add_all(sources)
+
+    actions.run(
+        tools = [protoc_gen_grpc_web],
+        inputs = transitive_sources,
+        outputs = files + es6_files,
+        executable = protoc,
+        arguments = [args],
+        progress_message =
+            _generate_closure_grpc_web_src_progress_message(str(label)),
+    )
+
+    return files, es6_files
 
 _error_multiple_deps = "".join([
     "'deps' attribute must contain exactly one label ",
@@ -103,7 +116,8 @@ def _closure_grpc_web_library_impl(ctx):
         fail(_error_multiple_deps, "deps")
 
     proto_info = ctx.attr.deps[0][ProtoInfo]
-    srcs = _generate_closure_grpc_web_srcs(
+    srcs, es6_srcs = _generate_closure_grpc_web_srcs(
+        label = ctx.label,
         actions = ctx.actions,
         protoc = ctx.executable._protoc,
         protoc_gen_grpc_web = ctx.executable._protoc_gen_grpc_web,
@@ -117,7 +131,7 @@ def _closure_grpc_web_library_impl(ctx):
     deps.append(ctx.attr._runtime)
     library = create_closure_js_library(
         ctx = ctx,
-        srcs = srcs,
+        srcs = srcs + es6_srcs,
         deps = deps,
         suppress = [
             "misplacedTypeAnnotation",
@@ -149,7 +163,13 @@ closure_grpc_web_library = rule(
         ),
         "import_style": attr.string(
             default = "closure",
-            values = ["closure"],
+            values = [
+                "closure",
+
+                # This is experimental and requires closure-js.
+                # We reserve the right to do breaking changes at any time.
+                "es6",
+            ],
         ),
         "mode": attr.string(
             default = "grpcwebtext",

@@ -1468,6 +1468,53 @@ void PrintMultipleFilesMode(const FileDescriptor* file, string file_name,
   printer2.Print("}); // goog.scope\n\n");
 }
 
+void PrintClosureES6Imports(
+    Printer* printer, const FileDescriptor* file, string package_dot) {
+  for (int i = 0; i < file->service_count(); ++i) {
+    const ServiceDescriptor* service = file->service(i);
+
+    string service_namespace = "proto." + package_dot + service->name();
+    printer->Print(
+        "import $service_name$Client_import from 'goog:$namespace$';\n",
+        "service_name", service->name(),
+        "namespace", service_namespace + "Client");
+    printer->Print(
+        "import $service_name$PromiseClient_import from 'goog:$namespace$';\n",
+        "service_name", service->name(),
+        "namespace", service_namespace + "PromiseClient");
+  }
+
+  printer->Print("\n\n\n");
+}
+
+void PrintGrpcWebClosureES6File(Printer* printer, const FileDescriptor* file) {
+  string package_dot = file->package().empty() ? "" : file->package() + ".";
+
+  printer->Print(
+      "// GENERATED CODE -- DO NOT EDIT!\n"
+      "\n"
+      "/**\n"
+      " * @fileoverview gRPC-Web generated client stub for '$file$'\n"
+      " */\n"
+      "\n"
+      "\n",
+      "file", file->name());
+
+  PrintClosureES6Imports(printer, file, package_dot);
+
+  for (int i = 0; i < file->service_count(); ++i) {
+    const ServiceDescriptor* service = file->service(i);
+
+    string service_namespace = "proto." + package_dot + service->name();
+    printer->Print(
+        "export const $name$Client = $name$Client_import;\n",
+        "name", service->name());
+    printer->Print(
+        "export const $name$PromiseClient = $name$PromiseClient_import;\n",
+        "name", service->name());
+  }
+}
+
 class GeneratorOptions {
  public:
   GeneratorOptions();
@@ -1482,6 +1529,7 @@ class GeneratorOptions {
   string mode() const { return mode_; }
   ImportStyle import_style() const { return import_style_; }
   bool generate_dts() const { return generate_dts_; }
+  bool generate_closure_es6() const { return generate_closure_es6_; }
   bool multiple_files() const { return multiple_files_; }
 
  private:
@@ -1489,6 +1537,7 @@ class GeneratorOptions {
   string mode_;
   ImportStyle import_style_;
   bool generate_dts_;
+  bool generate_closure_es6_;
   bool multiple_files_;
 };
 
@@ -1497,6 +1546,7 @@ GeneratorOptions::GeneratorOptions()
       mode_(""),
       import_style_(ImportStyle::CLOSURE),
       generate_dts_(false),
+      generate_closure_es6_(false),
       multiple_files_(false){}
 
 bool GeneratorOptions::ParseFromOptions(const string& parameter,
@@ -1516,6 +1566,9 @@ bool GeneratorOptions::ParseFromOptions(
     } else if ("import_style" == option.first) {
       if ("closure" == option.second) {
         import_style_ = ImportStyle::CLOSURE;
+      } else if ("experimental_closure_es6" == option.second) {
+        import_style_ = ImportStyle::CLOSURE;
+        generate_closure_es6_ = true;
       } else if ("commonjs" == option.second) {
         import_style_ = ImportStyle::COMMONJS;
       } else if ("commonjs+dts" == option.second) {
@@ -1742,6 +1795,16 @@ class GrpcCodeGenerator : public CodeGenerator {
       Printer grpcweb_dts_printer(grpcweb_dts_output.get(), '$');
 
       PrintGrpcWebDtsFile(&grpcweb_dts_printer, file);
+    }
+
+    if (generator_options.generate_closure_es6()) {
+      string es6_file_name = StripProto(file->name()) + ".pb.grpc-web.js";
+
+      std::unique_ptr<ZeroCopyOutputStream> es6_output(
+          context->Open(es6_file_name));
+      Printer es6_printer(es6_output.get(), '$');
+
+      PrintGrpcWebClosureES6File(&es6_printer, file);
     }
 
     return true;
