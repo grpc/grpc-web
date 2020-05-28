@@ -98,6 +98,7 @@ GrpcWebClientBase.prototype.rpcCall = function(
   methodDescriptor = AbstractClientBase.ensureMethodDescriptor(
       method, requestMessage, MethodType.UNARY, methodDescriptor);
   var hostname = AbstractClientBase.getHostname(method, methodDescriptor);
+  console.log(hostname);
   var invoker = GrpcWebClientBase.runInterceptors_(
       (request) => this.startStream_(request, hostname),
       this.streamInterceptors_);
