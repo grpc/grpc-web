@@ -42,7 +42,7 @@ Make sure they are both executable and are discoverable from your PATH.
 For example, in MacOS, you can do:
 
 ```
-$ sudo mv ~/Downloads/protoc-gen-grpc-web-1.0.7-darwin-x86_64 \
+$ sudo mv ~/Downloads/protoc-gen-grpc-web-1.1.0-darwin-x86_64 \
   /usr/local/bin/protoc-gen-grpc-web
 $ chmod +x /usr/local/bin/protoc-gen-grpc-web
 ```

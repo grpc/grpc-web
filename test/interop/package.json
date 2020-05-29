@@ -7,8 +7,8 @@
     "test": "mocha -b --timeout 500 interop_client.js"
   },
   "dependencies": {
-    "google-protobuf": "~3.11.4",
-    "grpc-web": "~1.0.0"
+    "google-protobuf": "~3.12.0",
+    "grpc-web": "~1.1.0"
   },
   "devDependencies": {
     "minimist": "~1.2.5",
