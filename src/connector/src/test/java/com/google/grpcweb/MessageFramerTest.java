@@ -25,9 +25,10 @@ public class MessageFramerTest {
   public void testProcessInput_Singleframe() throws IOException {
     String source = "This is the source of my input stream";
     byte[] bytes = source.getBytes();
-    byte[] prefix = testInstance.getPrefix(bytes);
+    byte[] prefix = testInstance.getPrefix(bytes, MessageFramer.Type.DATA);
     assertEquals(5, prefix.length);
     int len = ByteBuffer.wrap(prefix, 1, 4).getInt();
     assertEquals(source.length(), len);
   }
+  // PUNT add more tests: Empty frame, zero frames
 }

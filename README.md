@@ -36,8 +36,8 @@ streaming example.
 From the repo root directory:
 
 ```sh
-$ docker-compose pull
-$ docker-compose up
+$ docker-compose pull node-server envoy commonjs-client
+$ docker-compose up node-server envoy commonjs-client
 ```
 
 Open a browser tab, and go to:
@@ -70,7 +70,7 @@ Make sure they are both executable and are discoverable from your PATH.
 For example, in MacOS, you can do:
 
 ```
-$ sudo mv ~/Downloads/protoc-gen-grpc-web-1.0.7-darwin-x86_64 \
+$ sudo mv ~/Downloads/protoc-gen-grpc-web-1.1.0-darwin-x86_64 \
   /usr/local/bin/protoc-gen-grpc-web
 $ chmod +x /usr/local/bin/protoc-gen-grpc-web
 ```
@@ -311,14 +311,14 @@ $ docker-compose up -d node-server envoy commonjs-client
 An alternative is to build Nginx that comes with this repository.
 
 ```sh
-$ docker-compose -f advanced.yml up -d echo-server nginx closure-client
+$ docker-compose up -d echo-server nginx closure-client
 ```
 
 You can also try this
 [gRPC-Web Go Proxy](https://github.com/improbable-eng/grpc-web/tree/master/go/grpcwebproxy).
 
 ```sh
-$ docker-compose -f advanced.yml up -d node-server grpcwebproxy binary-client
+$ docker-compose up -d node-server grpcwebproxy binary-client
 ```
 
 ## Acknowledgement

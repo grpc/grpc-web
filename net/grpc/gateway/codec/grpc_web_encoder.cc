@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "net/grpc/gateway/runtime/types.h"
+#include "third_party/absl/strings/str_format.h"
 #include "third_party/grpc/include/grpcpp/support/byte_buffer.h"
 #include "third_party/grpc/include/grpcpp/support/slice.h"
 
@@ -79,10 +80,10 @@ void GrpcWebEncoder::EncodeStatus(const grpc::Status& status,
 
   // Encodes GRPC status.
   size_t grpc_status_size =
-      snprintf(nullptr, 0, kGrpcStatus, status.error_code());
+      absl::SNPrintF(nullptr, 0, kGrpcStatus, status.error_code());
   grpc_slice grpc_status = grpc_slice_malloc(grpc_status_size + 1);
-  snprintf(reinterpret_cast<char*>(GPR_SLICE_START_PTR(grpc_status)),
-           grpc_status_size + 1, kGrpcStatus, status.error_code());
+  absl::SNPrintF(reinterpret_cast<char*>(GPR_SLICE_START_PTR(grpc_status)),
+                 grpc_status_size + 1, kGrpcStatus, status.error_code());
   GPR_SLICE_SET_LENGTH(grpc_status, grpc_status_size);
   buffer.push_back(Slice(grpc_status, Slice::STEAL_REF));
   length += grpc_status_size;
@@ -90,11 +91,10 @@ void GrpcWebEncoder::EncodeStatus(const grpc::Status& status,
   // Encodes GRPC message.
   if (!status.error_message().empty()) {
     size_t grpc_message_size =
-        snprintf(nullptr, 0, kGrpcMessage, status.error_message().c_str());
+        absl::SNPrintF(nullptr, 0, kGrpcMessage, status.error_message());
     grpc_slice grpc_message = grpc_slice_malloc(grpc_message_size + 1);
-    snprintf(reinterpret_cast<char*>(GPR_SLICE_START_PTR(grpc_message)),
-             grpc_message_size + 1, kGrpcMessage,
-             status.error_message().c_str());
+    absl::SNPrintF(reinterpret_cast<char*>(GPR_SLICE_START_PTR(grpc_message)),
+                   grpc_message_size + 1, kGrpcMessage, status.error_message());
     GPR_SLICE_SET_LENGTH(grpc_message, grpc_message_size);
     buffer.push_back(Slice(grpc_message, Slice::STEAL_REF));
     length += grpc_message_size;

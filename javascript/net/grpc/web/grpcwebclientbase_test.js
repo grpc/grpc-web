@@ -18,11 +18,14 @@
 goog.module('grpc.web.GrpcWebClientBaseTest');
 goog.setTestOnly('grpc.web.GrpcWebClientBaseTest');
 
+const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
+var EventType = goog.require('goog.net.EventType');
 var GrpcWebClientBase = goog.require('grpc.web.GrpcWebClientBase');
 var Map = goog.require('goog.structs.Map');
 var googCrypt = goog.require('goog.crypt.base64');
 var googEvents = goog.require('goog.events');
 var testSuite = goog.require('goog.testing.testSuite');
+const {StreamInterceptor} = goog.require('grpc.web.Interceptor');
 goog.require('goog.testing.jsunit');
 
 var REQUEST_BYTES = [1,2,3];
@@ -41,8 +44,10 @@ var dataCallback;
 
 testSuite({
   setUp: function() {
-    googEvents.listen = function(a, b, listener, d, e) {
-      dataCallback = listener;
+    googEvents.listen = function(a, event_type, listener, d, e) {
+      if (event_type == EventType.READY_STATE_CHANGE) {
+        dataCallback = listener;
+      }
       return;
     };
   },
@@ -74,8 +79,37 @@ testSuite({
       }
     }, function(error, response) {
       assertNull(error);
-      assertEquals(PROTO_FIELD_VALUE, response.field1);
+      assertEquals(PROTO_FIELD_VALUE, response['field1']);
     });
+    dataCallback();
+  },
+
+  testStreamInterceptor: function() {
+    var interceptor = new StreamResponseInterceptor();
+    var client = new GrpcWebClientBase({'streamInterceptors': [interceptor]});
+    client.newXhr_ = function() {
+      return new MockXhr({
+        // This parses to [ { DATA: [4,5,6] }, { TRAILER: "a: b" } ]
+        response: googCrypt.encodeByteArray(new Uint8Array(
+            [0, 0, 0, 0, 3, 4, 5, 6, 128, 0, 0, 0, 4, 97, 58, 32, 98])),
+      });
+    };
+
+    expectUnaryHeaders();
+    client.rpcCall(
+        FAKE_METHOD, {}, {}, {
+          requestSerializeFn: function(request) {
+            return REQUEST_BYTES;
+          },
+          responseDeserializeFn: function(bytes) {
+            assertElementsEquals([4, 5, 6], [].slice.call(bytes));
+            return {'field1': PROTO_FIELD_VALUE};
+          }
+        },
+        function(error, response) {
+          assertNull(error);
+          assertEquals('field2', response['field2']);
+        });
     dataCallback();
   },
 
@@ -127,7 +161,7 @@ testSuite({
       }
     }, function(error, response) {
       assertNull(error);
-      assertEquals(PROTO_FIELD_VALUE, response.field1);
+      assertEquals(PROTO_FIELD_VALUE, response['field1']);
     });
     call.on('metadata', (metadata) => {
       assertEquals(metadata['sample-initial-metadata-1'],
@@ -189,6 +223,15 @@ MockXhr.prototype.getResponseText = function() {
 
 
 /**
+ * @param {string} key header key
+ * @return {string} content-type
+ */
+MockXhr.prototype.getStreamingResponseHeader = function(key) {
+  return 'application/grpc-web-text';
+};
+
+
+/**
  * @return {string} response
  */
 MockXhr.prototype.getResponseHeaders = function() {
@@ -225,4 +268,45 @@ MockXhr.prototype.getLastError = function() {
  */
 MockXhr.prototype.setResponseType = function(responseType) {
   return;
+};
+
+/**
+ * @constructor
+ * @implements {StreamInterceptor}
+ */
+const StreamResponseInterceptor = function() {};
+
+/** @override */
+StreamResponseInterceptor.prototype.intercept = function(request, invoker) {
+  /**
+   * @implements {ClientReadableStream}
+   * @constructor
+   * @param {!ClientReadableStream<RESPONSE>} stream
+   * @template RESPONSE
+   */
+  const InterceptedStream = function(stream) {
+    this.stream = stream;
+  };
+
+  /** @override */
+  InterceptedStream.prototype.on = function(eventType, callback) {
+    if (eventType == 'data') {
+      const newCallback = (response) => {
+        response['field2'] = 'field2';
+        callback(response);
+      };
+      this.stream.on(eventType, newCallback);
+    } else {
+      this.stream.on(eventType, callback);
+    }
+    return this;
+  };
+
+  /** @override */
+  InterceptedStream.prototype.cancel = function() {
+    this.stream.cancel();
+    return this;
+  };
+
+  return new InterceptedStream(invoker(request));
 };
