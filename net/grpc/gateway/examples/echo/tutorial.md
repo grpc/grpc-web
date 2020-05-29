@@ -158,9 +158,8 @@ You will need a `package.json` file
     "grpc-web": "~1.1.0"
   },
   "devDependencies": {
-    "browserify": "~16.5.0",
     "webpack": "~4.43.0",
-    "webpack-cli": "~3.3.0"
+    "webpack-cli": "~3.3.11"
   }
 }
 ```
