@@ -195,12 +195,14 @@ the `client.js` files.
   "version": "0.1.0",
   "description": "gRPC-Web simple example",
   "devDependencies": {
-    "@grpc/proto-loader": "^0.3.0",
-    "google-protobuf": "^3.6.1",
-    "grpc": "^1.15.0",
-    "grpc-web": "^1.0.0",
-    "webpack": "^4.16.5",
-    "webpack-cli": "^3.1.0"
+    "@grpc/proto-loader": "~0.5.4",
+    "async": "~1.5.2",
+    "google-protobuf": "~3.12.0",
+    "grpc": "~1.24.2",
+    "grpc-web": "~1.1.0",
+    "lodash": "~4.17.0",
+    "webpack": "~4.43.0",
+    "webpack-cli": "~3.3.0"
   }
 }
 ```
@@ -244,7 +246,7 @@ Make sure they are both executable and are discoverable from your PATH.
 For example, in MacOS, you can do:
 
 ```
-$ sudo mv ~/Downloads/protoc-gen-grpc-web-1.0.7-darwin-x86_64 \
+$ sudo mv ~/Downloads/protoc-gen-grpc-web-1.1.0-darwin-x86_64 \
   /usr/local/bin/protoc-gen-grpc-web
 $ chmod +x /usr/local/bin/protoc-gen-grpc-web
 ```
