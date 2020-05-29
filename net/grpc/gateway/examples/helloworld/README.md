@@ -202,7 +202,7 @@ the `client.js` files.
     "grpc-web": "~1.1.0",
     "lodash": "~4.17.0",
     "webpack": "~4.43.0",
-    "webpack-cli": "~3.3.0"
+    "webpack-cli": "~3.3.11"
   }
 }
 ```
