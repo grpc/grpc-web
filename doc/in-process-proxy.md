@@ -27,8 +27,4 @@ However, since CORS is a mandatory feature for gRPC-Web proxies, port sharing sh
 
 # Core features
 
-The gRPC-Web module should implement only the [core gRPC-Web features](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md) and leave to the HTTP/Web stack provided by the language platform to handle [Web-framework-level features](https://github.com/grpc/grpc-web/blob/master/BROWSER-FEATURES.md) such as XSRF, CORS policies. Some of those features may be incompatible with what Envoy supports.
-
-
-
-
+The gRPC-Web module should implement only the [core gRPC-Web features](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md) and leave to the HTTP/Web stack provided by the language platform to handle [Web-framework-level features](https://github.com/grpc/grpc-web/blob/master/doc/browser-features.md) such as XSRF, CORS policies. Some of those features may be incompatible with what Envoy supports.
