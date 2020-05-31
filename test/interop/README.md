@@ -2,7 +2,7 @@ gRPC-Web Interop Tests
 ======================
 
 See the
-[main doc](https://github.com/grpc/grpc-web/blob/master/interop-test-descriptions.md)
+[main doc](https://github.com/grpc/grpc-web/blob/master/doc/interop-test-descriptions.md)
 for details about gRPC interop tests in general and the list of test cases.
 
 
