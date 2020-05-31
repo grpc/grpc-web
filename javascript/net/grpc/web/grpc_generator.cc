@@ -1175,7 +1175,6 @@ void PrintPromiseServiceConstructor(Printer* printer,
 
 void PrintMethodInfo(Printer* printer, std::map<string, string> vars) {
   // Print MethodDescriptor.
-  if (vars["gen_multiple_files"] == "false") {
     printer->Print(vars,
                    "/**\n"
                    " * @const\n"
@@ -1208,7 +1207,6 @@ void PrintMethodInfo(Printer* printer, std::map<string, string> vars) {
                   .c_str());
     printer->Outdent();
     printer->Print(vars, ");\n\n\n");
-  }
 
   // Print AbstractClientBase.MethodInfo, which will be deprecated.
   printer->Print(vars,
@@ -1351,6 +1349,124 @@ void PrintServerStreamingCall(Printer* printer, std::map<string, string> vars) {
   printer->Print("};\n\n\n");
 }
 
+void PrintMultipleFilesMode(const FileDescriptor* file, string file_name,
+                            GeneratorContext* context,
+                            std::map<string, string> vars) {
+  std::map<string, string> method_descriptors;
+
+  // Print MethodDescriptor files.
+  for (int i = 0; i < file->service_count(); ++i) {
+    const ServiceDescriptor* service = file->service(i);
+    vars["service_name"] = service->name();
+    vars["class_name"] = LowercaseFirstLetter(service->name());
+
+    for (int method_index = 0; method_index < service->method_count();
+         ++method_index) {
+      const MethodDescriptor* method = service->method(method_index);
+      string method_file_name = Lowercase(service->name()) + "_" +
+                                Lowercase(method->name()) +
+                                "_methoddescriptor.js";
+      std::unique_ptr<ZeroCopyOutputStream> output(
+          context->Open(method_file_name));
+      Printer printer(output.get(), '$');
+
+      vars["method_name"] = method->name();
+      vars["in"] = method->input_type()->full_name();
+      vars["in_type"] = "proto." + method->input_type()->full_name();
+      vars["out"] = method->output_type()->full_name();
+      vars["out_type"] = "proto." + method->output_type()->full_name();
+      vars["method_type"] = method->server_streaming()
+                                ? "grpc.web.MethodType.SERVER_STREAMING"
+                                : "grpc.web.MethodType.UNARY";
+
+      PrintMethodDescriptorFile(&printer, vars);
+      method_descriptors[service->name() + "." + method->name()] =
+          "proto." + vars["package_dot"] + vars["class_name"] + "." +
+          vars["method_name"] + "MethodDescriptor";
+    }
+  }
+
+  std::unique_ptr<ZeroCopyOutputStream> output1(
+      context->Open(file_name + "_client_pb.js"));
+  Printer printer1(output1.get(), '$');
+  std::unique_ptr<ZeroCopyOutputStream> output2(
+      context->Open(file_name + "_promise_client_pb.js"));
+  Printer printer2(output2.get(), '$');
+
+  PrintFileHeader(&printer1, vars);
+  PrintFileHeader(&printer2, vars);
+
+  // Print the Promise and callback client.
+  for (int i = 0; i < file->service_count(); ++i) {
+    const ServiceDescriptor* service = file->service(i);
+    vars["service_name"] = service->name();
+    printer1.Print(vars,
+                   "goog.provide('proto.$package_dot$$service_name$"
+                   "Client');\n\n");
+    printer2.Print(vars,
+                   "goog.provide('proto.$package_dot$$service_name$"
+                   "PromiseClient');\n\n");
+  }
+
+  std::map<string, string>::iterator it;
+  for (it = method_descriptors.begin(); it != method_descriptors.end(); it++) {
+    vars["import_mtd"] = it->second;
+    printer1.Print(vars, "goog.require('$import_mtd$');\n");
+    printer2.Print(vars, "goog.require('$import_mtd$');\n");
+  }
+  printer1.Print(vars, "goog.require('grpc.web.$mode$ClientBase');\n");
+  printer1.Print(vars, "goog.require('grpc.web.ClientReadableStream');\n");
+  printer1.Print(vars, "goog.require('grpc.web.Error');\n");
+  printer2.Print(vars, "goog.require('grpc.web.$mode$ClientBase');\n");
+  printer2.Print(vars, "goog.require('grpc.web.ClientReadableStream');\n");
+  printer2.Print(vars, "goog.require('grpc.web.Error');\n");
+
+  PrintMessagesDeps(&printer1, file);
+  PrintMessagesDeps(&printer2, file);
+  printer1.Print("goog.scope(function() {\n\n");
+  printer2.Print("goog.scope(function() {\n\n");
+
+  for (int service_index = 0; service_index < file->service_count();
+       ++service_index) {
+    const ServiceDescriptor* service = file->service(service_index);
+    vars["service_name"] = service->name();
+    PrintServiceConstructor(&printer1, vars);
+    PrintPromiseServiceConstructor(&printer2, vars);
+
+    for (int method_index = 0; method_index < service->method_count();
+         ++method_index) {
+      const MethodDescriptor* method = service->method(method_index);
+      const Descriptor* input_type = method->input_type();
+      const Descriptor* output_type = method->output_type();
+      vars["js_method_name"] = LowercaseFirstLetter(method->name());
+      vars["method_name"] = method->name();
+      vars["in"] = input_type->full_name();
+      vars["out"] = output_type->full_name();
+      vars["method_descriptor"] =
+          method_descriptors[service->name() + "." + method->name()];
+      vars["in_type"] = "proto." + input_type->full_name();
+      vars["out_type"] = "proto." + output_type->full_name();
+
+      // Client streaming is not supported yet
+      if (!method->client_streaming()) {
+        if (method->server_streaming()) {
+          vars["method_type"] = "grpc.web.MethodType.SERVER_STREAMING";
+          vars["client_type"] = "Client";
+          PrintServerStreamingCall(&printer1, vars);
+          vars["client_type"] = "PromiseClient";
+          PrintServerStreamingCall(&printer2, vars);
+        } else {
+          vars["method_type"] = "grpc.web.MethodType.UNARY";
+          PrintUnaryCall(&printer1, vars);
+          PrintPromiseUnaryCall(&printer2, vars);
+        }
+      }
+    }
+  }
+  printer1.Print("}); // goog.scope\n\n");
+  printer2.Print("}); // goog.scope\n\n");
+}
+
 class GeneratorOptions {
  public:
   GeneratorOptions();
@@ -1490,43 +1606,14 @@ class GrpcCodeGenerator : public CodeGenerator {
       return true;
     }
 
-    // Only supports closure for now.
+    string file_name = generator_options.OutputFile(file->name());
     if (generator_options.multiple_files() &&
         ImportStyle::CLOSURE == generator_options.import_style()) {
-      for (int i = 0; i < file->service_count(); ++i) {
-        const ServiceDescriptor* service = file->service(i);
-        vars["service_name"] = service->name();
-        vars["class_name"] = LowercaseFirstLetter(service->name());
-
-        for (int method_index = 0; method_index < service->method_count();
-             ++method_index) {
-          const MethodDescriptor* method = service->method(method_index);
-          string method_file_name = Lowercase(service->name()) + "_" +
-                                    Lowercase(method->name()) +
-                                    "_methoddescriptor.js";
-          std::unique_ptr<ZeroCopyOutputStream> output(
-              context->Open(method_file_name));
-          Printer printer(output.get(), '$');
-
-          vars["method_name"] = method->name();
-          vars["in"] = method->input_type()->full_name();
-          vars["in_type"] = "proto." + method->input_type()->full_name();
-          vars["out"] = method->output_type()->full_name();
-          vars["out_type"] = "proto." + method->output_type()->full_name();
-          vars["method_type"] = method->server_streaming()
-                                    ? "grpc.web.MethodType.SERVER_STREAMING"
-                                    : "grpc.web.MethodType.UNARY";
-
-          PrintMethodDescriptorFile(&printer, vars);
-          method_descriptors[service->name() + "." + method->name()] =
-              "proto." + vars["package_dot"] + vars["class_name"] + "." +
-              vars["method_name"] + "MethodDescriptor";
-        }
-      }
+      PrintMultipleFilesMode(file, file_name, context, vars);
+      return true;
     }
 
-    std::unique_ptr<ZeroCopyOutputStream> output(
-        context->Open(generator_options.OutputFile(file->name())));
+    std::unique_ptr<ZeroCopyOutputStream> output(context->Open(file_name));
     Printer printer(output.get(), '$');
     PrintFileHeader(&printer, vars);
 
@@ -1557,17 +1644,8 @@ class GrpcCodeGenerator : public CodeGenerator {
 
     switch (generator_options.import_style()) {
       case ImportStyle::CLOSURE:
-        if (generator_options.multiple_files()) {
-          std::map<string, string>::iterator it;
-          for (it = method_descriptors.begin(); it != method_descriptors.end();
-               it++) {
-            vars["import_mtd"] = it->second;
-            printer.Print(vars, "goog.require('$import_mtd$');\n");
-          }
-        } else {
-          printer.Print(vars, "goog.require('grpc.web.MethodDescriptor');\n");
-          printer.Print(vars, "goog.require('grpc.web.MethodType');\n");
-        }
+        printer.Print(vars, "goog.require('grpc.web.MethodDescriptor');\n");
+        printer.Print(vars, "goog.require('grpc.web.MethodType');\n");
         printer.Print(vars, "goog.require('grpc.web.$mode$ClientBase');\n");
         printer.Print(vars, "goog.require('grpc.web.AbstractClientBase');\n");
         printer.Print(vars, "goog.require('grpc.web.ClientReadableStream');\n");
@@ -1601,12 +1679,8 @@ class GrpcCodeGenerator : public CodeGenerator {
         vars["method_name"] = method->name();
         vars["in"] = input_type->full_name();
         vars["out"] = output_type->full_name();
-        vars["gen_multiple_files"] =
-            generator_options.multiple_files() ? "true" : "false";
         vars["method_descriptor"] =
-            generator_options.multiple_files()
-                ? method_descriptors[service->name() + "." + method->name()]
-                : "methodDescriptor_" + service->name() + "_" + method->name();
+            "methodDescriptor_" + service->name() + "_" + method->name();
 
         // Cross-file ref in CommonJS needs to use the module alias instead
         // of the global name.
