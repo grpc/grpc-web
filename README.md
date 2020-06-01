@@ -13,7 +13,7 @@ default, in which gRPC-Web support is built-in.
 
 In the future, we expect gRPC-Web to be supported in language-specific Web
 frameworks, such as Python, Java, and Node. See the
-[roadmap](https://github.com/grpc/grpc-web/blob/master/ROADMAP.md) doc.
+[roadmap](https://github.com/grpc/grpc-web/blob/master/doc/roadmap.md) doc.
 
 
 ## Quick Start Guide: Hello World
@@ -320,25 +320,5 @@ You can also try this
 ```sh
 $ docker-compose up -d node-server grpcwebproxy binary-client
 ```
-
-## Acknowledgement
-
-Big thanks to the following contributors for making significant contributions to
-this project!
-
-* [zaucy](https://github.com/zaucy): NPM package, CommonJS
-* [yannic](https://github.com/yannic): Bazel
-* [mitar](https://github.com/mitar): Codegen enhancements
-* [juanjoDiaz](https://github.com/juanjoDiaz): Codegen enhancements
-* [pumano](https://github.com/pumano): Doc fixes
-* [henriiik](https://github.com/henriiik): TypeScript
-* [rybbchao](https://github.com/rybbchao): Codgen bugfix
-* [mjduijn](https://github.com/mjduijn): Timeout example
-* [at-ishikawa](https://github.com/at-ishikawa): Codegen enhancements
-* [weilip](https://github.com/weilip): Codegen bugfix
-* [mitchdraft](https://github.com/mitchdraft): Update Node example
-* [factuno-db](https://github.com/factuno-db): Bazel, Closure
-* [shaxbee](https://github.com/shaxbee): Codegen enhancements and bugfixes
-
 
 [Hello World Guide]:https://github.com/grpc/grpc-web/blob/master/net/grpc/gateway/examples/helloworld/

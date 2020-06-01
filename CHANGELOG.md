@@ -1,0 +1,161 @@
+[//]: # (GENERATED FILE -- DO NOT EDIT!)
+[//]: # (See scripts/release_notes.py for more details.)
+
+## 1.1.0
+
+### Major Features
+
+- [#785](https://github.com/grpc/grpc-web/pull/785) grpc-web interceptors implementation [@Jennnnny](https://github.com/Jennnnny)
+- [#772](https://github.com/grpc/grpc-web/pull/772) Add interop test spec and interop tests
+
+### Other Changes
+
+- [#818](https://github.com/grpc/grpc-web/pull/818) All java connector interop tests are passing now
+- [#804](https://github.com/grpc/grpc-web/pull/804) Fix a bug in test: callback not properly intercepted
+- [#801](https://github.com/grpc/grpc-web/pull/801) Trying to speed up tests
+- [#797](https://github.com/grpc/grpc-web/pull/797) Split basic tests with interop tests
+- [#780](https://github.com/grpc/grpc-web/pull/780) Add missing separator to imports from external files [@tomiaijo](https://github.com/tomiaijo)
+- [#777](https://github.com/grpc/grpc-web/pull/777) Add .on(metadata,...) callback to distinguish initial metadata
+- [#764](https://github.com/grpc/grpc-web/pull/764) [generator] Move options parsing into dedicated class [@Yannic](https://github.com/Yannic)
+- [#761](https://github.com/grpc/grpc-web/pull/761) Update generic client [@Jennnnny](https://github.com/Jennnnny)
+- [#756](https://github.com/grpc/grpc-web/pull/756) Add eval test for TypeScript generated code
+- [#752](https://github.com/grpc/grpc-web/pull/752) Disable static checkers on generated js files [@IagoLast](https://github.com/IagoLast)
+- [#747](https://github.com/grpc/grpc-web/pull/747) Enable builder pattern in Typescript protobuf messages. [@Orphis](https://github.com/Orphis)
+- [#746](https://github.com/grpc/grpc-web/pull/746) Generate Promise based overloads for unary calls in Typescript [@Orphis](https://github.com/Orphis)
+- [#745](https://github.com/grpc/grpc-web/pull/745) [bazel] Update rules_closure + fix linter warnings [@Yannic](https://github.com/Yannic)
+- [#734](https://github.com/grpc/grpc-web/pull/734) Allow GrpcWebStreamParser to accept Uint8Array [@travikk](https://github.com/travikk)
+- [#723](https://github.com/grpc/grpc-web/pull/723) Update bazel version
+- [#720](https://github.com/grpc/grpc-web/pull/720) Fix grpcwebproxy interop
+- [#716](https://github.com/grpc/grpc-web/pull/716) allow_origin is deprecated in latest envoy server [@noconnor](https://github.com/noconnor)
+- [#695](https://github.com/grpc/grpc-web/pull/695) Fix issue 632 (double execution of callback) [@hfinger](https://github.com/hfinger)
+- [#692](https://github.com/grpc/grpc-web/pull/692) Do not hardcode CXX to g++
+
+
+## 1.0.7
+
+- [#671](https://github.com/grpc/grpc-web/pull/671) Add metadata to error callback
+- [#668](https://github.com/grpc/grpc-web/pull/668) Remove stream_body.proto
+- [#665](https://github.com/grpc/grpc-web/pull/665) Add config for Bazel CI [@Yannic](https://github.com/Yannic)
+- [#663](https://github.com/grpc/grpc-web/pull/663) nginx example Expose-Headers add Grpc-Message,Grpc-Status [@zsluedem](https://github.com/zsluedem)
+- [#657](https://github.com/grpc/grpc-web/pull/657) Ensure that the end callback is called [@vbfox](https://github.com/vbfox)
+- [#655](https://github.com/grpc/grpc-web/pull/655) Use closure compiler from npm in build.js [@vbfox](https://github.com/vbfox)
+- [#654](https://github.com/grpc/grpc-web/pull/654) Ignore MacOS .DS_Store files [@vbfox](https://github.com/vbfox)
+- [#652](https://github.com/grpc/grpc-web/pull/652) Fix error callback
+- [#644](https://github.com/grpc/grpc-web/pull/644) Add CallOptions class [@Jennnnny](https://github.com/Jennnnny)
+- [#641](https://github.com/grpc/grpc-web/pull/641) Add/update GOVERNANCE.md and CONTRIBUTING.md
+- [#635](https://github.com/grpc/grpc-web/pull/635) Fix generated code return type, and remove unused var
+- [#628](https://github.com/grpc/grpc-web/pull/628) Added API for simple unary call [@Jennnnny](https://github.com/Jennnnny)
+- [#621](https://github.com/grpc/grpc-web/pull/621) Fix output directory name when using import_style=typescript [@asv](https://github.com/asv)
+- [#619](https://github.com/grpc/grpc-web/pull/619) Return specific grpc status code on http error [@harmangakhal](https://github.com/harmangakhal)
+- [#618](https://github.com/grpc/grpc-web/pull/618) Generate method descriptors into multiple files [@Jennnnny](https://github.com/Jennnnny)
+- [#617](https://github.com/grpc/grpc-web/pull/617) Remove `enabled` deprecated field [@gsalisi](https://github.com/gsalisi)
+- [#615](https://github.com/grpc/grpc-web/pull/615) Add support in code generator for printing only method descriptors [@Jennnnny](https://github.com/Jennnnny)
+- [#608](https://github.com/grpc/grpc-web/pull/608) Fix status and error callbacks
+
+
+## 1.0.6
+
+- [#604](https://github.com/grpc/grpc-web/pull/604) Add option to set withCredentials to true
+- [#603](https://github.com/grpc/grpc-web/pull/603) Adding some groundwork for generic client [@Jennnnny](https://github.com/Jennnnny)
+- [#600](https://github.com/grpc/grpc-web/pull/600) Add generated code eval test
+- [#599](https://github.com/grpc/grpc-web/pull/599) fix wrong package name of input type [@lqs](https://github.com/lqs)
+- [#593](https://github.com/grpc/grpc-web/pull/593) Fix: Helloworld Example - Enabled Deprecation [@gary-lo](https://github.com/gary-lo)
+
+
+## 1.0.5
+
+- [#582](https://github.com/grpc/grpc-web/pull/582) Ensure credentials are not undefined in typescript [@Globegitter](https://github.com/Globegitter)
+- [#579](https://github.com/grpc/grpc-web/pull/579) Uppercase enum keys in TypeScript definitions [@benfoxbotica](https://github.com/benfoxbotica)
+- [#578](https://github.com/grpc/grpc-web/pull/578) Fix depset issues with/upgrade to Bazel 0.27.1 [@factuno-db](https://github.com/factuno-db)
+- [#567](https://github.com/grpc/grpc-web/pull/567) Introducing MethodDescriptor [@Jennnnny](https://github.com/Jennnnny)
+- [#559](https://github.com/grpc/grpc-web/pull/559) Adding new fields to MethodInfo [@Jennnnny](https://github.com/Jennnnny)
+- [#556](https://github.com/grpc/grpc-web/pull/556) Add fix for deadline of strings, NaN, Infinity and -Infinity [@CatEars](https://github.com/CatEars)
+- [#546](https://github.com/grpc/grpc-web/pull/546) Changes to deserializeBinary API
+- [#540](https://github.com/grpc/grpc-web/pull/540) Method Derserializer should take Uint8Array [@pnegahdar](https://github.com/pnegahdar)
+- [#519](https://github.com/grpc/grpc-web/pull/519) remove duplicated has$field$ method for oneof [@yangjian](https://github.com/yangjian)
+- [#512](https://github.com/grpc/grpc-web/pull/512) Make client args `credentials` and `options` optional [@jonahbron](https://github.com/jonahbron)
+
+
+## 1.0.4
+
+- [#502](https://github.com/grpc/grpc-web/pull/502) Attempt to fix flakiness of 'bazel test' [@Yannic](https://github.com/Yannic)
+- [#497](https://github.com/grpc/grpc-web/pull/497) Remove a return that skip emission of end callback [@tinou98](https://github.com/tinou98)
+- [#494](https://github.com/grpc/grpc-web/pull/494) [bazel] Migrate protobuf info provider to new-style one [@Yannic](https://github.com/Yannic)
+- [#482](https://github.com/grpc/grpc-web/pull/482) feature: Typings codegen for bytes field type [@shaxbee](https://github.com/shaxbee)
+- [#481](https://github.com/grpc/grpc-web/pull/481) Add module alias to enums for Typescript [@rogchap](https://github.com/rogchap)
+- [#460](https://github.com/grpc/grpc-web/pull/460) add typescript definition for Oneof fields [@yangjian](https://github.com/yangjian)
+- [#452](https://github.com/grpc/grpc-web/pull/452) fix: exclude map entry message from typings, fix optional values [@shaxbee](https://github.com/shaxbee)
+- [#448](https://github.com/grpc/grpc-web/pull/448) Export Map types correctly, optional getter/setters for message types [@shaxbee](https://github.com/shaxbee)
+- [#444](https://github.com/grpc/grpc-web/pull/444) feature: Messages in typings extending jspb.Message [@shaxbee](https://github.com/shaxbee)
+- [#433](https://github.com/grpc/grpc-web/pull/433) Match name nesting and imports in .d.ts with .js files [@shaxbee](https://github.com/shaxbee)
+- [#430](https://github.com/grpc/grpc-web/pull/430) Use camelCase in AsObject definition [@johanbrandhorst](https://github.com/johanbrandhorst)
+- [#429](https://github.com/grpc/grpc-web/pull/429) Fix type error in serverStreaming method [@johanbrandhorst](https://github.com/johanbrandhorst)
+- [#427](https://github.com/grpc/grpc-web/pull/427) Promise function should use ES5 functions rather than fat arrows (IE b... [@rogchap](https://github.com/rogchap)
+- [#422](https://github.com/grpc/grpc-web/pull/422) Enable ADVANCED_OPTIMIZATIONS in Closure Compiler [@jjbubudi](https://github.com/jjbubudi)
+- [#421](https://github.com/grpc/grpc-web/pull/421) [bazel] Upgrade to 0.22.0 [@Yannic](https://github.com/Yannic)
+- [#413](https://github.com/grpc/grpc-web/pull/413) Emit status event on empty stream response [@shaxbee](https://github.com/shaxbee)
+- [#409](https://github.com/grpc/grpc-web/pull/409) Fix metadata typings for TS client [@bpicolo](https://github.com/bpicolo)
+- [#404](https://github.com/grpc/grpc-web/pull/404) Generate Typescript definition for top level Enums [@rogchap](https://github.com/rogchap)
+
+
+## 1.0.3
+
+- [#391](https://github.com/grpc/grpc-web/pull/391) A script to compile protoc plugin
+- [#385](https://github.com/grpc/grpc-web/pull/385) Codegen: Support nested types and enums [@shaxbee](https://github.com/shaxbee)
+- [#368](https://github.com/grpc/grpc-web/pull/368) Make the bazel rules work with current rules_closure. [@factuno-db](https://github.com/factuno-db)
+- [#367](https://github.com/grpc/grpc-web/pull/367) update examples to use addService [@mitchdraft](https://github.com/mitchdraft)
+- [#365](https://github.com/grpc/grpc-web/pull/365) Fix response header value with colon
+- [#362](https://github.com/grpc/grpc-web/pull/362) Fix the method name clashes for generated commonjs files  [@weilip1803](https://github.com/weilip1803)
+- [#360](https://github.com/grpc/grpc-web/pull/360) Fix the import path for generated typescript files [@at-ishikawa](https://github.com/at-ishikawa)
+
+
+## 1.0.2
+
+
+## 1.0.1
+
+- [#354](https://github.com/grpc/grpc-web/pull/354) [dts] Generate PromiseClient type definitions in d.ts file [@at-ishikawa](https://github.com/at-ishikawa)
+- [#352](https://github.com/grpc/grpc-web/pull/352)  Add a max grpc timeout to the echo example.  [@mjduijn](https://github.com/mjduijn)
+- [#348](https://github.com/grpc/grpc-web/pull/348) Fix output dts about 'repeated' for --grpc-web_out=import_style=common... [@rybbchao](https://github.com/rybbchao)
+- [#345](https://github.com/grpc/grpc-web/pull/345) update typescript generation to work in strict mode [@henriiik](https://github.com/henriiik)
+- [#330](https://github.com/grpc/grpc-web/pull/330) Use official rules_closure repository [@Yannic](https://github.com/Yannic)
+
+
+## 1.0.0
+
+- [#314](https://github.com/grpc/grpc-web/pull/314) Add a unit test for proto with no package
+- [#313](https://github.com/grpc/grpc-web/pull/313) Show how deadline can be set
+- [#311](https://github.com/grpc/grpc-web/pull/311) Document how to prevent Envoy to timeout streaming [@mitar](https://github.com/mitar)
+- [#310](https://github.com/grpc/grpc-web/pull/310) Correctly generate code if package name is empty [@mitar](https://github.com/mitar)
+- [#304](https://github.com/grpc/grpc-web/pull/304) Add a simple Hello World Guide
+- [#303](https://github.com/grpc/grpc-web/pull/303) Error code should be number
+- [#276](https://github.com/grpc/grpc-web/pull/276) Fix plugin compile error
+- [#272](https://github.com/grpc/grpc-web/pull/272) Fix cpp warnings
+
+
+## 0.4.0
+
+- [#263](https://github.com/grpc/grpc-web/pull/263) Make "Quick" start quicker
+- [#258](https://github.com/grpc/grpc-web/pull/258) Experimental Typescript support
+- [#257](https://github.com/grpc/grpc-web/pull/257) Fix bug with button in example
+
+
+## 0.3.0
+
+- [#249](https://github.com/grpc/grpc-web/pull/249) Various fixes to codegen plugin
+- [#247](https://github.com/grpc/grpc-web/pull/247) Add generated code unit test
+- [#240](https://github.com/grpc/grpc-web/pull/240) webpack demo
+- [#239](https://github.com/grpc/grpc-web/pull/239) Expose response metadata for unary calls
+- [#219](https://github.com/grpc/grpc-web/pull/219) Add bazel rule closure_grpc_web_library [@Yannic](https://github.com/Yannic)
+- [#217](https://github.com/grpc/grpc-web/pull/217) Added multiple proxies interoperability
+
+
+## 0.2.0
+
+- [#212](https://github.com/grpc/grpc-web/pull/212) Added commonjs-example Dockerfile
+- [#211](https://github.com/grpc/grpc-web/pull/211) commonjs support with import_style option [@zaucy](https://github.com/zaucy)
+- [#210](https://github.com/grpc/grpc-web/pull/210) grpcweb npm runtime module [@zaucy](https://github.com/zaucy)
+- [#209](https://github.com/grpc/grpc-web/pull/209) Add bazel integration and tests
+- [#206](https://github.com/grpc/grpc-web/pull/206) Surface underlying XHR errors better
+- [#185](https://github.com/grpc/grpc-web/pull/185) Support for proto files without packages [@zaucy](https://github.com/zaucy)
+
