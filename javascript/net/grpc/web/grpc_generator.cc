@@ -721,11 +721,13 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
                          "metadata?: grpcWeb.Metadata) {\n");
           printer->Print(vars, "return this.client_.serverStreaming(\n");
           printer->Indent();
-          printer->Print(vars,
-                         "new URL('/$package_dot$$service_name$/$method_name$', this.hostname_).toString(),\n"
-                         "request,\n"
-                         "metadata || {},\n"
-                         "this.methodInfo$method_name$);\n");
+          printer->Print(
+              vars,
+              "new URL('/$package_dot$$service_name$/$method_name$', "
+              "this.hostname_).toString(),\n"
+              "request,\n"
+              "metadata || {},\n"
+              "this.methodInfo$method_name$);\n");
           printer->Outdent();
           printer->Outdent();
           printer->Print("}\n\n");
@@ -759,12 +761,14 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
           printer->Indent();
           printer->Print(vars, "return this.client_.rpcCall(\n");
           printer->Indent();
-          printer->Print(vars,
-                         "new URL('/$package_dot$$service_name$/$method_name$', this.hostname_).toString(),\n"
-                         "request,\n"
-                         "metadata || {},\n"
-                         "this.methodInfo$method_name$,\n"
-                         "callback);\n");
+          printer->Print(
+              vars,
+              "new URL('/$package_dot$$service_name$/$method_name$', "
+              "this.hostname_).toString(),\n"
+              "request,\n"
+              "metadata || {},\n"
+              "this.methodInfo$method_name$,\n"
+              "callback);\n");
           printer->Outdent();
           printer->Outdent();
           printer->Print(vars,
