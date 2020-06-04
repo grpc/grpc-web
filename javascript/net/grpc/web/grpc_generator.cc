@@ -50,9 +50,8 @@ using std::string;
 
 enum Mode {
   OP = 0,          // first party google3 one platform services
-  GATEWAY = 1,     // open-source gRPC Gateway
-  OPJSPB = 2,      // first party google3 one platform services with JSPB
-  GRPCWEB = 3,     // client using the application/grpc-web wire format
+  OPJSPB = 1,      // first party google3 one platform services with JSPB
+  GRPCWEB = 2,     // client using the application/grpc-web wire format
 };
 
 enum ImportStyle {
@@ -135,8 +134,6 @@ string GetModeVar(const Mode mode) {
   switch (mode) {
     case OP:
       return "OP";
-    case GATEWAY:
-      return "Gateway";
     case OPJSPB:
       return "OPJspb";
     case GRPCWEB:
@@ -1582,8 +1579,6 @@ class GrpcCodeGenerator : public CodeGenerator {
 
     if ("binary" == generator_options.mode()) {
       vars["mode"] = GetModeVar(Mode::OP);
-    } else if ("base64" == generator_options.mode()) {
-      vars["mode"] = GetModeVar(Mode::GATEWAY);
     } else if ("grpcweb" == generator_options.mode()) {
       vars["mode"] = GetModeVar(Mode::GRPCWEB);
       vars["format"] = "binary";

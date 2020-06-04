@@ -24,10 +24,6 @@
  */
 goog.module('grpc.web.StatusCode');
 
-goog.module.declareLegacyNamespace();
-
-
-
 /**
  * gRPC Status Codes
  * See: https://github.com/grpc/grpc/blob/master/include/grpc%2B%2B/impl/codegen/status_code_enum.h
