@@ -1,0 +1,6 @@
+syntax = "proto3";
+import "test03.proto";
+
+service MyService {
+  rpc addOne(Integer) returns (Integer);
+}
