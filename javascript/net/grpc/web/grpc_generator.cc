@@ -318,8 +318,12 @@ string JSMessageType(const Descriptor *desc, const FileDescriptor *file) {
   if (desc->file() != file) {
     module_prefix = ModuleAlias(desc->file()->name()) + ".";
   }
-
-  return module_prefix + desc->name();
+  string class_name;
+  class_name = StripPrefixString(desc->full_name(), desc->file()->package());
+  if (!class_name.empty() && class_name[0] == '.') {
+    class_name = class_name.substr(1);
+  }
+  return module_prefix + class_name;
 }
 
 string JSElementType(const FieldDescriptor *desc, const FileDescriptor *file)
