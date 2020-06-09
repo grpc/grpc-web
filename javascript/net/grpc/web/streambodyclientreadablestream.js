@@ -77,31 +77,32 @@ const StreamBodyClientReadableStream = function(genericTransportInterface) {
   this.xhr_ = genericTransportInterface.xhr;
 
   /**
+   * @const
    * @private
-   * @type {function(RESPONSE)|null} The data callback
+   * @type {!Array<function(RESPONSE)>} The list of data callback
    */
-  this.onDataCallback_ = null;
+  this.onDataCallbacks_ = [];
 
   /**
+   * @const
    * @private
-   * @type {function(!Status)|null}
-   *   The status callback
+   * @type {!Array<function(!Status)>} The list of status callback
    */
-  this.onStatusCallback_ = null;
+  this.onStatusCallbacks_ = [];
 
   /**
+   * @const
    * @private
-   * @type {function(...):?|null}
-   *   The stream end callback
+   * @type {!Array<function(...):?>} The list of stream end callback
    */
-  this.onEndCallback_ = null;
+  this.onEndCallbacks_ = [];
 
   /**
+   * @const
    * @private
-   * @type {function(...):?|null}
-   *   The stream error callback
+   * @type {!Array<function(...):?>} The list of error callback
    */
-  this.onErrorCallback_ = null;
+  this.onErrorCallbacks_ = [];
 
   /**
    * @private
@@ -146,7 +147,7 @@ StreamBodyClientReadableStream.prototype.setUnaryCallback_ = function() {
       var response = this.responseDeserializeFn_(responseText);
       var grpcStatus = StatusCode.fromHttpStatus(this.xhr_.getStatus());
       if (grpcStatus == StatusCode.OK) {
-        this.onDataCallback_(response);
+        this.sendDataCallbacks_(response);
       } else {
         this.onErrorResponseCallback_(
             /** @type {!GrpcWebError} */ ({
@@ -156,7 +157,7 @@ StreamBodyClientReadableStream.prototype.setUnaryCallback_ = function() {
       }
     } else if (this.xhr_.getStatus() == 404) {
       var message = 'Not Found: ' + this.xhr_.getLastUri();
-      this.onErrorCallback_({
+      this.sendErrorCallbacks_({
         code: StatusCode.NOT_FOUND,
         message: message,
       });
@@ -164,13 +165,13 @@ StreamBodyClientReadableStream.prototype.setUnaryCallback_ = function() {
       var rawResponse = this.xhr_.getResponseText();
       if (rawResponse) {
         var status = this.rpcStatusParseFn_(rawResponse);
-        this.onErrorCallback_({
+        this.sendErrorCallbacks_({
           code: status.code,
           message: status.details,
           metadata: status.metadata,
         });
       } else {
-        this.onErrorCallback_({
+        this.sendErrorCallbacks_({
           code: StatusCode.UNAVAILABLE,
           message: ErrorCode.getDebugMessage(this.xhr_.getLastErrorCode()),
         });
@@ -186,22 +187,20 @@ StreamBodyClientReadableStream.prototype.setStreamCallback_ = function() {
   // Add the callback to the underlying stream
   var self = this;
   this.xhrNodeReadableStream_.on('data', function(data) {
-    if ('1' in data && self.onDataCallback_) {
+    if ('1' in data) {
       var response = self.responseDeserializeFn_(data['1']);
-      self.onDataCallback_(response);
+      self.sendDataCallbacks_(response);
     }
-    if ('2' in data && self.onStatusCallback_) {
+    if ('2' in data) {
       var status = self.rpcStatusParseFn_(data['2']);
-      self.onStatusCallback_(status);
+      self.sendStatusCallbacks_(status);
     }
   });
   this.xhrNodeReadableStream_.on('end', function() {
-    if (self.onEndCallback_) {
-      self.onEndCallback_();
-    }
+    self.sendEndCallbacks_();
   });
   this.xhrNodeReadableStream_.on('error', function() {
-    if (!self.onErrorCallback_) return;
+    if (self.onErrorCallbacks_.length == 0) return;
     var lastErrorCode = self.xhr_.getLastErrorCode();
     if (lastErrorCode === ErrorCode.NO_ERROR && !self.xhr_.isSuccess()) {
       // The lastErrorCode on the XHR isn't useful in this case, but the XHR
@@ -228,7 +227,7 @@ StreamBodyClientReadableStream.prototype.setStreamCallback_ = function() {
         grpcStatusCode = StatusCode.UNAVAILABLE;
     }
 
-    self.onErrorCallback_({
+    self.sendErrorCallbacks_({
       code: grpcStatusCode,
       // TODO(armiller): get the message from the response?
       // GoogleRpcStatus.deserialize(rawResponse).getMessage()?
@@ -246,13 +245,46 @@ StreamBodyClientReadableStream.prototype.on = function(
     eventType, callback) {
   // TODO(stanleycheung): change eventType to @enum type
   if (eventType == 'data') {
-    this.onDataCallback_ = callback;
+    this.onDataCallbacks_.push(callback);
   } else if (eventType == 'status') {
-    this.onStatusCallback_ = callback;
+    this.onStatusCallbacks_.push(callback);
   } else if (eventType == 'end') {
-    this.onEndCallback_ = callback;
+    this.onEndCallbacks_.push(callback);
   } else if (eventType == 'error') {
-    this.onErrorCallback_ = callback;
+    this.onErrorCallbacks_.push(callback);
+  }
+  return this;
+};
+
+
+/**
+ * @private
+ * @param {!Array<function(?)>} callbacks the internal list of callbacks
+ * @param {function(?)} callback the callback to remove
+ */
+StreamBodyClientReadableStream.prototype.removeListenerFromCallbacks_ = function(
+  callbacks, callback) {
+  const index = callbacks.indexOf(callback);
+  if (index > -1) {
+    callbacks.splice(index, 1);
+  }
+};
+
+
+/**
+ * @export
+ * @override
+ */
+StreamBodyClientReadableStream.prototype.removeListener = function(
+  eventType, callback) {
+  if (eventType == 'data') {
+    this.removeListenerFromCallbacks_(this.onDataCallbacks_, callback);
+  } else if (eventType == 'status') {
+    this.removeListenerFromCallbacks_(this.onStatusCallbacks_, callback);
+  } else if (eventType == 'end') {
+    this.removeListenerFromCallbacks_(this.onEndCallbacks_, callback);
+  } else if (eventType == 'error') {
+    this.removeListenerFromCallbacks_(this.onErrorCallbacks_, callback);
   }
   return this;
 };
@@ -275,8 +307,8 @@ StreamBodyClientReadableStream.prototype.setResponseDeserializeFn =
 StreamBodyClientReadableStream.prototype.setErrorResponseFn = function(
     errorResponseFn) {
   this.onErrorResponseCallback_ = errorResponseFn;
-  this.onDataCallback_ = (response) => errorResponseFn(null, response);
-  this.onErrorCallback_ = (error) => errorResponseFn(error, null);
+  this.onDataCallbacks_.push( (response) => errorResponseFn(null, response) );
+  this.onErrorCallbacks_.push( (error) => errorResponseFn(error, null) );
 };
 
 /**
@@ -298,6 +330,48 @@ StreamBodyClientReadableStream.prototype.cancel = function() {
   this.xhr_.abort();
 };
 
+
+/**
+ * @private
+ * @param {!RESPONSE} data The data to send back
+ */
+StreamBodyClientReadableStream.prototype.sendDataCallbacks_ = function(data) {
+  for (var i = 0; i < this.onDataCallbacks_.length; i++) {
+    this.onDataCallbacks_[i](data);
+  }
+};
+
+
+/**
+ * @private
+ * @param {!Status} status The status to send back
+ */
+StreamBodyClientReadableStream.prototype.sendStatusCallbacks_ = function(status) {
+  for (var i = 0; i < this.onStatusCallbacks_.length; i++) {
+    this.onStatusCallbacks_[i](status);
+  }
+};
+
+
+/**
+ * @private
+ * @param {?} error The error to send back
+ */
+StreamBodyClientReadableStream.prototype.sendErrorCallbacks_ = function(error) {
+  for (var i = 0; i < this.onErrorCallbacks_.length; i++) {
+    this.onErrorCallbacks_[i](error);
+  }
+};
+
+
+/**
+ * @private
+ */
+StreamBodyClientReadableStream.prototype.sendEndCallbacks_ = function() {
+  for (var i = 0; i < this.onEndCallbacks_.length; i++) {
+    this.onEndCallbacks_[i]();
+  }
+};
 
 
 exports = StreamBodyClientReadableStream;

@@ -213,18 +213,23 @@ GrpcWebClientBase.prototype.startStream_ = function(request, hostname) {
  * @param {boolean} useUnaryResponse
  */
 GrpcWebClientBase.setCallback_ = function(stream, callback, useUnaryResponse) {
+  var responseReceived = null;
+  var errorEmitted = false;
+
   stream.on('data', function(response) {
-    callback(null, response);
+    responseReceived = response;
   });
 
   stream.on('error', function(error) {
-    if (error.code != StatusCode.OK) {
+    if (error.code != StatusCode.OK && !errorEmitted) {
+      errorEmitted = true;
       callback(error, null);
     }
   });
 
   stream.on('status', function(status) {
-    if (status.code != StatusCode.OK) {
+    if (status.code != StatusCode.OK && !errorEmitted) {
+      errorEmitted = true;
       callback(
           {
             code: status.code,
@@ -241,11 +246,16 @@ GrpcWebClientBase.setCallback_ = function(stream, callback, useUnaryResponse) {
     stream.on('metadata', function(metadata) {
       callback(null, null, null, metadata);
     });
-
-    stream.on('end', function() {
-      callback(null, null);
-    });
   }
+
+  stream.on('end', function() {
+    if (!errorEmitted) {
+      callback(null, responseReceived);
+    }
+    if (useUnaryResponse) {
+      callback(null, null); // trigger unaryResponse
+    }
+  });
 };
 
 /**

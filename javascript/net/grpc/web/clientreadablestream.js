@@ -43,14 +43,25 @@ const ClientReadableStream = function() {};
 
 
 /**
- * Register a callback to handle I/O events.
+ * Register a callback to handle different stream events.
  *
  * @param {string} eventType The event type
- * @param {function(?)} callback The call back to handle the event with
+ * @param {function(?)} callback The callback to handle the event with
  * an optional input object
  * @return {!ClientReadableStream} this object
  */
 ClientReadableStream.prototype.on = goog.abstractMethod;
+
+
+
+/**
+ * Remove a particular callback.
+ *
+ * @param {string} eventType The event type
+ * @param {function(?)} callback The callback to remove
+ * @return {!ClientReadableStream} this object
+ */
+ClientReadableStream.prototype.removeListener = goog.abstractMethod;
 
 
 
