@@ -33,6 +33,7 @@ const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
 const Error = goog.require('grpc.web.Error');
 const GrpcWebClientReadableStream = goog.require('grpc.web.GrpcWebClientReadableStream');
 const HttpCors = goog.require('goog.net.rpc.HttpCors');
+const MethodDescriptor = goog.requireType('grpc.web.MethodDescriptor');
 const MethodType = goog.require('grpc.web.MethodType');
 const Request = goog.require('grpc.web.Request');
 const StatusCode = goog.require('grpc.web.StatusCode');
@@ -112,7 +113,7 @@ GrpcWebClientBase.prototype.rpcCall = function(
  * @override
  * @export
  */
-GrpcWebClientBase.prototype.unaryCall = function(
+GrpcWebClientBase.prototype.thenableCall = function(
     method, requestMessage, metadata, methodDescriptor) {
   methodDescriptor = AbstractClientBase.ensureMethodDescriptor(
       method, requestMessage, MethodType.UNARY, methodDescriptor);
@@ -142,6 +143,23 @@ GrpcWebClientBase.prototype.unaryCall = function(
   var unaryResponse = /** @type {!Promise<?>} */ (invoker.call(
       this, methodDescriptor.createRequest(requestMessage, metadata)));
   return unaryResponse.then((response) => response.getResponseMessage());
+};
+
+/**
+ * @export
+ * @param {string} method The method to invoke
+ * @param {REQUEST} requestMessage The request proto
+ * @param {!Object<string, string>} metadata User defined call metadata
+ * @param {!MethodDescriptor<REQUEST, RESPONSE>|
+ *     !AbstractClientBase.MethodInfo<REQUEST,RESPONSE>}
+ *   methodDescriptor Information of this RPC method
+ * @return {!Promise<RESPONSE>}
+ * @template REQUEST, RESPONSE
+ */
+GrpcWebClientBase.prototype.unaryCall = function(
+    method, requestMessage, metadata, methodDescriptor) {
+  return /** @type {!Promise<RESPONSE>}*/ (
+      this.thenableCall(method, requestMessage, metadata, methodDescriptor));
 };
 
 
