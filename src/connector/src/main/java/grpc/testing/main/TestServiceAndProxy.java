@@ -1,8 +1,9 @@
 package grpc.testing.main;
 
 import com.google.grpcweb.CorsFilter;
-import com.google.grpcweb.Factory;
+import com.google.grpcweb.GrpcWebGuiceModule;
 import com.google.grpcweb.GrpcWebTrafficServlet;
+import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.ServerInterceptors;
@@ -22,11 +23,10 @@ public class TestServiceAndProxy {
   private static final int GRPC_WEB_PORT = 8080;
 
   private static Server startGrpcService(int port) throws Exception {
-
     Server grpcServer = ServerBuilder.forPort(port)
         .addService(
             ServerInterceptors.intercept(
-                new TestServiceImpl(Executors.newSingleThreadScheduledExecutor()),
+                (BindableService) new TestServiceImpl(Executors.newSingleThreadScheduledExecutor()),
                 TestServiceImpl.interceptors()))
         .build();
     grpcServer.start();
@@ -47,7 +47,7 @@ public class TestServiceAndProxy {
   }
 
   public static void main(String[] args) throws Exception {
-    Factory.createSingleton(GRPC_PORT);
+    GrpcWebGuiceModule.setGrpcPortNum(GRPC_PORT);
     Server grpcServer = startGrpcService(GRPC_PORT);
     listenForGrpcWebReq(GRPC_WEB_PORT);
     grpcServer.awaitTermination();
