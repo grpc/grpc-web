@@ -39,14 +39,6 @@ You can download the `protoc-gen-grpc-web` protoc plugin from our Github
 
 Make sure they are both executable and are discoverable from your PATH.
 
-For example, in MacOS, you can do:
-
-```
-$ sudo mv ~/Downloads/protoc-gen-grpc-web-1.1.0-darwin-x86_64 \
-  /usr/local/bin/protoc-gen-grpc-web
-$ chmod +x /usr/local/bin/protoc-gen-grpc-web
-```
-
 
  3. Generate your proto messages and the service client stub classes with
 `protoc` and the `protoc-gen-grpc-web` plugin. You can set the
