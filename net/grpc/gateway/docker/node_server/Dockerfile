@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM grpcweb/common
+FROM grpcweb/prereqs
 
 WORKDIR /github/grpc-web/net/grpc/gateway/examples/echo/node-server
 
