@@ -42,4 +42,4 @@ static_resources:
     http2_protocol_options: {}
     lb_policy: round_robin
     # win/mac hosts: Use address: host.docker.internal instead of address: localhost in the line below
-    hosts: [{ socket_address: { address: localhost, port_value: 9090 }}]
+    hosts: [{ socket_address: { address: 0.0.0.0, port_value: 9090 }}]

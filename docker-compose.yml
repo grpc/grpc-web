@@ -33,7 +33,7 @@ services:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/node_server/Dockerfile
     depends_on:
-      - common
+      - prereqs
     image: grpcweb/node-server
     ports:
       - "9090:9090"
