@@ -33,12 +33,9 @@ goog.module.declareLegacyNamespace();
 
 const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
 const ErrorCode = goog.require('goog.net.ErrorCode');
-const EventType = goog.require('goog.net.EventType');
-const GrpcWebError = goog.requireType('grpc.web.Error');
 const NodeReadableStream = goog.require('goog.net.streams.NodeReadableStream');
 const StatusCode = goog.require('grpc.web.StatusCode');
 const XhrIo = goog.require('goog.net.XhrIo');
-const events = goog.require('goog.events');
 const {GenericTransportInterface} = goog.require('grpc.web.GenericTransportInterface');
 const {Status} = goog.require('grpc.web.Status');
 
@@ -111,73 +108,8 @@ const StreamBodyClientReadableStream = function(genericTransportInterface) {
    */
   this.rpcStatusParseFn_ = null;
 
-  /**
-   * @private
-   * @type {function(?GrpcWebError, ?)|null}
-   */
-  this.onErrorResponseCallback_ = null;
+  this.setStreamCallback_();
 
-  if (this.xhrNodeReadableStream_) {
-    this.setStreamCallback_();
-  } else if (this.xhr_) {
-    this.setUnaryCallback_();
-  }
-};
-
-/**
- * @private
- */
-StreamBodyClientReadableStream.prototype.setUnaryCallback_ = function() {
-  events.listen(/** @type {!XhrIo} */ (this.xhr_), EventType.COMPLETE, (e) => {
-    if (this.xhr_.isSuccess()) {
-      // If the response is serialized as Base64 (for example if the
-      // X-Goog-Encode-Response-If-Executable header is in effect), decode it
-      // before passing it to the deserializer.
-      var responseText = this.xhr_.getResponseText();
-      if (this.xhr_.headers.get('X-Goog-Encode-Response-If-Executable') ==
-              'base64' &&
-          this.xhr_.getResponseHeader(XhrIo.CONTENT_TYPE_HEADER) ===
-              'text/plain') {
-        if (!atob) {
-          throw new Error('Cannot decode Base64 response');
-        }
-        responseText = atob(responseText);
-      }
-
-      var response = this.responseDeserializeFn_(responseText);
-      var grpcStatus = StatusCode.fromHttpStatus(this.xhr_.getStatus());
-      if (grpcStatus == StatusCode.OK) {
-        this.sendDataCallbacks_(response);
-      } else {
-        this.onErrorResponseCallback_(
-            /** @type {!GrpcWebError} */ ({
-              code: grpcStatus,
-            }),
-            response);
-      }
-    } else if (this.xhr_.getStatus() == 404) {
-      var message = 'Not Found: ' + this.xhr_.getLastUri();
-      this.sendErrorCallbacks_({
-        code: StatusCode.NOT_FOUND,
-        message: message,
-      });
-    } else {
-      var rawResponse = this.xhr_.getResponseText();
-      if (rawResponse) {
-        var status = this.rpcStatusParseFn_(rawResponse);
-        this.sendErrorCallbacks_({
-          code: status.code,
-          message: status.details,
-          metadata: status.metadata,
-        });
-      } else {
-        this.sendErrorCallbacks_({
-          code: StatusCode.UNAVAILABLE,
-          message: ErrorCode.getDebugMessage(this.xhr_.getLastErrorCode()),
-        });
-      }
-    }
-  });
 };
 
 /**
@@ -299,16 +231,6 @@ StreamBodyClientReadableStream.prototype.removeListener = function(
 StreamBodyClientReadableStream.prototype.setResponseDeserializeFn =
   function(responseDeserializeFn) {
   this.responseDeserializeFn_ = responseDeserializeFn;
-};
-
-/**
- * @param {function(?GrpcWebError, ?)} errorResponseFn
- */
-StreamBodyClientReadableStream.prototype.setErrorResponseFn = function(
-    errorResponseFn) {
-  this.onErrorResponseCallback_ = errorResponseFn;
-  this.onDataCallbacks_.push( (response) => errorResponseFn(null, response) );
-  this.onErrorCallbacks_.push( (error) => errorResponseFn(error, null) );
 };
 
 /**
