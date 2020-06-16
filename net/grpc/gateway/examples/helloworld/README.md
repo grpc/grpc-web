@@ -302,7 +302,7 @@ run the 3 processes all in the background.
 >
 > ```sh
 > $ docker run -d -v "$(pwd)"/envoy.yaml:/etc/envoy/envoy.yaml:ro \
->     envoyproxy/envoy:v1.14.1
+>     -p 8080:8080 -p 9901:9901 envoyproxy/envoy:v1.14.1
 >  ```
 
  3. Run the simple Web Server. This hosts the static file `index.html` and
