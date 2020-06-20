@@ -163,11 +163,14 @@ describe('grpc-web generated code (commonjs+grpcwebtext)', function() {
                   // a single data frame with 'aaa' message, encoded
                   'AAAAAAUKA2FhYQ==');
     };
-    echoService.echo(request, {'custom-header-1':'value1'},
-                     function(err, response) {
-                       assert.equal('aaa', response.getMessage());
-                       done();
-                     });
+    var call = echoService.echo(request, {'custom-header-1':'value1'},
+                                function(err, response) {
+                                  assert.equal('aaa', response.getMessage());
+                                  done();
+    });
+    call.on('data', (response) => {
+      assert.fail('should not receive response this way');
+    });
   });
 
   it('should receive streaming response', function(done) {
@@ -229,6 +232,7 @@ describe('grpc-web generated code (commonjs+grpcwebtext)', function() {
         done();
     });
     call.on('status', function(status) {
+      assert.equal(0, status.code);
       assert.equal('object', typeof status.metadata);
       assert.equal(false, 'grpc-status' in status.metadata);
       assert.equal(true, 'x-custom-1' in status.metadata);
@@ -258,6 +262,9 @@ describe('grpc-web generated code (commonjs+grpcwebtext)', function() {
         assert(err);
         assert.equal(10, err.code);
         done();
+    });
+    call.on('error', (error) => {
+      assert.fail('error callback should not be called for unary calls');
     });
   });
 
@@ -294,6 +301,9 @@ describe('grpc-web generated code (commonjs+grpcwebtext)', function() {
       assert.equal(true, 'x-custom-1' in status.metadata);
       assert.equal('ababab', status.metadata['x-custom-1']);
       done();
+    });
+    call.on('error', (error) => {
+      assert.fail('error callback should not be called for unary calls');
     });
   });
 
@@ -452,7 +462,8 @@ describe('grpc-web generated code: callbacks tests', function() {
     });
   });
 
-  it('should receive error, on html error', function(done) {
+  it('should receive error, on http error', function(done) {
+    done = multiDone(done, 2);
     MockXMLHttpRequest.onSend = function(xhr) {
       xhr.respond(
         400, {'Content-Type': 'application/grpc-web-text'});
@@ -469,7 +480,11 @@ describe('grpc-web generated code: callbacks tests', function() {
       }
     );
     call.on('status', (status) => {
-      assert.fail('should not have received a status callback');
+      assert.equal(3, status.code);
+      done();
+    });
+    call.on('error', (error) => {
+      assert.fail('error callback should not be called for unary calls');
     });
   });
 
@@ -504,9 +519,13 @@ describe('grpc-web generated code: callbacks tests', function() {
       assert.equal('ababab', status.metadata['x-custom-1']);
       done();
     });
+    call.on('error', (error) => {
+      assert.fail('error callback should not be called for unary calls');
+    });
   });
 
   it('should receive error, on response header error', function(done) {
+    done = multiDone(done, 2);
     MockXMLHttpRequest.onSend = function(xhr) {
       xhr.respond(
         200, {
@@ -528,7 +547,11 @@ describe('grpc-web generated code: callbacks tests', function() {
       }
     );
     call.on('status', (status) => {
-      assert.fail('should not receive a trailing status callback');
+      assert.equal(2, status.code);
+      done();
+    });
+    call.on('error', (error) => {
+      assert.fail('error callback should not be called for unary calls');
     });
   });
 
@@ -554,6 +577,125 @@ describe('grpc-web generated code: callbacks tests', function() {
       }
     );
     call.on('status', (status) => {
+      assert.equal(0, status.code);
+      // grpc-status should not be part of trailing metadata
+      assert.equal(false, 'grpc-status' in status.metadata);
+      assert.equal(true, 'x-custom-1' in status.metadata);
+      assert.equal('ababab', status.metadata['x-custom-1']);
+      done();
+    });
+    call.on('error', (error) => {
+      assert.fail('error callback should not be called for unary calls');
+    });
+  });
+
+  it('should trigger multiple callbacks on same event', function(done) {
+    done = multiDone(done, 2);
+    MockXMLHttpRequest.onSend = function(xhr) {
+      xhr.respond(
+        400, {'Content-Type': 'application/grpc-web-text'});
+    };
+    var call = echoService.serverStreamingEcho(request, {});
+
+    call.on('data', (response) => {
+      assert.fail('should not have received a data callback');
+    });
+    call.on('error', (error) => {
+      assert.equal(3, error.code); // http error 400 mapped to grpc error 3
+      done();
+    });
+    call.on('error', (error) => {
+      assert.equal(3, error.code); // http error 400 mapped to grpc error 3
+      done();
+    });
+  });
+
+  it('should be able to remove callback', function(done) {
+    MockXMLHttpRequest.onSend = function(xhr) {
+      xhr.respond(
+        400, {'Content-Type': 'application/grpc-web-text'});
+    };
+    var call = echoService.serverStreamingEcho(request, {});
+    const callbackA = (error) => {
+      assert.equal(3, error.code); // http error 400 mapped to grpc error 3
+      done();
+    }
+    const callbackB = (error) => {
+      assert.fail('should not be called');
+    }
+    call.on('error', callbackA);
+    call.on('error', callbackB);
+    call.removeListener('error', callbackB);
+  });
+
+  it('should receive initial metadata callback (streaming)', function(done) {
+    done = multiDone(done, 2);
+    MockXMLHttpRequest.onSend = function(xhr) {
+      xhr.respond(
+        200, {
+          'Content-Type': 'application/grpc-web-text',
+          'initial-header-1': 'value1',
+        },
+        // a single data frame with message 'aaa'
+        'AAAAAAUKA2FhYQ==');
+    };
+    var call = echoService.serverStreamingEcho(request, {});
+    call.on('data', (response) => {
+      assert.equal('aaa', response.getMessage());
+      done();
+    });
+    call.on('metadata', (metadata) => {
+      assert('initial-header-1' in metadata);
+      assert.equal('value1', metadata['initial-header-1']);
+      done();
+    });
+  });
+
+  it('should receive error, on http error (streaming)', function(done) {
+    done = multiDone(done, 2);
+    MockXMLHttpRequest.onSend = function(xhr) {
+      xhr.respond(
+        400, {'Content-Type': 'application/grpc-web-text'});
+    };
+    var call = echoService.serverStreamingEcho(request, {});
+    call.on('data', (response) => {
+      assert.fail('should not receive data response');
+    });
+    call.on('status', (status) => {
+      assert.equal(3, status.code);
+      done();
+    });
+    call.on('error', (error) => {
+      assert.equal(3, error.code);
+      done();
+    });
+  });
+
+  it('should receive error, on grpc error (streaming)', function(done) {
+    done = multiDone(done, 3);
+    MockXMLHttpRequest.onSend = function(xhr) {
+      xhr.respond(
+        200, {'Content-Type': 'application/grpc-web-text'},
+        // a single data frame with an 'aaa' message, followed by,
+        // a trailer frame with content 'grpc-status: 2\d\ax-custom-1: ababab'
+        'AAAAAAUKA2FhYYAAAAAkZ3JwYy1zdGF0dXM6IDINCngtY3VzdG9tLTE6IGFiYWJhYg0K'
+      );
+    };
+    var call = echoService.serverStreamingEcho(request, {});
+    call.on('data', (response) => {
+      // because this is a streaming call, we should still receive data
+      // callbacks if the error comes in with the trailer frame
+      assert.equal('aaa', response.getMessage());
+      done();
+    });
+    call.on('error', (error) => {
+      assert.equal(2, error.code);
+      assert.equal(true, 'x-custom-1' in error.metadata);
+      assert.equal('ababab', error.metadata['x-custom-1']);
+      done();
+    });
+    call.on('status', (status) => {
+      assert.equal(2, status.code);
       // grpc-status should not be part of trailing metadata
       assert.equal(false, 'grpc-status' in status.metadata);
       assert.equal(true, 'x-custom-1' in status.metadata);
@@ -562,66 +704,56 @@ describe('grpc-web generated code: callbacks tests', function() {
     });
   });
 
-  it('should trigger all callbacks', function(done) {
-    done = multiDone(done, 3);
+  it('should receive error, on response header error (streaming)', function(done) {
+    done = multiDone(done, 2);
     MockXMLHttpRequest.onSend = function(xhr) {
       xhr.respond(
-        400, {'Content-Type': 'application/grpc-web-text'});
+        200, {
+          'Content-Type': 'application/grpc-web-text',
+          'grpc-status': 2,
+          'grpc-message': 'some error',
+      });
     };
-    var call = echoService.echo(
-      request, {},
-      function(err, response) {
-        if (response) {
-          assert.fail('should not have received response with non-OK status');
-        } else {
-          assert.equal(3, err.code); // http error 400 mapped to grpc error 3
-        }
-        done();
-      }
-    );
-    call.on('status', (status) => {
-      assert.fail('should not have received a status callback');
-    });
+    var call = echoService.serverStreamingEcho(request, {});
     call.on('error', (error) => {
-      assert.equal(3, error.code);
+      assert.equal(2, error.code);
+      assert.equal('some error', error.message);
       done();
     });
-    call.on('error', (error) => {
-      assert.equal(3, error.code);
+    call.on('status', (status) => {
+      assert.equal(2, status.code);
+      assert.equal('some error', status.details);
       done();
     });
   });
 
-  it('should be able to remove callback', function(done) {
+  it('should receive status callback (streaming)', function(done) {
     done = multiDone(done, 2);
     MockXMLHttpRequest.onSend = function(xhr) {
       xhr.respond(
-        400, {'Content-Type': 'application/grpc-web-text'});
+        200, {'Content-Type': 'application/grpc-web-text'},
+        // a single data frame with an 'aaa' message, followed by,
+        // a trailer frame with content 'grpc-status: 0\d\ax-custom-1: ababab'
+        'AAAAAAUKA2FhYYAAAAAkZ3JwYy1zdGF0dXM6IDANCngtY3VzdG9tLTE6IGFiYWJhYg0K'
+      );
     };
-    var call = echoService.echo(
-      request, {},
-      function(err, response) {
-        if (response) {
-          assert.fail('should not have received response with non-OK status');
-        } else {
-          assert.equal(3, err.code); // http error 400 mapped to grpc error 3
-        }
+    var call = echoService.serverStreamingEcho(request, {});
+    call.on('data', (response) => {
+        assert(response);
+        assert.equal('aaa', response.getMessage());
         done();
-      }
-    );
-    call.on('status', (status) => {
-      assert.fail('should not have received a status callback');
     });
-    const callbackA = (error) => {
-      assert.equal(3, error.code);
+    call.on('status', (status) => {
+      assert.equal(0, status.code);
+      // grpc-status should not be part of trailing metadata
+      assert.equal(false, 'grpc-status' in status.metadata);
+      assert.equal(true, 'x-custom-1' in status.metadata);
+      assert.equal('ababab', status.metadata['x-custom-1']);
       done();
-    };
-    const callbackB = (error) => {
-      assert.fail('should not be called');
-    }
-    call.on('error', callbackA);
-    call.on('error', callbackB);
-    call.removeListener('error', callbackB);
+    });
+    call.on('error', (error) => {
+      assert.fail('error callback should not be called for unary calls');
+    });
   });
 
 });

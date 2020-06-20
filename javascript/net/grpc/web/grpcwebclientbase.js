@@ -96,6 +96,45 @@ class GrpcWebClientBase {
    * @export
    */
   rpcCall(method, requestMessage, metadata, methodDescriptor, callback) {
+    /**
+     * @implements {ClientReadableStream}
+     */
+    class ClientUnaryCallImpl {
+      /**
+       * @param {!ClientReadableStream<RESPONSE>} stream
+       * @template RESPONSE
+       */
+      constructor(stream) {
+        this.stream = stream;
+      }
+
+      /**
+       * @override
+       */
+      on(eventType, callback) {
+        if (eventType == 'data' || eventType == 'error') {
+          // unary call responses and errors should be handled by the main
+          // (err, resp) => ... callback
+          return this;
+        }
+        return this.stream.on(eventType, callback);
+      }
+
+      /**
+       * @override
+       */
+      removeListener(eventType, callback) {
+        return this.stream.removeListener(eventType, callback);
+      }
+
+      /**
+       * @override
+       */
+      cancel() {
+        this.stream.cancel();
+      }
+    }
+
     methodDescriptor = AbstractClientBase.ensureMethodDescriptor(
         method, requestMessage, MethodType.UNARY, methodDescriptor);
     var hostname = AbstractClientBase.getHostname(method, methodDescriptor);
@@ -105,7 +144,7 @@ class GrpcWebClientBase {
     var stream = /** @type {!ClientReadableStream<?>} */ (invoker.call(
         this, methodDescriptor.createRequest(requestMessage, metadata)));
     GrpcWebClientBase.setCallback_(stream, callback, false);
-    return stream;
+    return new ClientUnaryCallImpl(stream);
   }
 
   /**

@@ -34,6 +34,7 @@ goog.module.declareLegacyNamespace();
 const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
 const ErrorCode = goog.require('goog.net.ErrorCode');
 const EventType = goog.require('goog.net.EventType');
+const GrpcWebError = goog.require('grpc.web.Error');
 const GrpcWebStreamParser = goog.require('grpc.web.GrpcWebStreamParser');
 const StatusCode = goog.require('grpc.web.StatusCode');
 const XhrIo = goog.require('goog.net.XhrIo');
@@ -103,7 +104,7 @@ class GrpcWebClientReadableStream {
     /**
      * @const
      * @private
-     * @type {!Array<function(...):?>} The list of error callbacks
+     * @type {!Array<function(!GrpcWebError)>} The list of error callbacks
      */
     this.onErrorCallbacks_ = [];
 
@@ -150,6 +151,11 @@ class GrpcWebClientReadableStream {
         var byteSource = new Uint8Array(
             /** @type {!ArrayBuffer} */ (self.xhr_.getResponse()));
       } else {
+        self.handleError_({
+          code: StatusCode.UNKNOWN,
+          message: 'Unknown Content-type received.',
+          metadata: {},
+        });
         return;
       }
       var messages = self.parser_.parse(byteSource);
@@ -184,11 +190,11 @@ class GrpcWebClientReadableStream {
                 grpcStatusMessage = trailers[GRPC_STATUS_MESSAGE];
                 delete trailers[GRPC_STATUS_MESSAGE];
               }
-              self.sendStatusCallbacks_(/** @type {!Status} */ ({
+              self.handleError_({
                 code: Number(grpcStatusCode),
-                details: grpcStatusMessage,
+                message: decodeURIComponent(grpcStatusMessage),
                 metadata: trailers,
-              }));
+              });
             }
           }
         }
@@ -227,9 +233,10 @@ class GrpcWebClientReadableStream {
         if (grpcStatusCode == StatusCode.ABORTED && self.aborted_) {
           return;
         }
-        self.sendErrorCallbacks_({
+        self.handleError_({
           code: grpcStatusCode,
-          message: ErrorCode.getDebugMessage(lastErrorCode)
+          message: ErrorCode.getDebugMessage(lastErrorCode),
+          metadata: {},
         });
         return;
       }
@@ -243,19 +250,12 @@ class GrpcWebClientReadableStream {
           grpcStatusMessage = self.xhr_.getResponseHeader(GRPC_STATUS_MESSAGE);
         }
         if (Number(grpcStatusCode) != StatusCode.OK) {
-          self.sendErrorCallbacks_({
+          self.handleError_({
             code: Number(grpcStatusCode),
             message: grpcStatusMessage,
             metadata: responseHeaders
           });
           errorEmitted = true;
-        }
-        if (!errorEmitted) {
-          self.sendStatusCallbacks_(/** @type {!Status} */ ({
-            code: Number(grpcStatusCode),
-            details: grpcStatusMessage,
-            metadata: responseHeaders
-          }));
         }
       }
 
@@ -354,6 +354,23 @@ class GrpcWebClientReadableStream {
   }
 
   /**
+   * A central place to handle errors
+   *
+   * @private
+   * @param {!GrpcWebError} error The error object
+   */
+  handleError_(error) {
+    if (error.code != StatusCode.OK) {
+      this.sendErrorCallbacks_(error);
+    }
+    this.sendStatusCallbacks_(/** @type {!Status} */ ({
+      code: error.code,
+      details: decodeURIComponent(error.message || ''),
+      metadata: error.metadata
+    }));
+  }
+
+  /**
    * @private
    * @param {!RESPONSE} data The data to send back
    */
@@ -385,7 +402,7 @@ class GrpcWebClientReadableStream {
 
   /**
    * @private
-   * @param {?} error The error to send back
+   * @param {!GrpcWebError} error The error to send back
    */
   sendErrorCallbacks_(error) {
     for (var i = 0; i < this.onErrorCallbacks_.length; i++) {
