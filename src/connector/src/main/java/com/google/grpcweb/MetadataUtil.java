@@ -16,7 +16,6 @@
 package com.google.grpcweb;
 
 import io.grpc.Metadata;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;

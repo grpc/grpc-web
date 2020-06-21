@@ -19,6 +19,7 @@ import com.google.grpcweb.MessageHandler.ContentType;
 import io.grpc.Metadata;
 import io.grpc.Status;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.servlet.ServletOutputStream;
@@ -27,7 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Base64;
 
 class SendResponse {
-  private static final Logger LOG = Logger.getLogger(SendResponse.class.getName());
+  private static final Logger LOG =
+      Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
 
   private final String mContentType;
   private final HttpServletResponse mResp;

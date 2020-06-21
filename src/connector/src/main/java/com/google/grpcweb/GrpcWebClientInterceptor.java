@@ -27,11 +27,10 @@ import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.Status;
 import java.util.concurrent.CountDownLatch;
-import java.util.logging.Logger;
 import javax.servlet.http.HttpServletResponse;
 
 class GrpcWebClientInterceptor implements ClientInterceptor {
-  private static final Logger LOG = Logger.getLogger(GrpcWebClientInterceptor.class.getName());
+
   private final CountDownLatch mLatch;
   private final HttpServletResponse mResp;
   private final SendResponse mSendResponse;
@@ -72,8 +71,7 @@ class GrpcWebClientInterceptor implements ClientInterceptor {
         // seems, sometimes onHeaders() is not called before this method is called!
         // so far, they are the error cases. let onError() method in ClientListener
         // handle this call. Could ignore this.
-        // TODO is this correct? what if onError() never gets called? maybe here it should
-        //  be handled: send headers first and then send the trailers.
+        // TODO is this correct? what if onError() never gets called?
       } else {
         mSendResponse.writeTrailer(s, t);
         mLatch.countDown();
