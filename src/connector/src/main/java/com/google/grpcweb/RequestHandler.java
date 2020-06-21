@@ -21,6 +21,7 @@ import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.stub.MetadataUtils;
 import io.grpc.stub.StreamObserver;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -32,7 +33,8 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 class RequestHandler {
-  private static final Logger LOG = Logger.getLogger(RequestHandler.class.getName());
+  private static final Logger LOG =
+      Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
 
   private final MessageHandler mMessageHandler;
   private final GrpcServiceConnectionManager mGrpcServiceConnectionManager;
@@ -56,6 +58,7 @@ class RequestHandler {
       String methodName = classAndMethodNames.getRight();
       Class cls = getClassObject(className);
       if (cls == null) {
+        LOG.info("incorrect classname in the request: " + className);
         // incorrect classname specified in the request.
         sendResponse.returnUnimplementedStatusCode();
         return;

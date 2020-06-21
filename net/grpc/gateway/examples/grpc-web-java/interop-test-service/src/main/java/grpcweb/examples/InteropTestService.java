@@ -18,7 +18,7 @@
 // This is copy of the following:
 //  github.com/grpc/grpc-java/blob/master/interop-testing/src/main/java/io/grpc/testing/integration/TestServiceImpl.java
 
-package grpc.testing.main;
+package grpcweb.examples;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Queues;
@@ -30,6 +30,7 @@ import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.Status;
 import io.grpc.internal.LogExceptionRunnable;
+import io.grpc.protobuf.lite.ProtoLiteUtils;
 import io.grpc.stub.ServerCallStreamObserver;
 import io.grpc.stub.StreamObserver;
 import grpc.testing.EmptyProtos;
@@ -59,16 +60,26 @@ import javax.annotation.concurrent.GuardedBy;
  * Implementation of the business logic for the TestService. Uses an executor to schedule chunks
  * sent in response streams.
  */
-public class TestServiceImpl extends TestServiceGrpc.TestServiceImplBase {
+public class InteropTestService extends TestServiceGrpc.TestServiceImplBase {
   private final Random random = new Random();
 
   private final ScheduledExecutorService executor;
   private final ByteString compressableBuffer;
 
+  private static final Metadata.Key<Messages.SimpleContext> METADATA_KEY =
+      Metadata.Key.of(
+          "grpc.testing.SimpleContext" + Metadata.BINARY_HEADER_SUFFIX,
+          ProtoLiteUtils.metadataMarshaller(Messages.SimpleContext.getDefaultInstance()));
+  private static final Metadata.Key<String> ECHO_INITIAL_METADATA_KEY
+      = Metadata.Key.of("x-grpc-test-echo-initial", Metadata.ASCII_STRING_MARSHALLER);
+  private static final Metadata.Key<byte[]> ECHO_TRAILING_METADATA_KEY
+      = Metadata.Key.of("x-grpc-test-echo-trailing-bin", Metadata.BINARY_BYTE_MARSHALLER);
+
+
   /**
    * Constructs a controller using the given executor for scheduling response stream chunks.
    */
-  public TestServiceImpl(ScheduledExecutorService executor) {
+  public InteropTestService(ScheduledExecutorService executor) {
     this.executor = executor;
     this.compressableBuffer = ByteString.copyFrom(new byte[1024]);
   }
@@ -445,9 +456,9 @@ public class TestServiceImpl extends TestServiceGrpc.TestServiceImplBase {
   /** Returns interceptors necessary for full service implementation. */
   public static List<ServerInterceptor> interceptors() {
     return Arrays.asList(
-        echoRequestHeadersInterceptor(Util.METADATA_KEY),
-        echoRequestMetadataInHeaders(Util.ECHO_INITIAL_METADATA_KEY),
-        echoRequestMetadataInTrailers(Util.ECHO_TRAILING_METADATA_KEY));
+        echoRequestHeadersInterceptor(METADATA_KEY),
+        echoRequestMetadataInHeaders(ECHO_INITIAL_METADATA_KEY),
+        echoRequestMetadataInTrailers(ECHO_TRAILING_METADATA_KEY));
   }
 
   /**

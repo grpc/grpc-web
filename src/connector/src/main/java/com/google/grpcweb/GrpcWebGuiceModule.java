@@ -17,16 +17,10 @@ package com.google.grpcweb;
 
 import com.google.inject.AbstractModule;
 
-public class GrpcWebGuiceModule extends AbstractModule {
-  private static int sGrpcPortNum = 0;
-
-  public static void setGrpcPortNum(int i) {
-    if (sGrpcPortNum == 0) sGrpcPortNum = i;
-  }
-
+class GrpcWebGuiceModule extends AbstractModule {
   @Override
   protected void configure() {
     bind(GrpcServiceConnectionManager.class)
-        .toInstance(new GrpcServiceConnectionManager(sGrpcPortNum));
+        .toInstance(new GrpcServiceConnectionManager(GrpcPortNumRelay.getGrpcPortNum()));
   }
 }
