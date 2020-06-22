@@ -121,6 +121,7 @@ closure_js_library(
     visibility = ["//visibility:public"],
     deps = [
         ":clientreadablestream",
+        ":error",
         ":generictransportinterface",
         ":grpcwebstreamparser",
         ":status",

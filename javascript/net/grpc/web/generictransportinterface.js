@@ -16,13 +16,10 @@
  *
  */
 /**
- * @fileoverview gRPC web client Readable Stream
+ * @fileoverview gRPC-Web generic transport interface
  *
- * This class is being returned after a gRPC streaming call has been
- * started. This class provides functionality for user to operates on
- * the stream, e.g. set onData callback, etc.
- *
- * This wraps the underlying goog.net.streams.NodeReadableStream
+ * This class provides an abstraction for the underlying transport
+ * implementation underneath the ClientReadableStream layer.
  *
  * @author stanleycheung@google.com (Stanley Cheung)
  */
