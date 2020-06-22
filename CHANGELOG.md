@@ -1,6 +1,27 @@
 [//]: # (GENERATED FILE -- DO NOT EDIT!)
 [//]: # (See scripts/release_notes.py for more details.)
 
+## 1.2.0
+
+### Major Features
+
+- [#847](https://github.com/grpc/grpc-web/pull/847) Allow multiple .on() callbacks and fix issue with non-OK status
+
+### Other Changes
+
+- [#859](https://github.com/grpc/grpc-web/pull/859) Fix envoy.yaml deprecated fields [@dmaixner](https://github.com/dmaixner)
+- [#858](https://github.com/grpc/grpc-web/pull/858) Refactor error handling in grpcwebclientbase
+- [#857](https://github.com/grpc/grpc-web/pull/857) Migrate to ES6 classes
+- [#852](https://github.com/grpc/grpc-web/pull/852) Update to use @grpc/grpc-js node package, and update helloworld exampl...
+- [#851](https://github.com/grpc/grpc-web/pull/851) Add a ThenableCall base class for the promise-based unaryCall function [@Jennnnny](https://github.com/Jennnnny)
+- [#844](https://github.com/grpc/grpc-web/pull/844) Fix code generator bug and add tests
+- [#833](https://github.com/grpc/grpc-web/pull/833) Add proper author attribution to release notes / changelog
+- [#827](https://github.com/grpc/grpc-web/pull/827) Splitting callback based client and Promise based client into multiple... [@Jennnnny](https://github.com/Jennnnny)
+- [#822](https://github.com/grpc/grpc-web/pull/822) use explicit envoy release tag [@xsbchen](https://github.com/xsbchen)
+- [#821](https://github.com/grpc/grpc-web/pull/821) Experimental Feature: Add ES6 import style [@Yannic](https://github.com/Yannic)
+- [#738](https://github.com/grpc/grpc-web/pull/738) Avoid double slash in url when client hostname has tailing slash [@hanabi1224](https://github.com/hanabi1224)
+
+
 ## 1.1.0
 
 ### Major Features
