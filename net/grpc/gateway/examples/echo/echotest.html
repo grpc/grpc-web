@@ -32,13 +32,6 @@ const module = {};
    {
      EchoRequest: proto.grpc.gateway.testing.EchoRequest,
      ServerStreamingEchoRequest: proto.grpc.gateway.testing.ServerStreamingEchoRequest
-   },
-   {
-     checkGrpcStatusCode: function(status) {
-       if (status.code != grpc.web.StatusCode.OK) {
-         echoapp.EchoApp.addRightMessage('Error code: '+status.code+' "'+status.details+'"');
-       }
-     }
    }
  );
  echoApp.load();

@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
+// ================================================
+//
+//      This is for testing only. Just to demonstrate a simple
+//      Java client to send grpc-web request and receive response
+//
+// ================================================
+
 package grpcweb.examples.greeter;
 
 import grpcweb.examples.greeter.GreeterOuterClass.HelloRequest;
