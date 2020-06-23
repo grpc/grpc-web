@@ -37,7 +37,6 @@ const MethodDescriptor = goog.requireType('grpc.web.MethodDescriptor');
 const MethodType = goog.require('grpc.web.MethodType');
 const Request = goog.require('grpc.web.Request');
 const StatusCode = goog.require('grpc.web.StatusCode');
-const UnaryResponse = goog.require('grpc.web.UnaryResponse');
 const XhrIo = goog.require('goog.net.XhrIo');
 const googCrypt = goog.require('goog.crypt.base64');
 const {Status} = goog.require('grpc.web.Status');
@@ -52,21 +51,21 @@ const {StreamInterceptor, UnaryInterceptor} = goog.require('grpc.web.Interceptor
  */
 class GrpcWebClientBase {
   /**
-   * @param {?Object=} opt_options
+   * @param {?Object=} options
    */
-  constructor(opt_options) {
+  constructor(options) {
     /**
      * @const
      * @private {string}
      */
-    this.format_ = goog.getObjectByName('format', opt_options) || 'text';
+    this.format_ = goog.getObjectByName('format', options) || 'text';
 
     /**
      * @const
      * @private {boolean}
      */
     this.suppressCorsPreflight_ =
-        goog.getObjectByName('suppressCorsPreflight', opt_options) || false;
+        goog.getObjectByName('suppressCorsPreflight', options) || false;
 
 
     /**
@@ -74,13 +73,13 @@ class GrpcWebClientBase {
      * @private {boolean}
      */
     this.withCredentials_ =
-        goog.getObjectByName('withCredentials', opt_options) || false;
+        goog.getObjectByName('withCredentials', options) || false;
     /**
      * @const {!Array<!StreamInterceptor>}
      * @private
      */
     this.streamInterceptors_ =
-        goog.getObjectByName('streamInterceptors', opt_options) || [];
+        goog.getObjectByName('streamInterceptors', options) || [];
 
 
     /**
@@ -88,7 +87,7 @@ class GrpcWebClientBase {
      * @private
      */
     this.unaryInterceptors_ =
-        goog.getObjectByName('unaryInterceptors', opt_options) || [];
+        goog.getObjectByName('unaryInterceptors', options) || [];
   }
 
   /**
@@ -171,7 +170,8 @@ class GrpcWebClientBase {
             } else if (metadata) {
               unaryMetadata = metadata;
             } else {
-              resolve(new UnaryResponse(unaryMsg, unaryMetadata, unaryStatus));
+              resolve(request.getMethodDescriptor().createUnaryResponse(
+                  unaryMsg, unaryMetadata, unaryStatus));
             }
           }, true);
     });
