@@ -5,10 +5,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.google.grpcweb</groupId>
-  <artifactId>grpcweb</artifactId>
-  <version>0.1</version>
-
-  <name>grpcweb</name>
+  <artifactId>grpcweb-java</artifactId>
+  <version>0.1-SNAPSHOT</version>
+  <name>grpcweb-java</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -91,39 +90,9 @@
     </extensions>
     <plugins>
       <plugin>
-        <groupId>org.xolstice.maven.plugins</groupId>
-        <artifactId>protobuf-maven-plugin</artifactId>
-        <version>0.5.0</version>
-        <configuration>
-          <protocArtifact>com.google.protobuf:protoc:3.4.0:exe:${os.detected.classifier}</protocArtifact>
-          <pluginId>grpc-java</pluginId>
-          <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.7.0:exe:${os.detected.classifier}</pluginArtifact>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>compile</goal>
-              <goal>compile-custom</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.4.0</version>
-        <executions>
-          <execution>
-            <id>my-execution</id>
-            <phase>test</phase>
-            <goals>
-              <goal>java</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <mainClass>grpc.testing.main.TestServiceAndProxy</mainClass>
-        </configuration>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.2.0</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

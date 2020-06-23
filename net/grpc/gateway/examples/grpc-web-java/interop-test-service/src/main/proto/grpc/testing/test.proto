@@ -13,9 +13,14 @@
 // limitations under the License.
 // An integration test service that covers all the method signature permutations
 // of unary/streaming requests/responses.
+//
+//
 // *******************  DO NOT EDIT
+//
 // This is copy of the following:
 //  github.com/grpc/grpc-java/blob/master/interop-testing/src/main/proto/grpc/testing/test.proto
+//
+// *********************
 
 syntax = "proto3";
 
