@@ -1,61 +1,44 @@
 /**
  * @fileoverview gRPC web client UnaryResponse returned by grpc unary calls.
- * Response meassage and metadata are included in UnaryResponse.
  */
 
 goog.module('grpc.web.UnaryResponse');
 goog.module.declareLegacyNamespace();
 
-const Metadata = goog.require('grpc.web.Metadata');
-const {Status} = goog.require('grpc.web.Status');
+const Metadata = goog.requireType('grpc.web.Metadata');
+const MethodDescriptor = goog.requireType('grpc.web.MethodDescriptor');
+const {Status} = goog.requireType('grpc.web.Status');
 
 /**
- * @template RESPONSE
+ * @interface
+ * @template REQUEST, RESPONSE
  */
 class UnaryResponse {
   /**
-   * @param {RESPONSE} responseMessage
-   * @param {!Metadata=} metadata
-   * @param {?Status=} status
+   * @export
+   * @return {RESPONSE}
    */
-  constructor(responseMessage, metadata, status) {
-    /**
-     * @const {RESPONSE}
-     * @private
-     */
-    this.responseMessage_ = responseMessage;
+  getResponseMessage() {}
 
-    /**
-     * @const {!Metadata}
-     * @private
-     */
-    this.metadata_ = metadata || {};
+  /**
+   * @export
+   * @return {!Metadata}
+   */
+  getMetadata() {}
 
-    /**
-     * @const {?Status}
-     * @private
-     */
-    this.status_ = status ? status : null;
-  }
-
-  /** @return {RESPONSE} */
-  getResponseMessage() {
-    return this.responseMessage_;
-  }
-
-  /** @return {!Metadata} */
-  getMetadata() {
-    return this.metadata_;
-  }
+  /**
+   * @export
+   * @return {!MethodDescriptor<REQUEST, RESPONSE>}
+   */
+  getMethodDescriptor() {}
 
   /**
    * gRPC status. Trailer metadata returned from a gRPC server is in
    * status.metadata.
+   * @export
    * @return {?Status}
    */
-  getStatus() {
-    return this.status_;
-  }
+  getStatus() {}
 }
 
 exports = UnaryResponse;

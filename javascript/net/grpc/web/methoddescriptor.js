@@ -8,10 +8,13 @@ goog.module('grpc.web.MethodDescriptor');
 goog.module.declareLegacyNamespace();
 
 const CallOptions = goog.require('grpc.web.CallOptions');
-const Metadata = goog.require('grpc.web.Metadata');
-const MethodType = goog.require('grpc.web.MethodType');
-const Request = goog.require('grpc.web.Request');
+const Metadata = goog.requireType('grpc.web.Metadata');
+const MethodType = goog.requireType('grpc.web.MethodType');
+const Request = goog.requireType('grpc.web.Request');
 const RequestInternal = goog.require('grpc.web.RequestInternal');
+const UnaryResponse = goog.requireType('grpc.web.UnaryResponse');
+const UnaryResponseInternal = goog.require('grpc.web.UnaryResponseInternal');
+const {Status} = goog.requireType('grpc.web.Status');
 
 /** @template REQUEST, RESPONSE */
 class MethodDescriptor {
@@ -54,5 +57,17 @@ class MethodDescriptor {
 }
 
 
+
+/**
+ * @template REQUEST, RESPONSE
+ * @param {RESPONSE} responseMessage
+ * @param {!Metadata=} metadata
+ * @param {?Status=} status
+ * @return {!UnaryResponse<REQUEST, RESPONSE>}
+ */
+MethodDescriptor.prototype.createUnaryResponse = function(
+    responseMessage, metadata = {}, status = null) {
+  return new UnaryResponseInternal(responseMessage, this, metadata, status);
+};
 
 exports = MethodDescriptor;
