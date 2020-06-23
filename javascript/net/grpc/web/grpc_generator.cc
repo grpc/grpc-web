@@ -724,8 +724,8 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
           printer->Indent();
           printer->Print(
               vars,
-              "new URL('/$package_dot$$service_name$/$method_name$', "
-              "this.hostname_).toString(),\n"
+              "this.hostname_ +\n"
+              "  '/$package_dot$$service_name$/$method_name$',\n"
               "request,\n"
               "metadata || {},\n"
               "this.methodInfo$method_name$);\n");
@@ -764,8 +764,8 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
           printer->Indent();
           printer->Print(
               vars,
-              "new URL('/$package_dot$$service_name$/$method_name$', "
-              "this.hostname_).toString(),\n"
+              "this.hostname_ +\n"
+              "  '/$package_dot$$service_name$/$method_name$',\n"
               "request,\n"
               "metadata || {},\n"
               "this.methodInfo$method_name$,\n"
