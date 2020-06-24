@@ -6,10 +6,10 @@
                         http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>grpc.testing.main</groupId>
-  <artifactId>grpcweb-java-examples-interop-test</artifactId>
+  <groupId>grpcweb.examples</groupId>
+  <artifactId>interop-test</artifactId>
   <version>0.1</version>
-  <name>grpcweb-java-examples-interop-test</name>
+  <packaging>jar</packaging>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -76,21 +76,29 @@
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.4.0</version>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.3.0</version>
         <executions>
           <execution>
-            <id>my-execution</id>
-            <phase>test</phase>
+            <phase>package</phase>
             <goals>
-              <goal>java</goal>
+                <goal>single</goal>
             </goals>
+            <configuration>
+                <archive>
+                <manifest>
+                    <mainClass>
+                      grpcweb.examples.StartServiceAndGrpcwebProxy
+                    </mainClass>
+                </manifest>
+                </archive>
+                <descriptorRefs>
+                    <descriptorRef>jar-with-dependencies</descriptorRef>
+                </descriptorRefs>
+            </configuration>
           </execution>
         </executions>
-        <configuration>
-          <mainClass>grpcweb.examples.StartServiceAndGrpcwebProxy</mainClass>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
