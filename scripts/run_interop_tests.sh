@@ -14,6 +14,11 @@
 # limitations under the License.
 set -ex
 
+run_tests () {
+  docker run --network=host --rm grpcweb/prereqs /bin/bash \
+    /github/grpc-web/scripts/docker-run-interop-tests.sh
+}
+
 SCRIPT_DIR=$(dirname "$0")
 REPO_DIR=$(realpath "${SCRIPT_DIR}/..")
 
@@ -31,7 +36,7 @@ done
 
 
 # Build all relevant docker images. They should all build successfully.
-docker-compose build common prereqs node-interop-server interop-client
+docker-compose build common prereqs node-interop-server interop-client java-interop-server
 
 
 # Run interop tests
@@ -40,12 +45,18 @@ pid1=$(docker run -d \
   --network=host envoyproxy/envoy:v1.14.1)
 pid2=$(docker run -d --network=host grpcweb/node-interop-server)
 
-docker run --network=host --rm grpcweb/prereqs /bin/bash \
-  /github/grpc-web/scripts/docker-run-interop-tests.sh
+run_tests
 
 docker rm -f "$pid1"
 docker rm -f "$pid2"
 
+
+#
+# Run interop tests against grpc-web java connector code
+#
+pid3=$(docker run -d --network=host grpcweb/java-interop-server)
+run_tests
+docker rm -f "$pid3"
 
 # Clean up
 git clean -f -d -x
