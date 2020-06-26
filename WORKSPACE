@@ -34,3 +34,7 @@ load("@io_bazel_rules_closure//closure:repositories.bzl", "rules_closure_depende
 rules_closure_dependencies()
 
 rules_closure_toolchains()
+
+load("//bazel:repositories.bzl", "grpc_web_toolchains")
+
+grpc_web_toolchains()

@@ -12,9 +12,10 @@
 ## See the License for the specific language governing permissions and
 ## limitations under the License.
 
-"""Compatibility-export for `closure_grpc_web_library`."""
+"""Starlark rules for using gRPC-Web."""
 
 load("//bazel/private/rules:closure_grpc_web_library.bzl", _closure_grpc_web_library = "closure_grpc_web_library")
+load("//bazel/private/rules:grpc_web_toolchain.bzl", _grpc_web_toolchain = "grpc_web_toolchain")
 
-# TODO(yannic): Deprecate and remove.
 closure_grpc_web_library = _closure_grpc_web_library
+grpc_web_toolchain = _grpc_web_toolchain

@@ -12,9 +12,16 @@
 ## See the License for the specific language governing permissions and
 ## limitations under the License.
 
-"""Compatibility-export for `closure_grpc_web_library`."""
+"""To be documented."""
 
-load("//bazel/private/rules:closure_grpc_web_library.bzl", _closure_grpc_web_library = "closure_grpc_web_library")
+def grpc_web_dependencies():
+    """An utility method to load all dependencies of `gRPC-Web`."""
 
-# TODO(yannic): Deprecate and remove.
-closure_grpc_web_library = _closure_grpc_web_library
+    fail("Loading dependencies through grpc_web_dependencies() is not supported yet.")
+
+def grpc_web_toolchains():
+    """An utility method to load all gRPC-Web toolchains."""
+
+    native.register_toolchains(
+        "//bazel:closure_toolchain",
+    )

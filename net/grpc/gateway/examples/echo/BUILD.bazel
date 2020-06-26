@@ -1,6 +1,6 @@
 load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_binary")
 load("@rules_proto//proto:defs.bzl", "proto_library")
-load("//bazel:closure_grpc_web_library.bzl", "closure_grpc_web_library")
+load("//bazel:defs.bzl", "closure_grpc_web_library")
 
 proto_library(
     name = "echo_proto",
