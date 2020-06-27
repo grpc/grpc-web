@@ -36,10 +36,24 @@ declare module "grpc-web" {
         callback: (err: Error) => void): ClientReadableStream<Response>;
     on (type: "status",
         callback: (status: Status) => void): ClientReadableStream<Response>;
+    on (type: "metadata",
+        callback: (status: Metadata) => void): ClientReadableStream<Response>;
     on (type: "data",
         callback: (response: Response) => void): ClientReadableStream<Response>;
     on (type: "end",
         callback: () => void): ClientReadableStream<Response>;
+
+    removeListener (type: "error",
+                    callback: (err: Error) => void): void;
+    removeListener (type: "status",
+                    callback: (status: Status) => void): void;
+    removeListener (type: "metadata",
+                    callback: (status: Metadata) => void): void;
+    removeListener (type: "data",
+                    callback: (response: Response) => void): void;
+    removeListener (type: "end",
+                    callback: () => void): void;
+                    
     cancel (): void;
   }
 
