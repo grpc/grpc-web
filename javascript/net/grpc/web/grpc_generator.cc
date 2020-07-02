@@ -60,6 +60,8 @@ enum ImportStyle {
   TYPESCRIPT = 2,  // import * as grpcWeb from 'grpc-web'
 };
 
+const char GRPC_PROMISE[] = "grpc.web.promise.GrpcWebPromise";
+
 const char* kKeyword[] = {
   "abstract",
   "boolean",
@@ -738,7 +740,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
           printer->Print(vars,
                          "request: $input_type$,\n"
                          "metadata: grpcWeb.Metadata | null): "
-                         "Promise<$output_type$>;\n\n");
+                         "$promise$<$output_type$>;\n\n");
           printer->Outdent();
 
           printer->Print(vars, "$js_method_name$(\n");
@@ -830,8 +832,7 @@ void PrintGrpcWebDtsClientClass(Printer* printer, const FileDescriptor* file,
                            "request: $input_type$,\n"
                            "metadata?: grpcWeb.Metadata\n");
             printer->Outdent();
-            printer->Print(vars,
-                           "): Promise<$output_type$>;\n\n");
+            printer->Print(vars, "): $promise$<$output_type$>;\n\n");
           } else {
             printer->Print(vars, "$js_method_name$(\n");
             printer->Indent();
@@ -1291,8 +1292,8 @@ void PrintPromiseUnaryCall(Printer* printer, std::map<string, string> vars) {
                  " *     request proto\n"
                  " * @param {?Object<string, string>} metadata User defined\n"
                  " *     call metadata\n"
-                 " * @return {!Promise<!proto.$out$>}\n"
-                 " *     A native promise that resolves to the response\n"
+                 " * @return {!$promise$<!proto.$out$>}\n"
+                 " *     Promise that resolves to the response\n"
                  " */\n"
                  "proto.$package_dot$$service_name$PromiseClient.prototype"
                  ".$js_method_name$ =\n");
@@ -1413,6 +1414,9 @@ void PrintMultipleFilesMode(const FileDescriptor* file, string file_name,
                    "PromiseClient');\n\n");
   }
 
+  if (vars["promise"] == GRPC_PROMISE) {
+    printer2.Print(vars, "goog.require('grpc.web.promise');\n");
+  }
   std::map<string, string>::iterator it;
   for (it = method_descriptors.begin(); it != method_descriptors.end(); it++) {
     vars["import_mtd"] = it->second;
@@ -1428,6 +1432,7 @@ void PrintMultipleFilesMode(const FileDescriptor* file, string file_name,
 
   PrintMessagesDeps(&printer1, file);
   PrintMessagesDeps(&printer2, file);
+
   printer1.Print("goog.scope(function() {\n\n");
   printer2.Print("goog.scope(function() {\n\n");
 
@@ -1535,6 +1540,7 @@ class GeneratorOptions {
   bool generate_dts() const { return generate_dts_; }
   bool generate_closure_es6() const { return generate_closure_es6_; }
   bool multiple_files() const { return multiple_files_; }
+  bool goog_promise() const { return goog_promise_; }
 
  private:
   string file_name_;
@@ -1543,6 +1549,7 @@ class GeneratorOptions {
   bool generate_dts_;
   bool generate_closure_es6_;
   bool multiple_files_;
+  bool goog_promise_;
 };
 
 GeneratorOptions::GeneratorOptions()
@@ -1551,7 +1558,8 @@ GeneratorOptions::GeneratorOptions()
       import_style_(ImportStyle::CLOSURE),
       generate_dts_(false),
       generate_closure_es6_(false),
-      multiple_files_(false){}
+      multiple_files_(false),
+      goog_promise_(false) {}
 
 bool GeneratorOptions::ParseFromOptions(const string& parameter,
                                         string* error) {
@@ -1586,7 +1594,9 @@ bool GeneratorOptions::ParseFromOptions(
         return false;
       }
     } else if ("multiple_files" == option.first) {
-      multiple_files_ = "true" == option.second;
+      multiple_files_ = "True" == option.second;
+    } else if ("goog_promise" == option.first) {
+      goog_promise_ = "True" == option.second;
     } else {
       *error = "unsupported option: " + option.first;
       return false;
@@ -1633,6 +1643,7 @@ class GrpcCodeGenerator : public CodeGenerator {
     string package = file->package();
     vars["package"] = package;
     vars["package_dot"] = package.empty() ? "" : package + '.';
+    vars["promise"] = "Promise";
 
     if ("binary" == generator_options.mode()) {
       vars["mode"] = GetModeVar(Mode::OP);
@@ -1644,6 +1655,9 @@ class GrpcCodeGenerator : public CodeGenerator {
       vars["format"] = "text";
     } else if ("jspb" == generator_options.mode()) {
       vars["mode"] = GetModeVar(Mode::OPJSPB);
+      if (generator_options.goog_promise()) {
+        vars["promise"] = GRPC_PROMISE;
+      }
     } else {
       *error = "options: invalid mode - " + generator_options.mode();
       return false;
@@ -1700,14 +1714,17 @@ class GrpcCodeGenerator : public CodeGenerator {
 
     switch (generator_options.import_style()) {
       case ImportStyle::CLOSURE:
+        if (vars["promise"] == GRPC_PROMISE) {
+          printer.Print(vars, "goog.require('grpc.web.promise');\n");
+        }
         printer.Print(vars, "goog.require('grpc.web.MethodDescriptor');\n");
         printer.Print(vars, "goog.require('grpc.web.MethodType');\n");
         printer.Print(vars, "goog.require('grpc.web.$mode$ClientBase');\n");
         printer.Print(vars, "goog.require('grpc.web.AbstractClientBase');\n");
         printer.Print(vars, "goog.require('grpc.web.ClientReadableStream');\n");
         printer.Print(vars, "goog.require('grpc.web.Error');\n");
-
         PrintMessagesDeps(&printer, file);
+
         printer.Print("goog.scope(function() {\n\n");
         break;
       case ImportStyle::COMMONJS:
