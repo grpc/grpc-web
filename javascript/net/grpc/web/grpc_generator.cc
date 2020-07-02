@@ -797,6 +797,7 @@ void PrintGrpcWebDtsClientClass(Printer* printer, const FileDescriptor* file,
                                 const string &client_type) {
   std::map<string, string> vars;
   vars["client_type"] = client_type;
+  vars["promise"] = "Promise";
   for (int service_index = 0; service_index < file->service_count();
        ++service_index) {
     printer->Print("export class ");
