@@ -16,11 +16,26 @@
 package com.google.grpcweb;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 class GrpcWebGuiceModule extends AbstractModule {
+  private static Injector sInjector;
+  private static int sGrpcPortNum;
+
+  // This method should be called only once.
+  static void init(int i) {
+    sGrpcPortNum = i;
+    sInjector = Guice.createInjector(new GrpcWebGuiceModule());
+  }
+
+  static Injector getInjector() {
+    return sInjector;
+  }
+
   @Override
   protected void configure() {
     bind(GrpcServiceConnectionManager.class)
-        .toInstance(new GrpcServiceConnectionManager(GrpcPortNumRelay.getGrpcPortNum()));
+        .toInstance(new GrpcServiceConnectionManager(sGrpcPortNum));
   }
 }

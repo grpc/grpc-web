@@ -21,26 +21,27 @@ import io.grpc.Channel;
 import io.grpc.ClientInterceptors;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import java.lang.invoke.MethodHandles;
+import java.util.logging.Logger;
 
 /**
  * TODO: Manage the connection pool to talk to the grpc-service
  */
 @Singleton
 class GrpcServiceConnectionManager {
-  private final int mGrpcPortNum;
+  private static final Logger LOG =
+      Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
+  private final ManagedChannel mChannel;
 
   GrpcServiceConnectionManager(int grpcPortNum) {
-    mGrpcPortNum  = grpcPortNum;
-  }
-
-  private ManagedChannel getManagedChannel() {
     // TODO: Manage a connection pool.
-    return ManagedChannelBuilder.forAddress("localhost", mGrpcPortNum)
+    mChannel = ManagedChannelBuilder.forAddress("localhost", grpcPortNum)
         .usePlaintext()
         .build();
+    LOG.info("**** connection channel initiated");
   }
 
   Channel getChannelWithClientInterceptor(GrpcWebClientInterceptor interceptor) {
-    return ClientInterceptors.intercept(getManagedChannel(), interceptor);
+    return ClientInterceptors.intercept(mChannel, interceptor);
   }
 }
