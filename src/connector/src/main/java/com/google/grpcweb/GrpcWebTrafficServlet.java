@@ -15,8 +15,6 @@
  */
 package com.google.grpcweb;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,8 +27,7 @@ public class GrpcWebTrafficServlet extends HttpServlet {
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) {
-    Injector injector = Guice.createInjector(new GrpcWebGuiceModule());
-    RequestHandler reqHandler = injector.getInstance(RequestHandler.class);
+    RequestHandler reqHandler = GrpcWebGuiceModule.getInjector().getInstance(RequestHandler.class);
     reqHandler.handle(request, response);
   }
 
