@@ -182,6 +182,7 @@ closure_js_library(
     name = "requester",
     srcs = [
         "methoddescriptor.js",
+        "methoddescriptorinterface.js",
         "request.js",
         "requestinternal.js",
         "unaryresponse.js",
