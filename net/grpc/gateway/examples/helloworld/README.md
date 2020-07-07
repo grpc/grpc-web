@@ -294,7 +294,7 @@ run the 3 processes all in the background.
 
  ```sh
  $ docker run -d -v "$(pwd)"/envoy.yaml:/etc/envoy/envoy.yaml:ro \
-     --network=host envoyproxy/envoy:v1.14.1
+     --network=host envoyproxy/envoy:v1.15.0
  ```
 
 > NOTE: As per [this issue](https://github.com/grpc/grpc-web/issues/436):
@@ -302,7 +302,7 @@ run the 3 processes all in the background.
 >
 > ```sh
 > $ docker run -d -v "$(pwd)"/envoy.yaml:/etc/envoy/envoy.yaml:ro \
->     -p 8080:8080 -p 9901:9901 envoyproxy/envoy:v1.14.1
+>     -p 8080:8080 -p 9901:9901 envoyproxy/envoy:v1.15.0
 >  ```
 
  3. Run the simple Web Server. This hosts the static file `index.html` and
