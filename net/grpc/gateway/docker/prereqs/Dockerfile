@@ -23,6 +23,7 @@ RUN echo "\nloglevel=error\n" >> $HOME/.npmrc
 WORKDIR /github/grpc-web
 
 COPY ./Makefile ./Makefile
+COPY ./WORKSPACE ./WORKSPACE
 COPY ./bazel ./bazel
 COPY ./javascript ./javascript
 COPY ./net ./net
