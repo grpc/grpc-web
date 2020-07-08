@@ -632,10 +632,10 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
         "client_: grpcWeb.AbstractClientBase;\n"
         "hostname_: string;\n"
         "credentials_: null | { [index: string]: string; };\n"
-        "options_: null | { [index: string]: string; };\n\n"
+        "options_: null | { [index: string]: any; };\n\n"
         "constructor (hostname: string,\n"
         "             credentials?: null | { [index: string]: string; },\n"
-        "             options?: null | { [index: string]: string; }) {\n");
+        "             options?: null | { [index: string]: any; }) {\n");
     printer->Indent();
     printer->Print("if (!options) options = {};\n");
     printer->Print("if (!credentials) credentials = {};\n");
@@ -765,7 +765,7 @@ void PrintGrpcWebDtsClientClass(Printer* printer, const FileDescriptor* file,
     printer->Print(
         "constructor (hostname: string,\n"
         "             credentials?: null | { [index: string]: string; },\n"
-        "             options?: null | { [index: string]: string; });\n\n");
+        "             options?: null | { [index: string]: any; });\n\n");
     for (int method_index = 0; method_index < service->method_count();
          ++method_index) {
       const MethodDescriptor* method = service->method(method_index);
