@@ -24,8 +24,8 @@ const {Status} = goog.requireType('grpc.web.Status');
  * @template REQUEST, RESPONSE
  * @param {string} name
  * @param {?MethodType} methodType
- * @param {function(new: REQUEST, ?Array=)} requestType
- * @param {function(new: RESPONSE, ?Array=)} responseType
+ * @param {function(new: REQUEST, ...)} requestType
+ * @param {function(new: RESPONSE, ...)} responseType
  * @param {function(REQUEST): ?} requestSerializeFn
  * @param {function(?): RESPONSE} responseDeserializeFn
  */
