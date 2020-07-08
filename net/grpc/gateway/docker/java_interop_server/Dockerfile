@@ -34,9 +34,9 @@ WORKDIR /github/grpc-web
 
 RUN git clone https://github.com/grpc/grpc-web . && \
   cd src/connector && \
-  mvn install && \
+  mvn install --no-transfer-progress && \
   cd ../../net/grpc/gateway/examples/grpc-web-java/interop-test-service && \
-  mvn package 
+  mvn package --no-transfer-progress
 
 ENTRYPOINT ["java", "-cp", "net/grpc/gateway/examples/grpc-web-java/interop-test-service/target/interop-test-0.1-jar-with-dependencies.jar", "grpcweb.examples.StartServiceAndGrpcwebProxy"]
 
