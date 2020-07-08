@@ -125,3 +125,9 @@ services:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/java_interop_server/Dockerfile
     image: grpcweb/java-interop-server
+  protoc-plugin:
+    build:
+      context: ./
+      dockerfile: ./net/grpc/gateway/docker/protoc_plugin/Dockerfile
+    image: grpcweb/protoc-plugin
+
