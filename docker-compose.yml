@@ -129,5 +129,7 @@ services:
     build:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/protoc_plugin/Dockerfile
+    depends_on:
+      - prereqs
     image: grpcweb/protoc-plugin
 
