@@ -166,41 +166,7 @@ class EchoApp {
   }
 }
 
-class StreamResponseInterceptor implements grpcWeb.StreamInterceptor<any, any> {
-  intercept(
-    request: grpcWeb.Request<any, any>,
-    invoker: (request: grpcWeb.Request<any, any>) =>
-      grpcWeb.ClientReadableStream<any>) {
-    class InterceptedStream implements grpcWeb.ClientReadableStream<any> {
-      stream: grpcWeb.ClientReadableStream<any>;
-      constructor(stream: grpcWeb.ClientReadableStream<any>) {
-        this.stream = stream;
-      };
-      on(eventType: string, callback: any) {
-        if (eventType == 'data') {
-          const newCallback = (response: any) => {
-            response.setMessage('[Intcpt Resp1]'+response.getMessage());
-            callback(response);
-          };
-          this.stream.on(eventType, newCallback);
-        } else {
-          this.stream.on(eventType, callback);
-        }
-        return this;
-      };
-      removeListener(eventType: string, callback: any) {
-      }
-      cancel() {}
-    }
-    var reqMsg = request.getRequestMessage();
-    reqMsg.setMessage('[Intcpt Req1]'+reqMsg.getMessage());
-    return new InterceptedStream(invoker(request));
-  };
-}
-
-var opts = {'streamInterceptors' : [new StreamResponseInterceptor()]};
-
-const echoService = new EchoServiceClient('http://localhost:8080', null, opts);
+const echoService = new EchoServiceClient('http://localhost:8080', null, null);
 
 const echoApp = new EchoApp(echoService);
 echoApp.load();
