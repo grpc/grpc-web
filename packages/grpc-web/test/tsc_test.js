@@ -120,3 +120,71 @@ describe('tsc test02: simple rpc, messages in separate proto', function() {
     require(relativePath('./tsc-tests/dist/client02.js'));
   });
 });
+
+describe('tsc test03: streamInterceptor', function() {
+  before(function() {
+    cleanup();
+    createGeneratedCodeDir();
+    MockXMLHttpRequest = mockXmlHttpRequest.newMockXhr();
+    global.XMLHttpRequest = MockXMLHttpRequest;
+    const genCmd = `protoc -I=./test/protos echo.proto \
+      --js_out=import_style=commonjs:${outputDir} \
+      --grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:${outputDir}`;
+    execSync(genCmd);
+  });
+
+  after(function() {
+    cleanup();
+  });
+
+  it('generated code should exist', function() {
+    assertFileExists('./tsc-tests/generated/echo_pb.js');
+    assertFileExists('./tsc-tests/generated/echo_pb.d.ts');
+    assertFileExists('./tsc-tests/generated/echo_grpc_web_pb.js');
+    assertFileExists('./tsc-tests/generated/echo_grpc_web_pb.d.ts');
+  });
+
+  it('tsc should run and export', function(done) {
+    try {
+      execSync(`tsc client03.ts generated/echo_pb.d.ts generated/echo_pb.js \
+        generated/echo_grpc_web_pb.d.ts generated/echo_grpc_web_pb.js \
+        --allowJs --strict --outDir ./dist`, {
+          cwd: relativePath('./tsc-tests')
+      });
+    } catch (e) {
+      assert.fail(e.stdout);
+    }
+
+    // check for the tsc output
+    assertFileExists('./tsc-tests/dist/client03.js');
+    assertFileExists('./tsc-tests/dist/generated/echo_pb.js');
+
+    const {echoService, EchoRequest} =
+      require(relativePath('./tsc-tests/dist/client03.js'));
+    assert.equal('function', typeof echoService.echo);
+    assert.equal('function', typeof echoService.serverStreamingEcho);
+
+    const req = new EchoRequest();
+    req.setMessage('aaa');
+    MockXMLHttpRequest.onSend = function(xhr) {
+      // The interceptor will attach "[-out-]" in front of our proto message.
+      // See the interceptor code in client03.ts.
+      // So by the time the proto is being sent by the underlying transport, it
+      // should contain the string "[-out-]aaa".
+      assert.equal('AAAAAAwKClstb3V0LV1hYWE=', xhr.body);
+
+      xhr.respond(200, {'Content-Type': 'application/grpc-web-text'},
+                  // echo it back
+                  xhr.body);
+    };
+    echoService.echo(req, {}, (err, response) => {
+      assert.ifError(err);
+      // Now, the interceptor will be invoked again on receiving the response
+      // from the server. It attaches an additional "[-in-]" string in front of
+      // the server response.
+      assert.equal('[-in-][-out-]aaa', response.getMessage());
+      done();
+    });
+  });
+
+});
