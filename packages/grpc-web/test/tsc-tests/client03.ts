@@ -21,7 +21,7 @@ import {EchoRequest, EchoResponse} from './generated/echo_pb';
 import {EchoServiceClient} from './generated/echo_grpc_web_pb';
 
 // The StreamInterceptor interface is for the callback-based client.
-class StreamResponseInterceptor implements grpcWeb.StreamInterceptor<
+class MyStreamInterceptor implements grpcWeb.StreamInterceptor<
   EchoRequest, EchoResponse> {
   intercept(
     request: grpcWeb.Request<EchoRequest, EchoResponse>,
@@ -55,7 +55,7 @@ class StreamResponseInterceptor implements grpcWeb.StreamInterceptor<
   };
 }
 
-var opts = {'streamInterceptors' : [new StreamResponseInterceptor()]};
+var opts = {'streamInterceptors' : [new MyStreamInterceptor()]};
 
 const echoService = new EchoServiceClient('http://localhost:8080', null, opts);
 

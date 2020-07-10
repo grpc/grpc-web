@@ -38,6 +38,13 @@ function createGeneratedCodeDir() {
 function assertFileExists(relPath) {
   assert.equal(true, fs.existsSync(relativePath(relPath)));
 }
+function runTscCmd(tscCmd) {
+  try {
+    execSync(tscCmd, {cwd: relativePath('./tsc-tests')});
+  } catch (e) {
+    assert.fail(e.stdout);
+  }
+}
 const outputDir = './test/tsc-tests/generated';
 
 describe('tsc test01: nested messages', function() {
@@ -59,10 +66,8 @@ describe('tsc test01: nested messages', function() {
   });
 
   it('tsc should run and export', function() {
-    execSync(`tsc client01.ts generated/test01_pb.d.ts generated/test01_pb.js \
-      --allowJs --outDir ./dist`, {
-        cwd: relativePath('./tsc-tests')
-    });
+    runTscCmd(`tsc client01.ts generated/test01_pb.d.ts generated/test01_pb.js \
+      --allowJs --strict --outDir ./dist`);
 
     // check for the tsc output
     assertFileExists('./tsc-tests/dist/client01.js');
@@ -98,12 +103,10 @@ describe('tsc test02: simple rpc, messages in separate proto', function() {
   });
 
   it('tsc should run and export', function(done) {
-    execSync(`tsc client02.ts generated/Test02ServiceClientPb.ts \
+    runTscCmd(`tsc client02.ts generated/Test02ServiceClientPb.ts \
       generated/test02_pb.d.ts generated/test02_pb.js \
       generated/test03_pb.d.ts generated/test03_pb.js \
-      --allowJs --outDir ./dist`, {
-        cwd: relativePath('./tsc-tests')
-    });
+      --allowJs --strict --outDir ./dist`);
 
     // check for the tsc output
     assertFileExists('./tsc-tests/dist/client02.js');
@@ -145,15 +148,9 @@ describe('tsc test03: streamInterceptor', function() {
   });
 
   it('tsc should run and export', function(done) {
-    try {
-      execSync(`tsc client03.ts generated/echo_pb.d.ts generated/echo_pb.js \
-        generated/echo_grpc_web_pb.d.ts generated/echo_grpc_web_pb.js \
-        --allowJs --strict --outDir ./dist`, {
-          cwd: relativePath('./tsc-tests')
-      });
-    } catch (e) {
-      assert.fail(e.stdout);
-    }
+    runTscCmd(`tsc client03.ts generated/echo_pb.d.ts generated/echo_pb.js \
+      generated/echo_grpc_web_pb.d.ts generated/echo_grpc_web_pb.js \
+      --allowJs --strict --outDir ./dist`);
 
     // check for the tsc output
     assertFileExists('./tsc-tests/dist/client03.js');
@@ -177,8 +174,71 @@ describe('tsc test03: streamInterceptor', function() {
                   // echo it back
                   xhr.body);
     };
+    // this is the callback-based client
     echoService.echo(req, {}, (err, response) => {
       assert.ifError(err);
+      // Now, the interceptor will be invoked again on receiving the response
+      // from the server. It attaches an additional "[-in-]" string in front of
+      // the server response.
+      assert.equal('[-in-][-out-]aaa', response.getMessage());
+      done();
+    });
+  });
+
+});
+
+describe('tsc test04: unaryInterceptor', function() {
+  before(function() {
+    cleanup();
+    createGeneratedCodeDir();
+    MockXMLHttpRequest = mockXmlHttpRequest.newMockXhr();
+    global.XMLHttpRequest = MockXMLHttpRequest;
+    const genCmd = `protoc -I=./test/protos echo.proto \
+      --js_out=import_style=commonjs:${outputDir} \
+      --grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:${outputDir}`;
+    execSync(genCmd);
+  });
+
+  after(function() {
+    cleanup();
+  });
+
+  it('generated code should exist', function() {
+    assertFileExists('./tsc-tests/generated/echo_pb.js');
+    assertFileExists('./tsc-tests/generated/echo_pb.d.ts');
+    assertFileExists('./tsc-tests/generated/echo_grpc_web_pb.js');
+    assertFileExists('./tsc-tests/generated/echo_grpc_web_pb.d.ts');
+  });
+
+  it('tsc should run and export', function(done) {
+    const tscCmd = `tsc client04.ts generated/echo_pb.d.ts generated/echo_pb.js \
+      generated/echo_grpc_web_pb.d.ts generated/echo_grpc_web_pb.js \
+      --allowJs --strict --outDir ./dist`;
+    runTscCmd(tscCmd);
+
+    // check for the tsc output
+    assertFileExists('./tsc-tests/dist/client04.js');
+    assertFileExists('./tsc-tests/dist/generated/echo_pb.js');
+
+    const {echoService, EchoRequest} =
+      require(relativePath('./tsc-tests/dist/client04.js'));
+    assert.equal('function', typeof echoService.echo);
+    assert.equal('function', typeof echoService.serverStreamingEcho);
+
+    const req = new EchoRequest();
+    req.setMessage('aaa');
+    MockXMLHttpRequest.onSend = function(xhr) {
+      // The interceptor will attach "[-out-]" in front of our proto message.
+      // See the interceptor code in client04.ts.
+      // So by the time the proto is being sent by the underlying transport, it
+      // should contain the string "[-out-]aaa".
+      assert.equal('AAAAAAwKClstb3V0LV1hYWE=', xhr.body);
+      xhr.respond(200, {'Content-Type': 'application/grpc-web-text'},
+                  // echo it back
+                  xhr.body);
+    };
+    // this is the promise-based client
+    echoService.echo(req, {}).then((response) => {
       // Now, the interceptor will be invoked again on receiving the response
       // from the server. It attaches an additional "[-in-]" string in front of
       // the server response.

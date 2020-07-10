@@ -25,3 +25,9 @@ module.Request.prototype.getRequestMessage = function() {};
 module.Request.prototype.getMethodDescriptor = function() {};
 module.Request.prototype.getMetadata = function() {};
 module.Request.prototype.getCallOptions = function() {};
+
+module.UnaryResponse = function() {};
+module.UnaryResponse.prototype.getResponseMessage = function() {};
+module.UnaryResponse.prototype.getMetadata = function() {};
+module.UnaryResponse.prototype.getMethodDescriptor = function() {};
+module.UnaryResponse.prototype.getStatus = function() {};
