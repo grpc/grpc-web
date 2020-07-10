@@ -52,7 +52,15 @@ let child = exec(closureCommand);
 child.stdout.pipe(process.stdout);
 child.stderr.pipe(process.stderr);
 
-fs.symlinkSync(path.resolve(__dirname, "../index.js"),
-               path.resolve(__dirname, "../node_modules/grpc-web.js"));
-fs.symlinkSync(path.resolve(__dirname, "../index.d.ts"),
-               path.resolve(__dirname, "../node_modules/grpc-web.d.ts"));
+function createSymlink(target, path) {
+  fs.symlink(target, path, (err) => {
+    if (err && err.code != 'EEXIST') {
+      throw err;
+    }
+  });
+}
+
+createSymlink(path.resolve(__dirname, "../index.js"),
+              path.resolve(__dirname, "../node_modules/grpc-web.js"));
+createSymlink(path.resolve(__dirname, "../index.d.ts"),
+              path.resolve(__dirname, "../node_modules/grpc-web.d.ts"));

@@ -66,7 +66,13 @@ declare module "grpc-web" {
               invoker: (request: Request<Req, Resp>) =>
       ClientReadableStream<Resp>): ClientReadableStream<Resp>;
   }
-  
+
+  export interface UnaryInterceptor<Req, Resp> {
+    intercept(request: Request<Req, Resp>,
+              invoker: (request: Request<Req, Resp>) =>
+      Promise<UnaryResponse<Req, Resp>>): Promise<UnaryResponse<Req, Resp>>;
+  }
+
   export class CallOptions {
     constructor(options: { [index: string]: any; });
   }
