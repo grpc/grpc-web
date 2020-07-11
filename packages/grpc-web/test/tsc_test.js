@@ -149,7 +149,8 @@ describe('tsc test03: streamInterceptor', function() {
   });
 
   it('tsc should run and export', function(done) {
-    const tscCmd = `tsc client03.ts generated/echo_pb.d.ts generated/echo_pb.js \
+    const tscCmd = `tsc client03.ts \
+      generated/echo_pb.d.ts generated/echo_pb.js \
       generated/echo_grpc_web_pb.d.ts generated/echo_grpc_web_pb.js \
       ${tscCompilerOptions} --outDir ./dist`;
     runTscCmd(tscCmd);
@@ -213,7 +214,8 @@ describe('tsc test04: unaryInterceptor', function() {
   });
 
   it('tsc should run and export', function(done) {
-    const tscCmd = `tsc client04.ts generated/echo_pb.d.ts generated/echo_pb.js \
+    const tscCmd = `tsc client04.ts \
+      generated/echo_pb.d.ts generated/echo_pb.js \
       generated/echo_grpc_web_pb.d.ts generated/echo_grpc_web_pb.js \
       ${tscCompilerOptions} --outDir ./dist`;
     runTscCmd(tscCmd);
@@ -275,7 +277,8 @@ describe('tsc test05: callback-based client', function() {
   });
 
   it('tsc should run and export', function() {
-    const tscCmd = `tsc client05.ts generated/echo_pb.d.ts generated/echo_pb.js \
+    const tscCmd = `tsc client05.ts \
+      generated/echo_pb.d.ts generated/echo_pb.js \
       generated/echo_grpc_web_pb.d.ts generated/echo_grpc_web_pb.js \
       ${tscCompilerOptions} --outDir ./dist`;
     // this test only makes sure the TS client code compiles successfully
@@ -311,7 +314,8 @@ describe('tsc test06: promise-based client', function() {
   });
 
   it('tsc should run and export', function() {
-    const tscCmd = `tsc client06.ts generated/echo_pb.d.ts generated/echo_pb.js \
+    const tscCmd = `tsc client06.ts \
+      generated/echo_pb.d.ts generated/echo_pb.js \
       generated/echo_grpc_web_pb.d.ts generated/echo_grpc_web_pb.js \
       ${tscCompilerOptions} --outDir ./dist`;
     // this test only makes sure the TS client code compiles successfully

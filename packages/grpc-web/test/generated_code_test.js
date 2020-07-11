@@ -764,7 +764,8 @@ describe('grpc-web generated code: callbacks tests', function() {
     });
   });
 
-  it('should receive error, on response header error (streaming)', function(done) {
+  it('should receive error, on response header error (streaming)',
+     function(done) {
     done = multiDone(done, 2);
     MockXMLHttpRequest.onSend = function(xhr) {
       xhr.respond(
