@@ -28,7 +28,8 @@ describe('grpc-web generated code eval test (commonjs+dts)', function() {
   const genCodeCmd =
     'protoc -I=./test/protos foo.proto models.proto ' +
     '--js_out=import_style=commonjs:./test/generated ' +
-    '--grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:./test/generated';
+    '--grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:' +
+    './test/generated';
 
   before(function() {
     ['protoc', 'protoc-gen-grpc-web'].map(prog => {
@@ -55,7 +56,8 @@ describe('grpc-web generated code eval test (commonjs+dts)', function() {
 
 
 describe('grpc-web generated code eval test (typescript)', function() {
-  const genTsCodePath = path.resolve(__dirname, './generated/FooServiceClientPb.ts');
+  const genTsCodePath = path.resolve(__dirname,
+                                     './generated/FooServiceClientPb.ts');
 
   const genCodeCmd =
     'protoc -I=./test/protos foo.proto models.proto ' +

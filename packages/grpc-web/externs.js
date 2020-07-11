@@ -6,7 +6,8 @@ var module;
  */
 module.ClientReadableStream = function() {};
 module.ClientReadableStream.prototype.on = function(eventType, callback) {};
-module.ClientReadableStream.prototype.removeListener = function(eventType, callback) {};
+module.ClientReadableStream.prototype.removeListener =
+  function(eventType, callback) {};
 module.ClientReadableStream.prototype.cancel = function() {};
 
 module.GenericClient = function() {};
