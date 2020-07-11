@@ -81,6 +81,6 @@ describe('grpc-web generated code eval test (typescript)', function() {
 
   it('should eval', function() {
     execSync(genCodeCmd);
-    execSync(`tsc ${genTsCodePath}`);
+    execSync(`tsc --strict ${genTsCodePath}`);
   });
 });

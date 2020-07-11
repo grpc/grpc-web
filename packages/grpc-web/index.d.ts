@@ -45,8 +45,6 @@ declare module "grpc-web" {
         callback: (response: RESP) => void): ClientReadableStream<RESP>;
     on (eventType: "end",
         callback: () => void): ClientReadableStream<RESP>;
-    on (eventType: string,
-        callback: any): ClientReadableStream<RESP>;
 
     removeListener (eventType: "error",
                     callback: (err: Error) => void): void;
@@ -58,8 +56,6 @@ declare module "grpc-web" {
                     callback: (response: RESP) => void): void;
     removeListener (eventType: "end",
                     callback: () => void): void;
-    removeListener (eventType: string,
-                    callback: any): void;
                     
     cancel (): void;
   }

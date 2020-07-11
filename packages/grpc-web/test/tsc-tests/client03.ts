@@ -40,8 +40,14 @@ class MyStreamInterceptor implements grpcWeb.StreamInterceptor<
             callback(response);
           };
           this.stream.on(eventType, newCallback);
-        } else {
-          this.stream.on(eventType, callback);
+        } else if (eventType == 'error') {
+          this.stream.on('error', callback);
+        } else if (eventType == 'metadata') {
+          this.stream.on('metadata', callback);
+        } else if (eventType == 'status') {
+          this.stream.on('status', callback);
+        } else if (eventType == 'end') {
+          this.stream.on('end', callback);
         }
         return this;
       };

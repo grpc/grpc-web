@@ -46,6 +46,7 @@ function runTscCmd(tscCmd) {
   }
 }
 const outputDir = './test/tsc-tests/generated';
+const tscCompilerOptions = `--allowJs --strict --noImplicitReturns`
 
 describe('tsc test01: nested messages', function() {
   before(function() {
@@ -67,7 +68,7 @@ describe('tsc test01: nested messages', function() {
 
   it('tsc should run and export', function() {
     runTscCmd(`tsc client01.ts generated/test01_pb.d.ts generated/test01_pb.js \
-      --allowJs --strict --outDir ./dist`);
+      ${tscCompilerOptions} --outDir ./dist`);
 
     // check for the tsc output
     assertFileExists('./tsc-tests/dist/client01.js');
@@ -106,7 +107,7 @@ describe('tsc test02: simple rpc, messages in separate proto', function() {
     runTscCmd(`tsc client02.ts generated/Test02ServiceClientPb.ts \
       generated/test02_pb.d.ts generated/test02_pb.js \
       generated/test03_pb.d.ts generated/test03_pb.js \
-      --allowJs --strict --outDir ./dist`);
+      ${tscCompilerOptions} --outDir ./dist`);
 
     // check for the tsc output
     assertFileExists('./tsc-tests/dist/client02.js');
@@ -148,9 +149,10 @@ describe('tsc test03: streamInterceptor', function() {
   });
 
   it('tsc should run and export', function(done) {
-    runTscCmd(`tsc client03.ts generated/echo_pb.d.ts generated/echo_pb.js \
+    const tscCmd = `tsc client03.ts generated/echo_pb.d.ts generated/echo_pb.js \
       generated/echo_grpc_web_pb.d.ts generated/echo_grpc_web_pb.js \
-      --allowJs --strict --outDir ./dist`);
+      ${tscCompilerOptions} --outDir ./dist`;
+    runTscCmd(tscCmd);
 
     // check for the tsc output
     assertFileExists('./tsc-tests/dist/client03.js');
@@ -213,7 +215,7 @@ describe('tsc test04: unaryInterceptor', function() {
   it('tsc should run and export', function(done) {
     const tscCmd = `tsc client04.ts generated/echo_pb.d.ts generated/echo_pb.js \
       generated/echo_grpc_web_pb.d.ts generated/echo_grpc_web_pb.js \
-      --allowJs --strict --outDir ./dist`;
+      ${tscCompilerOptions} --outDir ./dist`;
     runTscCmd(tscCmd);
 
     // check for the tsc output
@@ -247,4 +249,76 @@ describe('tsc test04: unaryInterceptor', function() {
     });
   });
 
+});
+
+describe('tsc test05: callback-based client', function() {
+  before(function() {
+    cleanup();
+    createGeneratedCodeDir();
+    MockXMLHttpRequest = mockXmlHttpRequest.newMockXhr();
+    global.XMLHttpRequest = MockXMLHttpRequest;
+    const genCmd = `protoc -I=./test/protos echo.proto \
+      --js_out=import_style=commonjs:${outputDir} \
+      --grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:${outputDir}`;
+    execSync(genCmd);
+  });
+
+  after(function() {
+    cleanup();
+  });
+
+  it('generated code should exist', function() {
+    assertFileExists('./tsc-tests/generated/echo_pb.js');
+    assertFileExists('./tsc-tests/generated/echo_pb.d.ts');
+    assertFileExists('./tsc-tests/generated/echo_grpc_web_pb.js');
+    assertFileExists('./tsc-tests/generated/echo_grpc_web_pb.d.ts');
+  });
+
+  it('tsc should run and export', function() {
+    const tscCmd = `tsc client05.ts generated/echo_pb.d.ts generated/echo_pb.js \
+      generated/echo_grpc_web_pb.d.ts generated/echo_grpc_web_pb.js \
+      ${tscCompilerOptions} --outDir ./dist`;
+    // this test only makes sure the TS client code compiles successfully
+    runTscCmd(tscCmd);
+
+    // check for the tsc output
+    assertFileExists('./tsc-tests/dist/client05.js');
+    assertFileExists('./tsc-tests/dist/generated/echo_pb.js');
+  });
+});
+
+describe('tsc test06: promise-based client', function() {
+  before(function() {
+    cleanup();
+    createGeneratedCodeDir();
+    MockXMLHttpRequest = mockXmlHttpRequest.newMockXhr();
+    global.XMLHttpRequest = MockXMLHttpRequest;
+    const genCmd = `protoc -I=./test/protos echo.proto \
+      --js_out=import_style=commonjs:${outputDir} \
+      --grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:${outputDir}`;
+    execSync(genCmd);
+  });
+
+  after(function() {
+    cleanup();
+  });
+
+  it('generated code should exist', function() {
+    assertFileExists('./tsc-tests/generated/echo_pb.js');
+    assertFileExists('./tsc-tests/generated/echo_pb.d.ts');
+    assertFileExists('./tsc-tests/generated/echo_grpc_web_pb.js');
+    assertFileExists('./tsc-tests/generated/echo_grpc_web_pb.d.ts');
+  });
+
+  it('tsc should run and export', function() {
+    const tscCmd = `tsc client06.ts generated/echo_pb.d.ts generated/echo_pb.js \
+      generated/echo_grpc_web_pb.d.ts generated/echo_grpc_web_pb.js \
+      ${tscCompilerOptions} --outDir ./dist`;
+    // this test only makes sure the TS client code compiles successfully
+    runTscCmd(tscCmd);
+
+    // check for the tsc output
+    assertFileExists('./tsc-tests/dist/client06.js');
+    assertFileExists('./tsc-tests/dist/generated/echo_pb.js');
+  });
 });

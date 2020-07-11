@@ -18,10 +18,13 @@ package grpc.gateway.testing;
 
 message EchoRequest {
   string message = 1;
+  int32 value = 2;
 }
 
 message EchoResponse {
   string message = 1;
+  // to test Request and Response having a different shape
+  string value = 2;
 }
 
 message ServerStreamingEchoRequest {
