@@ -179,10 +179,6 @@ describe('grpc-web plugin test, proto with no package', function() {
     '--js_out=import_style=commonjs:./test/generated ' +
     '--grpc-web_out=import_style=commonjs,mode=grpcwebtext:./test/generated';
 
-  var request;
-  var myClient;
-  var myPromiseClient;
-
   before(function() {
     ['protoc', 'protoc-gen-grpc-web'].map(prog => {
       if (!commandExists(prog)) {
@@ -192,54 +188,41 @@ describe('grpc-web plugin test, proto with no package', function() {
 
     removeDirectory(path.resolve(__dirname, GENERATED_CODE_PATH));
     fs.mkdirSync(path.resolve(__dirname, GENERATED_CODE_PATH));
+    MockXMLHttpRequest = mockXmlHttpRequest.newMockXhr();
+    global.XMLHttpRequest = MockXMLHttpRequest;
 
     execSync(genCodeCmd);
     assert.equal(true, fs.existsSync(genCodePath1));
     assert.equal(true, fs.existsSync(genCodePath2));
-
-    const {HelloRequest} = require(genCodePath1);
-    request = new HelloRequest();
-
-    const {GreeterClient} = require(genCodePath2);
-    myClient = new GreeterClient("MyHostname", null, null);
-    assert.equal('function', typeof myClient.sayHello);
-
-    const {GreeterPromiseClient} = require(genCodePath2);
-    myPromiseClient = new GreeterPromiseClient("MyHostname", null, null);
-    assert.equal('function', typeof myPromiseClient.sayHello);
   });
 
-  beforeEach(function() {
-    removeDirectory(path.resolve(__dirname, GENERATED_CODE_PATH));
-    fs.mkdirSync(path.resolve(__dirname, GENERATED_CODE_PATH));
-    MockXMLHttpRequest = mockXmlHttpRequest.newMockXhr();
-    global.XMLHttpRequest = MockXMLHttpRequest;
-  });
-
-  afterEach(function() {
+  after(function() {
     removeDirectory(path.resolve(__dirname, GENERATED_CODE_PATH));
   });
 
   it('should import', function() {
+    const {HelloRequest} = require(genCodePath1);
+    var request = new HelloRequest();
+
     request.setName('abc');
     assert.equal('abc', request.getName());
   });
 
-  it('PromiseClient: should exist', function() {
-    var p = myPromiseClient.sayHello(request, {});
-    assert.equal('function', typeof p.then);
+  it('callback-based generated client: should exist', function() {
+    const {GreeterClient} = require(genCodePath2);
+    var myClient = new GreeterClient("MyHostname", null, null);
+
+    assert.equal('function', typeof myClient.sayHello);
   });
 
-  it('PromiseClient: response should resolve promise', function() {
-    MockXMLHttpRequest.onSend = function(xhr) {
-      xhr.respond(200, {'Content-Type': 'application/grpc-web-text'},
-                  // a single data frame with 'aaa' message, encoded
-                  'AAAAAAUKA2FhYQ==');
-    };
+  it('promise-based generated client: should exist', function() {
+    const {HelloRequest} = require(genCodePath1);
+    const {GreeterPromiseClient} = require(genCodePath2);
+    var myClient = new GreeterPromiseClient("MyHostname", null, null);
 
-    myPromiseClient.sayHello(request, {})
-                   .then((response) => {
-                     assert.equal('aaa', response.getMessage());
-                   });
+    assert.equal('function', typeof myClient.sayHello);
+
+    var p = myClient.sayHello(new HelloRequest(), {});
+    assert.equal('function', typeof p.then);
   });
 });

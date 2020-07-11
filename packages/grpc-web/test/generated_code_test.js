@@ -73,6 +73,72 @@ describe('protoc generated code', function() {
   });
 });
 
+describe('grpc-web generated code: promise-based client', function() {
+  const protoGenCodePath = path.resolve(__dirname, './echo_pb.js');
+  const genCodePath = path.resolve(__dirname, './echo_grpc_web_pb.js');
+
+  const genCodeCmd =
+    'protoc -I=./test/protos echo.proto ' +
+    '--js_out=import_style=commonjs:./test ' +
+    '--grpc-web_out=import_style=commonjs,mode=grpcwebtext:./test';
+
+  before(function() {
+    MockXMLHttpRequest = mockXmlHttpRequest.newMockXhr()
+    global.XMLHttpRequest = MockXMLHttpRequest;
+
+    execSync(genCodeCmd);
+    assert.equal(true, fs.existsSync(protoGenCodePath));
+    assert.equal(true, fs.existsSync(genCodePath));
+  });
+
+  after(function() {
+    fs.unlinkSync(protoGenCodePath);
+    fs.unlinkSync(genCodePath);
+  });
+
+  it('should receive unary response', function(done) {
+    const {EchoServicePromiseClient} = require(genCodePath);
+    const {EchoRequest} = require(protoGenCodePath);
+    var echoService = new EchoServicePromiseClient('MyHostname', null, null);
+    var request = new EchoRequest();
+    request.setMessage('aaa');
+
+    MockXMLHttpRequest.onSend = function(xhr) {
+      // a single data frame with message 'aaa'
+      assert.equal("AAAAAAUKA2FhYQ==", xhr.body);
+      xhr.respond(
+        200, {'Content-Type': 'application/grpc-web-text'},
+        // a single data frame with message 'aaa'
+        'AAAAAAUKA2FhYQ==');
+    };
+    echoService.echo(request, {})
+               .then((response) => {
+                 assert.equal('aaa', response.getMessage());
+                 done();
+               });
+  });
+
+  it('should receive error', function(done) {
+    const {EchoServicePromiseClient} = require(genCodePath);
+    const {EchoRequest} = require(protoGenCodePath);
+    var echoService = new EchoServicePromiseClient('MyHostname', null, null);
+    var request = new EchoRequest();
+    request.setMessage('aaa');
+
+    MockXMLHttpRequest.onSend = function(xhr) {
+      xhr.respond(
+        400, {'Content-Type': 'application/grpc-web-text'});
+    };
+    echoService.echo(request, {})
+               .then((response) => {
+                 assert.fail('should not receive response');
+               })
+               .catch((error) => {
+                 assert.equal(3, error.code);
+                 done();
+               });
+  });
+});
 
 describe('grpc-web generated code (commonjs+grpcwebtext)', function() {
   const oldXMLHttpRequest = global.XMLHttpRequest;
@@ -174,6 +240,7 @@ describe('grpc-web generated code (commonjs+grpcwebtext)', function() {
   });
 
   it('should receive streaming response', function(done) {
+    done = multiDone(done, 4); // done() should be called 4 times
     execSync(genCodeCmd);
     const {EchoServiceClient} = require(genCodePath);
     const {ServerStreamingEchoRequest} = require(protoGenCodePath);
@@ -182,25 +249,18 @@ describe('grpc-web generated code (commonjs+grpcwebtext)', function() {
     request.setMessage('aaa');
     request.setMessageCount(3);
     MockXMLHttpRequest.onSend = function(xhr) {
+      // a proto message of 1: "aaa", 2: 3, base64-encoded
+      assert.equal("AAAAAAcKA2FhYRAD", xhr.body);
       xhr.respond(200, {'Content-Type': 'application/grpc-web-text'},
                   // 3 'aaa' messages in 3 data frames, encoded
                   'AAAAAAUKA2FhYQAAAAAFCgNhYWEAAAAABQoDYWFh');
     };
-    var numMessagesReceived = 0;
-    var p = new Promise(function(resolve, reject) {
-      var stream =
-        echoService.serverStreamingEcho(request,
-                                        {'custom-header-1':'value1'});
-      stream.on('data', function(response) {
-        numMessagesReceived++;
-        assert.equal('aaa', response.getMessage());
-      });
-      stream.on('end', function() {
-        resolve();
-      });
+    var stream = echoService.serverStreamingEcho(request, {});
+    stream.on('data', function(response) {
+      assert.equal('aaa', response.getMessage());
+      done();
     });
-    p.then(function(res) {
-      assert.equal(3, numMessagesReceived);
+    stream.on('end', function() {
       done();
     });
   });
@@ -756,56 +816,4 @@ describe('grpc-web generated code: callbacks tests', function() {
     });
   });
 
-});
-
-describe('grpc-web generated code (commonjs+dts)', function() {
-  const protoGenCodePath = path.resolve(__dirname, './echo_pb.js');
-  const protoDtsGenCodePath = path.resolve(__dirname, './echo_pb.d.ts');
-  const genCodePath = path.resolve(__dirname, './echo_grpc_web_pb.js');
-  const genDtsCodePath = path.resolve(__dirname, './echo_grpc_web_pb.d.ts');
-
-  const genCodeCmd =
-    'protoc -I=./test/protos echo.proto ' +
-    '--js_out=import_style=commonjs:./test ' +
-    '--grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:./test';
-
-  before(function() {
-    ['protoc', 'protoc-gen-grpc-web'].map(prog => {
-      if (!commandExists(prog)) {
-        assert.fail(`${prog} is not installed`);
-      }
-    });
-  });
-
-  beforeEach(function() {
-    [protoGenCodePath, protoDtsGenCodePath,
-     genCodePath, genDtsCodePath].map(f => {
-       if (fs.existsSync(f)) {
-         fs.unlinkSync(f);
-       }
-     });
-  });
-
-  afterEach(function() {
-    [protoGenCodePath, protoDtsGenCodePath,
-     genCodePath, genDtsCodePath].map(f => {
-       if (fs.existsSync(f)) {
-         fs.unlinkSync(f);
-       }
-     });
-  });
-
-  it('should exist', function() {
-    execSync(genCodeCmd);
-    assert.equal(true, fs.existsSync(genCodePath));
-    assert.equal(true, fs.existsSync(genDtsCodePath));
-    assert.equal(true, fs.existsSync(protoGenCodePath));
-    assert.equal(true, fs.existsSync(protoDtsGenCodePath));
-  });
-
-  it('should compile', function() {
-    execSync(genCodeCmd);
-    execSync(`tsc ${genDtsCodePath}`);
-    execSync(`tsc ${protoDtsGenCodePath}`);
-  })
 });
