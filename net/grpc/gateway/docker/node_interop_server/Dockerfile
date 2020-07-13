@@ -24,7 +24,7 @@ RUN cd packages/grpc-native-core && \
   npm link
 
 RUN cd packages/proto-loader && \
-  npm install @types/mocha && \
+  npm install @types/mocha@7.0.2&& \
   npm install --unsafe-perm
 
 WORKDIR /github/grpc-node/test
