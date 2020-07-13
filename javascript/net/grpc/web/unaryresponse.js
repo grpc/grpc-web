@@ -6,7 +6,7 @@ goog.module('grpc.web.UnaryResponse');
 goog.module.declareLegacyNamespace();
 
 const Metadata = goog.requireType('grpc.web.Metadata');
-const MethodDescriptor = goog.requireType('grpc.web.MethodDescriptor');
+const MethodDescriptorInterface = goog.requireType('grpc.web.MethodDescriptorInterface');
 const {Status} = goog.requireType('grpc.web.Status');
 
 /**
@@ -28,7 +28,7 @@ class UnaryResponse {
 
   /**
    * @export
-   * @return {!MethodDescriptor<REQUEST, RESPONSE>}
+   * @return {!MethodDescriptorInterface<REQUEST, RESPONSE>}
    */
   getMethodDescriptor() {}
 
