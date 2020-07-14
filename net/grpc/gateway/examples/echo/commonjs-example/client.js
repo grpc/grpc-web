@@ -64,14 +64,6 @@ var echoApp = new EchoApp(
   {
     EchoRequest: EchoRequest,
     ServerStreamingEchoRequest: ServerStreamingEchoRequest
-  },
-  {
-    checkGrpcStatusCode: function(status) {
-      if (status.code != grpc.web.StatusCode.OK) {
-        EchoApp.addRightMessage('Error code: '+status.code+' "'+
-                                status.details+'"');
-      }
-    }
   }
 );
 

@@ -16,13 +16,14 @@ FROM grpcweb/common
 
 ARG MAKEFLAGS=-j8
 ARG BUILDIFIER_VERSION=1.0.0
-ARG BAZEL_VERSION=2.2.0
+ARG BAZEL_VERSION=3.4.1
 
 RUN echo "\nloglevel=error\n" >> $HOME/.npmrc
 
 WORKDIR /github/grpc-web
 
 COPY ./Makefile ./Makefile
+COPY ./WORKSPACE ./WORKSPACE
 COPY ./bazel ./bazel
 COPY ./javascript ./javascript
 COPY ./net ./net
@@ -40,7 +41,7 @@ RUN cd ./packages/grpc-web && \
 RUN wget -nv -O buildifier \
   https://github.com/bazelbuild/buildtools/releases/download/$BUILDIFIER_VERSION/buildifier && \
   chmod +x ./buildifier && \
-  ./buildifier --mode=check --lint=warn --warnings=all -r bazel javascript net && \
+  ./buildifier --mode=check --lint=warn --warnings=all -r ./WORKSPACE bazel javascript net && \
   rm ./buildifier
 
 RUN wget -nv -O bazel-installer.sh \

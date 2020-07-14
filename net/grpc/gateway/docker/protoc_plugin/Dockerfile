@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM debian:stretch
+FROM grpcweb/prereqs
 
 ARG MAKEFLAGS=-j8
 
@@ -28,8 +28,6 @@ RUN apt-get -qq update && apt-get -qq install -y \
   zip
 
 WORKDIR /github/grpc-web
-
-COPY . .
 
 RUN cd ./third_party/grpc/third_party/protobuf && \
   ./autogen.sh && ./configure && make && make install && ldconfig

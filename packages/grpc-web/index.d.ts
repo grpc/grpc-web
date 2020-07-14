@@ -3,44 +3,103 @@ declare module "grpc-web" {
   export interface Metadata { [s: string]: string; }
 
   export namespace AbstractClientBase {
-    class MethodInfo<Request, Response> {
-      constructor (responseType: new () => Response,
-                   requestSerializeFn: (request: Request) => {},
-                   responseDeserializeFn: (bytes: Uint8Array) => Response);
+    class MethodInfo<REQ, RESP> {
+      constructor (responseType: new () => RESP,
+                   requestSerializeFn: (request: REQ) => {},
+                   responseDeserializeFn: (bytes: Uint8Array) => RESP);
     }
   }
 
   export class AbstractClientBase {
-    unaryCall<Request, Response> (method: string,
-             request: Request,
-             metadata: Metadata,
-             methodInfo: AbstractClientBase.MethodInfo<Request, Response>
-            ): Promise<Response>;
+    thenableCall<REQ, RESP> (
+      method: string,
+      request: REQ,
+      metadata: Metadata,
+      methodDescriptor: MethodDescriptor<REQ, RESP>
+    ): Promise<RESP>;
 
-    rpcCall<Request, Response> (method: string,
-             request: Request,
-             metadata: Metadata,
-             methodInfo: AbstractClientBase.MethodInfo<Request, Response>,
-             callback: (err: Error, response: Response) => void
-            ): ClientReadableStream<Response>;
+    rpcCall<REQ, RESP> (
+      method: string,
+      request: REQ,
+      metadata: Metadata,
+      methodDescriptor: MethodDescriptor<REQ, RESP>,
+      callback: (err: Error, response: RESP) => void
+    ): ClientReadableStream<RESP>;
 
-    serverStreaming<Request, Response> (method: string,
-                     request: Request,
-                     metadata: Metadata,
-                     methodInfo: AbstractClientBase.MethodInfo<Request, Response>
-                    ): ClientReadableStream<Response>;
+    serverStreaming<REQ, RESP> (
+      method: string,
+      request: REQ,
+      metadata: Metadata,
+      methodDescriptor: MethodDescriptor<REQ, RESP>
+    ): ClientReadableStream<RESP>;
   }
 
-  export class ClientReadableStream<Response> {
-    on (type: "error",
-        callback: (err: Error) => void): ClientReadableStream<Response>;
-    on (type: "status",
-        callback: (status: Status) => void): ClientReadableStream<Response>;
-    on (type: "data",
-        callback: (response: Response) => void): ClientReadableStream<Response>;
-    on (type: "end",
-        callback: () => void): ClientReadableStream<Response>;
+  export class ClientReadableStream<RESP> {
+    on (eventType: "error",
+        callback: (err: Error) => void): ClientReadableStream<RESP>;
+    on (eventType: "status",
+        callback: (status: Status) => void): ClientReadableStream<RESP>;
+    on (eventType: "metadata",
+        callback: (status: Metadata) => void): ClientReadableStream<RESP>;
+    on (eventType: "data",
+        callback: (response: RESP) => void): ClientReadableStream<RESP>;
+    on (eventType: "end",
+        callback: () => void): ClientReadableStream<RESP>;
+
+    removeListener (eventType: "error",
+                    callback: (err: Error) => void): void;
+    removeListener (eventType: "status",
+                    callback: (status: Status) => void): void;
+    removeListener (eventType: "metadata",
+                    callback: (status: Metadata) => void): void;
+    removeListener (eventType: "data",
+                    callback: (response: RESP) => void): void;
+    removeListener (eventType: "end",
+                    callback: () => void): void;
+                    
     cancel (): void;
+  }
+
+  export interface StreamInterceptor<REQ, RESP> {
+    intercept(request: Request<REQ, RESP>,
+              invoker: (request: Request<REQ, RESP>) =>
+      ClientReadableStream<RESP>): ClientReadableStream<RESP>;
+  }
+
+  export interface UnaryInterceptor<REQ, RESP> {
+    intercept(request: Request<REQ, RESP>,
+              invoker: (request: Request<REQ, RESP>) =>
+      Promise<UnaryResponse<REQ, RESP>>): Promise<UnaryResponse<REQ, RESP>>;
+  }
+
+  export class CallOptions {
+    constructor(options: { [index: string]: any; });
+  }
+
+  export class MethodDescriptor<REQ, RESP> {
+    constructor(name: string,
+                methodType: any,
+                requestType: any,
+                responseType: any,
+                requestSerializeFn: any,
+                responseDeserializeFn: any);
+    createRequest(requestMessage: REQ,
+                  metadata: Metadata,
+                  callOptions: CallOptions): UnaryResponse<REQ, RESP>;
+  }
+  
+  export class Request<REQ, RESP> {
+    getRequestMessage(): REQ;
+    getMethodDescriptor(): MethodDescriptor<REQ, RESP>;
+    getMetadata(): Metadata;
+    getCallOptions(): CallOptions;
+  }
+  
+  export class UnaryResponse<REQ, RESP> {
+    getResponseMessage(): RESP;
+    getMetadata(): Metadata;
+    getMethodDescriptor(): MethodDescriptor<REQ, RESP>;
+    getStatus(): Status;
   }
 
   export interface GrpcWebClientBaseOptions {

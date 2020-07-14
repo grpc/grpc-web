@@ -45,7 +45,7 @@ a nice response and send it back to the client via `callback(null, response)`.
 ```js
 var PROTO_PATH = __dirname + '/helloworld.proto';
 
-var grpc = require('grpc');
+var grpc = require('@grpc/grpc-js');
 var protoLoader = require('@grpc/proto-loader');
 var packageDefinition = protoLoader.loadSync(
     PROTO_PATH,
@@ -74,8 +74,11 @@ function getServer() {
 
 if (require.main === module) {
   var server = getServer();
-  server.bind('0.0.0.0:9090', grpc.ServerCredentials.createInsecure());
-  server.start();
+  server.bindAsync(
+    '0.0.0.0:9090', grpc.ServerCredentials.createInsecure(), (err, port) => {
+      assert.ifError(err);
+      server.start();
+  });
 }
 
 exports.getServer = getServer;
@@ -89,11 +92,6 @@ Envoy to listen at port `:8080`, and forward any gRPC-Web requests to a
 cluster at port `:9090`.
 
 ```yaml
-admin:
-  access_log_path: /tmp/admin_access.log
-  address:
-    socket_address: { address: 0.0.0.0, port_value: 9901 }
-
 static_resources:
   listeners:
   - name: listener_0
@@ -132,32 +130,23 @@ static_resources:
     type: logical_dns
     http2_protocol_options: {}
     lb_policy: round_robin
-    hosts: [{ socket_address: { address: localhost, port_value: 9090 }}]
+    hosts: [{ socket_address: { address: 0.0.0.0, port_value: 9090 }}]
 ```
 
-NOTE: As per [this issue](https://github.com/grpc/grpc-web/issues/436): if
-you are running Docker on Mac/Windows, change the last line to
-
-```yaml
-    ...
-    hosts: [{ socket_address: { address: host.docker.internal, port_value: 9090 }}]
-```
-
-or if your version of Docker on Mac older then v18.03.0, change it to:
-
-```yaml
-    ...
-    hosts: [{ socket_address: { address: docker.for.mac.localhost, port_value: 9090 }}]
-```
-
-To run Envoy (for later), you will need a simple Dockerfile. Put this in a
-`envoy.Dockerfile`.
-
-```dockerfile
-FROM envoyproxy/envoy:v1.14.1
-COPY ./envoy.yaml /etc/envoy/envoy.yaml
-CMD /usr/local/bin/envoy -c /etc/envoy/envoy.yaml
-```
+> NOTE: As per [this issue](https://github.com/grpc/grpc-web/issues/436): if
+> you are running Docker on Mac/Windows, change the last line to
+>
+> ```yaml
+>     ...
+>     hosts: [{ socket_address: { address: host.docker.internal, port_value: 9090 }}]
+> ```
+>
+> or if your version of Docker on Mac older then v18.03.0, change it to:
+>
+> ```yaml
+>     ...
+>     hosts: [{ socket_address: { address: docker.for.mac.localhost, port_value: 9090 }}]
+> ```
 
 ## Write Client Code
 
@@ -194,12 +183,13 @@ the `client.js` files.
   "name": "grpc-web-simple-example",
   "version": "0.1.0",
   "description": "gRPC-Web simple example",
+  "main": "server.js",
   "devDependencies": {
+    "@grpc/grpc-js": "~1.0.5",
     "@grpc/proto-loader": "~0.5.4",
     "async": "~1.5.2",
     "google-protobuf": "~3.12.0",
-    "grpc": "~1.24.2",
-    "grpc-web": "~1.1.0",
+    "grpc-web": "~1.2.0",
     "lodash": "~4.17.0",
     "webpack": "~4.43.0",
     "webpack-cli": "~3.3.11"
@@ -232,24 +222,26 @@ And that's it! We have all the code ready. Let's run the example!
 ## Generate Protobuf Messages and Client Service Stub
 
 To generate the protobuf messages and client service stub class from your
-`.proto` definitions, we need the `protoc` binary and the
-`protoc-gen-grpc-web` plugin.
+`.proto` definitions, we need:
+ - the `protoc` binary, _and_
+ - the `protoc-gen-grpc-web` plugin.
 
-You can download the `protoc-gen-grpc-web` protoc plugin from our
-[release](https://github.com/grpc/grpc-web/releases) page:
+> You can download the `protoc-gen-grpc-web` protoc plugin from our
+> [release](https://github.com/grpc/grpc-web/releases) page.
+>
+> If you don't already have `protoc` installed, you will have to download it
+> first from [here](https://github.com/protocolbuffers/protobuf/releases).
+>
+> Make sure they are both executable and are discoverable from your PATH.
+>
+> For example, in MacOS, you can do:
+>
+> ```sh
+> $ sudo mv ~/Downloads/protoc-gen-grpc-web-1.2.0-darwin-x86_64 \
+>   /usr/local/bin/protoc-gen-grpc-web
+> $ sudo chmod +x /usr/local/bin/protoc-gen-grpc-web
+> ```
 
-If you don't already have `protoc` installed, you will have to download it
-first from [here](https://github.com/protocolbuffers/protobuf/releases).
-
-Make sure they are both executable and are discoverable from your PATH.
-
-For example, in MacOS, you can do:
-
-```
-$ sudo mv ~/Downloads/protoc-gen-grpc-web-1.1.0-darwin-x86_64 \
-  /usr/local/bin/protoc-gen-grpc-web
-$ chmod +x /usr/local/bin/protoc-gen-grpc-web
-```
 
 When you have both `protoc` and `protoc-gen-grpc-web` installed, you can now
 run this command:
@@ -301,26 +293,20 @@ run the 3 processes all in the background.
  above).
 
  ```sh
- $ docker build -t helloworld/envoy -f ./envoy.Dockerfile .
- $ docker run -d -p 8080:8080 -p 9901:9901 --network=host helloworld/envoy
+ $ docker run -d -v "$(pwd)"/envoy.yaml:/etc/envoy/envoy.yaml:ro \
+     --network=host envoyproxy/envoy:v1.15.0
  ```
 
-NOTE: As per [this issue](https://github.com/grpc/grpc-web/issues/436):
-if you are running Docker on Mac/Windows, remove the `--network=host` option:
-
- ```sh
- ...
- $ docker run -d -p 8080:8080 -p 9901:9901 helloworld/envoy
- ```
+> NOTE: As per [this issue](https://github.com/grpc/grpc-web/issues/436):
+> if you are running Docker on Mac/Windows, remove the `--network=host` option:
+>
+> ```sh
+> $ docker run -d -v "$(pwd)"/envoy.yaml:/etc/envoy/envoy.yaml:ro \
+>     -p 8080:8080 -p 9901:9901 envoyproxy/envoy:v1.15.0
+>  ```
 
  3. Run the simple Web Server. This hosts the static file `index.html` and
  `dist/main.js` we generated earlier.
-
- ```sh
- $ python2 -m SimpleHTTPServer 8081 &
- ```
-
- or for Python 3.x
 
  ```sh
  $ python3 -m http.server 8081 &
@@ -336,9 +322,4 @@ Open up the developer console and you should see the following printed out:
 
 ```
 Hello! World
-```
-
-You can also browse to the envoy admin via
-```
-localhost:9901
 ```

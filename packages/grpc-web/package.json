@@ -1,6 +1,6 @@
 {
   "name": "grpc-web",
-  "version": "1.1.0",
+  "version": "1.2.1",
   "author": "Google Inc.",
   "description": "gRPC-Web Client Runtime Library",
   "homepage": "https://grpc.io/",
@@ -17,12 +17,13 @@
   "typings": "index.d.ts",
   "scripts": {
     "build": "node scripts/build.js",
-    "prepare": "npm run build && require-self",
+    "prepare": "npm run build",
     "prepublishOnly": "npm run build",
     "test": "mocha --timeout 60000 \"./test/**/*_test.js\""
   },
   "license": "Apache-2.0",
   "devDependencies": {
+    "@types/google-protobuf": "~3.7.0",
     "command-exists": "~1.2.8",
     "google-closure-compiler": "~20200224.0.0",
     "google-protobuf": "~3.12.0",
@@ -30,7 +31,6 @@
     "gulp-eval": "~1.0.0",
     "mocha": "~5.2.0",
     "mock-xmlhttprequest": "~2.0.0",
-    "require-self": "0.2.1",
     "typescript": "~3.8.0"
   }
 }

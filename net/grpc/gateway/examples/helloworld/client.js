@@ -28,7 +28,12 @@ var request = new HelloRequest();
 request.setName('World');
 
 client.sayHello(request, {}, (err, response) => {
-  console.log(response.getMessage());
+  if (err) {
+    console.log(`Unexpected error for sayHello: code = ${err.code}` +
+                `, message = "${err.message}"`);
+  } else {
+    console.log(response.getMessage());
+  }
 });
 
 
@@ -41,14 +46,7 @@ var stream = client.sayRepeatHello(streamRequest, {});
 stream.on('data', (response) => {
   console.log(response.getMessage());
 });
-  
-
-// deadline exceeded
-var deadline = new Date();
-deadline.setSeconds(deadline.getSeconds() + 1);
-
-client.sayHelloAfterDelay(request, {deadline: deadline.getTime()},
-  (err, response) => {
-    console.log('Got error, code = ' + err.code +
-                ', message = ' + err.message);
-  });
+stream.on('error', (err) => {
+  console.log(`Unexpected stream error: code = ${err.code}` +
+              `, message = "${err.message}"`);
+});

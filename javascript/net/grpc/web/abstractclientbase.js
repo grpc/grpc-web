@@ -97,6 +97,7 @@ AbstractClientBase.prototype.rpcCall = function(
 
 /**
  * @abstract
+ * @protected
  * @template REQUEST, RESPONSE
  * @param {string} method The method to invoke
  * @param {REQUEST} requestMessage The request proto
@@ -104,10 +105,10 @@ AbstractClientBase.prototype.rpcCall = function(
  * @param {!MethodDescriptor<REQUEST, RESPONSE>|
  *     !AbstractClientBase.MethodInfo<REQUEST,RESPONSE>}
  *   methodDescriptor Information of this RPC method
- * @return {!Promise<!RESPONSE>}
+ * @return {!IThenable <!RESPONSE>}
  *   A promise that resolves to the response message
  */
-AbstractClientBase.prototype.unaryCall = function(
+AbstractClientBase.prototype.thenableCall = function(
     method, requestMessage, metadata, methodDescriptor) {};
 
 

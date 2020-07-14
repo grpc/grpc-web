@@ -21,8 +21,6 @@ service Greeter {
   rpc SayHello(HelloRequest) returns (HelloReply);
   // server streaming call
   rpc SayRepeatHello(RepeatHelloRequest) returns (stream HelloReply);
-  // unary call - response after a length delay
-  rpc SayHelloAfterDelay(HelloRequest) returns (HelloReply);
 }
 
 message HelloRequest {

@@ -103,7 +103,6 @@ closure_js_library(
         ":requester",
         ":status",
         ":statuscode",
-        ":unaryresponse",
         "@io_bazel_rules_closure//closure/library/crypt:base64",
         "@io_bazel_rules_closure//closure/library/net:xhrio",
         "@io_bazel_rules_closure//closure/library/net/rpc:httpcors",
@@ -121,6 +120,7 @@ closure_js_library(
     visibility = ["//visibility:public"],
     deps = [
         ":clientreadablestream",
+        ":error",
         ":generictransportinterface",
         ":grpcwebstreamparser",
         ":status",
@@ -159,7 +159,6 @@ closure_js_library(
     deps = [
         ":clientreadablestream",
         ":requester",
-        ":unaryresponse",
     ],
 )
 
@@ -183,8 +182,11 @@ closure_js_library(
     name = "requester",
     srcs = [
         "methoddescriptor.js",
+        "methoddescriptorinterface.js",
         "request.js",
         "requestinternal.js",
+        "unaryresponse.js",
+        "unaryresponseinternal.js",
     ],
     suppress = [
         "reportUnknownTypes",
@@ -211,21 +213,6 @@ closure_js_library(
         "statuscode.js",
     ],
     visibility = ["//visibility:public"],
-)
-
-closure_js_library(
-    name = "unaryresponse",
-    srcs = [
-        "unaryresponse.js",
-    ],
-    suppress = [
-        "reportUnknownTypes",
-    ],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":metadata",
-        ":status",
-    ],
 )
 
 closure_js_test(

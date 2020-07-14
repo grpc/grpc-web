@@ -21,12 +21,10 @@ const echoapp = {};
 /**
  * @param {Object} echoService
  * @param {Object} ctors
- * @param {Object} handlers
  */
-echoapp.EchoApp = function(echoService, ctors, handlers) {
+echoapp.EchoApp = function(echoService, ctors) {
   this.echoService = echoService;
   this.ctors = ctors;
-  this.handlers = handlers;
 };
 
 echoapp.EchoApp.INTERVAL = 500; // ms
@@ -64,7 +62,6 @@ echoapp.EchoApp.prototype.echo = function(msg) {
   echoapp.EchoApp.addLeftMessage(msg);
   var unaryRequest = new this.ctors.EchoRequest();
   unaryRequest.setMessage(msg);
-  var self = this;
   var call = this.echoService.echo(unaryRequest,
                                    {"custom-header-1": "value1"},
                                    function(err, response) {
@@ -78,7 +75,6 @@ echoapp.EchoApp.prototype.echo = function(msg) {
     }
   });
   call.on('status', function(status) {
-    self.handlers.checkGrpcStatusCode(status);
     if (status.metadata) {
       console.log("Received metadata");
       console.log(status.metadata);
@@ -118,12 +114,10 @@ echoapp.EchoApp.prototype.repeatEcho = function(msg, count) {
   var stream = this.echoService.serverStreamingEcho(
     streamRequest,
     {"custom-header-1": "value1"});
-  var self = this;
   stream.on('data', function(response) {
     echoapp.EchoApp.addRightMessage(response.getMessage());
   });
   stream.on('status', function(status) {
-    self.handlers.checkGrpcStatusCode(status);
     if (status.metadata) {
       console.log("Received metadata");
       console.log(status.metadata);

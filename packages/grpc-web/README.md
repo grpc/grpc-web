@@ -4,8 +4,7 @@ gRPC-Web provides a Javascript library that lets browser clients access a gRPC
 service. You can find out much more about gRPC in its own
 [website](https://grpc.io).
 
-The current release is a Beta release, and we expect to announce
-General-Availability by Oct. 2018.
+gRPC-Web is now Generally Available, and considered stable enough for production use.
 
 gRPC-Web clients connect to gRPC services via a special gateway proxy: the
 current version of the library uses [Envoy](https://www.envoyproxy.io/) by
@@ -38,14 +37,6 @@ You can download the `protoc-gen-grpc-web` protoc plugin from our Github
 
 
 Make sure they are both executable and are discoverable from your PATH.
-
-For example, in MacOS, you can do:
-
-```
-$ sudo mv ~/Downloads/protoc-gen-grpc-web-1.1.0-darwin-x86_64 \
-  /usr/local/bin/protoc-gen-grpc-web
-$ chmod +x /usr/local/bin/protoc-gen-grpc-web
-```
 
 
  3. Generate your proto messages and the service client stub classes with

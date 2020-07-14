@@ -49,68 +49,199 @@ const asserts = goog.require('goog.asserts');
 
 /**
  * The default grpc-web stream parser.
- *
- * @constructor
- * @struct
  * @implements {StreamParser}
  * @final
  */
-const GrpcWebStreamParser = function() {
-  /**
-   * The current error message, if any.
-   * @private {?string}
-   */
-  this.errorMessage_ = null;
+class GrpcWebStreamParser {
+  constructor() {
+    /**
+     * The current error message, if any.
+     * @private {?string}
+     */
+    this.errorMessage_ = null;
+
+    /**
+     * The currently buffered result (parsed messages).
+     * @private {!Array<!Object>}
+     */
+    this.result_ = [];
+
+    /**
+     * The current position in the streamed data.
+     * @private {number}
+     */
+    this.streamPos_ = 0;
+
+    /**
+     * The current parser state.
+     * @private {number}
+     */
+    this.state_ = Parser.State_.INIT;
+
+    /**
+     * The current frame byte being parsed
+     * @private {number}
+     */
+    this.frame_ = 0;
+
+    /**
+     * The length of the proto message being parsed.
+     * @private {number}
+     */
+    this.length_ = 0;
+
+    /**
+     * Count of processed length bytes.
+     * @private {number}
+     */
+    this.countLengthBytes_ = 0;
+
+    /**
+     * Raw bytes of the current message. Uses Uint8Array by default. Falls back
+     * to native array when Uint8Array is unsupported.
+     * @private {?Uint8Array|?Array<number>}
+     */
+    this.messageBuffer_ = null;
+
+    /**
+     * Count of processed message bytes.
+     * @private {number}
+     */
+    this.countMessageBytes_ = 0;
+  }
 
   /**
-   * The currently buffered result (parsed messages).
-   * @private {!Array<!Object>}
+   * @override
    */
-  this.result_ = [];
+  isInputValid() {
+    return this.state_ != Parser.State_.INVALID;
+  }
 
   /**
-   * The current position in the streamed data.
-   * @private {number}
+   * @override
    */
-  this.streamPos_ = 0;
+  getErrorMessage() {
+    return this.errorMessage_;
+  }
 
   /**
-   * The current parser state.
-   * @private {number}
+   * Parse the new input.
+   *
+   * Note that there is no Parser state to indicate the end of a stream.
+   *
+   * @param {string|!ArrayBuffer|!Uint8Array|!Array<number>} input The input
+   *     data
+   * @throws {!Error} Throws an error message if the input is invalid.
+   * @return {?Array<string|!Object>} any parsed objects (atomic messages)
+   *    in an array, or null if more data needs be read to parse any new object.
+   * @override
    */
-  this.state_ = Parser.State_.INIT;
+  parse(input) {
+    asserts.assert(
+        input instanceof Array || input instanceof ArrayBuffer ||
+        input instanceof Uint8Array);
 
-  /**
-   * The current frame byte being parsed
-   * @private {number}
-   */
-  this.frame_ = 0;
+    var parser = this;
+    var inputBytes;
+    var pos = 0;
 
-  /**
-   * The length of the proto message being parsed.
-   * @private {number}
-   */
-  this.length_ = 0;
+    if (input instanceof Uint8Array || input instanceof Array) {
+      inputBytes = input;
+    } else {
+      inputBytes = new Uint8Array(input);
+    }
 
-  /**
-   * Count of processed length bytes.
-   * @private {number}
-   */
-  this.countLengthBytes_ = 0;
+    while (pos < inputBytes.length) {
+      switch (parser.state_) {
+        case Parser.State_.INVALID: {
+          parser.error_(inputBytes, pos, 'stream already broken');
+          break;
+        }
+        case Parser.State_.INIT: {
+          processFrameByte(inputBytes[pos]);
+          break;
+        }
+        case Parser.State_.LENGTH: {
+          processLengthByte(inputBytes[pos]);
+          break;
+        }
+        case Parser.State_.MESSAGE: {
+          processMessageByte(inputBytes[pos]);
+          break;
+        }
+        default: {
+          throw new Error('unexpected parser state: ' + parser.state_);
+        }
+      }
 
-  /**
-   * Raw bytes of the current message. Uses Uint8Array by default. Falls back to
-   * native array when Uint8Array is unsupported.
-   * @private {?Uint8Array|?Array<number>}
-   */
-  this.messageBuffer_ = null;
+      parser.streamPos_++;
+      pos++;
+    }
 
-  /**
-   * Count of processed message bytes.
-   * @private {number}
-   */
-  this.countMessageBytes_ = 0;
-};
+    var msgs = parser.result_;
+    parser.result_ = [];
+    return msgs.length > 0 ? msgs : null;
+
+    /**
+     * @param {number} b A frame byte to process
+     */
+    function processFrameByte(b) {
+      if (b == FrameType.DATA) {
+        parser.frame_ = b;
+      } else if (b == FrameType.TRAILER) {
+        parser.frame_ = b;
+      } else {
+        parser.error_(inputBytes, pos, 'invalid frame byte');
+      }
+
+      parser.state_ = Parser.State_.LENGTH;
+      parser.length_ = 0;
+      parser.countLengthBytes_ = 0;
+    }
+
+    /**
+     * @param {number} b A length byte to process
+     */
+    function processLengthByte(b) {
+      parser.countLengthBytes_++;
+      parser.length_ = (parser.length_ << 8) + b;
+
+      if (parser.countLengthBytes_ == 4) {  // no more length byte
+        parser.state_ = Parser.State_.MESSAGE;
+        parser.countMessageBytes_ = 0;
+        if (typeof Uint8Array !== 'undefined') {
+          parser.messageBuffer_ = new Uint8Array(parser.length_);
+        } else {
+          parser.messageBuffer_ = new Array(parser.length_);
+        }
+
+        if (parser.length_ == 0) {  // empty message
+          finishMessage();
+        }
+      }
+    }
+
+    /**
+     * @param {number} b A message byte to process
+     */
+    function processMessageByte(b) {
+      parser.messageBuffer_[parser.countMessageBytes_++] = b;
+      if (parser.countMessageBytes_ == parser.length_) {
+        finishMessage();
+      }
+    }
+
+    /**
+     * Finishes up building the current message and resets parser state
+     */
+    function finishMessage() {
+      var message = {};
+      message[parser.frame_] = parser.messageBuffer_;
+      parser.result_.push(message);
+      parser.state_ = Parser.State_.INIT;
+    }
+  }
+}
 
 
 const Parser = GrpcWebStreamParser;
@@ -133,28 +264,13 @@ Parser.State_ = {
  * @enum {number}
  */
 GrpcWebStreamParser.FrameType = {
-  DATA:    0x00,   // expecting a data frame
-  TRAILER: 0x80,   // expecting a trailer frame
+  DATA: 0x00,     // expecting a data frame
+  TRAILER: 0x80,  // expecting a trailer frame
 };
 
 
 var FrameType = GrpcWebStreamParser.FrameType;
 
-
-/**
- * @override
- */
-GrpcWebStreamParser.prototype.isInputValid = function() {
-  return this.state_ != Parser.State_.INVALID;
-};
-
-
-/**
- * @override
- */
-GrpcWebStreamParser.prototype.getErrorMessage = function() {
-  return this.errorMessage_;
-};
 
 
 /**
@@ -171,120 +287,6 @@ Parser.prototype.error_ = function(inputBytes, pos, errorMsg) {
       'Error: ' + errorMsg + '. ' +
       'With input:\n' + inputBytes;
   throw new Error(this.errorMessage_);
-};
-
-
-/**
- * Parse the new input.
- *
- * Note that there is no Parser state to indicate the end of a stream.
- *
- * @param {string|!ArrayBuffer|!Uint8Array|!Array<number>} input The input data
- * @throws {!Error} Throws an error message if the input is invalid.
- * @return {?Array<string|!Object>} any parsed objects (atomic messages)
- *    in an array, or null if more data needs be read to parse any new object.
- * @override
- */
-GrpcWebStreamParser.prototype.parse = function(input) {
-  asserts.assert(input instanceof Array || input instanceof ArrayBuffer || input instanceof Uint8Array);
-
-  var parser = this;
-  var inputBytes;
-  var pos = 0;
-
-  if (input instanceof Uint8Array || input instanceof Array) {
-    inputBytes = input;
-  } else {
-    inputBytes = new Uint8Array(input);
-  }
-
-  while (pos < inputBytes.length) {
-    switch (parser.state_) {
-      case Parser.State_.INVALID: {
-        parser.error_(inputBytes, pos, 'stream already broken');
-        break;
-      }
-      case Parser.State_.INIT: {
-        processFrameByte(inputBytes[pos]);
-        break;
-      }
-      case Parser.State_.LENGTH: {
-        processLengthByte(inputBytes[pos]);
-        break;
-      }
-      case Parser.State_.MESSAGE: {
-        processMessageByte(inputBytes[pos]);
-        break;
-      }
-      default: { throw new Error('unexpected parser state: ' + parser.state_); }
-    }
-
-    parser.streamPos_++;
-    pos++;
-  }
-
-  var msgs = parser.result_;
-  parser.result_ = [];
-  return msgs.length > 0 ? msgs : null;
-
-  /**
-   * @param {number} b A frame byte to process
-   */
-  function processFrameByte(b) {
-    if (b == FrameType.DATA) {
-      parser.frame_ = b;
-    } else if (b == FrameType.TRAILER) {
-      parser.frame_ = b;
-    } else {
-      parser.error_(inputBytes, pos, 'invalid frame byte');
-    }
-
-    parser.state_ = Parser.State_.LENGTH;
-    parser.length_ = 0;
-    parser.countLengthBytes_ = 0;
-  }
-
-  /**
-   * @param {number} b A length byte to process
-   */
-  function processLengthByte(b) {
-    parser.countLengthBytes_++;
-    parser.length_ = (parser.length_ << 8) + b;
-
-    if (parser.countLengthBytes_ == 4) {  // no more length byte
-      parser.state_ = Parser.State_.MESSAGE;
-      parser.countMessageBytes_ = 0;
-      if (typeof Uint8Array !== 'undefined') {
-        parser.messageBuffer_ = new Uint8Array(parser.length_);
-      } else {
-        parser.messageBuffer_ = new Array(parser.length_);
-      }
-
-      if (parser.length_ == 0) {  // empty message
-        finishMessage();
-      }
-    }
-  }
-
-  /**
-   * @param {number} b A message byte to process
-   */
-  function processMessageByte(b) {
-    parser.messageBuffer_[parser.countMessageBytes_++] = b;
-    if (parser.countMessageBytes_ == parser.length_) {
-      finishMessage();
-    }
-  }
-
-  /**
-   * Finishes up building the current message and resets parser state
-   */
-  function finishMessage() {
-    var message = {};
-    message[parser.frame_] = parser.messageBuffer_;
-    parser.result_.push(message);
-    parser.state_ = Parser.State_.INIT;
-  }
 };
 
 

@@ -1,8 +1,24 @@
+/*
+ * Copyright 2020  Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.google.grpcweb;
 
 import com.google.grpcweb.MessageHandler.ContentType;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,7 +30,9 @@ import org.apache.commons.io.IOUtils;
  * Reads frames from the input bytes and returns a single message.
  */
 class MessageDeframer {
-  private static final Logger LOGGER = Logger.getLogger(MessageDeframer.class.getName());
+  private static final Logger LOG =
+      Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
+
   static final byte DATA_BYTE = (byte) 0x00;
 
   // TODO: fix this code to be able to handle upto 4GB input size.
@@ -40,11 +58,11 @@ class MessageDeframer {
         inBytes = IOUtils.toByteArray(inStream);
     } catch (IOException e) {
       e.printStackTrace();
-      LOGGER.warning("invalid input");
+      LOG.warning("invalid input");
       return false;
     }
     if (inBytes.length < 5) {
-      LOGGER.fine("invalid input. Expected minimum of 5 bytes");
+      LOG.fine("invalid input. Expected minimum of 5 bytes");
       return false;
     }
 
@@ -73,7 +91,7 @@ class MessageDeframer {
     // Firstbyte should be 0x00 (for this to be a DATA frame)
     int firstByteValue = inBytes[mReadSoFar] | DATA_BYTE;
     if (firstByteValue != 0) {
-      LOGGER.fine("done with DATA bytes");
+      LOG.fine("done with DATA bytes");
       return false;
     }
 
@@ -91,7 +109,7 @@ class MessageDeframer {
     // Make sure we have enough bytes in the inputstream
     int expectedNumBytes = len + 5 + mReadSoFar;
     if (inBytes.length < expectedNumBytes) {
-      LOGGER.warning(String.format("input doesn't have enough bytes. expected: %d, found %d",
+      LOG.warning(String.format("input doesn't have enough bytes. expected: %d, found %d",
           expectedNumBytes,  inBytes.length));
       return false;
     }

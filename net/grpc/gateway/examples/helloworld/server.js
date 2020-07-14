@@ -18,9 +18,10 @@
 
 var PROTO_PATH = __dirname + '/helloworld.proto';
 
-var grpc = require('grpc');
-var _ = require('lodash');
+var assert = require('assert');
 var async = require('async');
+var _ = require('lodash');
+var grpc = require('@grpc/grpc-js');
 var protoLoader = require('@grpc/proto-loader');
 var packageDefinition = protoLoader.loadSync(
     PROTO_PATH,
@@ -63,23 +64,6 @@ function doSayRepeatHello(call) {
 }
 
 /**
- * @param {!Object} call
- * @param {function():?} callback
- */
-function doSayHelloAfterDelay(call, callback) {
-  function dummy() {
-    return (cb) => {
-      _.delay(cb, 5000);
-    };
-  }
-  async.series([dummy()], () => {
-    callback(null, {
-      message: 'Hello! '+call.request.name
-    });
-  });
-}
-
-/**
  * @return {!Object} gRPC server
  */
 function getServer() {
@@ -87,15 +71,17 @@ function getServer() {
   server.addService(helloworld.Greeter.service, {
     sayHello: doSayHello,
     sayRepeatHello: doSayRepeatHello,
-    sayHelloAfterDelay: doSayHelloAfterDelay
   });
   return server;
 }
 
 if (require.main === module) {
   var server = getServer();
-  server.bind('0.0.0.0:9090', grpc.ServerCredentials.createInsecure());
-  server.start();
+  server.bindAsync(
+    '0.0.0.0:9090', grpc.ServerCredentials.createInsecure(), (err, port) => {
+      assert.ifError(err);
+      server.start();
+  });
 }
 
 exports.getServer = getServer;
