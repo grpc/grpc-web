@@ -7,7 +7,7 @@ goog.module.declareLegacyNamespace();
 
 const CallOptions = goog.require('grpc.web.CallOptions');
 const Metadata = goog.require('grpc.web.Metadata');
-const MethodDescriptorInterface = goog.requireType('grpc.web.MethodDescriptorInterface');
+const MethodDescriptor = goog.requireType('grpc.web.MethodDescriptor');
 
 /**
  * @interface
@@ -22,7 +22,7 @@ class Request {
 
   /**
    * @export
-   * @return {!MethodDescriptorInterface<REQUEST, RESPONSE>}
+   * @return {!MethodDescriptor<REQUEST, RESPONSE>}
    */
   getMethodDescriptor() {}
 
