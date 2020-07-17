@@ -328,6 +328,97 @@ describe('grpc-web generated code (commonjs+grpcwebtext)', function() {
     });
   });
 
+  it('should error out on incomplete response', function(done) {
+    execSync(genCodeCmd);
+    const {EchoServiceClient} = require(genCodePath);
+    const {EchoRequest} = require(protoGenCodePath);
+    var echoService = new EchoServiceClient('MyHostname', null, null);
+    var request = new EchoRequest();
+    MockXMLHttpRequest.onSend = function(xhr) {
+      xhr.respond(200, {'Content-Type': 'application/grpc-web-text'},
+                  // An incomplete response. The frame length indicates
+                  // 26 bytes, but the rest of the frame only contains
+                  // 18 bytes.
+                  'AAAAABoKCwgBEgdGaWN0aW9uCgsIAhI');
+    };
+    var call = echoService.echo(
+      request, {}, function(err, response) {
+        if (response) {
+          assert.fail('should not receive response');
+        }
+        assert.equal(2, err.code);
+        assert.equal(true, err.message.toLowerCase().includes(
+          'incomplete response'));
+        done();
+    });
+    call.on('data', (response) => {
+      assert.fail('should not receive response this way');
+    });
+    call.on('error', (error) => {
+      assert.fail('should not receive error this way');
+    });
+  });
+
+  it('should error out on invalid proto response', function(done) {
+    execSync(genCodeCmd);
+    const {EchoServiceClient} = require(genCodePath);
+    const {EchoRequest} = require(protoGenCodePath);
+    var echoService = new EchoServiceClient('MyHostname', null, null);
+    var request = new EchoRequest();
+    MockXMLHttpRequest.onSend = function(xhr) {
+      xhr.respond(200, {'Content-Type': 'application/grpc-web-text'},
+                  // A valid grpc-web frame, but contains an invalid
+                  // protobuf payload.
+                  'AAAAAAUKCgoKCg==');
+    };
+    var call = echoService.echo(
+      request, {}, function(err, response) {
+        if (response) {
+          assert.fail('should not receive response');
+        }
+        assert.equal(2, err.code);
+        assert.equal(true, err.message.toLowerCase().includes('deserialize'));
+        assert.equal(true, err.message.toLowerCase().includes('error'));
+        done();
+    });
+    call.on('data', (response) => {
+      assert.fail('should not receive response this way');
+    });
+    call.on('error', (error) => {
+      assert.fail('should not receive error this way');
+    });
+  });
+
+  it('should error out on invalid response body', function(done) {
+    execSync(genCodeCmd);
+    const {EchoServiceClient} = require(genCodePath);
+    const {EchoRequest} = require(protoGenCodePath);
+    var echoService = new EchoServiceClient('MyHostname', null, null);
+    var request = new EchoRequest();
+    MockXMLHttpRequest.onSend = function(xhr) {
+      xhr.respond(200, {'Content-Type': 'application/grpc-web-text'},
+                  // An invalid response body. Should trip up in the
+                  // stream parser.
+                  'ZZZZZ');
+    };
+    var call = echoService.echo(
+      request, {}, function(err, response) {
+        if (response) {
+          assert.fail('should not receive response');
+        }
+        assert.equal(2, err.code);
+        assert.equal(true, err.message.toLowerCase().includes(
+          'error in parsing response body'));
+        done();
+    });
+    call.on('data', (response) => {
+      assert.fail('should not receive response this way');
+    });
+    call.on('error', (error) => {
+      assert.fail('should not receive error this way');
+    });
+  });
+
   it('should not receive response on non-ok status', function(done) {
     done = multiDone(done, 2);
     execSync(genCodeCmd);

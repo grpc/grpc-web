@@ -300,7 +300,14 @@ class GrpcWebClientBase {
 
     stream.on('end', function() {
       if (!errorEmitted) {
-        callback(null, responseReceived);
+        if (responseReceived == null) {
+          callback({
+            code: StatusCode.UNKNOWN,
+            message: 'Incomplete response',
+          });
+        } else {
+          callback(null, responseReceived);
+        }
       }
       if (useUnaryResponse) {
         callback(null, null);  // trigger unaryResponse
