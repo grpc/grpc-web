@@ -158,16 +158,33 @@ class GrpcWebClientReadableStream {
         });
         return;
       }
-      var messages = self.parser_.parse(byteSource);
+      var messages = null;
+      try {
+        messages = self.parser_.parse(byteSource);
+      } catch (err) {
+        self.handleError_({
+          code: StatusCode.UNKNOWN,
+          message: 'Error in parsing response body',
+          metadata: {},
+        });
+      }
       if (messages) {
         var FrameType = GrpcWebStreamParser.FrameType;
         for (var i = 0; i < messages.length; i++) {
           if (FrameType.DATA in messages[i]) {
             var data = messages[i][FrameType.DATA];
             if (data) {
-              var response = self.responseDeserializeFn_(data);
-              if (response) {
-                self.sendDataCallbacks_(response);
+              try {
+                var response = self.responseDeserializeFn_(data);
+                if (response) {
+                  self.sendDataCallbacks_(response);
+                }
+              } catch (err) {
+                self.handleError_({
+                  code: StatusCode.UNKNOWN,
+                  message: 'Error in response deserializer function.',
+                  metadata: {},
+                });
               }
             }
           }
