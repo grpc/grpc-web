@@ -222,7 +222,7 @@ class GrpcWebClientBase {
    */
   startStream_(request, hostname) {
     var methodDescriptor = request.getMethodDescriptor();
-    var path = hostname + methodDescriptor.name;
+    var path = hostname + methodDescriptor.getName();
 
     var xhr = this.newXhr_();
     xhr.setWithCredentials(this.withCredentials_);
@@ -231,7 +231,8 @@ class GrpcWebClientBase {
       xhr: xhr,
     };
     var stream = new GrpcWebClientReadableStream(genericTransportInterface);
-    stream.setResponseDeserializeFn(methodDescriptor.responseDeserializeFn);
+    stream.setResponseDeserializeFn(
+        methodDescriptor.getResponseDeserializeFn());
 
     xhr.headers.addAll(request.getMetadata());
     this.processHeaders_(xhr);
@@ -241,8 +242,8 @@ class GrpcWebClientBase {
       path = GrpcWebClientBase.setCorsOverride_(path, headerObject);
     }
 
-    var serialized =
-        methodDescriptor.requestSerializeFn(request.getRequestMessage());
+    var requestSerializeFn = methodDescriptor.getRequestSerializeFn();
+    var serialized = requestSerializeFn(request.getRequestMessage());
     var payload = this.encodeRequest_(serialized);
     if (this.format_ == 'text') {
       payload = googCrypt.encodeByteArray(payload);

@@ -1,13 +1,13 @@
 /**
- * @fileoverview  A wrapper class that provides all the information that is
- * needed to make a gRPC-Web request.
+ * @fileoverview  A templated class that is used to address an individual
+ * gRPC-Web request instance.
  */
 goog.module('grpc.web.Request');
 goog.module.declareLegacyNamespace();
 
 const CallOptions = goog.require('grpc.web.CallOptions');
 const Metadata = goog.require('grpc.web.Metadata');
-const MethodDescriptor = goog.requireType('grpc.web.MethodDescriptor');
+const MethodDescriptorInterface = goog.requireType('grpc.web.MethodDescriptorInterface');
 
 /**
  * @interface
@@ -22,7 +22,7 @@ class Request {
 
   /**
    * @export
-   * @return {!MethodDescriptor<REQUEST, RESPONSE>}
+   * @return {!MethodDescriptorInterface<REQUEST, RESPONSE>}
    */
   getMethodDescriptor() {}
 

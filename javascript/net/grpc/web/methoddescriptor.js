@@ -20,7 +20,7 @@ const {Status} = goog.requireType('grpc.web.Status');
 /**
  * @constructor
  * @final
- * @implements {MethodDescriptorInterface}
+ * @implements {MethodDescriptorInterface<REQUEST, RESPONSE>}
  * @template REQUEST, RESPONSE
  * @param {string} name
  * @param {?MethodType} methodType
@@ -70,6 +70,50 @@ MethodDescriptor.prototype.createRequest = function(
 MethodDescriptor.prototype.createUnaryResponse = function(
     responseMessage, metadata = {}, status = null) {
   return new UnaryResponseInternal(responseMessage, this, metadata, status);
+};
+
+
+/**
+ * @override
+ */
+MethodDescriptor.prototype.getName = function() {
+  return this.name;
+};
+
+/**
+ * @override
+ */
+MethodDescriptor.prototype.getMethodType = function() {
+  return this.methodType;
+};
+
+/**
+ * @override
+ * @return {function(new: RESPONSE, ...)}
+ */
+MethodDescriptor.prototype.getResponseMessageCtor = function() {
+  return this.responseType;
+};
+
+
+/**
+ * @override
+ * @return {function(new: REQUEST, ...)}
+ */
+MethodDescriptor.prototype.getRequestMessageCtor = function() {
+  return this.requestType;
+};
+
+
+/** @override */
+MethodDescriptor.prototype.getResponseDeserializeFn = function() {
+  return this.responseDeserializeFn;
+};
+
+
+/** @override */
+MethodDescriptor.prototype.getRequestSerializeFn = function() {
+  return this.requestSerializeFn;
 };
 
 exports = MethodDescriptor;
