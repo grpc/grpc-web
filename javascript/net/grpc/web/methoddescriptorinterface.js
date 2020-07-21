@@ -20,26 +20,7 @@ const {Status} = goog.requireType('grpc.web.Status');
  */
 const MethodDescriptorInterface = function() {};
 
-/** @type {string} */
-MethodDescriptorInterface.prototype.name;
-
-/** @type {?MethodType} */
-MethodDescriptorInterface.prototype.methodType;
-
-/** @type {function(new: REQUEST, ?Array=)} */
-MethodDescriptorInterface.prototype.requestType;
-
-/** @type {function(new: RESPONSE, ?Array=)} */
-MethodDescriptorInterface.prototype.responseType;
-
-/** @type {function(REQUEST): ?} */
-MethodDescriptorInterface.prototype.requestSerializeFn;
-
-/** @type {function(?): RESPONSE} */
-MethodDescriptorInterface.prototype.responseDeserializeFn;
-
 /**
- * @template REQUEST, RESPONSE
  * @param {REQUEST} requestMessage
  * @param {!Metadata=} metadata
  * @param {!CallOptions=} callOptions
@@ -49,9 +30,7 @@ MethodDescriptorInterface.prototype.createRequest = function(
     requestMessage, metadata, callOptions) {};
 
 
-
 /**
- * @template REQUEST, RESPONSE
  * @param {RESPONSE} responseMessage
  * @param {!Metadata=} metadata
  * @param {?Status=} status
@@ -59,5 +38,23 @@ MethodDescriptorInterface.prototype.createRequest = function(
  */
 MethodDescriptorInterface.prototype.createUnaryResponse = function(
     responseMessage, metadata, status) {};
+
+/** @return {string} */
+MethodDescriptorInterface.prototype.getName = function() {};
+
+/** @return {?MethodType} */
+MethodDescriptorInterface.prototype.getMethodType = function() {};
+
+/** @return {function(new: RESPONSE, ?Array=)} */
+MethodDescriptorInterface.prototype.getResponseMessageCtor = function() {};
+
+/** @return {function(new: REQUEST, ?Array=)} */
+MethodDescriptorInterface.prototype.getRequestMessageCtor = function() {};
+
+/** @return {function(?): RESPONSE} */
+MethodDescriptorInterface.prototype.getResponseDeserializeFn = function() {};
+
+/** @return {function(REQUEST): ?} */
+MethodDescriptorInterface.prototype.getRequestSerializeFn = function() {};
 
 exports = MethodDescriptorInterface;
