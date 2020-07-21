@@ -38,6 +38,14 @@ function createGeneratedCodeDir() {
 function assertFileExists(relPath) {
   assert.equal(true, fs.existsSync(relativePath(relPath)));
 }
+function multiDone(done, count) {
+  return function() {
+    count -= 1;
+    if (count <= 0) {
+      done();
+    }
+  };
+}
 function runTscCmd(tscCmd) {
   try {
     execSync(tscCmd, {cwd: relativePath('./tsc-tests')});
@@ -149,6 +157,7 @@ describe('tsc test03: streamInterceptor', function() {
   });
 
   it('tsc should run and export', function(done) {
+    done = multiDone(done, 3);
     const tscCmd = `tsc client03.ts \
       generated/echo_pb.d.ts generated/echo_pb.js \
       generated/echo_grpc_web_pb.d.ts generated/echo_grpc_web_pb.js \
@@ -173,17 +182,32 @@ describe('tsc test03: streamInterceptor', function() {
       // should contain the string "[-out-]aaa".
       assert.equal('AAAAAAwKClstb3V0LV1hYWE=', xhr.body);
 
-      xhr.respond(200, {'Content-Type': 'application/grpc-web-text'},
-                  // echo it back
-                  xhr.body);
+      xhr.respond(200, {'Content-Type': 'application/grpc-web-text',
+                        'p': 'q'}, // add a piece of initial metadata
+                  // echo it back, plus a trailing metadata "x: y"
+                  'AAAAAAwKClstb3V0LV1hYWGAAAAABng6IHkNCg==');
     };
     // this is the callback-based client
-    echoService.echo(req, {}, (err, response) => {
+    var call = echoService.echo(req, {}, (err, response) => {
       assert.ifError(err);
       // Now, the interceptor will be invoked again on receiving the response
       // from the server. It attaches an additional "[-in-]" string in front of
       // the server response.
       assert.equal('[-in-][-out-]aaa', response.getMessage());
+      done();
+    });
+    call.on('metadata', (initialMetadata) => {
+      assert('p' in initialMetadata);
+      assert(!('x' in initialMetadata));
+      assert.equal('q', initialMetadata['p']);
+      done();
+    });
+    call.on('status', (status) => {
+      assert('metadata' in status);
+      var trailingMetadata = status.metadata;
+      assert('x' in trailingMetadata);
+      assert(!('p' in trailingMetadata));
+      assert.equal('y', trailingMetadata['x']);
       done();
     });
   });
@@ -237,16 +261,21 @@ describe('tsc test04: unaryInterceptor', function() {
       // So by the time the proto is being sent by the underlying transport, it
       // should contain the string "[-out-]aaa".
       assert.equal('AAAAAAwKClstb3V0LV1hYWE=', xhr.body);
-      xhr.respond(200, {'Content-Type': 'application/grpc-web-text'},
-                  // echo it back
-                  xhr.body);
+
+      xhr.respond(200, {'Content-Type': 'application/grpc-web-text',
+                        'p': 'q'}, // add a piece of initial metadata
+                  // echo it back, plus a trailing metadata "x: y"
+                  'AAAAAAwKClstb3V0LV1hYWGAAAAABng6IHkNCg==');
     };
     // this is the promise-based client
     echoService.echo(req, {}).then((response) => {
       // Now, the interceptor will be invoked again on receiving the response
-      // from the server. It attaches an additional "[-in-]" string in front of
-      // the server response.
-      assert.equal('[-in-][-out-]aaa', response.getMessage());
+      // from the server. See the initerceptor logic in client04.ts. It
+      // flattens both the initialMetadata and the trailingMetadata, and then
+      // attaches an additional "[-in-]" string in front of the server
+      // response.
+      assert.equal('<-InitialMetadata->p: q<-TrailingMetadata->x: y'+
+                   '[-in-][-out-]aaa', response.getMessage());
       done();
     });
   });

@@ -30,8 +30,19 @@ class MyUnaryInterceptor implements grpcWeb.UnaryInterceptor<
       reqMsg.setMessage('[-out-]' + reqMsg.getMessage());
       return invoker(request).then((response: grpcWeb.UnaryResponse<
         EchoRequest, EchoResponse>) => {
+          let result = '<-InitialMetadata->';
+          let initialMetadata = response.getMetadata();
+          for (let i in initialMetadata) {
+            result += i + ': ' + initialMetadata[i];
+          }
+          result += '<-TrailingMetadata->';
+          let trailingMetadata = response.getStatus().metadata;
+          for (let i in trailingMetadata) {
+            result += i + ': ' + trailingMetadata[i];
+          }
           const responseMsg = response.getResponseMessage();
-          responseMsg.setMessage('[-in-]' + responseMsg.getMessage());
+          result += '[-in-]' + responseMsg.getMessage();
+          responseMsg.setMessage(result);
           return response;
         });
     }
