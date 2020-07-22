@@ -141,7 +141,8 @@ class GrpcWebClientReadableStream {
       contentType = contentType.toLowerCase();
 
       if (googString.startsWith(contentType, 'application/grpc-web-text')) {
-        var responseText = self.xhr_.getResponseText();
+        // Ensure responseText is not null
+        var responseText = self.xhr_.getResponseText() || "";
         var newPos = responseText.length - responseText.length % 4;
         var newData = responseText.substr(self.pos_, newPos - self.pos_);
         if (newData.length == 0) return;
