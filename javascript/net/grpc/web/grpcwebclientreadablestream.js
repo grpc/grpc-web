@@ -270,7 +270,7 @@ class GrpcWebClientReadableStream {
         if (Number(grpcStatusCode) != StatusCode.OK) {
           self.handleError_({
             code: Number(grpcStatusCode),
-            message: grpcStatusMessage,
+            message: decodeURIComponent(grpcStatusMessage || ""),
             metadata: responseHeaders
           });
           errorEmitted = true;
