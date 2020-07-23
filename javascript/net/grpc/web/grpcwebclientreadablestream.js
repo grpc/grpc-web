@@ -270,7 +270,7 @@ class GrpcWebClientReadableStream {
         if (Number(grpcStatusCode) != StatusCode.OK) {
           self.handleError_({
             code: Number(grpcStatusCode),
-            message: decodeURIComponent(grpcStatusMessage || ""),
+            message: grpcStatusMessage,
             metadata: responseHeaders
           });
           errorEmitted = true;
@@ -379,7 +379,11 @@ class GrpcWebClientReadableStream {
    */
   handleError_(error) {
     if (error.code != StatusCode.OK) {
-      this.sendErrorCallbacks_(error);
+      this.sendErrorCallbacks_({
+        code: error.code,
+        message: decodeURIComponent(error.message || ''),
+        metadata: error.metadata
+      });
     }
     this.sendStatusCallbacks_(/** @type {!Status} */ ({
       code: error.code,
