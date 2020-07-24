@@ -210,7 +210,7 @@ class GrpcWebClientReadableStream {
               }
               self.handleError_({
                 code: Number(grpcStatusCode),
-                message: decodeURIComponent(grpcStatusMessage),
+                message: grpcStatusMessage,
                 metadata: trailers,
               });
             }
