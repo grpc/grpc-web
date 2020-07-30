@@ -3,10 +3,6 @@
 The purpose of this document is to collect all the features that we believe are
 useful for gRPC users.
 
-We would like your feedback! Please tell us which features you would most want
-to see, so that we can prioritize the work to either publish Google's existing
-solutions or develop some of the features directly in the open-source repo.
-
 # Background
 
 gRPC-Web has been developed internally at Google as part of the front-end
@@ -17,8 +13,8 @@ users.
 Like everywhere, Web platforms and technologies are constantly evolving, often
 with many inter-dependent ecosystems. As much as we like to open-source
 everything, we also need keep the balance between creating a reusable and stable
-open-source solution and meeting those requirements unique to Google's Web application
-ecosystems (such as search). 
+open-source solution and meeting those requirements unique to Google's Web applications
+(such as search). 
 
 # Roadmap Features (in no particular order)
 
@@ -56,17 +52,16 @@ applications.
 Native support such as XSRF, XSS prevention may also be added to the gRPC-Web
 protocol.
 
-## Local Proxies
+## In-process Proxies
 
-In-process proxies will eliminate the need to deploy an extra proxy such as
-Nginx. 
+[In-process proxies](https://github.com/grpc/grpc-web/blob/master/doc/in-process-proxy.md)
+will eliminate the need to deploy Envoy to use gRPC-Web. 
 
-We have plans to add proxy support in Python, Java, Node, C++ etc. Let us know
+We have plans to add in-process proxy support in Python, Java, Node, C++ etc. Let us know
 if you are interested in implementing any language-specific in-process
 gRPC-Web proxy.
 
-To minimize maintenance overhead, we will not add gRPC-Web support
-to any HTTP proxies other than Envoy.
+To minimize maintenance overhead, we will only support Envoy as the official proxy for gRPC-Web.
 
 ## Web Framework Integration
 
