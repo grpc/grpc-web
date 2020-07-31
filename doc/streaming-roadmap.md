@@ -21,20 +21,17 @@ upload-streaming over HTTP/1.1. We believe that upload-streaming should be enabl
 the client deployment. As a result, if upload-streaming is only enabled over HTTP/2, a gRPC service will have to implement a non-streaming method 
 as a fallback for each client-streaming method.
 
-Once the whatwg spec is finalized and upload-streaming is support by major browsers (2020-2021), we will add client-streaming support
+Once the whatwg spec is finalized and upload-streaming is supported by major browsers (2020), we will add client-streaming support
 in gRPC-Web (and Envoy) which will also enable half-duplex bidi streaming support.
 
 # Full-duplex streaming over HTTP
 
 We have no plan to support full-duplex streaming over WebSockets (over TCP or HTTP/2). We will not publish any experimental spec for gRPC over WebSockets either.
 
-If you need build a Web application against a bidi gRPC service, you might choose to implement a custom client with something like socket.io. 
-On the server-side, the websocket messages will be handled by any language-specific Web framework, with a translation module to map websocket messages to gRPC messages.
-
-Alternatively, it is possible to support bidi communication over dual HTTP requests, one for download-streaming and the other for upload-streaming, 
+It is possible to support bidi communication over dual HTTP requests, one for download-streaming and the other for upload-streaming, 
 similar to what's implemented by Google to support the [W3C Speech API](https://wicg.github.io/speech-api/). 
 
-Once client-streaming is supported in gRPC-Web, we will publish a spec to enable bidi streaming over dual HTTP requests and implement the complete support in Envoy (2021).
+Once client-streaming is supported in gRPC-Web, we will publish a spec to enable bidi streaming over dual HTTP requests and implement the complete support in Envoy (2020+).
 
 # Full-duplex streaming over Web-transport
 
