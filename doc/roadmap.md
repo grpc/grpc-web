@@ -42,7 +42,7 @@ concerns.
 
 ## Bidi Streaming
 
-See the dedicate road-map doc on bidi streaming.
+See the dedicate road-map doc on [bidi streaming](streaming-roadmap.md).
 
 ## Security
 
