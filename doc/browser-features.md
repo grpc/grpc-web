@@ -6,10 +6,10 @@ The difference between the gRPC-Web
 protocol and the HTTP/2 based gRPC protocol is specified in the core gRPC repo as [PROTOCOL-WEB](https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-WEB.md). 
 
 In addition to the wire-transport spec, gRPC-Web also supports features that are unique to browser (HTML) clients.
-This document is the official spec for those features. As the Web platform evolves,
+This document serves as the official spec for those features. As the Web platform evolves,
 we expect some of those features will evolve too or become deprecated.
 
-On the server-side, [Envoy](https://www.envoyproxy.io/) is the official proxy with out-of-box gRPC-Web support. New features will be implemented in Envoy first. For [in-process gRPC-Web support](https://github.com/grpc/grpc-web/blob/master/doc/in-process-proxy.md), we recommend the gRPC-Web module implement only a minimum set of features, e.g. to enable local development. Those features are identified as mandatory features in this doc.
+On the server-side, [Envoy](https://www.envoyproxy.io/) is the official proxy with built-in gRPC-Web support. New features will be implemented in Envoy first. For [in-process gRPC-Web support](https://github.com/grpc/grpc-web/blob/master/doc/in-process-proxy.md), we recommend that the gRPC-Web module implement only a minimum set of features, e.g. to enable local development. Those features are identified as mandatory features in this doc.
 
 # CORS support
 
