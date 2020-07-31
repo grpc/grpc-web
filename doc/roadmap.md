@@ -28,7 +28,7 @@ For Google's Web applications (e.g. gmail), we use a JSON like format which is
 comparable to JSON in efficiency but also very compact in both the message size
 and code size.
 
-## Streaming-Friendly Transport Implementation
+## Streaming Support
 
 Currently the gRPC-Web client library uses XHR to ensure cross-browser support
 and to support platforms such as React-Native.
