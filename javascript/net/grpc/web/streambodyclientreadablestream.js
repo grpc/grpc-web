@@ -53,8 +53,9 @@ class StreamBodyClientReadableStream {
   /**
    * @param {!GenericTransportInterface} genericTransportInterface The
    *   GenericTransportInterface
+   * @param {function(?): RESPONSE} responseDeserializeFn
    */
-  constructor(genericTransportInterface) {
+  constructor(genericTransportInterface, responseDeserializeFn) {
     /**
      * @const
      * @private
@@ -64,9 +65,9 @@ class StreamBodyClientReadableStream {
 
     /**
      * @private
-     * @type {function(?): RESPONSE|null} The deserialize function for the proto
+     * @type {function(?): RESPONSE} The deserialize function for the proto
      */
-    this.responseDeserializeFn_ = null;
+    this.grpcResponseDeserializeFn_ = responseDeserializeFn;
 
     /**
      * @const
@@ -121,7 +122,7 @@ class StreamBodyClientReadableStream {
     var self = this;
     this.xhrNodeReadableStream_.on('data', function(data) {
       if ('1' in data) {
-        var response = self.responseDeserializeFn_(data['1']);
+        var response = self.grpcResponseDeserializeFn_(data['1']);
         self.sendDataCallbacks_(response);
       }
       if ('2' in data) {
@@ -224,7 +225,7 @@ class StreamBodyClientReadableStream {
    *   function for the proto
    */
   setResponseDeserializeFn(responseDeserializeFn) {
-    this.responseDeserializeFn_ = responseDeserializeFn;
+    this.grpcResponseDeserializeFn_ = responseDeserializeFn;
   }
 
   /**

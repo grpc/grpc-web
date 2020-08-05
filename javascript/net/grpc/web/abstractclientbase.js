@@ -70,26 +70,15 @@ AbstractClientBase.MethodInfo = function(
 /**
  * @abstract
  * @template REQUEST, RESPONSE
- * Even with ?RESPONSE the RESPONSE will still be inferred as
- * "FooResponse|Null". Use RESPONSE_LEAN to extract out the "FooResponse"
- * part. See go/closure-ttl.
- * @template RESPONSE_LEAN :=
- *     cond(isUnknown(RESPONSE), unknown(),
- *       mapunion(RESPONSE, (X) =>
- *         cond(eq(X, 'undefined'), none(),
- *         cond(eq(X, 'null'), none(),
- *         X))))
- * =:
  * @param {string} method The method to invoke
  * @param {REQUEST} requestMessage The request proto
  * @param {!Object<string, string>} metadata User defined call metadata
- * @param {!MethodDescriptor<REQUEST, RESPONSE_LEAN>|
- *     !AbstractClientBase.MethodInfo<REQUEST, RESPONSE_LEAN>}
+ * @param {!MethodDescriptor<REQUEST, RESPONSE>|
+ *     !AbstractClientBase.MethodInfo<REQUEST, RESPONSE>}
  *   methodDescriptor Information of this RPC method
- * @param {function(?Error, ?RESPONSE)}
- *   callback A callback function which takes (error, response)
- * @return {!ClientReadableStream<RESPONSE_LEAN>|undefined}
- *   The Client Readable Stream
+ * @param {function(?Error, ?)}
+ *   callback A callback function which takes (error, RESPONSE or null)
+ * @return {!ClientReadableStream<RESPONSE>|undefined}
  */
 AbstractClientBase.prototype.rpcCall = function(
     method, requestMessage, metadata, methodDescriptor, callback) {};
