@@ -61,6 +61,17 @@ closure_js_library(
 )
 
 closure_js_library(
+    name = "clientunarycallimpl",
+    srcs = [
+        "clientunarycallimpl.js",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":clientreadablestream",
+    ],
+)
+
+closure_js_library(
     name = "error",
     srcs = [
         "error.js",
@@ -96,6 +107,7 @@ closure_js_library(
     deps = [
         ":abstractclientbase",
         ":clientreadablestream",
+        ":clientunarycallimpl",
         ":error",
         ":grpcwebclientreadablestream",
         ":interceptor",
