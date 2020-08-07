@@ -30,6 +30,7 @@ goog.module.declareLegacyNamespace();
 
 const AbstractClientBase = goog.require('grpc.web.AbstractClientBase');
 const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
+const ClientUnaryCallImpl = goog.require('grpc.web.ClientUnaryCallImpl');
 const Error = goog.require('grpc.web.Error');
 const GrpcWebClientReadableStream = goog.require('grpc.web.GrpcWebClientReadableStream');
 const HttpCors = goog.require('goog.net.rpc.HttpCors');
@@ -95,45 +96,6 @@ class GrpcWebClientBase {
    * @export
    */
   rpcCall(method, requestMessage, metadata, methodDescriptor, callback) {
-    /**
-     * @implements {ClientReadableStream}
-     */
-    class ClientUnaryCallImpl {
-      /**
-       * @param {!ClientReadableStream<RESPONSE>} stream
-       * @template RESPONSE
-       */
-      constructor(stream) {
-        this.stream = stream;
-      }
-
-      /**
-       * @override
-       */
-      on(eventType, callback) {
-        if (eventType == 'data' || eventType == 'error') {
-          // unary call responses and errors should be handled by the main
-          // (err, resp) => ... callback
-          return this;
-        }
-        return this.stream.on(eventType, callback);
-      }
-
-      /**
-       * @override
-       */
-      removeListener(eventType, callback) {
-        return this.stream.removeListener(eventType, callback);
-      }
-
-      /**
-       * @override
-       */
-      cancel() {
-        this.stream.cancel();
-      }
-    }
-
     methodDescriptor = AbstractClientBase.ensureMethodDescriptor(
         method, requestMessage, MethodType.UNARY, methodDescriptor);
     var hostname = AbstractClientBase.getHostname(method, methodDescriptor);
