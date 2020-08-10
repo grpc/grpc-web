@@ -35,120 +35,115 @@ const MethodType = goog.require('grpc.web.MethodType');
 
 /**
  * This interface represents a grpc-web client
- *
  * @interface
  */
-const AbstractClientBase = function() {};
+const AbstractClientBase = class {
+  constructor() {}
 
+  /**
+   * @abstract
+   * @template REQUEST, RESPONSE
+   * @param {string} method The method to invoke
+   * @param {REQUEST} requestMessage The request proto
+   * @param {!Object<string, string>} metadata User defined call metadata
+   * @param {!MethodDescriptor<REQUEST, RESPONSE>|
+   *     !AbstractClientBase.MethodInfo<REQUEST, RESPONSE>}
+   *   methodDescriptor Information of this RPC method
+   * @param {function(?Error, ?)}
+   *   callback A callback function which takes (error, RESPONSE or null)
+   * @return {!ClientReadableStream<RESPONSE>|undefined}
+   */
+  rpcCall(method, requestMessage, metadata, methodDescriptor, callback) {}
 
-/**
- * @constructor
- * @struct
- * @template REQUEST, RESPONSE
- * @param {function(new: RESPONSE, ...)} responseType
- * @param {function(REQUEST): ?} requestSerializeFn
- * @param {function(?): RESPONSE} responseDeserializeFn
- * @param {string=} name
- * @param {function(new: REQUEST, ...)=} requestType
- */
-AbstractClientBase.MethodInfo = function(
-    responseType, requestSerializeFn, responseDeserializeFn, name,
-    requestType) {
-  /** @const */
-  this.name = name;
-  /** @const */
-  this.requestType = requestType;
-  /** @const */
-  this.responseType = responseType;
-  /** @const */
-  this.requestSerializeFn = requestSerializeFn;
-  /** @const */
-  this.responseDeserializeFn = responseDeserializeFn;
-};
+  /**
+   * @abstract
+   * @protected
+   * @template REQUEST, RESPONSE
+   * @param {string} method The method to invoke
+   * @param {REQUEST} requestMessage The request proto
+   * @param {!Object<string, string>} metadata User defined call metadata
+   * @param {!MethodDescriptor<REQUEST, RESPONSE>|
+   *     !AbstractClientBase.MethodInfo<REQUEST,RESPONSE>}
+   *   methodDescriptor Information of this RPC method
+   * @return {!IThenable <!RESPONSE>}
+   *   A promise that resolves to the response message
+   */
+  thenableCall(method, requestMessage, metadata, methodDescriptor) {}
 
+  /**
+   * @abstract
+   * @template REQUEST, RESPONSE
+   * @param {string} method The method to invoke
+   * @param {REQUEST} requestMessage The request proto
+   * @param {!Object<string, string>} metadata User defined call metadata
+   * @param {!MethodDescriptor<REQUEST, RESPONSE>|
+   *     !AbstractClientBase.MethodInfo<REQUEST,RESPONSE>}
+   *   methodDescriptor Information of this RPC method
+   * @return {!ClientReadableStream<RESPONSE>} The Client Readable Stream
+   */
+  serverStreaming(method, requestMessage, metadata, methodDescriptor) {}
 
-/**
- * @abstract
- * @template REQUEST, RESPONSE
- * @param {string} method The method to invoke
- * @param {REQUEST} requestMessage The request proto
- * @param {!Object<string, string>} metadata User defined call metadata
- * @param {!MethodDescriptor<REQUEST, RESPONSE>|
- *     !AbstractClientBase.MethodInfo<REQUEST, RESPONSE>}
- *   methodDescriptor Information of this RPC method
- * @param {function(?Error, ?)}
- *   callback A callback function which takes (error, RESPONSE or null)
- * @return {!ClientReadableStream<RESPONSE>|undefined}
- */
-AbstractClientBase.prototype.rpcCall = function(
-    method, requestMessage, metadata, methodDescriptor, callback) {};
-
-
-/**
- * @abstract
- * @protected
- * @template REQUEST, RESPONSE
- * @param {string} method The method to invoke
- * @param {REQUEST} requestMessage The request proto
- * @param {!Object<string, string>} metadata User defined call metadata
- * @param {!MethodDescriptor<REQUEST, RESPONSE>|
- *     !AbstractClientBase.MethodInfo<REQUEST,RESPONSE>}
- *   methodDescriptor Information of this RPC method
- * @return {!IThenable <!RESPONSE>}
- *   A promise that resolves to the response message
- */
-AbstractClientBase.prototype.thenableCall = function(
-    method, requestMessage, metadata, methodDescriptor) {};
-
-
-/**
- * @abstract
- * @template REQUEST, RESPONSE
- * @param {string} method The method to invoke
- * @param {REQUEST} requestMessage The request proto
- * @param {!Object<string, string>} metadata User defined call metadata
- * @param {!MethodDescriptor<REQUEST, RESPONSE>|
- *     !AbstractClientBase.MethodInfo<REQUEST,RESPONSE>}
- *   methodDescriptor Information of this RPC method
- * @return {!ClientReadableStream<RESPONSE>} The Client Readable Stream
- */
-AbstractClientBase.prototype.serverStreaming = function(
-    method, requestMessage, metadata, methodDescriptor) {};
-
-/**
- * As MethodType is being deprecated, for now we need to convert MethodType to
- * MethodDescriptor.
- * @static
- * @template REQUEST, RESPONSE
- * @param {string} method
- * @param {REQUEST} requestMessage
- * @param {!MethodType} methodType
- * @param {!AbstractClientBase.MethodInfo<REQUEST,RESPONSE>|!MethodDescriptor<REQUEST,RESPONSE>}
- *     methodInfo
- * @return {!MethodDescriptor<REQUEST,RESPONSE>}
- */
-AbstractClientBase.ensureMethodDescriptor = function(
-    method, requestMessage, methodType, methodInfo) {
-  if (methodInfo instanceof MethodDescriptor) {
-    return methodInfo;
+  /**
+   * As MethodType is being deprecated, for now we need to convert MethodType to
+   * MethodDescriptor.
+   * @static
+   * @template REQUEST, RESPONSE
+   * @param {string} method
+   * @param {REQUEST} requestMessage
+   * @param {!MethodType} methodType
+   * @param {!AbstractClientBase.MethodInfo<REQUEST,RESPONSE>|!MethodDescriptor<REQUEST,RESPONSE>}
+   *     methodInfo
+   * @return {!MethodDescriptor<REQUEST,RESPONSE>}
+   */
+  static ensureMethodDescriptor(
+      method, requestMessage, methodType, methodInfo) {
+    if (methodInfo instanceof MethodDescriptor) {
+      return methodInfo;
+    }
+    const requestType = methodInfo.requestType || requestMessage.constructor;
+    return new MethodDescriptor(
+        method, methodType, requestType, methodInfo.responseType,
+        methodInfo.requestSerializeFn, methodInfo.responseDeserializeFn);
   }
-  const requestType = methodInfo.requestType || requestMessage.constructor;
-  return new MethodDescriptor(
-      method, methodType, requestType, methodInfo.responseType,
-      methodInfo.requestSerializeFn, methodInfo.responseDeserializeFn);
+
+  /**
+   * Get the hostname of the current request.
+   * @static
+   * @template REQUEST, RESPONSE
+   * @param {string} method
+   * @param {!MethodDescriptor<REQUEST,RESPONSE>} methodDescriptor
+   * @return {string}
+   */
+  static getHostname(method, methodDescriptor) {
+    // method = hostname + methodDescriptor.name(relative path of this method)
+    return method.substr(0, method.length - methodDescriptor.name.length);
+  }
 };
 
-/**
- * Get the hostname of the current request.
- * @static
- * @template REQUEST, RESPONSE
- * @param {string} method
- * @param {!MethodDescriptor<REQUEST,RESPONSE>} methodDescriptor
- * @return {string}
- */
-AbstractClientBase.getHostname = function(method, methodDescriptor) {
-  // method = hostname + methodDescriptor.name(relative path of this method)
-  return method.substr(0, method.length - methodDescriptor.name.length);
+
+/** @template REQUEST, RESPONSE */
+AbstractClientBase.MethodInfo = class {
+  /**
+   * @param {function(new: RESPONSE, ...)} responseType
+   * @param {function(REQUEST): ?} requestSerializeFn
+   * @param {function(?): RESPONSE} responseDeserializeFn
+   * @param {string=} name
+   * @param {function(new: REQUEST, ...)=} requestType
+   */
+  constructor(
+      responseType, requestSerializeFn, responseDeserializeFn, name,
+      requestType) {
+    /** @const */
+    this.name = name;
+    /** @const */
+    this.requestType = requestType;
+    /** @const */
+    this.responseType = responseType;
+    /** @const */
+    this.requestSerializeFn = requestSerializeFn;
+    /** @const */
+    this.responseDeserializeFn = responseDeserializeFn;
+  }
 };
 
 
