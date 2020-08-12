@@ -51,7 +51,7 @@ const AbstractClientBase = class {
    *   methodDescriptor Information of this RPC method
    * @param {function(?Error, ?)}
    *   callback A callback function which takes (error, RESPONSE or null)
-   * @return {!ClientReadableStream<RESPONSE>|undefined}
+   * @return {!ClientReadableStream<RESPONSE>}
    */
   rpcCall(method, requestMessage, metadata, methodDescriptor, callback) {}
 
