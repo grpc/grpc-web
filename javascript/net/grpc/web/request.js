@@ -40,6 +40,21 @@ class Request {
    * @return {!CallOptions|undefined}
    */
   getCallOptions() {}
+
+   /**
+   * @param {string} key
+   * @param {string} value
+   * @return {!Request<REQUEST, RESPONSE>}
+   */
+  withMetadata(key, value) {}
+
+  /**
+   * @param {string} name
+   * @param {VALUE} value
+   * @template VALUE
+   * @return {!Request<REQUEST, RESPONSE>}
+   */
+  withGrpcCallOption(name, value) {}
 }
 
 exports = Request;

@@ -73,6 +73,22 @@ class RequestInternal {
   getCallOptions() {
     return this.callOptions_;
   }
+
+  /**
+   * @override
+   */
+  withMetadata(key, value) {
+    this.metadata_[key] = value;
+    return this;
+  }
+
+  /**
+   * @override
+   */
+  withGrpcCallOption(name, value) {
+    this.callOptions_.setOption(name, value);
+    return this;
+  }
 }
 
 exports = RequestInternal;
