@@ -278,6 +278,7 @@ class StreamBodyClientReadableStream {
       for (let i = 0; i < bytes.length; i++) {
         byteSource += String.fromCharCode(bytes[i]);
       }
+      return byteSource;
     } else {
       return this.xhr_.getResponse();
     }
