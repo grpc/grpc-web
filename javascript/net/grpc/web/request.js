@@ -41,7 +41,7 @@ class Request {
    */
   getCallOptions() {}
 
-   /**
+  /**
    * @param {string} key
    * @param {string} value
    * @return {!Request<REQUEST, RESPONSE>}
