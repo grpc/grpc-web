@@ -155,7 +155,7 @@ You will need a `package.json` file
   "name": "grpc-web-commonjs-example",
   "dependencies": {
     "google-protobuf": "~3.12.0",
-    "grpc-web": "~1.2.0"
+    "grpc-web": "~1.2.1"
   },
   "devDependencies": {
     "webpack": "~4.43.0",
