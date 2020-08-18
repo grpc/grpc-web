@@ -1,6 +1,21 @@
 [//]: # (GENERATED FILE -- DO NOT EDIT!)
 [//]: # (See scripts/release_notes.py for more details.)
 
+## 1.2.1
+
+- [#910](https://github.com/grpc/grpc-web/pull/910) Add test to show how to access metadata in interceptor
+- [#903](https://github.com/grpc/grpc-web/pull/903) Add error handling to a few error conditions
+- [#886](https://github.com/grpc/grpc-web/pull/886) Add missing types definitions
+- [#885](https://github.com/grpc/grpc-web/pull/885) Bump Envoy to 1.15.0
+- [#884](https://github.com/grpc/grpc-web/pull/884) Update protoc plugin to support Proto3 optional
+- [#882](https://github.com/grpc/grpc-web/pull/882) Add @interface MethodDescroptorInterface [@Jennnnny](https://github.com/Jennnnny)
+- [#880](https://github.com/grpc/grpc-web/pull/880) Update Bazel to 3.3.1 [@Yannic](https://github.com/Yannic)
+- [#874](https://github.com/grpc/grpc-web/pull/874) Add removeListener and missing metadata event types [@danielthank](https://github.com/danielthank)
+- [#872](https://github.com/grpc/grpc-web/pull/872) [bazel] Introduce grpc_web_toolchain [@Yannic](https://github.com/Yannic)
+- [#871](https://github.com/grpc/grpc-web/pull/871) [generator] Refactor dependency management [@Yannic](https://github.com/Yannic)
+- [#869](https://github.com/grpc/grpc-web/pull/869) Add scripts to run interop-tests on grpc-web Java connector
+
+
 ## 1.2.0
 
 ### Major Features
