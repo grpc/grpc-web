@@ -105,6 +105,7 @@ declare module "grpc-web" {
   export interface GrpcWebClientBaseOptions {
     format?: string;
     suppressCorsPreflight?: boolean;
+    withCredentials?: boolean;
   }
 
   export class GrpcWebClientBase extends AbstractClientBase {
