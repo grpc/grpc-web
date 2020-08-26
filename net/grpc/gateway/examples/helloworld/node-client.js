@@ -39,20 +39,6 @@ function runSayRepeatHello(callback) {
   });
 }
 
-/**
- * @param {function():?} callback
- */
-function runSayHelloAfterDelay(callback) {
-  var deadline = new Date();
-  deadline.setSeconds(deadline.getSeconds() + 1);
-
-  client.sayHelloAfterDelay({name: 'John'}, {deadline: deadline.getTime()},
-    (err, response) => {
-      console.log('Got error, code = ' + err.code +
-                  ', message = ' + err.message);
-      callback();
-    });
-}
 
 /**
  * Run all of the demos in order
@@ -61,7 +47,6 @@ function main() {
   async.series([
     runSayHello,
     runSayRepeatHello,
-    runSayHelloAfterDelay
   ]);
 }
 
