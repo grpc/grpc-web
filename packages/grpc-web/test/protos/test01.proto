@@ -5,5 +5,15 @@ message MessageOuter {
     int32 value = 1;
   }
 
+  enum EnumInner {
+    DEFAULT = 0;
+  }
+
   repeated MessageInner someProp = 1;
+  EnumOuter someEnum = 2;
+  EnumInner anotherEnum = 3;
+}
+
+enum EnumOuter {
+  DEFAULT = 0;
 }
