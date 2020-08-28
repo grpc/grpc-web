@@ -367,11 +367,13 @@ string JSElementType(const FieldDescriptor *desc, const FileDescriptor *file) {
 
     case FieldDescriptor::TYPE_ENUM:
       if (desc->enum_type()->file() == file) {
+        // [for protobuf .d.ts files only] Do not add the module prefix for
+        // local messages.
         string enum_name =
             StripPrefixString(
                 desc->enum_type()->full_name(),
                 desc->enum_type()->file()->package());
-        return enum_name.substr(1);
+        return StripPrefixString(enum_name, ".");
       }
       return ModuleAlias(desc->enum_type()->file()->name())
           + StripPrefixString(
