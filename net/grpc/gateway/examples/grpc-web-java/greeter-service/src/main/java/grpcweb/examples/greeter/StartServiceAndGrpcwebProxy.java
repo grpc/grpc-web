@@ -32,8 +32,4 @@ class StartServiceAndGrpcwebProxy {
     // grpc-web proxy needs to know the grpc-port# so it could connect to the grpc service.
     GrpcPortNumRelay.setGrpcPortNum(grpcPort);
   }
-
-  public static void main(String[] args) throws Exception {
-    new StartServiceAndGrpcwebProxy().start();
-  }
 }
