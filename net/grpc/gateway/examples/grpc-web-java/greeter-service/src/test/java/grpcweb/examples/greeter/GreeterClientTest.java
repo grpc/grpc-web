@@ -29,19 +29,27 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import grpcweb.examples.greeter.GreeterOuterClass.HelloReply;
+import grpcweb.examples.greeter.GreeterOuterClass.HelloRequest;
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.util.logging.Logger;
+import org.apache.http.HttpVersion;
+import org.apache.http.client.fluent.Request;
+import org.apache.http.entity.ContentType;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /**
  * A simple client that requests a greeting from the {@link GreeterService}.
  */
+@RunWith(JUnit4.class)
 public class GreeterClientTest {
   private static final Logger LOG =
       Logger.getLogger(MethodHandles.lookup().lookupClass().getName());
 
-  private static void validateResponse(byte[] response) throws InvalidProtocolBufferException {
-    LOG.info("Response length = " + response.length);
+  private void validateResponse(byte[] response) throws InvalidProtocolBufferException {
     LOG.info("Response is: " + new String(response));
 
     // validate the 1st byte
@@ -71,14 +79,30 @@ public class GreeterClientTest {
     byte[] trailer = new byte[trailerLen];
     System.arraycopy(response, offset+4, trailer, 0, trailerLen);
     String trailerStr = new String(trailer);
-    LOG.info("received trailer: " + trailerStr);
+    // LOG.info("received trailer: " + trailerStr);
     assertTrue(trailerStr.startsWith("grpc-status:0"));
   }
 
-  public static void main(String[] args) throws Exception {
+  private byte[] sendGrpcWebReqAndReceiveResponse() throws IOException {
+    // create a HelloRequest obj
+    HelloRequest reqObj = HelloRequest.newBuilder().setName("foo").build();
+    byte[] packagedBytes = Util.packageReqObjIntoGrpcwebProtocol(reqObj);
+
+    // send request to the grpc-web server
+    ContentType contentType = ContentType.create("application/grpc-web");
+    int grpcWebPort = Util.getGrpcwebServicePortNum();
+    return Request.Post("http://localhost:" + grpcWebPort +
+        "/grpcweb.examples.greeter.Greeter/SayHello")
+        .useExpectContinue()
+        .version(HttpVersion.HTTP_1_1)
+        .bodyByteArray(packagedBytes, contentType)
+        .execute().returnContent().asBytes();
+  }
+
+  @Test
+  public void testGreeterClient() throws Exception {
     new StartServiceAndGrpcwebProxy().start();
-    byte[] response = GreeterClient.sendGrpcWebReqAndReceiveResponse();
+    byte[] response = sendGrpcWebReqAndReceiveResponse();
     validateResponse(response);
-    System.exit(0);
   }
 }

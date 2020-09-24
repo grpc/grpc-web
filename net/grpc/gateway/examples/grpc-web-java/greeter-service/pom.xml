@@ -6,9 +6,10 @@
                         http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>grpc.testing.main</groupId>
+  <groupId>grpcweb.examples</groupId>
   <artifactId>grpcweb-java-examples-greeter</artifactId>
   <version>0.1</version>
+  <packaging>jar</packaging>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -81,19 +82,6 @@
             <configuration>
               <outputFile>${project.build.outputDirectory}/my.properties</outputFile>
             </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.4.0</version>
-        <executions>
-          <execution>
-            <phase>test</phase>
-            <goals>
-              <goal>java</goal>
-            </goals>
           </execution>
         </executions>
       </plugin>
