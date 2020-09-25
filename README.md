@@ -10,6 +10,9 @@ In the future, we expect gRPC-web to be supported in language-specific web
 frameworks for languages such as Python, Java, and Node. For details, see the
 [roadmap](doc/roadmap.md).
 
+Java gRPC-web in-process proxy implementation is
+in beta stage. For details, see [details](src/connector/README.md).
+
 ## Quick Start
 
 Eager to get started? Try the [Hello World example][]. From this example, you'll
