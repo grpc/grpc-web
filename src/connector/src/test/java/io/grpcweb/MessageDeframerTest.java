@@ -1,11 +1,11 @@
-package com.google.grpcweb;
+package io.grpcweb;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.google.grpcweb.MessageHandler.ContentType;
+import io.grpcweb.MessageHandler.ContentType;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

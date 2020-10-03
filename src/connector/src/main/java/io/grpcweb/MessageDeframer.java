@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.grpcweb;
+package io.grpcweb;
 
-import com.google.grpcweb.MessageHandler.ContentType;
+import io.grpcweb.MessageHandler.ContentType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.MethodHandles;

@@ -31,7 +31,7 @@
       <version>4.13</version>
     </dependency>
     <dependency>
-      <groupId>com.google.grpcweb</groupId>
+      <groupId>io.grpcweb</groupId>
       <artifactId>grpcweb-java</artifactId>
       <version>0.1-SNAPSHOT</version>
     </dependency>

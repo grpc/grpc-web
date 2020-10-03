@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.grpcweb;
+package io.grpcweb;
 
 import com.google.inject.Singleton;
 import io.grpc.Channel;

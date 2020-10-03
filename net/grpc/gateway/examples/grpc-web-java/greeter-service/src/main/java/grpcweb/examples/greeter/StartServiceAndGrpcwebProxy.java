@@ -1,10 +1,10 @@
 package grpcweb.examples.greeter;
 
-import com.google.grpcweb.GrpcPortNumRelay;
-import com.google.grpcweb.JettyWebserverForGrpcwebTraffic;
 import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import io.grpcweb.GrpcPortNumRelay;
+import io.grpcweb.JettyWebserverForGrpcwebTraffic;
 
 /**
  * This class starts the service on a port (property: grpc-port)
