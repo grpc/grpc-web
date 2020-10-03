@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.grpcweb;
+package io.grpcweb;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Enumeration;

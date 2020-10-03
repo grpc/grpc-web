@@ -1,4 +1,4 @@
-package com.google.grpcweb;
+package io.grpcweb;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

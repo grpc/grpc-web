@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.grpcweb;
+package io.grpcweb;
 
 import java.io.IOException;
 import javax.servlet.Filter;
