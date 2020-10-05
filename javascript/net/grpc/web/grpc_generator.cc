@@ -529,15 +529,17 @@ string GetBasename(string filename) {
   return basename;
 }
 
-// Finds all message types used in all services in the file.
-std::set<const Descriptor*> GetAllMessages(const FileDescriptor* file) {
-  std::set<const Descriptor*> messages;
+// Finds all message types used in all services in the file. Return results as a
+// map of full names to descriptors to get sorted results and deterministic
+// build outputs.
+std::map<string, const Descriptor*> GetAllMessages(const FileDescriptor* file) {
+  std::map<string, const Descriptor*> messages;
   for (int s = 0; s < file->service_count(); ++s) {
     const ServiceDescriptor* service = file->service(s);
     for (int m = 0; m < service->method_count(); ++m) {
       const MethodDescriptor *method = service->method(m);
-      messages.insert(method->input_type());
-      messages.insert(method->output_type());
+      messages[method->input_type()->full_name()] = method->input_type();
+      messages[method->output_type()->full_name()] = method->output_type();
     }
   }
 
@@ -545,10 +547,10 @@ std::set<const Descriptor*> GetAllMessages(const FileDescriptor* file) {
 }
 
 void PrintClosureDependencies(Printer* printer, const FileDescriptor* file) {
-  for (const Descriptor* message : GetAllMessages(file)) {
+  for (const auto &entry : GetAllMessages(file)) {
     printer->Print(
         "goog.require('proto.$full_name$');\n",
-        "full_name", message->full_name());
+        "full_name", entry.second->full_name());
   }
   printer->Print("\n\n\n");
 }
@@ -604,8 +606,8 @@ void PrintES6Imports(Printer* printer, const FileDescriptor* file) {
   printer->Print("import * as grpcWeb from 'grpc-web';\n\n");
 
   std::set<string> imports;
-  for (const Descriptor* message : GetAllMessages(file)) {
-    const string& name = message->file()->name();
+  for (const auto &entry : GetAllMessages(file)) {
+    const string& name = entry.second->file()->name();
     string dep_filename = GetRootPath(file->name(), name) + StripProto(name);
     if (imports.find(dep_filename) != imports.end()) {
       continue;
