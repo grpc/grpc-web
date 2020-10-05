@@ -19,27 +19,27 @@ goog.module('grpc.web.GrpcWebClientBaseTest');
 goog.setTestOnly('grpc.web.GrpcWebClientBaseTest');
 
 const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
-var EventType = goog.require('goog.net.EventType');
-var GrpcWebClientBase = goog.require('grpc.web.GrpcWebClientBase');
-var Map = goog.require('goog.structs.Map');
-var googCrypt = goog.require('goog.crypt.base64');
-var googEvents = goog.require('goog.events');
-var testSuite = goog.require('goog.testing.testSuite');
+const EventType = goog.require('goog.net.EventType');
+const GrpcWebClientBase = goog.require('grpc.web.GrpcWebClientBase');
+const Map = goog.require('goog.structs.Map');
+const googCrypt = goog.require('goog.crypt.base64');
+const googEvents = goog.require('goog.events');
+const testSuite = goog.require('goog.testing.testSuite');
 const {StreamInterceptor} = goog.require('grpc.web.Interceptor');
 goog.require('goog.testing.jsunit');
 
-var REQUEST_BYTES = [1, 2, 3];
-var FAKE_METHOD = 'fake-method';
-var PROTO_FIELD_VALUE = 'meow';
-var EXPECTED_HEADERS;
-var EXPECTED_HEADER_VALUES;
-var EXPECTED_UNARY_HEADERS =
+const REQUEST_BYTES = [1, 2, 3];
+const FAKE_METHOD = 'fake-method';
+const PROTO_FIELD_VALUE = 'meow';
+const DEFAULT_UNARY_HEADERS =
     ['Content-Type', 'Accept', 'X-User-Agent', 'X-Grpc-Web'];
-var EXPECTED_UNARY_HEADER_VALUES = [
+const DEFAULT_UNARY_HEADER_VALUES = [
   'application/grpc-web-text', 'application/grpc-web-text',
   'grpc-web-javascript/0.1', '1'
 ];
-var dataCallback;
+let dataCallback;
+let expectedHeaders;
+let expectedHeaderValues;
 
 
 testSuite({
@@ -53,8 +53,8 @@ testSuite({
   },
 
   tearDown: function() {
-    EXPECTED_HEADERS = null;
-    EXPECTED_HEADER_VALUES = null;
+    expectedHeaders = null;
+    expectedHeaderValues = null;
   },
 
   testRpcResponse: function() {
@@ -69,7 +69,7 @@ testSuite({
 
     expectUnaryHeaders();
     client.rpcCall(
-        FAKE_METHOD, {}, {}, {
+        FAKE_METHOD, /** requestMessage */ {}, /** metadata */ {}, {
           requestSerializeFn: function(request) {
             return REQUEST_BYTES;
           },
@@ -82,6 +82,28 @@ testSuite({
           assertNull(error);
           assertEquals(PROTO_FIELD_VALUE, response['field1']);
         });
+    dataCallback();
+  },
+
+  testDeadline: function() {
+    const client = new GrpcWebClientBase();
+    client.newXhr_ = function() {
+      return new MockXhr({
+        deadline: true,
+        response: googCrypt.encodeByteArray(new Uint8Array(0)),
+      });
+    };
+
+    expectUnaryHeaders();
+    const deadline = new Date();
+    deadline.setSeconds(deadline.getSeconds() + 1);
+    client.rpcCall(
+        FAKE_METHOD, /** requestMessage */ {}, {'deadline': deadline}, {
+          requestSerializeFn: (request) => REQUEST_BYTES,
+          responseDeserializeFn: (bytes) => {},
+
+        },
+        (error, response) => assertNull(error));
     dataCallback();
   },
 
@@ -180,8 +202,8 @@ testSuite({
 
 /** Sets expected headers as the unary response headers */
 function expectUnaryHeaders() {
-  EXPECTED_HEADERS = EXPECTED_UNARY_HEADERS;
-  EXPECTED_HEADER_VALUES = EXPECTED_UNARY_HEADER_VALUES;
+  expectedHeaders = [...DEFAULT_UNARY_HEADERS];
+  expectedHeaderValues = [...DEFAULT_UNARY_HEADER_VALUES];
 }
 
 
@@ -198,18 +220,23 @@ class MockXhr {
 
   /**
    * @param {string} url
-   * @param {string=} opt_method
-   * @param {string=} opt_content
-   * @param {string=} opt_headers
+   * @param {string=} method
+   * @param {string=} content
+   * @param {string=} headers
    */
-  send(url, opt_method, opt_content, opt_headers) {
+  send(url, method, content, headers) {
     assertEquals(FAKE_METHOD, url);
-    assertEquals('POST', opt_method);
+    assertEquals('POST', method);
     assertElementsEquals(
         googCrypt.encodeByteArray(new Uint8Array([0, 0, 0, 0, 3, 1, 2, 3])),
-        opt_content);
-    assertElementsEquals(EXPECTED_HEADERS, this.headers.getKeys());
-    assertElementsEquals(EXPECTED_HEADER_VALUES, this.headers.getValues());
+        content);
+    if (!this.mockValues.deadline) {
+      assertElementsEquals(expectedHeaders, this.headers.getKeys());
+      assertElementsEquals(expectedHeaderValues, this.headers.getValues());
+    } else {
+      expectedHeaders.push('grpc-timeout');
+      assertElementsEquals(expectedHeaders, this.headers.getKeys());
+    }
   }
 
   /**
