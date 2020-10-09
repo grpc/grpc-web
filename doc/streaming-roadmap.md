@@ -26,8 +26,6 @@ in gRPC-Web (and Envoy) which will also enable half-duplex bidi streaming suppor
 
 # Full-duplex streaming over HTTP
 
-We have no plan to support full-duplex streaming over WebSockets (over TCP or HTTP/2). We will not publish any experimental spec for gRPC over WebSockets either.
-
 It is possible to support bidi communication over dual HTTP requests, one for download-streaming and the other for upload-streaming, 
 similar to what's implemented by Google to support the [W3C Speech API](https://wicg.github.io/speech-api/). 
 
@@ -36,3 +34,9 @@ Once client-streaming is supported in gRPC-Web, we will publish a spec to enable
 # Full-duplex streaming over Web-transport
 
 We are working with the Chromium Blink team to evaluate how to leverage this whole new transport and QUIC. Stay tuned. 
+
+# Issues with WebSockets
+
+We have no plan to support full-duplex streaming over WebSockets (over TCP or HTTP/2). We will not publish any experimental spec for gRPC over WebSockets either.
+
+The main issue with WebSockets is its incompatibility with HTTP, i.e. the ubiquitous Web infrastructure. This means HTTP fallback is always needed. Recent IETF proposal to tunnel WebSockets over HTTP/2 is not widely implemented either.
