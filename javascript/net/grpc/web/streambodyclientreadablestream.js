@@ -144,11 +144,11 @@ class StreamBodyClientReadableStream {
         if (grpcStatus == StatusCode.OK) {
           this.sendDataCallbacks_(responseMessage);
         } else {
-          callback(
+          this.sendErrorCallbacks_(
               /** @type {!GrpcWebError} */ ({
                 code: grpcStatus,
-              }),
-              responseMessage);
+                message: response,
+              }));
         }
       } else {
         let rawResponse;

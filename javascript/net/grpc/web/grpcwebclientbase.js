@@ -29,6 +29,7 @@ goog.module.declareLegacyNamespace();
 
 
 const AbstractClientBase = goog.require('grpc.web.AbstractClientBase');
+const ClientOptions = goog.requireType('grpc.web.ClientOptions');
 const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
 const ClientUnaryCallImpl = goog.require('grpc.web.ClientUnaryCallImpl');
 const Error = goog.require('grpc.web.Error');
@@ -52,9 +53,9 @@ const {StreamInterceptor, UnaryInterceptor} = goog.require('grpc.web.Interceptor
  */
 class GrpcWebClientBase {
   /**
-   * @param {?Object=} options
+   * @param {!ClientOptions=} options
    */
-  constructor(options) {
+  constructor(options = {}) {
     /**
      * @const
      * @private {string}
