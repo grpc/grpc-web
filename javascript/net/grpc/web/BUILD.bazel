@@ -53,6 +53,17 @@ closure_js_library(
 )
 
 closure_js_library(
+    name = "clientoptions",
+    srcs = [
+        "clientoptions.js",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":interceptor",
+    ],
+)
+
+closure_js_library(
     name = "clientreadablestream",
     srcs = [
         "clientreadablestream.js",
@@ -106,6 +117,7 @@ closure_js_library(
     visibility = ["//visibility:public"],
     deps = [
         ":abstractclientbase",
+        ":clientoptions",
         ":clientreadablestream",
         ":clientunarycallimpl",
         ":error",
