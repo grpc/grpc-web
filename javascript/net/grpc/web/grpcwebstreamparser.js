@@ -186,12 +186,17 @@ class GrpcWebStreamParser {
      * @param {number} b A frame byte to process
      */
     function processFrameByte(b) {
-      if (b == FrameType.DATA) {
-        parser.frame_ = b;
-      } else if (b == FrameType.TRAILER) {
-        parser.frame_ = b;
+      var frameType = b & 0xFE;
+      var isCompressed = b & 0x01;
+      if (isCompressed !== 0) {
+        parser.error_(inputBytes, pos, 'compressed frames aren\'t supported');
       } else {
-        parser.error_(inputBytes, pos, 'invalid frame byte');
+        if (frameType == FrameType.DATA) {
+          parser.frame_ = frameType;
+        } else if (frameType == FrameType.TRAILER) {
+          parser.frame_ = frameType;
+        } else {
+          parser.error_(inputBytes, pos, 'invalid frame byte');
       }
 
       parser.state_ = Parser.State_.LENGTH;
