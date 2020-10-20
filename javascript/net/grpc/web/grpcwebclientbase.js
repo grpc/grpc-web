@@ -322,6 +322,7 @@ class GrpcWebClientBase {
     }
     xhr.headers.set('X-User-Agent', 'grpc-web-javascript/0.1');
     xhr.headers.set('X-Grpc-Web', '1');
+    xhr.headers.set('grpc-accept-encoding', 'identity');
     if (xhr.headers.containsKey('deadline')) {
       var deadline = xhr.headers.get('deadline');  // in ms
       var currentTime = (new Date()).getTime();
