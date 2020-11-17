@@ -60,35 +60,35 @@ class GrpcWebClientBase {
      * @const
      * @private {string}
      */
-    this.format_ = goog.getObjectByName('format', options) || 'text';
+    this.format_ =
+        options.format || goog.getObjectByName('format', options) || 'text';
 
     /**
      * @const
      * @private {boolean}
      */
-    this.suppressCorsPreflight_ =
+    this.suppressCorsPreflight_ = options.suppressCorsPreflight ||
         goog.getObjectByName('suppressCorsPreflight', options) || false;
 
-
     /**
      * @const
      * @private {boolean}
      */
-    this.withCredentials_ =
+    this.withCredentials_ = options.withCredentials ||
         goog.getObjectByName('withCredentials', options) || false;
+
     /**
      * @const {!Array<!StreamInterceptor>}
      * @private
      */
-    this.streamInterceptors_ =
+    this.streamInterceptors_ = options.streamInterceptors ||
         goog.getObjectByName('streamInterceptors', options) || [];
-
 
     /**
      * @const {!Array<!UnaryInterceptor>}
      * @private
      */
-    this.unaryInterceptors_ =
+    this.unaryInterceptors_ = options.unaryInterceptors ||
         goog.getObjectByName('unaryInterceptors', options) || [];
   }
 
