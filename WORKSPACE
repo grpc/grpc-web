@@ -29,6 +29,15 @@ http_archive(
     ],
 )
 
+http_archive(
+    name = "com_github_grpc_grpc",
+    sha256 = "43feda4d7ce2892400d5a0cbccecc5b1790f3253244a171360018d84c2949fb7",
+    strip_prefix = "grpc-1.33.2",
+    urls = [
+        "https://github.com/grpc/grpc/archive/v1.33.2.zip",
+    ],
+)
+
 load("@io_bazel_rules_closure//closure:repositories.bzl", "rules_closure_dependencies", "rules_closure_toolchains")
 
 rules_closure_dependencies()
@@ -38,3 +47,12 @@ rules_closure_toolchains()
 load("//bazel:repositories.bzl", "grpc_web_toolchains")
 
 grpc_web_toolchains()
+
+load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")
+
+grpc_deps()
+
+load("@com_github_grpc_grpc//bazel:grpc_extra_deps.bzl", "grpc_extra_deps")
+
+grpc_extra_deps()
+
