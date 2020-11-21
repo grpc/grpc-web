@@ -139,8 +139,8 @@ class StreamBodyClientReadableStream {
         const responseMessage = this.grpcResponseDeserializeFn_(response);
         const grpcStatus = StatusCode.fromHttpStatus(this.xhr_.getStatus());
         if (grpcStatus == StatusCode.OK) {
-          this.sendDataCallbacks_(responseMessage);
           this.sendMetadataCallbacks_(this.readHeaders_());
+          this.sendDataCallbacks_(responseMessage);
         } else {
           this.sendErrorCallbacks_(
               /** @type {!GrpcWebError} */ ({
