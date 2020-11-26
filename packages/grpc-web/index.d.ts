@@ -106,10 +106,12 @@ declare module "grpc-web" {
     format?: string;
     suppressCorsPreflight?: boolean;
     withCredentials?: boolean;
+    unaryInterceptors?: UnaryInterceptor<unknown, unknown>[];
+    streamInterceptors?: StreamInterceptor<unknown, unknown>[];
   }
 
   export class GrpcWebClientBase extends AbstractClientBase {
-    constructor (options: GrpcWebClientBaseOptions);
+    constructor(options?: GrpcWebClientBaseOptions);
   }
 
   export interface Error {
