@@ -15,14 +15,14 @@ declare module "grpc-web" {
       method: string,
       request: REQ,
       metadata: Metadata,
-      methodDescriptor: MethodDescriptor<REQ, RESP>
+      methodDescriptor: MethodDescriptor<REQ, RESP> | AbstractClientBase.MethodInfo<REQ, RESP>
     ): Promise<RESP>;
 
     rpcCall<REQ, RESP> (
       method: string,
       request: REQ,
       metadata: Metadata,
-      methodDescriptor: MethodDescriptor<REQ, RESP>,
+      methodDescriptor: MethodDescriptor<REQ, RESP> | AbstractClientBase.MethodInfo<REQ, RESP>,
       callback: (err: Error, response: RESP) => void
     ): ClientReadableStream<RESP>;
 
@@ -30,7 +30,7 @@ declare module "grpc-web" {
       method: string,
       request: REQ,
       metadata: Metadata,
-      methodDescriptor: MethodDescriptor<REQ, RESP>
+      methodDescriptor: MethodDescriptor<REQ, RESP> | AbstractClientBase.MethodInfo<REQ, RESP>
     ): ClientReadableStream<RESP>;
   }
 
