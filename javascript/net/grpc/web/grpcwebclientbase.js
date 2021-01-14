@@ -222,7 +222,7 @@ class GrpcWebClientBase {
    * @static
    * @template RESPONSE
    * @param {!ClientReadableStream<RESPONSE>} stream
-   * @param {function(?Error, ?RESPONSE, ?Status=, ?Metadata=)|
+   * @param {function(?Error, ?RESPONSE, ?Status=, ?Object<string, string>=)|
    *     function(?Error,?RESPONSE)} callback
    * @param {boolean} useUnaryResponse
    */

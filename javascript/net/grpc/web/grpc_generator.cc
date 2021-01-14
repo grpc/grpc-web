@@ -582,7 +582,7 @@ void PrintCommonJsMessagesDeps(Printer* printer, const FileDescriptor* file) {
       printer->Print(vars, "proto.$current_package_ns$ = {};\n");
 
       offset = dotIndex + 1;
-      dotIndex = package.find(".", offset);
+      dotIndex = package.find('.', offset);
     }
   }
 
@@ -1338,6 +1338,7 @@ void PrintMultipleFilesMode(const FileDescriptor* file, string file_name,
                             GeneratorContext* context,
                             std::map<string, string> vars) {
   std::map<string, string> method_descriptors;
+  bool has_server_streaming = false;
 
   // Print MethodDescriptor files.
   for (int i = 0; i < file->service_count(); ++i) {
@@ -1351,6 +1352,9 @@ void PrintMultipleFilesMode(const FileDescriptor* file, string file_name,
       string method_file_name = Lowercase(service->name()) + "_" +
                                 Lowercase(method->name()) +
                                 "_methoddescriptor.js";
+      if (method->server_streaming()) {
+        has_server_streaming = true;
+      }
       std::unique_ptr<ZeroCopyOutputStream> output(
           context->Open(method_file_name));
       Printer printer(output.get(), '$');
@@ -1406,8 +1410,9 @@ void PrintMultipleFilesMode(const FileDescriptor* file, string file_name,
   printer1.Print(vars, "goog.require('grpc.web.ClientReadableStream');\n");
   printer1.Print(vars, "goog.require('grpc.web.Error');\n");
   printer2.Print(vars, "goog.require('grpc.web.$mode$ClientBase');\n");
-  printer2.Print(vars, "goog.require('grpc.web.ClientReadableStream');\n");
-  printer2.Print(vars, "goog.require('grpc.web.Error');\n");
+  if (has_server_streaming) {
+    printer2.Print(vars, "goog.require('grpc.web.ClientReadableStream');\n");
+  }
 
   PrintClosureDependencies(&printer1, file);
   PrintClosureDependencies(&printer2, file);
