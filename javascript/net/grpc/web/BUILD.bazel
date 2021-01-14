@@ -165,6 +165,7 @@ closure_js_library(
         "grpcwebstreamparser.js",
     ],
     suppress = [
+        "checkTypes",
         "reportUnknownTypes",
     ],
     visibility = ["//visibility:public"],
