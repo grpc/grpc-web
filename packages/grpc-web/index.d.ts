@@ -144,4 +144,9 @@ declare module "grpc-web" {
     const UNIMPLEMENTED: number;
     const UNKNOWN: number;
   }
+
+  export namespace MethodType {
+    const UNARY: string;
+    const SERVER_STREAMING: string;
+  }
 }
