@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM envoyproxy/envoy:v1.17.0
+FROM envoyproxy/envoy:v1.16.1
 
 COPY net/grpc/gateway/examples/echo/envoy.yaml /etc/envoy/envoy.yaml
 
