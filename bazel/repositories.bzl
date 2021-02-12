@@ -23,5 +23,5 @@ def grpc_web_toolchains():
     """An utility method to load all gRPC-Web toolchains."""
 
     native.register_toolchains(
-        "//bazel:closure_toolchain",
+        "@com_github_grpc_grpc_web//bazel:closure_toolchain",
     )

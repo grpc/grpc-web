@@ -44,7 +44,7 @@ rules_closure_dependencies()
 
 rules_closure_toolchains()
 
-load("//bazel:repositories.bzl", "grpc_web_toolchains")
+load("@com_github_grpc_grpc_web//bazel:repositories.bzl", "grpc_web_toolchains")
 
 grpc_web_toolchains()
 
