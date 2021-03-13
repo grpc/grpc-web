@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.15-alpine3.13
+FROM golang:1.16-alpine3.13
 
 RUN apk add --no-cache curl git ca-certificates && \
   rm -rf /var/lib/apt/lists/*
@@ -32,6 +32,7 @@ RUN mv grpc-web-$VERSION grpc-web
 WORKDIR /go/src/github.com/improbable-eng/grpc-web
 
 RUN dep ensure && \
+  go env -w GO111MODULE=auto && \
   go install ./go/grpcwebproxy
 
 ADD ./etc/localhost.crt /etc
