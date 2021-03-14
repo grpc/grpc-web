@@ -98,13 +98,13 @@ class StreamBodyClientReadableStream {
 
     /**
      * @private
-     * @const {!Array<function(...):?>} The list of stream end callback
+     * @const {!Array<function(...)>} The list of stream end callback
      */
     this.onEndCallbacks_ = [];
 
     /**
      * @private
-     * @const {!Array<function(...):?>} The list of error callback
+     * @const {!Array<function(!GrpcWebError)>} The list of error callback
      */
     this.onErrorCallbacks_ = [];
 
@@ -138,8 +138,8 @@ class StreamBodyClientReadableStream {
         }
         const responseMessage = this.grpcResponseDeserializeFn_(response);
         const grpcStatus = StatusCode.fromHttpStatus(this.xhr_.getStatus());
+        this.sendMetadataCallbacks_(this.readHeaders_());
         if (grpcStatus == StatusCode.OK) {
-          this.sendMetadataCallbacks_(this.readHeaders_());
           this.sendDataCallbacks_(responseMessage);
         } else {
           this.sendErrorCallbacks_(
@@ -174,6 +174,7 @@ class StreamBodyClientReadableStream {
               this.xhr_.getLastErrorCode() +
               ', error: ' + this.xhr_.getLastError();
         }
+        this.sendMetadataCallbacks_(this.readHeaders_());
         this.sendErrorCallbacks_({
           code: code,
           message: message,
@@ -407,7 +408,7 @@ class StreamBodyClientReadableStream {
 
   /**
    * @private
-   * @param {?} error The error to send back
+   * @param {!GrpcWebError} error The error to send back
    */
   sendErrorCallbacks_(error) {
     for (let i = 0; i < this.onErrorCallbacks_.length; i++) {
