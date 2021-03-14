@@ -227,9 +227,9 @@ class GrpcWebClientBase {
    * @param {boolean} useUnaryResponse
    */
   static setCallback_(stream, callback, useUnaryResponse) {
-    var isResponseReceived = false;
-    var responseReceived = null;
-    var errorEmitted = false;
+    let isResponseReceived = false;
+    let responseReceived = null;
+    let errorEmitted = false;
 
     stream.on('data', function(response) {
       isResponseReceived = true;
