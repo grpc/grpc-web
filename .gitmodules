@@ -1,12 +1,6 @@
-[submodule "third_party/grpc"]
-	path = third_party/grpc
-	url = https://github.com/grpc/grpc.git
-[submodule "third_party/openssl"]
-	path = third_party/openssl
-	url = https://github.com/openssl/openssl.git
-[submodule "third_party/nginx/src"]
-	path = third_party/nginx/src
-	url = https://nginx.googlesource.com/nginx
 [submodule "third_party/closure-library"]
 	path = third_party/closure-library
 	url = https://github.com/google/closure-library.git
+[submodule "third_party/protobuf"]
+	path = third_party/protobuf
+	url = https://github.com/protocolbuffers/protobuf.git
