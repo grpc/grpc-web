@@ -22,6 +22,7 @@ RUN echo "\nloglevel=error\n" >> $HOME/.npmrc
 
 WORKDIR /github/grpc-web
 
+COPY .gitmodules .gitmodules
 COPY ./Makefile ./Makefile
 COPY ./WORKSPACE ./WORKSPACE
 COPY ./bazel ./bazel
@@ -30,6 +31,15 @@ COPY ./net ./net
 COPY ./packages ./packages
 COPY ./scripts ./scripts
 COPY ./test ./test
+
+# This section can be removed later
+RUN rm -rf third_party/ && \
+  git add .gitmodules && \
+  git checkout third_party && \
+  git rm --cached third_party/grpc && \
+  git rm --cached third_party/nginx/src && \
+  git rm --cached third_party/openssl && \
+  (cd third_party && git submodule add https://github.com/protocolbuffers/protobuf)
 
 RUN ./scripts/init_submodules.sh
 

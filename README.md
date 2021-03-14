@@ -291,12 +291,6 @@ is [Envoy][], which supports gRPC-web out of the box.
 $ docker-compose up -d node-server envoy commonjs-client
 ```
 
-An alternative is to build Nginx, included as a submodule in this repository.
-
-```sh
-$ docker-compose up -d echo-server nginx closure-client
-```
-
 You can also try the [gRPC-web Go proxy][].
 
 ```sh

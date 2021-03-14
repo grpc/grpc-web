@@ -473,7 +473,7 @@ describe('grpc-web generated code (closure+grpcwebtext)', function() {
     ".",
     "../../../javascript",
     "../../../third_party/closure-library",
-    "../../../third_party/grpc/third_party/protobuf/js",
+    "../../../third_party/protobuf/js",
   ].map(jsPath => path.relative(cwd, path.resolve(__dirname, jsPath)));
   const closureArgs = [].concat(
     jsPaths.map(jsPath => `--js=${jsPath}`),

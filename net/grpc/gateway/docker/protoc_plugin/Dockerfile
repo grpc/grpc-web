@@ -29,7 +29,7 @@ RUN apt-get -qq update && apt-get -qq install -y \
 
 WORKDIR /github/grpc-web
 
-RUN cd ./third_party/grpc/third_party/protobuf && \
+RUN cd ./third_party/protobuf && \
   ./autogen.sh && ./configure && make && make install && ldconfig
 
 RUN cd ./javascript/net/grpc/web && \

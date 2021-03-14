@@ -13,11 +13,6 @@
 # limitations under the License.
 
 ROOT_DIR = ../../../../..
-CXX = g++
-CPPFLAGS += -I/usr/local/include -I$(ROOT_DIR) -pthread
-CXXFLAGS += -std=c++11
-LDFLAGS += -L/usr/local/lib -lgrpc++ -lgrpc -lgrpc++_reflection \
-           -lprotobuf -lpthread -ldl
 PROTOC = protoc
 PROTOS_PATH = ../..
 EXAMPLES_PATH = net/grpc/gateway/examples/echo
@@ -25,35 +20,10 @@ HTML_DIR = /var/www/html
 JS_IMPORT_STYLE = import_style=closure,binary
 JS_PATH = javascript/net/grpc/web
 OUT_DIR = ./out
-PROTOBUF_PATH = third_party/grpc/third_party/protobuf
-GRPC_CPP_PLUGIN = grpc_cpp_plugin
-GRPC_CPP_PLUGIN_PATH ?= `which $(GRPC_CPP_PLUGIN)`
+PROTOBUF_PATH = third_party/protobuf
 GRPC_WEB_PLUGIN_PATH = /usr/local/bin/protoc-gen-grpc-web
 
-all: echo_server client package
-
-package:
-	mkdir -p $(ROOT_DIR)/gConnector/$(EXAMPLES_PATH)
-	cp nginx.conf $(ROOT_DIR)/gConnector/conf
-	cp echo_server $(ROOT_DIR)/gConnector
-	cp echotest.html $(ROOT_DIR)/gConnector/$(EXAMPLES_PATH)
-	cp compiled.js $(ROOT_DIR)/gConnector
-	zip -r $(ROOT_DIR)/gConnector.zip $(ROOT_DIR)/gConnector/*
-
-standalone-proxy:
-	mkdir -p $(ROOT_DIR)/gConnector_static/$(EXAMPLES_PATH)
-	cp nginx.conf $(ROOT_DIR)/gConnector_static/conf
-	zip -r $(ROOT_DIR)/gConnector_static.zip $(ROOT_DIR)/gConnector_static/*
-
-echo_server: echo.pb.o echo.grpc.pb.o echo_server.o echo_service_impl.o
-	$(CXX) $^ $(LDFLAGS) -o $@
-
-echo.grpc.pb.cc: echo.proto
-	$(PROTOC) -I . --grpc_out=. \
-  --plugin=protoc-gen-grpc=$(GRPC_CPP_PLUGIN_PATH) $<
-
-echo.pb.cc: echo.proto
-	$(PROTOC) -I . --cpp_out=. $<
+all: client
 
 client: proto-js compiled-js
 
@@ -93,6 +63,5 @@ install:
 	cp ./compiled.js $(HTML_DIR)/echo_js_bin_dev.js
 
 clean:
-	rm -f *.grpc.pb.cc *.grpc.pb.h *.grpc.pb.o *.pb.cc *.pb.h *.pb.o \
-  echo_server echo_server.o echo_service_impl.o compiled.js
+	rm -f compiled.js
 	rm -rf $(OUT_DIR)
