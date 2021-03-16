@@ -325,9 +325,9 @@ class GrpcWebClientBase {
     xhr.headers.set('X-User-Agent', 'grpc-web-javascript/0.1');
     xhr.headers.set('X-Grpc-Web', '1');
     if (xhr.headers.containsKey('deadline')) {
-      var deadline = xhr.headers.get('deadline');  // in ms
-      var currentTime = (new Date()).getTime();
-      var timeout = Math.round(deadline - currentTime);
+      const deadline = xhr.headers.get('deadline');  // in ms
+      const currentTime = (new Date()).getTime();
+      let timeout = Math.ceil(deadline - currentTime);
       xhr.headers.remove('deadline');
       if (timeout === Infinity) {
         // grpc-timeout header defaults to infinity if not set.
@@ -335,6 +335,12 @@ class GrpcWebClientBase {
       }
       if (timeout > 0) {
         xhr.headers.set('grpc-timeout', timeout + 'm');
+        // Also set timeout on the xhr request to terminate the HTTP request
+        // if the server doesn't respond within the deadline. We use 110% of
+        // grpc-timeout for this to allow the server to terminate the connection
+        // with DEADLINE_EXCEEDED rather than terminating it in the Browser, but
+        // at least 1 second in case the user is on a high-latency network.
+        xhr.setTimeoutInterval(Math.max(1000, Math.ceil(timeout * 1.1)));
       }
     }
   }
