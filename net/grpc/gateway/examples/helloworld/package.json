@@ -4,7 +4,7 @@
   "description": "gRPC-Web simple example",
   "main": "server.js",
   "devDependencies": {
-    "@grpc/grpc-js": "~1.0.5",
+    "@grpc/grpc-js": "~1.1.8",
     "@grpc/proto-loader": "~0.5.4",
     "async": "~1.5.2",
     "google-protobuf": "~3.14.0",
