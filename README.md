@@ -202,6 +202,9 @@ stream.on('status', function(status) {
 stream.on('end', function(end) {
   // stream end signal
 });
+
+// to close the stream
+stream.cancel()
 ```
 
 For an in-depth tutorial, see [this
