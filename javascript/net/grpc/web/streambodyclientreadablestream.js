@@ -34,11 +34,13 @@ goog.module.declareLegacyNamespace();
 const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
 const ErrorCode = goog.require('goog.net.ErrorCode');
 const EventType = goog.require('goog.net.EventType');
+const GoogleRpcStatus = goog.require('proto.google.rpc.Status');
 const GrpcWebError = goog.requireType('grpc.web.Error');
 const Metadata = goog.requireType('grpc.web.Metadata');
 const NodeReadableStream = goog.require('goog.net.streams.NodeReadableStream');
 const StatusCode = goog.require('grpc.web.StatusCode');
 const XhrIo = goog.require('goog.net.XhrIo');
+const asserts = goog.require('goog.asserts');
 const events = goog.require('goog.events');
 const {GenericTransportInterface} = goog.require('grpc.web.GenericTransportInterface');
 const {Status} = goog.require('grpc.web.Status');
@@ -55,11 +57,18 @@ const {Status} = goog.require('grpc.web.Status');
  */
 class StreamBodyClientReadableStream {
   /**
-   * @param {!GenericTransportInterface} genericTransportInterface The
-   *   GenericTransportInterface
+   * @param {!GenericTransportInterface} genericTransportInterface
    * @param {function(?): RESPONSE} responseDeserializeFn
+   * @param {boolean} isBinary
    */
-  constructor(genericTransportInterface, responseDeserializeFn) {
+  constructor(genericTransportInterface, responseDeserializeFn, isBinary) {
+    /**
+     * Whether or not the response protobuffer format is binary.
+     * @private
+     * @const {boolean}
+     */
+    this.isBinary_ = isBinary;
+
     /**
      * @private
      * @const {?NodeReadableStream|undefined} The XHR Node Readable Stream
@@ -68,7 +77,7 @@ class StreamBodyClientReadableStream {
 
     /**
      * @private
-     * @type {function(?): RESPONSE} The deserialize function for the proto
+     * @const {function(?): RESPONSE} The deserialize function for the proto
      */
     this.grpcResponseDeserializeFn_ = responseDeserializeFn;
 
@@ -108,13 +117,6 @@ class StreamBodyClientReadableStream {
      */
     this.onErrorCallbacks_ = [];
 
-    /**
-     * @private
-     * @type {function(?, !XhrIo=):!Status|null}
-     *   A function to parse the Rpc Status response
-     */
-    this.rpcStatusParseFn_ = null;
-
     if (this.xhrNodeReadableStream_) {
       this.setStreamCallback_();
     }
@@ -123,15 +125,14 @@ class StreamBodyClientReadableStream {
 
   /**
    * Set up the callback functions for unary calls.
-   * @param {boolean} binaryResponse True if the client is using 'binary' mode
    * @param {boolean} base64Encoded True if
-   *     'X-Goog-Encode-Response-If-Executable' is 'base64' in request headers
+   *     'X-Goog-Encode-Response-If-Executable' is 'base64' in request headers.
    */
-  setUnaryCallback(binaryResponse, base64Encoded) {
+  setUnaryCallback(base64Encoded) {
     events.listen(/** @type {!XhrIo}*/ (this.xhr_), EventType.COMPLETE, (e) => {
       if (this.xhr_.isSuccess()) {
         let response;
-        if (binaryResponse) {
+        if (this.isBinary_) {
           response = this.decodeBinaryResponse_(base64Encoded);
         } else {
           response = this.decodeJspbResponse_(base64Encoded);
@@ -143,14 +144,12 @@ class StreamBodyClientReadableStream {
           this.sendDataCallbacks_(responseMessage);
         } else {
           this.sendErrorCallbacks_(
-              /** @type {!GrpcWebError} */ ({
-                code: grpcStatus,
-                message: response,
-              }));
+              /** @type {!GrpcWebError} */ (
+                  {code: grpcStatus, message: response}));
         }
       } else {
         let rawResponse;
-        if (binaryResponse) {
+        if (this.isBinary_) {
           const xhrResponse = this.xhr_.getResponse();
           if (xhrResponse) {
             rawResponse =
@@ -164,7 +163,7 @@ class StreamBodyClientReadableStream {
         let message;
         let metadata = {};
         if (rawResponse) {
-          const status = this.rpcStatusParseFn_(rawResponse, this.xhr_);
+          const status = this.parseRpcStatus_(rawResponse);
           code = status.code;
           message = status.details;
           metadata = status.metadata;
@@ -175,11 +174,7 @@ class StreamBodyClientReadableStream {
               ', error: ' + this.xhr_.getLastError();
         }
         this.sendMetadataCallbacks_(this.readHeaders_());
-        this.sendErrorCallbacks_({
-          code: code,
-          message: message,
-          metadata: metadata,
-        });
+        this.sendErrorCallbacks_({code, message, metadata});
       }
     });
   }
@@ -195,7 +190,7 @@ class StreamBodyClientReadableStream {
         this.sendDataCallbacks_(response);
       }
       if ('2' in data) {
-        const status = this.rpcStatusParseFn_(data['2']);
+        const status = this.parseRpcStatus_(data['2']);
         this.sendStatusCallbacks_(status);
       }
     });
@@ -298,6 +293,45 @@ class StreamBodyClientReadableStream {
   }
 
   /**
+   * @private
+   * @param {!Uint8Array|string} data Data returned from the underlying stream.
+   * @return {!Status} The Rpc Status details.
+   */
+  parseRpcStatus_(data) {
+    let code;
+    let message;
+    const metadata = {};
+    try {
+      let rpcStatus;
+      if (this.isBinary_) {
+        rpcStatus = GoogleRpcStatus.deserializeBinary(data);
+      } else {
+        asserts.assertString(
+            data, 'RPC status must be string in gRPC-Web jspb mode.');
+        rpcStatus = GoogleRpcStatus.deserialize(data);
+      }
+      code = rpcStatus.getCode();
+      message = rpcStatus.getMessage();
+      if (rpcStatus.getDetailsList().length) {
+        metadata['grpc-web-status-details-bin'] = data;
+      }
+    } catch (e) {
+      // 404s may be accompanied by a GoogleRpcStatus. If they are not,
+      // the generic message will fail to deserialize because it is not a
+      // status.
+      if (this.xhr_ && this.xhr_.getStatus() === 404) {
+        code = StatusCode.NOT_FOUND;
+        message = 'Not Found: ' + this.xhr_.getLastUri();
+      } else {
+        code = StatusCode.UNAVAILABLE;
+        message = 'Unable to parse RpcStatus: ' + e;
+      }
+    }
+    const status = {code: code, details: message, metadata: metadata};
+    return status;
+  }
+
+  /**
    * @override
    * @export
    */
@@ -346,26 +380,6 @@ class StreamBodyClientReadableStream {
       this.removeListenerFromCallbacks_(this.onErrorCallbacks_, callback);
     }
     return this;
-  }
-
-  /**
-   * Register a callbackl to parse the response
-   *
-   * @param {function(?): RESPONSE} responseDeserializeFn The deserialize
-   *   function for the proto
-   */
-  setResponseDeserializeFn(responseDeserializeFn) {
-    this.grpcResponseDeserializeFn_ = responseDeserializeFn;
-  }
-
-  /**
-   * Register a function to parse RPC status response
-   *
-   * @param {function(?):!Status} rpcStatusParseFn A function to parse
-   *    the RPC status response
-   */
-  setRpcStatusParseFn(rpcStatusParseFn) {
-    this.rpcStatusParseFn_ = rpcStatusParseFn;
   }
 
   /**
