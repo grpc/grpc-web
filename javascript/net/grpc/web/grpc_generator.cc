@@ -663,13 +663,18 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
       vars["output_type"] = JSMessageType(method->output_type());
       vars["serialize_func_name"] = GetSerializeMethodName(vars["mode"]);
       vars["deserialize_func_name"] = GetDeserializeMethodName(vars["mode"]);
+      vars["method_type"] = method->server_streaming()
+                                ? "grpcWeb.MethodType.SERVER_STREAMING"
+                                : "grpcWeb.MethodType.UNARY";
       if (!method->client_streaming()) {
-        // TODO(jennyjiang): use methodDescriptor?
         printer->Print(vars,
                        "methodInfo$method_name$ = "
-                       "new grpcWeb.AbstractClientBase.MethodInfo(\n");
+                       "new grpcWeb.MethodDescriptor(\n");
         printer->Indent();
         printer->Print(vars,
+                       "'/$package_dot$$service_name$/$method_name$',\n"
+                       "$method_type$,\n"
+                       "$input_type$,\n"
                        "$output_type$,\n"
                        "(request: $input_type$) => {\n"
                        "  return request.$serialize_func_name$();\n"
@@ -1158,62 +1163,31 @@ void PrintPromiseServiceConstructor(Printer* printer,
       "};\n\n\n");
 }
 
-void PrintMethodInfo(Printer* printer, std::map<string, string> vars) {
-  // Print MethodDescriptor.
-    printer->Print(vars,
-                   "/**\n"
-                   " * @const\n"
-                   " * @type {!grpc.web.MethodDescriptor<\n"
-                   " *   !proto.$in$,\n"
-                   " *   !proto.$out$>}\n"
-                   " */\n"
-                   "const methodDescriptor_$service_name$_$method_name$ = "
-                   "new grpc.web.MethodDescriptor(\n");
-    printer->Indent();
-    printer->Print(vars,
-                   "'/$package_dot$$service_name$/$method_name$',\n"
-                   "$method_type$,\n"
-                   "$in_type$,\n");
-    printer->Print(vars,
-                   "$out_type$,\n"
-                   "/**\n"
-                   " * @param {!proto.$in$} request\n");
-    printer->Print(
-        (" * @return {" + GetSerializeMethodReturnType(vars["mode"]) + "}\n")
-        .c_str());
-    printer->Print(" */\n"
-                   "function(request) {\n");
-    printer->Print(
-        ("  return request." + GetSerializeMethodName(vars["mode"]) + "();\n")
-            .c_str());
-    printer->Print("},\n");
-    printer->Print(
-        vars, ("$out_type$." + GetDeserializeMethodName(vars["mode"]) + "\n")
-                  .c_str());
-    printer->Outdent();
-    printer->Print(vars, ");\n\n\n");
-
-  // Print AbstractClientBase.MethodInfo, which will be deprecated.
+void PrintMethodDescriptor(Printer* printer, std::map<string, string> vars) {
   printer->Print(vars,
                  "/**\n"
                  " * @const\n"
-                 " * @type {!grpc.web.AbstractClientBase.MethodInfo<\n"
+                 " * @type {!grpc.web.MethodDescriptor<\n"
                  " *   !proto.$in$,\n"
                  " *   !proto.$out$>}\n"
                  " */\n"
-                 "const methodInfo_$service_name$_$method_name$ = "
-                 "new grpc.web.AbstractClientBase.MethodInfo(\n");
+                 "const methodDescriptor_$service_name$_$method_name$ = "
+                 "new grpc.web.MethodDescriptor(\n");
   printer->Indent();
-
+  printer->Print(vars,
+                 "'/$package_dot$$service_name$/$method_name$',\n"
+                 "$method_type$,\n"
+                 "$in_type$,\n");
   printer->Print(vars,
                  "$out_type$,\n"
                  "/**\n"
                  " * @param {!proto.$in$} request\n");
   printer->Print(
       (" * @return {" + GetSerializeMethodReturnType(vars["mode"]) + "}\n")
-      .c_str());
-  printer->Print(" */\n"
-                 "function(request) {\n");
+          .c_str());
+  printer->Print(
+      " */\n"
+      "function(request) {\n");
   printer->Print(
       ("  return request." + GetSerializeMethodName(vars["mode"]) + "();\n")
           .c_str());
@@ -1772,14 +1746,14 @@ class GrpcCodeGenerator : public CodeGenerator {
         if (!method->client_streaming()) {
           if (method->server_streaming()) {
             vars["method_type"] = "grpc.web.MethodType.SERVER_STREAMING";
-            PrintMethodInfo(&printer, vars);
+            PrintMethodDescriptor(&printer, vars);
             vars["client_type"] = "Client";
             PrintServerStreamingCall(&printer, vars);
             vars["client_type"] = "PromiseClient";
             PrintServerStreamingCall(&printer, vars);
           } else {
             vars["method_type"] = "grpc.web.MethodType.UNARY";
-            PrintMethodInfo(&printer, vars);
+            PrintMethodDescriptor(&printer, vars);
             PrintUnaryCall(&printer, vars);
             PrintPromiseUnaryCall(&printer, vars);
           }
