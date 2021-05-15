@@ -205,6 +205,7 @@ class GrpcWebStreamParser {
           parser.frame_ = frameType;
         } else {
           parser.error_(inputBytes, pos, 'invalid frame byte');
+        }
       }
 
       parser.state_ = Parser.State_.LENGTH;
