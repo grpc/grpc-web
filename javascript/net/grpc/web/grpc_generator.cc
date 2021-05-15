@@ -622,14 +622,31 @@ void PrintES6Imports(Printer* printer, const FileDescriptor* file) {
   printer->Print("\n\n");
 }
 
+void PrintDeprecatedMethodComment(Printer* printer, const MethodDescriptor* method,
+                         std::map<string, string> vars) {
+    const bool isDeprecated = method->options().deprecated();
+    if (isDeprecated) {
+        printer->Print(vars, "/** @deprecated */\n");
+    }
+}
+
+void PrintDeprecatedServiceComment(Printer* printer, const ServiceDescriptor* service,
+                         std::map<string, string> vars) {
+    const bool isDeprecated = service->options().deprecated();
+    if (isDeprecated) {
+        printer->Print(vars, "/** @deprecated */\n");
+    }
+}
+
 void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
                          std::map<string, string> vars) {
   PrintES6Imports(printer, file);
   for (int service_index = 0; service_index < file->service_count();
        ++service_index) {
-    printer->Print("export class ");
     const ServiceDescriptor* service = file->service(service_index);
     vars["service_name"] = service->name();
+    PrintDeprecatedServiceComment(printer, service, vars);
+    printer->Print("export class ");
     printer->Print(vars, "$service_name$Client {\n");
     printer->Indent();
     printer->Print(
@@ -678,6 +695,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
         printer->Outdent();
         printer->Print(");\n\n");
         if (method->server_streaming()) {
+          PrintDeprecatedMethodComment(printer, method, vars);
           printer->Print(vars, "$js_method_name$(\n");
           printer->Indent();
           printer->Print(vars,
@@ -696,6 +714,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
           printer->Outdent();
           printer->Print("}\n\n");
         } else {
+          PrintDeprecatedMethodComment(printer, method, vars);
           printer->Print(vars, "$js_method_name$(\n");
           printer->Indent();
           printer->Print(vars,
@@ -704,6 +723,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
                          "$promise$<$output_type$>;\n\n");
           printer->Outdent();
 
+          PrintDeprecatedMethodComment(printer, method, vars);
           printer->Print(vars, "$js_method_name$(\n");
           printer->Indent();
           printer->Print(vars,
@@ -714,6 +734,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
                          "grpcWeb.ClientReadableStream<$output_type$>;\n\n");
           printer->Outdent();
 
+          PrintDeprecatedMethodComment(printer, method, vars);
           printer->Print(vars, "$js_method_name$(\n");
           printer->Indent();
           printer->Print(vars,
@@ -761,9 +782,10 @@ void PrintGrpcWebDtsClientClass(Printer* printer, const FileDescriptor* file,
   vars["promise"] = "Promise";
   for (int service_index = 0; service_index < file->service_count();
        ++service_index) {
-    printer->Print("export class ");
     const ServiceDescriptor* service = file->service(service_index);
     vars["service_name"] = service->name();
+    PrintDeprecatedServiceComment(printer, service, vars);
+    printer->Print("export class ");
     printer->Print(vars, "$service_name$$client_type$ {\n");
     printer->Indent();
     printer->Print(
@@ -778,6 +800,7 @@ void PrintGrpcWebDtsClientClass(Printer* printer, const FileDescriptor* file,
       vars["output_type"] = JSMessageType(method->output_type());
       if (!method->client_streaming()) {
         if (method->server_streaming()) {
+          PrintDeprecatedMethodComment(printer, method, vars);
           printer->Print(vars, "$js_method_name$(\n");
           printer->Indent();
           printer->Print(vars,
@@ -788,6 +811,7 @@ void PrintGrpcWebDtsClientClass(Printer* printer, const FileDescriptor* file,
                          "): grpcWeb.ClientReadableStream<$output_type$>;\n\n");
         } else {
           if (vars["client_type"] == "PromiseClient") {
+            PrintDeprecatedMethodComment(printer, method, vars);
             printer->Print(vars, "$js_method_name$(\n");
             printer->Indent();
             printer->Print(vars,
@@ -796,6 +820,7 @@ void PrintGrpcWebDtsClientClass(Printer* printer, const FileDescriptor* file,
             printer->Outdent();
             printer->Print(vars, "): $promise$<$output_type$>;\n\n");
           } else {
+            PrintDeprecatedMethodComment(printer, method, vars);
             printer->Print(vars, "$js_method_name$(\n");
             printer->Indent();
             printer->Print(vars,
