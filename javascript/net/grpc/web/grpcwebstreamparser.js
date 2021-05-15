@@ -125,6 +125,14 @@ class GrpcWebStreamParser {
   }
 
   /**
+   * @override
+   * @return {boolean}
+   */
+  acceptsBinaryInput() {
+    return true;
+  }
+
+  /**
    * Parse the new input.
    *
    * Note that there is no Parser state to indicate the end of a stream.

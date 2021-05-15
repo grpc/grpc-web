@@ -1,4 +1,6 @@
-load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_binary")
+load("@com_github_grpc_grpc//bazel:cc_grpc_library.bzl", "cc_grpc_library")
+load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_binary", "closure_js_library", "closure_proto_library")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//bazel:defs.bzl", "closure_grpc_web_library")
 
@@ -9,22 +11,90 @@ proto_library(
     ],
 )
 
+# Server
+
+cc_proto_library(
+    name = "echo_cc_proto",
+    deps = [
+        ":echo_proto",
+    ],
+)
+
+cc_grpc_library(
+    name = "echo_cc_grpc",
+    srcs = [
+        ":echo_proto",
+    ],
+    grpc_only = True,
+    deps = [
+        ":echo_cc_proto",
+    ],
+)
+
+cc_binary(
+    name = "server",
+    srcs = [
+        "echo_server.cc",
+        "echo_service_impl.cc",
+        "echo_service_impl.h",
+    ],
+    deps = [
+        ":echo_cc_grpc",
+        ":echo_cc_proto",
+        "@com_github_grpc_grpc//:grpc++",
+    ],
+)
+
+# Client
+
+closure_proto_library(
+    name = "echo_closure_proto",
+    deps = [
+        ":echo_proto",
+    ],
+)
+
 closure_grpc_web_library(
-    name = "echo_es6",
+    name = "echo_closure_grpc_web",
+    # ES6-modules are broken in OSS because of limitation in rules_closure.
+    # Also emits gRPC-Web bindings with `goog.provide`; We only use `es6` here
+    # because of `echo_es6_integration_test_bin`.
     import_style = "es6",
     deps = [
         ":echo_proto",
     ],
 )
 
-# A (very simple) inegration test.
+closure_js_library(
+    name = "echo_chat",
+    srcs = [
+        "echo_chat.js",
+    ],
+    deps = [
+        ":echo_closure_grpc_web",
+        ":echo_closure_proto",
+    ],
+)
+
 closure_js_binary(
-    name = "echo_es6_bin",
+    name = "client",
+    entry_points = [
+        "/net/grpc/gateway/examples/echo/echo_chat.js",
+    ],
+    deps = [
+        ":echo_chat",
+    ],
+)
+
+# ES6 import style integration test
+
+closure_js_binary(
+    name = "echo_es6_integration_test_bin",
     entry_points = [
         "goog:proto.grpc.gateway.testing.EchoServiceClient",
         "/net/grpc/gateway/examples/echo/echo.pb.grpc-web.js",
     ],
     deps = [
-        ":echo_es6",
+        ":echo_closure_grpc_web",
     ],
 )

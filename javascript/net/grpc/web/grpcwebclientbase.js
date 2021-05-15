@@ -60,35 +60,35 @@ class GrpcWebClientBase {
      * @const
      * @private {string}
      */
-    this.format_ = goog.getObjectByName('format', options) || 'text';
+    this.format_ =
+        options.format || goog.getObjectByName('format', options) || 'text';
 
     /**
      * @const
      * @private {boolean}
      */
-    this.suppressCorsPreflight_ =
+    this.suppressCorsPreflight_ = options.suppressCorsPreflight ||
         goog.getObjectByName('suppressCorsPreflight', options) || false;
 
-
     /**
      * @const
      * @private {boolean}
      */
-    this.withCredentials_ =
+    this.withCredentials_ = options.withCredentials ||
         goog.getObjectByName('withCredentials', options) || false;
+
     /**
      * @const {!Array<!StreamInterceptor>}
      * @private
      */
-    this.streamInterceptors_ =
+    this.streamInterceptors_ = options.streamInterceptors ||
         goog.getObjectByName('streamInterceptors', options) || [];
-
 
     /**
      * @const {!Array<!UnaryInterceptor>}
      * @private
      */
-    this.unaryInterceptors_ =
+    this.unaryInterceptors_ = options.unaryInterceptors ||
         goog.getObjectByName('unaryInterceptors', options) || [];
   }
 
@@ -222,15 +222,17 @@ class GrpcWebClientBase {
    * @static
    * @template RESPONSE
    * @param {!ClientReadableStream<RESPONSE>} stream
-   * @param {function(?Error, ?RESPONSE, ?Status=, ?Metadata=)|
+   * @param {function(?Error, ?RESPONSE, ?Status=, ?Object<string, string>=)|
    *     function(?Error,?RESPONSE)} callback
    * @param {boolean} useUnaryResponse
    */
   static setCallback_(stream, callback, useUnaryResponse) {
-    var responseReceived = null;
-    var errorEmitted = false;
+    let isResponseReceived = false;
+    let responseReceived = null;
+    let errorEmitted = false;
 
     stream.on('data', function(response) {
+      isResponseReceived = true;
       responseReceived = response;
     });
 
@@ -264,7 +266,7 @@ class GrpcWebClientBase {
 
     stream.on('end', function() {
       if (!errorEmitted) {
-        if (responseReceived == null) {
+        if (!isResponseReceived) {
           callback({
             code: StatusCode.UNKNOWN,
             message: 'Incomplete response',
@@ -323,9 +325,9 @@ class GrpcWebClientBase {
     xhr.headers.set('X-User-Agent', 'grpc-web-javascript/0.1');
     xhr.headers.set('X-Grpc-Web', '1');
     if (xhr.headers.containsKey('deadline')) {
-      var deadline = xhr.headers.get('deadline');  // in ms
-      var currentTime = (new Date()).getTime();
-      var timeout = Math.round(deadline - currentTime);
+      const deadline = xhr.headers.get('deadline');  // in ms
+      const currentTime = (new Date()).getTime();
+      let timeout = Math.ceil(deadline - currentTime);
       xhr.headers.remove('deadline');
       if (timeout === Infinity) {
         // grpc-timeout header defaults to infinity if not set.
@@ -333,6 +335,12 @@ class GrpcWebClientBase {
       }
       if (timeout > 0) {
         xhr.headers.set('grpc-timeout', timeout + 'm');
+        // Also set timeout on the xhr request to terminate the HTTP request
+        // if the server doesn't respond within the deadline. We use 110% of
+        // grpc-timeout for this to allow the server to terminate the connection
+        // with DEADLINE_EXCEEDED rather than terminating it in the Browser, but
+        // at least 1 second in case the user is on a high-latency network.
+        xhr.setTimeoutInterval(Math.max(1000, Math.ceil(timeout * 1.1)));
       }
     }
   }

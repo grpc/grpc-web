@@ -15,14 +15,14 @@ declare module "grpc-web" {
       method: string,
       request: REQ,
       metadata: Metadata,
-      methodDescriptor: MethodDescriptor<REQ, RESP>
+      methodDescriptor: MethodDescriptor<REQ, RESP> | AbstractClientBase.MethodInfo<REQ, RESP>
     ): Promise<RESP>;
 
     rpcCall<REQ, RESP> (
       method: string,
       request: REQ,
       metadata: Metadata,
-      methodDescriptor: MethodDescriptor<REQ, RESP>,
+      methodDescriptor: MethodDescriptor<REQ, RESP> | AbstractClientBase.MethodInfo<REQ, RESP>,
       callback: (err: Error, response: RESP) => void
     ): ClientReadableStream<RESP>;
 
@@ -30,7 +30,7 @@ declare module "grpc-web" {
       method: string,
       request: REQ,
       metadata: Metadata,
-      methodDescriptor: MethodDescriptor<REQ, RESP>
+      methodDescriptor: MethodDescriptor<REQ, RESP> | AbstractClientBase.MethodInfo<REQ, RESP>
     ): ClientReadableStream<RESP>;
   }
 
@@ -84,8 +84,17 @@ declare module "grpc-web" {
                 requestSerializeFn: any,
                 responseDeserializeFn: any);
     createRequest(requestMessage: REQ,
-                  metadata: Metadata,
-                  callOptions: CallOptions): UnaryResponse<REQ, RESP>;
+                  metadata?: Metadata,
+                  callOptions?: CallOptions): Request<REQ, RESP>;
+    createUnaryResponse(responseMessage: RESP,
+                        metadata?: Metadata,
+                        status?: Status): UnaryResponse<REQ, RESP>;
+    getName(): string;
+    getMethodType(): string;
+    getResponseMessageCtor(): any;
+    getRequestMessageCtor(): any;
+    getResponseDeserializeFn(): any;
+    getRequestSerializeFn(): any;
   }
   
   export class Request<REQ, RESP> {
@@ -106,10 +115,12 @@ declare module "grpc-web" {
     format?: string;
     suppressCorsPreflight?: boolean;
     withCredentials?: boolean;
+    unaryInterceptors?: UnaryInterceptor<unknown, unknown>[];
+    streamInterceptors?: StreamInterceptor<unknown, unknown>[];
   }
 
   export class GrpcWebClientBase extends AbstractClientBase {
-    constructor (options: GrpcWebClientBaseOptions);
+    constructor(options?: GrpcWebClientBaseOptions);
   }
 
   export interface Error {
@@ -141,5 +152,10 @@ declare module "grpc-web" {
     const UNAVAILABLE: number;
     const UNIMPLEMENTED: number;
     const UNKNOWN: number;
+  }
+
+  export namespace MethodType {
+    const UNARY: string;
+    const SERVER_STREAMING: string;
   }
 }

@@ -99,8 +99,9 @@ static_resources:
       socket_address: { address: 0.0.0.0, port_value: 8080 }
     filter_chains:
     - filters:
-      - name: envoy.http_connection_manager
-        config:
+      - name: envoy.filters.network.http_connection_manager
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
           codec_type: auto
           stat_prefix: ingress_http
           route_config:
@@ -112,7 +113,8 @@ static_resources:
               - match: { prefix: "/" }
                 route:
                   cluster: greeter_service
-                  max_grpc_timeout: 0s
+                  max_stream_duration:
+                    grpc_timeout_header_max: 0s
               cors:
                 allow_origin_string_match:
                 - prefix: "*"
@@ -121,31 +123,41 @@ static_resources:
                 max_age: "1728000"
                 expose_headers: custom-header-1,grpc-status,grpc-message
           http_filters:
-          - name: envoy.grpc_web
-          - name: envoy.cors
-          - name: envoy.router
+          - name: envoy.filters.http.grpc_web
+          - name: envoy.filters.http.cors
+          - name: envoy.filters.http.router
   clusters:
   - name: greeter_service
     connect_timeout: 0.25s
     type: logical_dns
     http2_protocol_options: {}
     lb_policy: round_robin
-    hosts: [{ socket_address: { address: 0.0.0.0, port_value: 9090 }}]
+    load_assignment:
+      cluster_name: cluster_0
+      endpoints:
+        - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: 0.0.0.0
+                    port_value: 9090
 ```
 
 > NOTE: As per [this issue](https://github.com/grpc/grpc-web/issues/436): if
-> you are running Docker on Mac/Windows, change the last line to
+> you are running Docker on Mac/Windows, change the last `address: 0.0.0.0` to
 >
 > ```yaml
 >     ...
->     hosts: [{ socket_address: { address: host.docker.internal, port_value: 9090 }}]
+>     socket_address:
+>         address: host.docker.internal
 > ```
 >
 > or if your version of Docker on Mac older then v18.03.0, change it to:
 >
 > ```yaml
 >     ...
->     hosts: [{ socket_address: { address: docker.for.mac.localhost, port_value: 9090 }}]
+>     socket_address:
+>         address: docker.for.mac.localhost
 > ```
 
 ## Write Client Code
@@ -188,7 +200,7 @@ the `client.js` files.
     "@grpc/grpc-js": "~1.0.5",
     "@grpc/proto-loader": "~0.5.4",
     "async": "~1.5.2",
-    "google-protobuf": "~3.12.0",
+    "google-protobuf": "~3.14.0",
     "grpc-web": "~1.2.1",
     "lodash": "~4.17.0",
     "webpack": "~4.43.0",
@@ -294,7 +306,7 @@ run the 3 processes all in the background.
 
  ```sh
  $ docker run -d -v "$(pwd)"/envoy.yaml:/etc/envoy/envoy.yaml:ro \
-     --network=host envoyproxy/envoy:v1.15.0
+     --network=host envoyproxy/envoy:v1.17.0
  ```
 
 > NOTE: As per [this issue](https://github.com/grpc/grpc-web/issues/436):
@@ -302,7 +314,7 @@ run the 3 processes all in the background.
 >
 > ```sh
 > $ docker run -d -v "$(pwd)"/envoy.yaml:/etc/envoy/envoy.yaml:ro \
->     -p 8080:8080 -p 9901:9901 envoyproxy/envoy:v1.15.0
+>     -p 8080:8080 -p 9901:9901 envoyproxy/envoy:v1.17.0
 >  ```
 
  3. Run the simple Web Server. This hosts the static file `index.html` and

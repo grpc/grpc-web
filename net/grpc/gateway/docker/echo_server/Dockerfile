@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM grpcweb/grpc-base
+FROM grpcweb/prereqs
 
 WORKDIR /github/grpc-web
 
-RUN make echo_server
+RUN bazel build net/grpc/gateway/examples/echo:server
 
-WORKDIR /github/grpc-web/net/grpc/gateway/examples/echo
+WORKDIR /github/grpc-web/bazel-bin/net/grpc/gateway/examples/echo
 
 EXPOSE 9090
-CMD ["./echo_server"]
+CMD ["./server"]

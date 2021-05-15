@@ -582,7 +582,7 @@ void PrintCommonJsMessagesDeps(Printer* printer, const FileDescriptor* file) {
       printer->Print(vars, "proto.$current_package_ns$ = {};\n");
 
       offset = dotIndex + 1;
-      dotIndex = package.find(".", offset);
+      dotIndex = package.find('.', offset);
     }
   }
 
@@ -1027,8 +1027,11 @@ void PrintMethodDescriptorFile(Printer* printer,
   printer->Print(
       vars,
       "/**\n"
-      " * @fileoverview gRPC-Web generated MethodDescriptors for $package$\n"
-      " * @enhanceable\n"
+      " * @fileoverview gRPC-Web generated MethodDescriptors for $package$\n");
+  if (vars["plugins"].empty()) {
+    printer->Print(" * @enhanceable\n");
+  }
+  printer->Print(
       " * @public\n"
       " */\n\n"
       "// GENERATED CODE -- DO NOT EDIT!\n\n\n"
@@ -1038,6 +1041,11 @@ void PrintMethodDescriptorFile(Printer* printer,
   printer->Print(vars,
                  "goog.provide('proto.$package_dot$$class_name$.$"
                  "method_name$MethodDescriptor');\n\n");
+  if (!vars["plugins"].empty()) {
+    printer->Print(vars,
+                   "goog.require('$plugins$.$package_dot$$class_name$.$"
+                   "method_name$MethodDescriptor');\n");
+  }
   printer->Print(vars, "goog.require('grpc.web.MethodDescriptor');\n");
   printer->Print(vars, "goog.require('grpc.web.MethodType');\n");
   printer->Print(vars, "goog.require('$in_type$');\n");
@@ -1330,6 +1338,7 @@ void PrintMultipleFilesMode(const FileDescriptor* file, string file_name,
                             GeneratorContext* context,
                             std::map<string, string> vars) {
   std::map<string, string> method_descriptors;
+  bool has_server_streaming = false;
 
   // Print MethodDescriptor files.
   for (int i = 0; i < file->service_count(); ++i) {
@@ -1343,6 +1352,9 @@ void PrintMultipleFilesMode(const FileDescriptor* file, string file_name,
       string method_file_name = Lowercase(service->name()) + "_" +
                                 Lowercase(method->name()) +
                                 "_methoddescriptor.js";
+      if (method->server_streaming()) {
+        has_server_streaming = true;
+      }
       std::unique_ptr<ZeroCopyOutputStream> output(
           context->Open(method_file_name));
       Printer printer(output.get(), '$');
@@ -1398,8 +1410,9 @@ void PrintMultipleFilesMode(const FileDescriptor* file, string file_name,
   printer1.Print(vars, "goog.require('grpc.web.ClientReadableStream');\n");
   printer1.Print(vars, "goog.require('grpc.web.Error');\n");
   printer2.Print(vars, "goog.require('grpc.web.$mode$ClientBase');\n");
-  printer2.Print(vars, "goog.require('grpc.web.ClientReadableStream');\n");
-  printer2.Print(vars, "goog.require('grpc.web.Error');\n");
+  if (has_server_streaming) {
+    printer2.Print(vars, "goog.require('grpc.web.ClientReadableStream');\n");
+  }
 
   PrintClosureDependencies(&printer1, file);
   PrintClosureDependencies(&printer2, file);
@@ -1507,6 +1520,7 @@ class GeneratorOptions {
   string OutputFile(const string& proto_file) const;
 
   string mode() const { return mode_; }
+  string plugins() const { return plugins_; }
   ImportStyle import_style() const { return import_style_; }
   bool generate_dts() const { return generate_dts_; }
   bool generate_closure_es6() const { return generate_closure_es6_; }
@@ -1516,6 +1530,7 @@ class GeneratorOptions {
  private:
   string file_name_;
   string mode_;
+  string plugins_;
   ImportStyle import_style_;
   bool generate_dts_;
   bool generate_closure_es6_;
@@ -1526,6 +1541,7 @@ class GeneratorOptions {
 GeneratorOptions::GeneratorOptions()
     : file_name_(""),
       mode_(""),
+      plugins_(""),
       import_style_(ImportStyle::CLOSURE),
       generate_dts_(false),
       generate_closure_es6_(false),
@@ -1566,6 +1582,8 @@ bool GeneratorOptions::ParseFromOptions(
       }
     } else if ("multiple_files" == option.first) {
       multiple_files_ = "True" == option.second;
+    } else if ("plugins" == option.first) {
+      plugins_ = option.second;
     } else if ("goog_promise" == option.first) {
       goog_promise_ = "True" == option.second;
     } else {
@@ -1620,6 +1638,7 @@ class GrpcCodeGenerator : public CodeGenerator {
     vars["package"] = package;
     vars["package_dot"] = package.empty() ? "" : package + '.';
     vars["promise"] = "Promise";
+    vars["plugins"] = generator_options.plugins();
 
     if ("binary" == generator_options.mode()) {
       vars["mode"] = GetModeVar(Mode::OP);

@@ -35,6 +35,7 @@ const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
 const ErrorCode = goog.require('goog.net.ErrorCode');
 const EventType = goog.require('goog.net.EventType');
 const GrpcWebError = goog.requireType('grpc.web.Error');
+const Metadata = goog.requireType('grpc.web.Metadata');
 const NodeReadableStream = goog.require('goog.net.streams.NodeReadableStream');
 const StatusCode = goog.require('grpc.web.StatusCode');
 const XhrIo = goog.require('goog.net.XhrIo');
@@ -60,9 +61,8 @@ class StreamBodyClientReadableStream {
    */
   constructor(genericTransportInterface, responseDeserializeFn) {
     /**
-     * @const
      * @private
-     * @type {?NodeReadableStream|undefined} The XHR Node Readable Stream
+     * @const {?NodeReadableStream|undefined} The XHR Node Readable Stream
      */
     this.xhrNodeReadableStream_ = genericTransportInterface.nodeReadableStream;
 
@@ -73,37 +73,38 @@ class StreamBodyClientReadableStream {
     this.grpcResponseDeserializeFn_ = responseDeserializeFn;
 
     /**
-     * @const
      * @private
-     * @type {?XhrIo|undefined} The XhrIo object
+     * @const {?XhrIo|undefined} The XhrIo object
      */
     this.xhr_ = genericTransportInterface.xhr;
 
     /**
-     * @const
      * @private
-     * @type {!Array<function(RESPONSE)>} The list of data callback
+     * @const {!Array<function(RESPONSE)>} The list of data callback
      */
     this.onDataCallbacks_ = [];
 
     /**
-     * @const
      * @private
-     * @type {!Array<function(!Status)>} The list of status callback
+     * @const {!Array<function(!Metadata)>} The list of metadata callbacks
+     */
+    this.onMetadataCallbacks_ = [];
+
+    /**
+     * @private
+     * @const {!Array<function(!Status)>} The list of status callback
      */
     this.onStatusCallbacks_ = [];
 
     /**
-     * @const
      * @private
-     * @type {!Array<function(...):?>} The list of stream end callback
+     * @const {!Array<function(...)>} The list of stream end callback
      */
     this.onEndCallbacks_ = [];
 
     /**
-     * @const
      * @private
-     * @type {!Array<function(...):?>} The list of error callback
+     * @const {!Array<function(!GrpcWebError)>} The list of error callback
      */
     this.onErrorCallbacks_ = [];
 
@@ -122,15 +123,11 @@ class StreamBodyClientReadableStream {
 
   /**
    * Set up the callback functions for unary calls.
-   * @param {function(?GrpcWebError, ?)} callback
    * @param {boolean} binaryResponse True if the client is using 'binary' mode
    * @param {boolean} base64Encoded True if
    *     'X-Goog-Encode-Response-If-Executable' is 'base64' in request headers
    */
-  setUnaryCallback(callback, binaryResponse, base64Encoded) {
-    this.onDataCallbacks_.push((response) => callback(null, response));
-    this.onErrorCallbacks_.push((error) => callback(error, null));
-
+  setUnaryCallback(binaryResponse, base64Encoded) {
     events.listen(/** @type {!XhrIo}*/ (this.xhr_), EventType.COMPLETE, (e) => {
       if (this.xhr_.isSuccess()) {
         let response;
@@ -141,6 +138,7 @@ class StreamBodyClientReadableStream {
         }
         const responseMessage = this.grpcResponseDeserializeFn_(response);
         const grpcStatus = StatusCode.fromHttpStatus(this.xhr_.getStatus());
+        this.sendMetadataCallbacks_(this.readHeaders_());
         if (grpcStatus == StatusCode.OK) {
           this.sendDataCallbacks_(responseMessage);
         } else {
@@ -176,6 +174,7 @@ class StreamBodyClientReadableStream {
               this.xhr_.getLastErrorCode() +
               ', error: ' + this.xhr_.getLastError();
         }
+        this.sendMetadataCallbacks_(this.readHeaders_());
         this.sendErrorCallbacks_({
           code: code,
           message: message,
@@ -201,6 +200,7 @@ class StreamBodyClientReadableStream {
       }
     });
     this.xhrNodeReadableStream_.on('end', () => {
+      this.sendMetadataCallbacks_(this.readHeaders_());
       this.sendEndCallbacks_();
     });
     this.xhrNodeReadableStream_.on('error', () => {
@@ -285,6 +285,19 @@ class StreamBodyClientReadableStream {
   }
 
   /**
+   * @private
+   * @return {!Metadata}
+   */
+  readHeaders_() {
+    const initialMetadata = {};
+    const responseHeaders = this.xhr_.getResponseHeaders();
+    Object.keys(responseHeaders).forEach((header) => {
+      initialMetadata[header] = responseHeaders[header];
+    });
+    return initialMetadata;
+  }
+
+  /**
    * @override
    * @export
    */
@@ -292,6 +305,8 @@ class StreamBodyClientReadableStream {
     // TODO(stanleycheung): change eventType to @enum type
     if (eventType == 'data') {
       this.onDataCallbacks_.push(callback);
+    } else if (eventType == 'metadata') {
+      this.onMetadataCallbacks_.push(callback);
     } else if (eventType == 'status') {
       this.onStatusCallbacks_.push(callback);
     } else if (eventType == 'end') {
@@ -321,6 +336,8 @@ class StreamBodyClientReadableStream {
   removeListener(eventType, callback) {
     if (eventType == 'data') {
       this.removeListenerFromCallbacks_(this.onDataCallbacks_, callback);
+    } else if (eventType == 'metadata') {
+      this.removeListenerFromCallbacks_(this.onMetadataCallbacks_, callback);
     } else if (eventType == 'status') {
       this.removeListenerFromCallbacks_(this.onStatusCallbacks_, callback);
     } else if (eventType == 'end') {
@@ -371,6 +388,16 @@ class StreamBodyClientReadableStream {
 
   /**
    * @private
+   * @param {!Metadata} metadata The metadata to send back
+   */
+  sendMetadataCallbacks_(metadata) {
+    for (let i = 0; i < this.onMetadataCallbacks_.length; i++) {
+      this.onMetadataCallbacks_[i](metadata);
+    }
+  }
+
+  /**
+   * @private
    * @param {!Status} status The status to send back
    */
   sendStatusCallbacks_(status) {
@@ -381,7 +408,7 @@ class StreamBodyClientReadableStream {
 
   /**
    * @private
-   * @param {?} error The error to send back
+   * @param {!GrpcWebError} error The error to send back
    */
   sendErrorCallbacks_(error) {
     for (let i = 0; i < this.onErrorCallbacks_.length; i++) {
