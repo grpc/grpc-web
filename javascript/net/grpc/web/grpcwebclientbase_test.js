@@ -32,10 +32,10 @@ const REQUEST_BYTES = [1, 2, 3];
 const FAKE_METHOD = 'fake-method';
 const PROTO_FIELD_VALUE = 'meow';
 const DEFAULT_UNARY_HEADERS =
-    ['Content-Type', 'Accept', 'X-User-Agent', 'X-Grpc-Web'];
+    ['Content-Type', 'Accept', 'X-User-Agent', 'X-Grpc-Web', 'grpc-accept-encoding'];
 const DEFAULT_UNARY_HEADER_VALUES = [
   'application/grpc-web-text', 'application/grpc-web-text',
-  'grpc-web-javascript/0.1', '1'
+  'grpc-web-javascript/0.1', '1', 'identity'
 ];
 let dataCallback;
 let expectedHeaders;
