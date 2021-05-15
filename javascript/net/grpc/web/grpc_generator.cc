@@ -30,6 +30,7 @@
 
 using google::protobuf::Descriptor;
 using google::protobuf::EnumDescriptor;
+using google::protobuf::EnumValueDescriptor;
 using google::protobuf::FieldDescriptor;
 using google::protobuf::FileDescriptor;
 using google::protobuf::MethodDescriptor;
@@ -622,19 +623,51 @@ void PrintES6Imports(Printer* printer, const FileDescriptor* file) {
   printer->Print("\n\n");
 }
 
+void PrintDeprecatedEnumComment(Printer* printer, const EnumDescriptor* enum_desc,
+                         std::map<string, string> vars) {
+    const bool is_deprecated = enum_desc->options().deprecated();
+    if (is_deprecated) {
+        printer->Print(vars, "/** @deprecated This enum is deprecated */\n");
+    }
+}
+
+void PrintDeprecatedEnumComment(Printer* printer, const EnumValueDescriptor* value,
+                         std::map<string, string> vars) {
+    const bool is_deprecated = value->options().deprecated();
+    if (is_deprecated) {
+        printer->Print(vars, "/** @deprecated This enum value is deprecated */\n");
+    }
+}
+
+void PrintDeprecatedMessageComment(Printer* printer, const Descriptor* message,
+                         std::map<string, string> vars) {
+    const bool is_deprecated = message->options().deprecated();
+    if (is_deprecated) {
+        printer->Print(vars, "/** @deprecated This RPC message is deprecated */\n");
+    }
+}
+
 void PrintDeprecatedMethodComment(Printer* printer, const MethodDescriptor* method,
                          std::map<string, string> vars) {
-    const bool isDeprecated = method->options().deprecated();
-    if (isDeprecated) {
-        printer->Print(vars, "/** @deprecated */\n");
+    const bool is_deprecated = method->options().deprecated();
+    if (is_deprecated) {
+        printer->Print(vars, "/** @deprecated This RPC method is deprecated */\n");
+    }
+}
+
+void PrintDeprecatedFieldComment(Printer* printer, const FieldDescriptor* field,
+                         std::map<string, string> vars) {
+    const bool is_deprecated = field->options().deprecated();
+    if (is_deprecated) {
+        printer->Print(vars, "/** @deprecated This field is deprecated */\n");
     }
 }
 
 void PrintDeprecatedServiceComment(Printer* printer, const ServiceDescriptor* service,
                          std::map<string, string> vars) {
-    const bool isDeprecated = service->options().deprecated();
-    if (isDeprecated) {
-        printer->Print(vars, "/** @deprecated */\n");
+    const bool is_deprecated = service->options().deprecated();
+    if (is_deprecated) {
+        printer->Print(vars, "/** @deprecated This RPC service is deprecated */\n");
     }
 }
 
@@ -852,12 +885,15 @@ void PrintProtoDtsEnum(Printer *printer, const EnumDescriptor *desc)
   std::map<string, string> vars;
   vars["enum_name"] = desc->name();
 
+  PrintDeprecatedEnumComment(printer, desc, vars);
   printer->Print(vars, "export enum $enum_name$ { \n");
   printer->Indent();
   for (int i = 0; i < desc->value_count(); i++)
   {
-    vars["value_name"] = Uppercase(desc->value(i)->name());
-    vars["value_number"] = std::to_string(desc->value(i)->number());
+    const EnumValueDescriptor* value_desc = desc->value(i);
+    vars["value_name"] = Uppercase(value_desc->name());
+    vars["value_number"] = std::to_string(value_desc->number());
+    PrintDeprecatedEnumComment(printer, value_desc, vars);
     printer->Print(vars, "$value_name$ = $value_number$,\n");
   }
   printer->Outdent();
@@ -889,6 +925,7 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
   std::map<string, string> vars;
   vars["class_name"] = class_name;
 
+  PrintDeprecatedMessageComment(printer, desc, vars);
   printer->Print(vars, "export class $class_name$ extends jspb.Message {\n");
   printer->Indent();
   for (int i = 0; i < desc->field_count(); i++) {
@@ -897,43 +934,52 @@ void PrintProtoDtsMessage(Printer *printer, const Descriptor *desc,
     vars["js_field_type"] = JSFieldType(field, file);
     if (field->type() != FieldDescriptor::TYPE_MESSAGE ||
         field->is_repeated()) {
+      PrintDeprecatedFieldComment(printer, field, vars);
       printer->Print(vars,
                      "get$js_field_name$(): $js_field_type$;\n");
     } else {
+      PrintDeprecatedFieldComment(printer, field, vars);
       printer->Print(vars,
                      "get$js_field_name$(): $js_field_type$ | undefined;\n");
     }
     if (field->type() == FieldDescriptor::TYPE_BYTES && !field->is_repeated()) {
-      printer->Print(vars,
-                     "get$js_field_name$_asU8(): Uint8Array;\n"
-                     "get$js_field_name$_asB64(): string;\n");
+      PrintDeprecatedFieldComment(printer, field, vars);
+      printer->Print(vars, "get$js_field_name$_asU8(): Uint8Array;\n");
+      PrintDeprecatedFieldComment(printer, field, vars);
+      printer->Print(vars, "get$js_field_name$_asB64(): string;\n");
     }
     if (!field->is_map() && (field->type() != FieldDescriptor::TYPE_MESSAGE ||
                              field->is_repeated())) {
+      PrintDeprecatedFieldComment(printer, field, vars);
       printer->Print(vars,
                      "set$js_field_name$(value: $js_field_type$): "
                      "$class_name$;\n");
     } else if (!field->is_map()) {
+      PrintDeprecatedFieldComment(printer, field, vars);
       printer->Print(vars,
                      "set$js_field_name$(value?: $js_field_type$): "
                      "$class_name$;\n");
     }
     if (field->type() == FieldDescriptor::TYPE_MESSAGE && !field->is_repeated()
         && !field->is_map()) {
+      PrintDeprecatedFieldComment(printer, field, vars);
       printer->Print(vars, "has$js_field_name$(): boolean;\n");
     }
     if (field->type() == FieldDescriptor::TYPE_MESSAGE ||
         field->is_repeated() || field->is_map()) {
+      PrintDeprecatedFieldComment(printer, field, vars);
       printer->Print(vars, "clear$js_field_name$(): $class_name$;\n");
     }
     if (field->is_repeated() && !field->is_map()) {
       vars["js_field_name"] = JSElementName(field);
       vars["js_field_type"] = JSElementType(field, file);
       if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
+        PrintDeprecatedFieldComment(printer, field, vars);
         printer->Print(vars,
                        "add$js_field_name$(value: $js_field_type$, "
                        "index?: number): $class_name$;\n");
       } else {
+        PrintDeprecatedFieldComment(printer, field, vars);
         printer->Print(vars,
                        "add$js_field_name$(value?: $js_field_type$, "
                        "index?: number): $js_field_type$;\n");
