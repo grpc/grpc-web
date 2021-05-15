@@ -42,7 +42,7 @@ docker-compose build common prereqs node-interop-server interop-client java-inte
 # Run interop tests
 pid1=$(docker run -d \
   -v "$(pwd)"/test/interop/envoy.yaml:/etc/envoy/envoy.yaml:ro \
-  --network=host envoyproxy/envoy:v1.15.0)
+  --network=host envoyproxy/envoy:v1.17.0)
 pid2=$(docker run -d --network=host grpcweb/node-interop-server)
 
 run_tests

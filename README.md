@@ -177,18 +177,13 @@ Make a unary RPC call:
 var request = new proto.mypackage.EchoRequest();
 request.setMessage(msg);
 var metadata = {'custom-header-1': 'value1'};
-var call = echoService.echo(request, metadata, function(err, response) {
+echoService.echo(request, metadata, function(err, response) {
   if (err) {
     console.log(err.code);
     console.log(err.message);
   } else {
     console.log(response.getMessage());
   }
-});
-call.on('status', function(status) {
-  console.log(status.code);
-  console.log(status.details);
-  console.log(status.metadata);
 });
 ```
 
@@ -294,12 +289,6 @@ is [Envoy][], which supports gRPC-web out of the box.
 
 ```sh
 $ docker-compose up -d node-server envoy commonjs-client
-```
-
-An alternative is to build Nginx, included as a submodule in this repository.
-
-```sh
-$ docker-compose up -d echo-server nginx closure-client
 ```
 
 You can also try the [gRPC-web Go proxy][].
