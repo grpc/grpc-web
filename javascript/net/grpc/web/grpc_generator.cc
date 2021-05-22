@@ -1525,6 +1525,7 @@ class GeneratorOptions {
   bool generate_dts() const { return generate_dts_; }
   bool generate_closure_es6() const { return generate_closure_es6_; }
   bool multiple_files() const { return multiple_files_; }
+  bool allow_empty_files() const { return allow_empty_files_; }
   bool goog_promise() const { return goog_promise_; }
 
  private:
@@ -1535,6 +1536,7 @@ class GeneratorOptions {
   bool generate_dts_;
   bool generate_closure_es6_;
   bool multiple_files_;
+  bool allow_empty_files_;
   bool goog_promise_;
 };
 
@@ -1546,6 +1548,7 @@ GeneratorOptions::GeneratorOptions()
       generate_dts_(false),
       generate_closure_es6_(false),
       multiple_files_(false),
+      allow_empty_files_(false),
       goog_promise_(false) {}
 
 bool GeneratorOptions::ParseFromOptions(const string& parameter,
@@ -1582,6 +1585,8 @@ bool GeneratorOptions::ParseFromOptions(
       }
     } else if ("multiple_files" == option.first) {
       multiple_files_ = "True" == option.second;
+    } else if ("allow_empty_files" == option.first) {
+      allow_empty_files_ = "True" == option.second;
     } else if ("plugins" == option.first) {
       plugins_ = option.second;
     } else if ("goog_promise" == option.first) {
@@ -1666,7 +1671,7 @@ class GrpcCodeGenerator : public CodeGenerator {
       PrintProtoDtsFile(&proto_dts_printer, file);
     }
 
-    if (!file->service_count()) {
+    if (!generator_options.allow_empty_files() && !file->service_count()) {
       // No services, nothing to do.
       return true;
     }

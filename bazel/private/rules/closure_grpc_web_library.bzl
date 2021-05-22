@@ -59,6 +59,7 @@ def _generate_closure_grpc_web_srcs(
 
     args.add_all(_proto_include_paths(transitive_sources.to_list()), format_each = "-I%s")
 
+    args.add("--grpc-web_opt", "allow_empty_files=True")
     args.add("--grpc-web_opt", "mode=" + mode)
     if "es6" == import_style:
         args.add("--grpc-web_opt", "import_style=experimental_closure_es6")
