@@ -59,6 +59,7 @@ def _generate_closure_grpc_web_srcs(
 
     args.add_all(_proto_include_paths(transitive_sources.to_list()), format_each = "-I%s")
 
+    args.add("--grpc-web_opt", "allow_empty_files=True")
     args.add("--grpc-web_opt", "mode=" + mode)
     if "es6" == import_style:
         args.add("--grpc-web_opt", "import_style=experimental_closure_es6")
@@ -73,7 +74,6 @@ def _generate_closure_grpc_web_srcs(
         basename = src.basename[:-(len(src.extension) + 1)]
 
         js = actions.declare_file(basename + "_grpc_web_pb.js", sibling = src)
-        actions.write(output = js, content = "")
         files.append(js)
 
         _assert(
@@ -84,7 +84,6 @@ def _generate_closure_grpc_web_srcs(
 
         if "es6" == import_style:
             es6 = actions.declare_file(basename + ".pb.grpc-web.js", sibling = src)
-            actions.write(output = es6, content = "")
             es6_files.append(es6)
 
             _assert(root == es6.root.path, "ES6 file should have same root: '{}' != '{}'".format(root, es6.root.path))
