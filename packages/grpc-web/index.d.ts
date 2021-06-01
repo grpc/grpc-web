@@ -126,6 +126,7 @@ declare module "grpc-web" {
   export interface Error {
     code: number;
     message: string;
+    metadata?: Metadata;
   }
 
   export interface Status {
