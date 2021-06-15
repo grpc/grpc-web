@@ -58,6 +58,8 @@ If you don't already have `protoc` installed, you will have to download it
 first from [here](https://github.com/protocolbuffers/protobuf/releases).
 
 Make sure they are both executable and are discoverable from your PATH.
+Also make sure to rename the executable to protoc-gen-grpc-web by removing any os/version info
+from the name of the executable.
 
 For example, in MacOS, you can do:
 
