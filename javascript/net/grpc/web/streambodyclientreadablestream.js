@@ -35,9 +35,9 @@ const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
 const ErrorCode = goog.require('goog.net.ErrorCode');
 const EventType = goog.require('goog.net.EventType');
 const GoogleRpcStatus = goog.require('proto.google.rpc.Status');
-const GrpcWebError = goog.requireType('grpc.web.Error');
 const Metadata = goog.requireType('grpc.web.Metadata');
 const NodeReadableStream = goog.require('goog.net.streams.NodeReadableStream');
+const RpcError = goog.require('grpc.web.RpcError');
 const StatusCode = goog.require('grpc.web.StatusCode');
 const XhrIo = goog.require('goog.net.XhrIo');
 const asserts = goog.require('goog.asserts');
@@ -113,7 +113,7 @@ class StreamBodyClientReadableStream {
 
     /**
      * @private
-     * @const {!Array<function(!GrpcWebError)>} The list of error callback
+     * @const {!Array<function(!RpcError)>} The list of error callback
      */
     this.onErrorCallbacks_ = [];
 
@@ -143,9 +143,8 @@ class StreamBodyClientReadableStream {
         if (grpcStatus == StatusCode.OK) {
           this.sendDataCallbacks_(responseMessage);
         } else {
-          this.sendErrorCallbacks_(
-              /** @type {!GrpcWebError} */ (
-                  {code: grpcStatus, message: response}));
+          this.sendErrorCallbacks_(new RpcError(
+              grpcStatus, 'Xhr succeeded but the status code is not 200'));
         }
       } else {
         let rawResponse;
@@ -174,7 +173,7 @@ class StreamBodyClientReadableStream {
               ', error: ' + this.xhr_.getLastError();
         }
         this.sendMetadataCallbacks_(this.readHeaders_());
-        this.sendErrorCallbacks_({code, message, metadata});
+        this.sendErrorCallbacks_(new RpcError(code, message, metadata));
       }
     });
   }
@@ -194,10 +193,12 @@ class StreamBodyClientReadableStream {
         this.sendStatusCallbacks_(status);
       }
     });
+
     this.xhrNodeReadableStream_.on('end', () => {
       this.sendMetadataCallbacks_(this.readHeaders_());
       this.sendEndCallbacks_();
     });
+
     this.xhrNodeReadableStream_.on('error', () => {
       if (this.onErrorCallbacks_.length == 0) return;
       let lastErrorCode = this.xhr_.getLastErrorCode();
@@ -226,13 +227,14 @@ class StreamBodyClientReadableStream {
           grpcStatusCode = StatusCode.UNAVAILABLE;
       }
 
-      this.sendErrorCallbacks_({
-        code: grpcStatusCode,
-        // TODO(armiller): get the message from the response?
-        // GoogleRpcStatus.deserialize(rawResponse).getMessage()?
-        // Perhaps do the same status logic as in on('data') above?
-        message: ErrorCode.getDebugMessage(lastErrorCode)
-      });
+      this.sendMetadataCallbacks_(this.readHeaders_());
+      this.sendErrorCallbacks_(new RpcError(
+          grpcStatusCode,
+          // TODO(armiller): get the message from the response?
+          // GoogleRpcStatus.deserialize(rawResponse).getMessage()?
+          // Perhaps do the same status logic as in on('data') above?
+          ErrorCode.getDebugMessage(lastErrorCode) +
+              ', error: ' + this.xhr_.getLastError()));
     });
   }
 
@@ -422,7 +424,7 @@ class StreamBodyClientReadableStream {
 
   /**
    * @private
-   * @param {!GrpcWebError} error The error to send back
+   * @param {!RpcError} error The error to send back
    */
   sendErrorCallbacks_(error) {
     for (let i = 0; i < this.onErrorCallbacks_.length; i++) {

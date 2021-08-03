@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2018 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,28 +20,29 @@
  *
  * gRPC-Web Error objects
  *
- * @author stanleycheung@google.com (Stanley Cheung)
+ * @suppress {lintChecks} gRPC-Web is still using default goog.module exports
+ * right now, and the output of grpc_generator.cc uses goog.provide.
  */
-goog.module('grpc.web.Error');
-
-goog.module.declareLegacyNamespace();
+goog.module('grpc.web.RpcError');
 
 const Metadata = goog.require('grpc.web.Metadata');
 
+class RpcError extends Error {
+  /**
+   * @param {number} code
+   * @param {string} message
+   * @param {!Metadata=} metadata
+   */
+  constructor(code, message, metadata = {}) {
+    super(message);
+    /** @type {number} */
+    this.code = code;
+    /** @type {!Metadata} */
+    this.metadata = metadata;
+  }
+}
 
-/**
- * @deprecated Please use the grpc.web.RpcError class instead.
- * @record
- */
-function Error() {}
+/** @override */
+RpcError.prototype.name = 'RpcError';
 
-/** @export {(number|undefined)} */
-Error.prototype.code;
-
-/** @export {(string|undefined)} */
-Error.prototype.message;
-
-/** @export {(?Metadata|undefined)} */
-Error.prototype.metadata;
-
-exports = Error;
+exports = RpcError;

@@ -28,8 +28,8 @@ goog.module.declareLegacyNamespace();
 
 
 const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
-const GrpcWebError = goog.require('grpc.web.Error');
 const MethodDescriptor = goog.require('grpc.web.MethodDescriptor');
+const RpcError = goog.require('grpc.web.RpcError');
 
 
 /**
@@ -47,7 +47,7 @@ const AbstractClientBase = class {
    * @param {!Object<string, string>} metadata User defined call metadata
    * @param {!MethodDescriptor<REQUEST, RESPONSE>}
    *   methodDescriptor Information of this RPC method
-   * @param {function(?GrpcWebError, ?)}
+   * @param {function(?RpcError, ?)}
    *   callback A callback function which takes (error, RESPONSE or null)
    * @return {!ClientReadableStream<RESPONSE>}
    */

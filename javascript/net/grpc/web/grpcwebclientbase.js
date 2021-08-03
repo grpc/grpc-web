@@ -32,11 +32,11 @@ const AbstractClientBase = goog.require('grpc.web.AbstractClientBase');
 const ClientOptions = goog.requireType('grpc.web.ClientOptions');
 const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
 const ClientUnaryCallImpl = goog.require('grpc.web.ClientUnaryCallImpl');
-const Error = goog.require('grpc.web.Error');
 const GrpcWebClientReadableStream = goog.require('grpc.web.GrpcWebClientReadableStream');
 const HttpCors = goog.require('goog.net.rpc.HttpCors');
 const MethodDescriptor = goog.requireType('grpc.web.MethodDescriptor');
 const Request = goog.require('grpc.web.Request');
+const RpcError = goog.require('grpc.web.RpcError');
 const StatusCode = goog.require('grpc.web.StatusCode');
 const XhrIo = goog.require('goog.net.XhrIo');
 const googCrypt = goog.require('goog.crypt.base64');
@@ -218,8 +218,8 @@ class GrpcWebClientBase {
    * @static
    * @template RESPONSE
    * @param {!ClientReadableStream<RESPONSE>} stream
-   * @param {function(?Error, ?RESPONSE, ?Status=, ?Object<string, string>=)|
-   *     function(?Error,?RESPONSE)} callback
+   * @param {function(?RpcError, ?RESPONSE, ?Status=, ?Object<string, string>=)|
+   *     function(?RpcError,?RESPONSE)} callback
    * @param {boolean} useUnaryResponse
    */
   static setCallback_(stream, callback, useUnaryResponse) {
@@ -313,7 +313,7 @@ class GrpcWebClientBase {
     if (xhr.headers.containsKey('deadline')) {
       const deadline = xhr.headers.get('deadline');  // in ms
       const currentTime = (new Date()).getTime();
-      let timeout = Math.ceil(deadline - currentTime);
+      let timeout = Math.round(deadline - currentTime);
       xhr.headers.remove('deadline');
       if (timeout === Infinity) {
         // grpc-timeout header defaults to infinity if not set.
@@ -321,12 +321,6 @@ class GrpcWebClientBase {
       }
       if (timeout > 0) {
         xhr.headers.set('grpc-timeout', timeout + 'm');
-        // Also set timeout on the xhr request to terminate the HTTP request
-        // if the server doesn't respond within the deadline. We use 110% of
-        // grpc-timeout for this to allow the server to terminate the connection
-        // with DEADLINE_EXCEEDED rather than terminating it in the Browser, but
-        // at least 1 second in case the user is on a high-latency network.
-        xhr.setTimeoutInterval(Math.max(1000, Math.ceil(timeout * 1.1)));
       }
     }
   }

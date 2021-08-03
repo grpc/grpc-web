@@ -23,6 +23,7 @@ const GrpcWebClientBase = goog.require('grpc.web.GrpcWebClientBase');
 const MethodDescriptor = goog.require('grpc.web.MethodDescriptor');
 const ReadyState = goog.require('goog.net.XmlHttp.ReadyState');
 const Request = goog.requireType('grpc.web.Request');
+const RpcError = goog.require('grpc.web.RpcError');
 const XhrIo = goog.require('goog.testing.net.XhrIo');
 const googCrypt = goog.require('goog.crypt.base64');
 const testSuite = goog.require('goog.testing.testSuite');
@@ -117,6 +118,7 @@ testSuite({
           ])),
           DEFAULT_RESPONSE_HEADERS);
     });
+    assertTrue(error instanceof RpcError);
     assertEquals(3, error.code);
   },
 
