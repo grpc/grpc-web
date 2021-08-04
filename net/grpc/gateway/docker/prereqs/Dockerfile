@@ -16,7 +16,7 @@ FROM grpcweb/common
 
 ARG MAKEFLAGS=-j8
 ARG BUILDIFIER_VERSION=1.0.0
-ARG BAZEL_VERSION=3.7.0
+ARG BAZEL_VERSION=4.1.0
 
 RUN echo "\nloglevel=error\n" >> $HOME/.npmrc
 
