@@ -22,17 +22,18 @@ RUN echo "\nloglevel=error\n" >> $HOME/.npmrc
 
 WORKDIR /github/grpc-web
 
+# Check out scripts and initialize git submodules first to take advantage of docker build cache.
+COPY ./scripts ./scripts
+RUN ./scripts/init_submodules.sh
+
 COPY ./Makefile ./Makefile
 COPY ./WORKSPACE ./WORKSPACE
 COPY ./bazel ./bazel
 COPY ./javascript ./javascript
 COPY ./net ./net
 COPY ./packages ./packages
-COPY ./scripts ./scripts
 COPY ./src ./src
 COPY ./test ./test
-
-RUN ./scripts/init_submodules.sh
 
 RUN cd ./packages/grpc-web && \
   npm install && \
