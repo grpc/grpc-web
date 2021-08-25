@@ -14,13 +14,15 @@
 
 FROM node:12-stretch
 
+ARG PROTOBUF_VERSION=3.17.3
+
 RUN apt-get -qq update && apt-get -qq install -y \
   unzip
 
 WORKDIR /tmp
 
-RUN curl -sSL https://github.com/protocolbuffers/protobuf/releases/download/v3.15.6/\
-protoc-3.15.6-linux-x86_64.zip -o protoc.zip && \
+RUN curl -sSL https://github.com/protocolbuffers/protobuf/releases/download/v$PROTOBUF_VERSION/\
+protoc-$PROTOBUF_VERSION-linux-x86_64.zip -o protoc.zip && \
   unzip -qq protoc.zip && \
   cp ./bin/protoc /usr/local/bin/protoc
 
