@@ -14,18 +14,11 @@
 
 FROM grpcweb/prereqs
 
-RUN apt-get -qq update && apt-get -qq install -y \
-  default-jdk
+WORKDIR /github/grpc-web/net/grpc/gateway/examples/echo
 
-WORKDIR /github/grpc-web
+RUN npm install
 
-RUN curl -sS https://dl.google.com/closure-compiler/compiler-20190909.zip \
-  -o compiler-latest.zip
-
-RUN rm -f closure-compiler.jar && \
-  unzip -p -qq -o compiler-latest.zip *.jar > closure-compiler.jar
-
-RUN make client && make install-example
+RUN make client && make install
 
 WORKDIR /var/www/html
 
