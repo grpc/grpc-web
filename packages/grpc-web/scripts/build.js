@@ -27,7 +27,7 @@ const indexPath = path.relative(cwd, path.resolve(__dirname, "../index.js"));
 const jsPaths = [
   "../exports.js",
   "../../../javascript",
-  "../../../third_party/closure-library",
+  "../node_modules/google-closure-library",
 ].map(jsPath => path.relative(cwd, path.resolve(__dirname, jsPath)));
 
 const closureArgs = [].concat(
