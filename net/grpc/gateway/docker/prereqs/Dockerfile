@@ -26,19 +26,19 @@ WORKDIR /github/grpc-web
 COPY ./scripts ./scripts
 RUN ./scripts/init_submodules.sh
 
+COPY ./packages ./packages
+RUN cd ./packages/grpc-web && \
+  npm install && \
+  npm run build && \
+  npm link
+
 COPY ./Makefile ./Makefile
 COPY ./WORKSPACE ./WORKSPACE
 COPY ./bazel ./bazel
 COPY ./javascript ./javascript
 COPY ./net ./net
-COPY ./packages ./packages
 COPY ./src ./src
 COPY ./test ./test
-
-RUN cd ./packages/grpc-web && \
-  npm install && \
-  npm run build && \
-  npm link
 
 RUN wget -nv -O buildifier \
   https://github.com/bazelbuild/buildtools/releases/download/$BUILDIFIER_VERSION/buildifier && \
