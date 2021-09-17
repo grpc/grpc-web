@@ -248,7 +248,7 @@ using the binary wire format
 ```sh
 $ protoc -I=$DIR echo.proto \
   --js_out=import_style=commonjs,binary:$OUT_DIR \
-  --grpc-web_out=import_style=typescript,mode=grpcwebtext:$OUT_DIR
+  --grpc-web_out=import_style=typescript,mode=grpcweb:$OUT_DIR
 ```
 
 It will generate the following files:
