@@ -240,6 +240,13 @@ class MockXhr {
   }
 
   /**
+   * @param {number} ms
+   */
+  setTimeoutInterval(ms) {
+    return;
+  }
+
+  /**
    * @param {boolean} withCredentials
    */
   setWithCredentials(withCredentials) {

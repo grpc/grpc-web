@@ -1,3 +1,6 @@
 /index.js
-/package-lock.json
-/node_modules
+/generated/
+
+package-lock.json
+node_modules/
+__pycache__/

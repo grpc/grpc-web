@@ -30,6 +30,7 @@ const grpc = {};
 grpc.web = require('grpc-web');
 
 const SERVER_HOST = 'http://localhost:8080';
+const TIMEOUT_MS = 1000; // 1 second
 
 function multiDone(done, count) {
   return function() {
@@ -189,11 +190,12 @@ if (typeof window === 'undefined') { // Running from Node
   } else {
     console.log('Testing grpc-web-text mode...');
   }
-  
+
   describe('grpc-web interop tests', function() {
     Object.keys(testCases).forEach((testCase) => {
       if (argv.mode == 'binary' && testCases[testCase].skipBinaryMode) return;
-      it('should pass '+testCase, testCases[testCase].testFunc);
+      it('should pass '+testCase, testCases[testCase].testFunc)
+        .timeout(TIMEOUT_MS);
     });
   });
 } else {
@@ -216,6 +218,6 @@ if (typeof window === 'undefined') { // Running from Node
       if (!doneCalled) {
         throw testCase+': failed. Not all done() are called';
       }
-    }, 500);
+    }, TIMEOUT_MS);
   });
 }

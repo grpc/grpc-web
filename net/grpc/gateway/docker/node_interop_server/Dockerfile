@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM grpcweb/common
+FROM node:12.22.6-stretch
 
 WORKDIR /github/grpc-node
 
