@@ -1,0 +1,15 @@
+<!-- Copyright (c) 2021 Google Inc. All rights reserved. -->
+<!doctype html>
+<html>
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta charset="UTF-8" />
+  <script src="../../node_modules/google-closure-library/closure/goog/base.js"></script>
+  <script src="../deps.js"></script>
+  <script>
+    goog.require('$package');
+  </script>
+</head>
+<body>
+</body>
+</html>

@@ -22,24 +22,33 @@ cd "${REPO_DIR}"
 
 
 # These programs need to be already installed
-progs=(docker docker-compose npm curl)
+progs=(docker docker-compose curl)
 for p in "${progs[@]}"
 do
   command -v "$p" > /dev/null 2>&1 || \
     { echo >&2 "$p is required but not installed. Aborting."; exit 1; }
 done
 
+##########################################################
+# Step 1: Run all unit tests
+##########################################################
+echo -e "\n[Running] Basic test #1 - Runnning unit tests"
+# Run jsunit tests
+docker-compose build jsunit-test
+docker run --rm grpcweb/jsunit-test /bin/bash \
+    /grpc-web/scripts/docker-run-jsunit-tests.sh
 
-# Build all relevant docker images. They should all build successfully.
-if [[ "$MASTER" == "1" ]]; then
-  # Build all for continuous_integration
-  docker-compose build
-else
-  # Only build a subset of docker images for presubmit runs
-  docker-compose build common prereqs envoy node-server \
-    commonjs-client ts-client
-fi
+# Run (mocha) unit tests
+docker-compose build prereqs
+docker run --rm grpcweb/prereqs /bin/bash \
+  /github/grpc-web/scripts/docker-run-mocha-tests.sh
 
+
+##########################################################
+# Step 2: Test echo server
+##########################################################
+echo -e "\n[Running] Basic test #2 - Testing echo server"
+docker-compose build prereqs envoy node-server
 
 # Bring up the Echo server and the Envoy proxy (in background).
 # The 'sleep' seems necessary for the docker containers to be fully up
@@ -53,11 +62,22 @@ source ./scripts/test-proxy.sh
 docker-compose down
 
 
-# Run unit tests from npm package
-docker run --rm grpcweb/prereqs /bin/bash \
-  /github/grpc-web/scripts/docker-run-tests.sh
+##########################################################
+# Step 3: Test all Dockerfile and Bazel targets can build!
+##########################################################
+echo -e "\n[Running] Basic test #3 - Testing everything buids"
+if [[ "$MASTER" == "1" ]]; then
+  # Build all for continuous_integration
+  docker-compose build
+else
+  # Only build a subset of docker images for presubmit runs
+  docker-compose build commonjs-client closure-client ts-client
+fi
 
+# Run build tests to ensure all Bazel targets can build.
+docker run --rm grpcweb/prereqs /bin/bash \
+  /github/grpc-web/scripts/docker-run-build-tests.sh
 
 # Clean up
 git clean -f -d -x
-echo 'Completed'
+echo 'Basic tests completed successfully!'

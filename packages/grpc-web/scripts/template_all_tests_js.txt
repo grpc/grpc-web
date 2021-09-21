@@ -1,0 +1,6 @@
+var allTests = [
+$test_html_paths
+];
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = allTests;
+}

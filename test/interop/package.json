@@ -4,7 +4,7 @@
   "description": "gRPC-Web Interop Test Client",
   "license": "Apache-2.0",
   "scripts": {
-    "test": "mocha -b --timeout 500 interop_client.js"
+    "test": "mocha -b interop_client.js"
   },
   "dependencies": {
     "google-protobuf": "~3.14.0",

@@ -34,12 +34,13 @@ do
     { echo >&2 "$p is required but not installed. Aborting."; exit 1; }
 done
 
-
 # Build all relevant docker images. They should all build successfully.
-docker-compose build common prereqs node-interop-server interop-client java-interop-server
+docker-compose build prereqs node-interop-server java-interop-server
 
-
-# Run interop tests
+##########################################################
+# Run interop tests (against Envoy)
+##########################################################
+echo -e "\n[Running] Interop test #1 - against Envoy"
 pid1=$(docker run -d \
   -v "$(pwd)"/test/interop/envoy.yaml:/etc/envoy/envoy.yaml:ro \
   --network=host envoyproxy/envoy:v1.17.0)
@@ -51,9 +52,10 @@ docker rm -f "$pid1"
 docker rm -f "$pid2"
 
 
-#
-# Run interop tests against grpc-web java connector code
-#
+##########################################################
+# Run interop tests (against grpc-web Java connector code)
+##########################################################
+echo -e "\n[Running] Interop test #2 - against Java interop server"
 pid3=$(docker run -d --network=host grpcweb/java-interop-server)
 run_tests
 docker rm -f "$pid3"

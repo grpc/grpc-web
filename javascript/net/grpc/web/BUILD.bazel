@@ -1,4 +1,4 @@
-load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_library", "closure_js_test")
+load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_library")
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 
 cc_binary(
@@ -238,50 +238,4 @@ closure_js_library(
         "statuscode.js",
     ],
     visibility = ["//visibility:public"],
-)
-
-closure_js_test(
-    name = "grpcwebclientbase_test",
-    srcs = [
-        "grpcwebclientbase_test.js",
-    ],
-    entry_points = [
-        "goog:grpc.web.GrpcWebClientBaseTest",
-    ],
-    suppress = [
-        "visibility",
-        "checkTypes",
-        "deprecated",
-        "reportUnknownTypes",
-        "strictCheckTypes",
-    ],
-    deps = [
-        ":clientreadablestream",
-        ":grpcwebclientbase",
-        ":interceptor",
-        "@io_bazel_rules_closure//closure/library/crypt:base64",
-        "@io_bazel_rules_closure//closure/library/events",
-        "@io_bazel_rules_closure//closure/library/net:eventtype",
-        "@io_bazel_rules_closure//closure/library/structs:map",
-        "@io_bazel_rules_closure//closure/library/testing:jsunit",
-        "@io_bazel_rules_closure//closure/library/testing:testsuite",
-    ],
-)
-
-closure_js_test(
-    name = "grpcwebstreamparser_test",
-    srcs = [
-        "grpcwebstreamparser_test.js",
-    ],
-    entry_points = [
-        "goog:grpc.web.GrpcWebStreamParserTest",
-    ],
-    suppress = [
-        "reportUnknownTypes",
-    ],
-    deps = [
-        ":grpcwebstreamparser",
-        "@io_bazel_rules_closure//closure/library/testing:jsunit",
-        "@io_bazel_rules_closure//closure/library/testing:testsuite",
-    ],
 )
