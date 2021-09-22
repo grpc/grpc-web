@@ -98,6 +98,10 @@ describe('Run all Closure unit tests', function() {
     });
   });
 
+  if (!allTests.length) {
+    throw new Error('Cannot find any JsUnit tests!!');
+  }
+
   // Run all tests.
   for (var i = 0; i < allTests.length; i++) {
     var testPath = allTests[i];

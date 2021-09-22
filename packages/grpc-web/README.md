@@ -8,7 +8,7 @@ gRPC-Web is now Generally Available, and considered stable enough for production
 
 gRPC-Web clients connect to gRPC services via a special gateway proxy: the
 current version of the library uses [Envoy](https://www.envoyproxy.io/) by
-default, in which gRPC-Web support is built-in. 
+default, in which gRPC-Web support is built-in.
 
 In the future, we expect gRPC-Web to be supported in language-specific Web
 frameworks, such as Python, Java, and Node. See the
@@ -113,7 +113,7 @@ const request = new EchoRequest();
 request.setMessage('Hello World!');
 
 const call = echoService.echo(request, {'custom-header-1': 'value1'},
-  (err: grpcWeb.Error, response: EchoResponse) => {
+  (err: grpcWeb.RpcError, response: EchoResponse) => {
     console.log(response.getMessage());
   });
 call.on('status', (status: grpcWeb.Status) => {

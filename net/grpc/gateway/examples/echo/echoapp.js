@@ -86,7 +86,7 @@ echoapp.EchoApp.prototype.echo = function(msg) {
  * @param {string} msg
  */
 echoapp.EchoApp.prototype.echoError = function(msg) {
-  echoapp.EchoApp.addLeftMessage(msg);
+  echoapp.EchoApp.addLeftMessage(`Error: ${msg}`);
   var unaryRequest = new this.ctors.EchoRequest();
   unaryRequest.setMessage(msg);
   this.echoService.echoAbort(unaryRequest, {}, function(err, response) {

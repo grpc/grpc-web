@@ -3,10 +3,6 @@ const grpc = {};
 grpc.web = require('grpc-web');
 
 describe('grpc-web export test', function() {
-  it('should have AbstractClientBase.MethodInfo exported', function() {
-    assert.equal(typeof grpc.web.AbstractClientBase.MethodInfo, 'function');
-  });
-
   it('should have MethodDescriptor exported', function() {
     assert.equal(typeof grpc.web.MethodDescriptor, 'function');
   });

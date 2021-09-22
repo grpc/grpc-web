@@ -30,7 +30,7 @@ req.setMessage('aaa');
 // this test tries to make sure that these types are as accurate as possible
 
 let call1 : grpcWeb.ClientReadableStream<EchoResponse> =
-  echoService.echo(req, {}, (err: grpcWeb.Error,
+  echoService.echo(req, {}, (err: grpcWeb.RpcError,
                              response: EchoResponse) => {
                              });
 
@@ -46,5 +46,5 @@ let call2 : grpcWeb.ClientReadableStream<ServerStreamingEchoResponse> =
 call2
   .on('data', (response: ServerStreamingEchoResponse) => {
   })
-  .on('error', (error: grpcWeb.Error) => {
+  .on('error', (error: grpcWeb.RpcError) => {
   });

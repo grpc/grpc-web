@@ -19,291 +19,199 @@ goog.module('grpc.web.GrpcWebClientBaseTest');
 goog.setTestOnly('grpc.web.GrpcWebClientBaseTest');
 
 const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
-const EventType = goog.require('goog.net.EventType');
 const GrpcWebClientBase = goog.require('grpc.web.GrpcWebClientBase');
-const Map = goog.require('goog.structs.Map');
+const MethodDescriptor = goog.require('grpc.web.MethodDescriptor');
+const ReadyState = goog.require('goog.net.XmlHttp.ReadyState');
+const Request = goog.requireType('grpc.web.Request');
+const RpcError = goog.require('grpc.web.RpcError');
+const XhrIo = goog.require('goog.testing.net.XhrIo');
 const googCrypt = goog.require('goog.crypt.base64');
-const googEvents = goog.require('goog.events');
 const testSuite = goog.require('goog.testing.testSuite');
 const {StreamInterceptor} = goog.require('grpc.web.Interceptor');
 goog.require('goog.testing.jsunit');
 
-const REQUEST_BYTES = [1, 2, 3];
-const FAKE_METHOD = 'fake-method';
-const PROTO_FIELD_VALUE = 'meow';
 const DEFAULT_UNARY_HEADERS =
     ['Content-Type', 'Accept', 'X-User-Agent', 'X-Grpc-Web'];
 const DEFAULT_UNARY_HEADER_VALUES = [
-  'application/grpc-web-text', 'application/grpc-web-text',
-  'grpc-web-javascript/0.1', '1'
+  'application/grpc-web-text',
+  'application/grpc-web-text',
+  'grpc-web-javascript/0.1',
+  '1',
 ];
-let dataCallback;
-let expectedHeaders;
-let expectedHeaderValues;
-
+const DEFAULT_RESPONSE_HEADERS = {
+  'Content-Type': 'application/grpc-web-text',
+};
 
 testSuite({
-  setUp: function() {
-    googEvents.listen = function(a, event_type, listener, d, e) {
-      if (event_type == EventType.READY_STATE_CHANGE) {
-        dataCallback = listener;
-      }
-      return;
-    };
+  async testRpcResponse() {
+    const xhr = new XhrIo();
+    const client = new GrpcWebClientBase(/* options= */ {}, xhr);
+    const methodDescriptor = createMethodDescriptor((bytes) => {
+      assertElementsEquals([4, 5, 6], [].slice.call(bytes));
+      return new MockReply('value');
+    });
+
+    const response = await new Promise((resolve, reject) => {
+      client.rpcCall(
+          'url', new MockRequest(), /* metadata= */ {}, methodDescriptor,
+          (error, response) => {
+            assertNull(error);
+            resolve(response);
+          });
+      // This parses to [ { DATA: [4,5,6] }, { TRAILER: "a: b" } ]
+      xhr.simulatePartialResponse(
+          googCrypt.encodeByteArray(new Uint8Array(
+              [0, 0, 0, 0, 3, 4, 5, 6, 128, 0, 0, 0, 4, 97, 58, 32, 98])),
+          DEFAULT_RESPONSE_HEADERS);
+      xhr.simulateReadyStateChange(ReadyState.COMPLETE);
+    });
+
+    assertEquals('value', response.data);
+    const headers = /** @type {!Object} */ (xhr.getLastRequestHeaders());
+    assertElementsEquals(DEFAULT_UNARY_HEADERS, Object.keys(headers));
+    assertElementsEquals(DEFAULT_UNARY_HEADER_VALUES, Object.values(headers));
   },
 
-  tearDown: function() {
-    expectedHeaders = null;
-    expectedHeaderValues = null;
-  },
+  async testDeadline() {
+    const xhr = new XhrIo();
+    const client = new GrpcWebClientBase(/* options= */ {}, xhr);
+    const methodDescriptor = createMethodDescriptor((bytes) => new MockReply());
 
-  testRpcResponse: function() {
-    var client = new GrpcWebClientBase();
-    client.newXhr_ = function() {
-      return new MockXhr({
-        // This parses to [ { DATA: [4,5,6] }, { TRAILER: "a: b" } ]
-        response: googCrypt.encodeByteArray(new Uint8Array(
-            [0, 0, 0, 0, 3, 4, 5, 6, 128, 0, 0, 0, 4, 97, 58, 32, 98])),
-      });
-    };
-
-    expectUnaryHeaders();
-    client.rpcCall(
-        FAKE_METHOD, /** requestMessage */ {}, /** metadata */ {}, {
-          requestSerializeFn: function(request) {
-            return REQUEST_BYTES;
-          },
-          responseDeserializeFn: function(bytes) {
-            assertElementsEquals([4, 5, 6], [].slice.call(bytes));
-            return {'field1': PROTO_FIELD_VALUE};
-          }
-        },
-        function(error, response) {
-          assertNull(error);
-          assertEquals(PROTO_FIELD_VALUE, response['field1']);
-        });
-    dataCallback();
-  },
-
-  testDeadline: function() {
-    const client = new GrpcWebClientBase();
-    client.newXhr_ = function() {
-      return new MockXhr({
-        deadline: true,
-        response: googCrypt.encodeByteArray(new Uint8Array(0)),
-      });
-    };
-
-    expectUnaryHeaders();
     const deadline = new Date();
     deadline.setSeconds(deadline.getSeconds() + 1);
-    client.rpcCall(
-        FAKE_METHOD, /** requestMessage */ {}, {'deadline': deadline}, {
-          requestSerializeFn: (request) => REQUEST_BYTES,
-          responseDeserializeFn: (bytes) => {},
-
-        },
-        (error, response) => assertNull(error));
-    dataCallback();
-  },
-
-  testStreamInterceptor: function() {
-    var interceptor = new StreamResponseInterceptor();
-    var client = new GrpcWebClientBase({'streamInterceptors': [interceptor]});
-    client.newXhr_ = function() {
-      return new MockXhr({
-        // This parses to [ { DATA: [4,5,6] }, { TRAILER: "a: b" } ]
-        response: googCrypt.encodeByteArray(new Uint8Array(
-            [0, 0, 0, 0, 3, 4, 5, 6, 128, 0, 0, 0, 4, 97, 58, 32, 98])),
-      });
-    };
-
-    expectUnaryHeaders();
-    client.rpcCall(
-        FAKE_METHOD, {}, {}, {
-          requestSerializeFn: function(request) {
-            return REQUEST_BYTES;
-          },
-          responseDeserializeFn: function(bytes) {
-            assertElementsEquals([4, 5, 6], [].slice.call(bytes));
-            return {'field1': PROTO_FIELD_VALUE};
-          }
-        },
-        function(error, response) {
-          assertNull(error);
-          assertEquals('field2', response['field2']);
-        });
-    dataCallback();
-  },
-
-  testRpcError: function() {
-    var client = new GrpcWebClientBase();
-    client.newXhr_ = function() {
-      return new MockXhr({
-        // This decodes to "grpc-status: 3"
-        response: googCrypt.encodeByteArray(new Uint8Array([
-          128, 0, 0, 0, 14, 103, 114, 112, 99, 45, 115, 116, 97, 116, 117, 115,
-          58, 32, 51
-        ])),
-      });
-    };
-
-    expectUnaryHeaders();
-    client.rpcCall(
-        FAKE_METHOD, {}, {}, {
-          requestSerializeFn: function(request) {
-            return REQUEST_BYTES;
-          },
-          responseDeserializeFn: function(bytes) {
-            return {};
-          }
-        },
-        function(error, response) {
-          assertNull(response);
-          assertEquals(3, error.code);
-        });
-    dataCallback();
-  },
-
-  testRpcResponseHeader: function() {
-    var client = new GrpcWebClientBase();
-    client.newXhr_ = function() {
-      return new MockXhr({
-        // This parses to [ { DATA: [4,5,6] }, { TRAILER: "a: b" } ]
-        response: googCrypt.encodeByteArray(new Uint8Array(
-            [0, 0, 0, 0, 3, 4, 5, 6, 128, 0, 0, 0, 4, 97, 58, 32, 98])),
-      });
-    };
-
-    expectUnaryHeaders();
-    var call = client.rpcCall(
-        FAKE_METHOD, {}, {}, {
-          requestSerializeFn: function(request) {
-            return REQUEST_BYTES;
-          },
-          responseDeserializeFn: function(bytes) {
-            assertElementsEquals([4, 5, 6], [].slice.call(bytes));
-            return {'field1': PROTO_FIELD_VALUE};
-          }
-        },
-        function(error, response) {
-          assertNull(error);
-          assertEquals(PROTO_FIELD_VALUE, response['field1']);
-        });
-    call.on('metadata', (metadata) => {
-      assertEquals(
-          metadata['sample-initial-metadata-1'], 'sample-initial-metadata-val');
+    await new Promise((resolve, reject) => {
+      client.rpcCall(
+          'url', new MockRequest(), {'deadline': deadline}, methodDescriptor,
+          (error, response) => {
+            assertNull(error);
+            resolve();
+          });
+      // This parses to [ { DATA: [4,5,6] }, { TRAILER: "a: b" } ]
+      xhr.simulatePartialResponse(
+          googCrypt.encodeByteArray(new Uint8Array(
+              [0, 0, 0, 0, 3, 4, 5, 6, 128, 0, 0, 0, 4, 97, 58, 32, 98])),
+          DEFAULT_RESPONSE_HEADERS);
+      xhr.simulateReadyStateChange(ReadyState.COMPLETE);
     });
-    dataCallback();
-  }
+    const headers = /** @type {!Object} */ (xhr.getLastRequestHeaders());
+    const headersWithDeadline = [...DEFAULT_UNARY_HEADERS, 'grpc-timeout'];
+    assertElementsEquals(headersWithDeadline, Object.keys(headers));
+  },
+
+  async testRpcError() {
+    const xhr = new XhrIo();
+    const client = new GrpcWebClientBase(/* options= */ {}, xhr);
+    const methodDescriptor = createMethodDescriptor((bytes) => new MockReply());
+
+    const error = await new Promise((resolve, reject) => {
+      client.rpcCall(
+          'urlurl', new MockRequest(), /* metadata= */ {}, methodDescriptor,
+          (error, response) => {
+            assertNull(response);
+            resolve(error);
+          });
+      // This decodes to "grpc-status: 3"
+      xhr.simulatePartialResponse(
+          googCrypt.encodeByteArray(new Uint8Array([
+            128, 0,   0,  0,   14,  103, 114, 112, 99, 45,
+            115, 116, 97, 116, 117, 115, 58,  32,  51,
+          ])),
+          DEFAULT_RESPONSE_HEADERS);
+    });
+    assertTrue(error instanceof RpcError);
+    assertEquals(3, error.code);
+  },
+
+  async testRpcResponseHeader() {
+    const xhr = new XhrIo();
+    const client = new GrpcWebClientBase(/* options= */ {}, xhr);
+    const methodDescriptor = createMethodDescriptor((bytes) => {
+      assertElementsEquals([4, 5, 6], [].slice.call(bytes));
+      return new MockReply('value');
+    });
+
+    const metadata = await new Promise((resolve, reject) => {
+      const call = client.rpcCall(
+          'url', new MockRequest(), /* metadata= */ {}, methodDescriptor,
+          (error, response) => {
+            assertNull(error);
+          });
+      call.on('metadata', (metadata) => {
+        resolve(metadata);
+      });
+      // This parses to [ { DATA: [4,5,6] }, { TRAILER: "a: b" } ]
+      xhr.simulatePartialResponse(
+          googCrypt.encodeByteArray(new Uint8Array(
+              [0, 0, 0, 0, 3, 4, 5, 6, 128, 0, 0, 0, 4, 97, 58, 32, 98])),
+          {
+            'Content-Type': 'application/grpc-web-text',
+            'initial-metadata-key': 'initial-metadata-value',
+          });
+      xhr.simulateReadyStateChange(ReadyState.COMPLETE);
+    });
+    assertEquals('initial-metadata-value', metadata['initial-metadata-key']);
+  },
+
+  async testStreamInterceptor() {
+    const xhr = new XhrIo();
+    const interceptor = new StreamResponseInterceptor();
+    const methodDescriptor = createMethodDescriptor((bytes) => {
+      assertElementsEquals([4, 5, 6], [].slice.call(bytes));
+      return new MockReply('value');
+    });
+    const client =
+        new GrpcWebClientBase({'streamInterceptors': [interceptor]}, xhr);
+
+    const response = await new Promise((resolve, reject) => {
+      client.rpcCall(
+          'url', new MockRequest(), /* metadata= */ {}, methodDescriptor,
+          (error, response) => {
+            assertNull(error);
+            resolve(response);
+          });
+      // This parses to [ { DATA: [4,5,6] }, { TRAILER: "a: b" } ]
+      xhr.simulatePartialResponse(
+          googCrypt.encodeByteArray(new Uint8Array(
+              [0, 0, 0, 0, 3, 4, 5, 6, 128, 0, 0, 0, 4, 97, 58, 32, 98])),
+          DEFAULT_RESPONSE_HEADERS);
+      xhr.simulateReadyStateChange(ReadyState.COMPLETE);
+    });
+    assertEquals('Intercepted value', response.data);
+  },
 
 });
 
-
-/** Sets expected headers as the unary response headers */
-function expectUnaryHeaders() {
-  expectedHeaders = [...DEFAULT_UNARY_HEADERS];
-  expectedHeaderValues = [...DEFAULT_UNARY_HEADER_VALUES];
-}
-
-
-/** @unrestricted */
-class MockXhr {
+/** Mocks a request proto object. */
+class MockRequest {
   /**
-   * @param {?Object} mockValues
-   * Mock XhrIO object to test the outgoing values
+   * @param {string=} data
    */
-  constructor(mockValues) {
-    this.mockValues = mockValues;
-    this.headers = new Map();
-  }
-
-  /**
-   * @param {string} url
-   * @param {string=} method
-   * @param {string=} content
-   * @param {string=} headers
-   */
-  send(url, method, content, headers) {
-    assertEquals(FAKE_METHOD, url);
-    assertEquals('POST', method);
-    assertElementsEquals(
-        googCrypt.encodeByteArray(new Uint8Array([0, 0, 0, 0, 3, 1, 2, 3])),
-        content);
-    if (!this.mockValues.deadline) {
-      assertElementsEquals(expectedHeaders, this.headers.getKeys());
-      assertElementsEquals(expectedHeaderValues, this.headers.getValues());
-    } else {
-      expectedHeaders.push('grpc-timeout');
-      assertElementsEquals(expectedHeaders, this.headers.getKeys());
-    }
-  }
-
-  /**
-   * @param {number} ms
-   */
-  setTimeoutInterval(ms) {
-    return;
-  }
-
-  /**
-   * @param {boolean} withCredentials
-   */
-  setWithCredentials(withCredentials) {
-    return;
-  }
-
-  /**
-   * @return {string} response
-   */
-  getResponseText() {
-    return this.mockValues.response;
-  }
-
-  /**
-   * @param {string} key header key
-   * @return {string} content-type
-   */
-  getStreamingResponseHeader(key) {
-    return 'application/grpc-web-text';
-  }
-
-  /**
-   * @return {string} response
-   */
-  getResponseHeaders() {
-    return {'sample-initial-metadata-1': 'sample-initial-metadata-val'};
-  }
-
-  /**
-   * @return {number} xhr state
-   */
-  getReadyState() {
-    return 0;
-  }
-
-  /**
-   * @return {number} lastErrorCode
-   */
-  getLastErrorCode() {
-    return 0;
-  }
-
-  /**
-   * @return {string} lastError
-   */
-  getLastError() {
-    return 'server not responding';
-  }
-
-  /**
-   * @param {string} responseType
-   */
-  setResponseType(responseType) {
-    return;
+  constructor(data = '') {
+    /** @type {string} */
+    this.data = data;
   }
 }
 
+/** Mocks a response proto object. */
+class MockReply {
+  /**
+   * @param {string=} data
+   */
+  constructor(data = '') {
+    /** @type {string} */
+    this.data = data;
+  }
+}
+
+/**
+ * @param {function(string): !MockReply} responseDeSerializeFn
+ * @return {!MethodDescriptor<!MockRequest, !MockReply>}
+ */
+function createMethodDescriptor(responseDeSerializeFn) {
+  return new MethodDescriptor(
+      /* name= */ '', /* methodType= */ null, MockRequest, MockReply,
+      (request) => [1, 2, 3], responseDeSerializeFn);
+}
 
 
 /**
@@ -313,38 +221,69 @@ class MockXhr {
 class StreamResponseInterceptor {
   constructor() {}
 
-  /** @override */
+  /**
+   * @override
+   * @template REQUEST, RESPONSE
+   * @param {!Request<REQUEST, RESPONSE>} request
+   * @param {function(!Request<REQUEST,RESPONSE>):
+   *     !ClientReadableStream<RESPONSE>} invoker
+   * @return {!ClientReadableStream<RESPONSE>}
+   */
   intercept(request, invoker) {
-    /**
-     * @implements {ClientReadableStream}
-     * @constructor
-     * @param {!ClientReadableStream<RESPONSE>} stream
-     * @template RESPONSE
-     */
-    const InterceptedStream = function(stream) {
-      this.stream = stream;
-    };
-
-    /** @override */
-    InterceptedStream.prototype.on = function(eventType, callback) {
-      if (eventType == 'data') {
-        const newCallback = (response) => {
-          response['field2'] = 'field2';
-          callback(response);
-        };
-        this.stream.on(eventType, newCallback);
-      } else {
-        this.stream.on(eventType, callback);
-      }
-      return this;
-    };
-
-    /** @override */
-    InterceptedStream.prototype.cancel = function() {
-      this.stream.cancel();
-      return this;
-    };
-
     return new InterceptedStream(invoker(request));
+  }
+}
+
+/**
+ * @implements {ClientReadableStream}
+ * @template RESPONSE
+ * @final
+ */
+class InterceptedStream {
+  /**
+   * @param {!ClientReadableStream<RESPONSE>} stream
+   */
+  constructor(stream) {
+    /** @const {!ClientReadableStream<RESPONSE>} */
+    this.stream = stream;
+  }
+
+  /**
+   * @override
+   * @param {string} eventType
+   * @param {function(?)} callback
+   * @return {!ClientReadableStream<RESPONSE>}
+   */
+  on(eventType, callback) {
+    if (eventType == 'data') {
+      const newCallback = (response) => {
+        response.data = 'Intercepted ' + response.data;
+        callback(response);
+      };
+      this.stream.on(eventType, newCallback);
+    } else {
+      this.stream.on(eventType, callback);
+    }
+    return this;
+  }
+
+  /**
+   * @override
+   * @return {!ClientReadableStream<RESPONSE>}
+   */
+  cancel() {
+    this.stream.cancel();
+    return this;
+  }
+
+  /**
+   * @override
+   * @param {string} eventType
+   * @param {function(?)} callback
+   * @return {!ClientReadableStream<RESPONSE>}
+   */
+  removeListener(eventType, callback) {
+    this.stream.removeListener(eventType, callback);
+    return this;
   }
 }
