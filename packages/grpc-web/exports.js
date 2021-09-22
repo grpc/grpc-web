@@ -6,13 +6,11 @@
  */
 goog.module('grpc.web.Exports');
 
-const AbstractClientBase = goog.require('grpc.web.AbstractClientBase');
 const GrpcWebClientBase = goog.require('grpc.web.GrpcWebClientBase');
 const StatusCode = goog.require('grpc.web.StatusCode');
 const MethodDescriptor = goog.require('grpc.web.MethodDescriptor');
 const MethodType = goog.require('grpc.web.MethodType');
 
-module['exports']['AbstractClientBase'] = {'MethodInfo': AbstractClientBase.MethodInfo};
 module['exports']['GrpcWebClientBase'] = GrpcWebClientBase;
 module['exports']['StatusCode'] = StatusCode;
 module['exports']['MethodDescriptor'] = MethodDescriptor;

@@ -32,12 +32,11 @@ const AbstractClientBase = goog.require('grpc.web.AbstractClientBase');
 const ClientOptions = goog.requireType('grpc.web.ClientOptions');
 const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
 const ClientUnaryCallImpl = goog.require('grpc.web.ClientUnaryCallImpl');
-const Error = goog.require('grpc.web.Error');
 const GrpcWebClientReadableStream = goog.require('grpc.web.GrpcWebClientReadableStream');
 const HttpCors = goog.require('goog.net.rpc.HttpCors');
 const MethodDescriptor = goog.requireType('grpc.web.MethodDescriptor');
-const MethodType = goog.require('grpc.web.MethodType');
 const Request = goog.require('grpc.web.Request');
+const RpcError = goog.require('grpc.web.RpcError');
 const StatusCode = goog.require('grpc.web.StatusCode');
 const XhrIo = goog.require('goog.net.XhrIo');
 const googCrypt = goog.require('goog.crypt.base64');
@@ -54,8 +53,9 @@ const {StreamInterceptor, UnaryInterceptor} = goog.require('grpc.web.Interceptor
 class GrpcWebClientBase {
   /**
    * @param {!ClientOptions=} options
+   * @param {!XhrIo=} xhrIo
    */
-  constructor(options = {}) {
+  constructor(options = {}, xhrIo = undefined) {
     /**
      * @const
      * @private {string}
@@ -90,6 +90,9 @@ class GrpcWebClientBase {
      */
     this.unaryInterceptors_ = options.unaryInterceptors ||
         goog.getObjectByName('unaryInterceptors', options) || [];
+
+    /** @const @private {?XhrIo} */
+    this.xhrIo_ = xhrIo || null;
   }
 
   /**
@@ -97,13 +100,11 @@ class GrpcWebClientBase {
    * @export
    */
   rpcCall(method, requestMessage, metadata, methodDescriptor, callback) {
-    methodDescriptor = AbstractClientBase.ensureMethodDescriptor(
-        method, requestMessage, MethodType.UNARY, methodDescriptor);
-    var hostname = AbstractClientBase.getHostname(method, methodDescriptor);
-    var invoker = GrpcWebClientBase.runInterceptors_(
+    const hostname = AbstractClientBase.getHostname(method, methodDescriptor);
+    const invoker = GrpcWebClientBase.runInterceptors_(
         (request) => this.startStream_(request, hostname),
         this.streamInterceptors_);
-    var stream = /** @type {!ClientReadableStream<?>} */ (invoker.call(
+    const stream = /** @type {!ClientReadableStream<?>} */ (invoker.call(
         this, methodDescriptor.createRequest(requestMessage, metadata)));
     GrpcWebClientBase.setCallback_(stream, callback, false);
     return new ClientUnaryCallImpl(stream);
@@ -114,14 +115,12 @@ class GrpcWebClientBase {
    * @export
    */
   thenableCall(method, requestMessage, metadata, methodDescriptor) {
-    methodDescriptor = AbstractClientBase.ensureMethodDescriptor(
-        method, requestMessage, MethodType.UNARY, methodDescriptor);
-    var hostname = AbstractClientBase.getHostname(method, methodDescriptor);
-    var initialInvoker = (request) => new Promise((resolve, reject) => {
-      var stream = this.startStream_(request, hostname);
-      var unaryMetadata;
-      var unaryStatus;
-      var unaryMsg;
+    const hostname = AbstractClientBase.getHostname(method, methodDescriptor);
+    const initialInvoker = (request) => new Promise((resolve, reject) => {
+      const stream = this.startStream_(request, hostname);
+      let unaryMetadata;
+      let unaryStatus;
+      let unaryMsg;
       GrpcWebClientBase.setCallback_(
           stream, (error, response, status, metadata) => {
             if (error) {
@@ -138,9 +137,9 @@ class GrpcWebClientBase {
             }
           }, true);
     });
-    var invoker = GrpcWebClientBase.runInterceptors_(
+    const invoker = GrpcWebClientBase.runInterceptors_(
         initialInvoker, this.unaryInterceptors_);
-    var unaryResponse = /** @type {!Promise<?>} */ (invoker.call(
+    const unaryResponse = /** @type {!Promise<?>} */ (invoker.call(
         this, methodDescriptor.createRequest(requestMessage, metadata)));
     return unaryResponse.then((response) => response.getResponseMessage());
   }
@@ -150,9 +149,8 @@ class GrpcWebClientBase {
    * @param {string} method The method to invoke
    * @param {REQUEST} requestMessage The request proto
    * @param {!Object<string, string>} metadata User defined call metadata
-   * @param {!MethodDescriptor<REQUEST, RESPONSE>|
-   *     !AbstractClientBase.MethodInfo<REQUEST,RESPONSE>}
-   *   methodDescriptor Information of this RPC method
+   * @param {!MethodDescriptor<REQUEST, RESPONSE>} methodDescriptor Information
+   *     of this RPC method
    * @return {!Promise<RESPONSE>}
    * @template REQUEST, RESPONSE
    */
@@ -166,10 +164,8 @@ class GrpcWebClientBase {
    * @export
    */
   serverStreaming(method, requestMessage, metadata, methodDescriptor) {
-    methodDescriptor = AbstractClientBase.ensureMethodDescriptor(
-        method, requestMessage, MethodType.SERVER_STREAMING, methodDescriptor);
-    var hostname = AbstractClientBase.getHostname(method, methodDescriptor);
-    var invoker = GrpcWebClientBase.runInterceptors_(
+    const hostname = AbstractClientBase.getHostname(method, methodDescriptor);
+    const invoker = GrpcWebClientBase.runInterceptors_(
         (request) => this.startStream_(request, hostname),
         this.streamInterceptors_);
     return /** @type {!ClientReadableStream<?>} */ (invoker.call(
@@ -184,30 +180,30 @@ class GrpcWebClientBase {
    * @return {!ClientReadableStream<RESPONSE>}
    */
   startStream_(request, hostname) {
-    var methodDescriptor = request.getMethodDescriptor();
-    var path = hostname + methodDescriptor.getName();
+    const methodDescriptor = request.getMethodDescriptor();
+    let path = hostname + methodDescriptor.getName();
 
-    var xhr = this.newXhr_();
+    const xhr = this.xhrIo_ ? this.xhrIo_ : new XhrIo();
     xhr.setWithCredentials(this.withCredentials_);
 
-    var genericTransportInterface = {
+    const genericTransportInterface = {
       xhr: xhr,
     };
-    var stream = new GrpcWebClientReadableStream(genericTransportInterface);
+    const stream = new GrpcWebClientReadableStream(genericTransportInterface);
     stream.setResponseDeserializeFn(
         methodDescriptor.getResponseDeserializeFn());
 
     xhr.headers.addAll(request.getMetadata());
     this.processHeaders_(xhr);
     if (this.suppressCorsPreflight_) {
-      var headerObject = xhr.headers.toObject();
+      const headerObject = xhr.headers.toObject();
       xhr.headers.clear();
       path = GrpcWebClientBase.setCorsOverride_(path, headerObject);
     }
 
-    var requestSerializeFn = methodDescriptor.getRequestSerializeFn();
-    var serialized = requestSerializeFn(request.getRequestMessage());
-    var payload = this.encodeRequest_(serialized);
+    const requestSerializeFn = methodDescriptor.getRequestSerializeFn();
+    const serialized = requestSerializeFn(request.getRequestMessage());
+    let payload = this.encodeRequest_(serialized);
     if (this.format_ == 'text') {
       payload = googCrypt.encodeByteArray(payload);
     } else if (this.format_ == 'binary') {
@@ -222,8 +218,8 @@ class GrpcWebClientBase {
    * @static
    * @template RESPONSE
    * @param {!ClientReadableStream<RESPONSE>} stream
-   * @param {function(?Error, ?RESPONSE, ?Status=, ?Object<string, string>=)|
-   *     function(?Error,?RESPONSE)} callback
+   * @param {function(?RpcError, ?RESPONSE, ?Status=, ?Object<string, string>=)|
+   *     function(?RpcError,?RESPONSE)} callback
    * @param {boolean} useUnaryResponse
    */
   static setCallback_(stream, callback, useUnaryResponse) {
@@ -282,16 +278,6 @@ class GrpcWebClientBase {
   }
 
   /**
-   * Create a new XhrIo object
-   *
-   * @private
-   * @return {!XhrIo} The created XhrIo object
-   */
-  newXhr_() {
-    return new XhrIo();
-  }
-
-  /**
    * Encode the grpc-web request
    *
    * @private
@@ -299,10 +285,10 @@ class GrpcWebClientBase {
    * @return {!Uint8Array} The application/grpc-web padded request
    */
   encodeRequest_(serialized) {
-    var len = serialized.length;
-    var bytesArray = [0, 0, 0, 0];
-    var payload = new Uint8Array(5 + len);
-    for (var i = 3; i >= 0; i--) {
+    let len = serialized.length;
+    const bytesArray = [0, 0, 0, 0];
+    const payload = new Uint8Array(5 + len);
+    for (let i = 3; i >= 0; i--) {
       bytesArray[i] = (len % 256);
       len = len >>> 8;
     }
@@ -327,7 +313,7 @@ class GrpcWebClientBase {
     if (xhr.headers.containsKey('deadline')) {
       const deadline = xhr.headers.get('deadline');  // in ms
       const currentTime = (new Date()).getTime();
-      let timeout = Math.ceil(deadline - currentTime);
+      let timeout = Math.round(deadline - currentTime);
       xhr.headers.remove('deadline');
       if (timeout === Infinity) {
         // grpc-timeout header defaults to infinity if not set.
@@ -335,12 +321,6 @@ class GrpcWebClientBase {
       }
       if (timeout > 0) {
         xhr.headers.set('grpc-timeout', timeout + 'm');
-        // Also set timeout on the xhr request to terminate the HTTP request
-        // if the server doesn't respond within the deadline. We use 110% of
-        // grpc-timeout for this to allow the server to terminate the connection
-        // with DEADLINE_EXCEEDED rather than terminating it in the Browser, but
-        // at least 1 second in case the user is on a high-latency network.
-        xhr.setTimeoutInterval(Math.max(1000, Math.ceil(timeout * 1.1)));
       }
     }
   }

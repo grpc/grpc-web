@@ -2,41 +2,33 @@ declare module "grpc-web" {
 
   export interface Metadata { [s: string]: string; }
 
-  export namespace AbstractClientBase {
-    class MethodInfo<REQ, RESP> {
-      constructor (responseType: new () => RESP,
-                   requestSerializeFn: (request: REQ) => {},
-                   responseDeserializeFn: (bytes: Uint8Array) => RESP);
-    }
-  }
-
   export class AbstractClientBase {
     thenableCall<REQ, RESP> (
       method: string,
       request: REQ,
       metadata: Metadata,
-      methodDescriptor: MethodDescriptor<REQ, RESP> | AbstractClientBase.MethodInfo<REQ, RESP>
+      methodDescriptor: MethodDescriptor<REQ, RESP>
     ): Promise<RESP>;
 
     rpcCall<REQ, RESP> (
       method: string,
       request: REQ,
       metadata: Metadata,
-      methodDescriptor: MethodDescriptor<REQ, RESP> | AbstractClientBase.MethodInfo<REQ, RESP>,
-      callback: (err: Error, response: RESP) => void
+      methodDescriptor: MethodDescriptor<REQ, RESP>,
+      callback: (err: RpcError, response: RESP) => void
     ): ClientReadableStream<RESP>;
 
     serverStreaming<REQ, RESP> (
       method: string,
       request: REQ,
       metadata: Metadata,
-      methodDescriptor: MethodDescriptor<REQ, RESP> | AbstractClientBase.MethodInfo<REQ, RESP>
+      methodDescriptor: MethodDescriptor<REQ, RESP>
     ): ClientReadableStream<RESP>;
   }
 
   export class ClientReadableStream<RESP> {
     on (eventType: "error",
-        callback: (err: Error) => void): ClientReadableStream<RESP>;
+        callback: (err: RpcError) => void): ClientReadableStream<RESP>;
     on (eventType: "status",
         callback: (status: Status) => void): ClientReadableStream<RESP>;
     on (eventType: "metadata",
@@ -47,7 +39,7 @@ declare module "grpc-web" {
         callback: () => void): ClientReadableStream<RESP>;
 
     removeListener (eventType: "error",
-                    callback: (err: Error) => void): void;
+                    callback: (err: RpcError) => void): void;
     removeListener (eventType: "status",
                     callback: (status: Status) => void): void;
     removeListener (eventType: "metadata",
@@ -56,7 +48,7 @@ declare module "grpc-web" {
                     callback: (response: RESP) => void): void;
     removeListener (eventType: "end",
                     callback: () => void): void;
-                    
+
     cancel (): void;
   }
 
@@ -96,14 +88,14 @@ declare module "grpc-web" {
     getResponseDeserializeFn(): any;
     getRequestSerializeFn(): any;
   }
-  
+
   export class Request<REQ, RESP> {
     getRequestMessage(): REQ;
     getMethodDescriptor(): MethodDescriptor<REQ, RESP>;
     getMetadata(): Metadata;
     getCallOptions(): CallOptions;
   }
-  
+
   export class UnaryResponse<REQ, RESP> {
     getResponseMessage(): RESP;
     getMetadata(): Metadata;
@@ -123,9 +115,10 @@ declare module "grpc-web" {
     constructor(options?: GrpcWebClientBaseOptions);
   }
 
-  export interface Error {
-    code: number;
-    message: string;
+  export class RpcError extends Error {
+    constructor(code: StatusCode, message: string, metadata: Metadata);
+    code: StatusCode;
+    metadata: Metadata;
   }
 
   export interface Status {
@@ -134,24 +127,24 @@ declare module "grpc-web" {
     metadata?: Metadata;
   }
 
-  export namespace StatusCode {
-    const ABORTED: number;
-    const ALREADY_EXISTS: number;
-    const CANCELLED: number;
-    const DATA_LOSS: number;
-    const DEADLINE_EXCEEDED: number;
-    const FAILED_PRECONDITION: number;
-    const INTERNAL: number;
-    const INVALID_ARGUMENT: number;
-    const NOT_FOUND: number;
-    const OK: number;
-    const OUT_OF_RANGE: number;
-    const PERMISSION_DENIED: number;
-    const RESOURCE_EXHAUSTED: number;
-    const UNAUTHENTICATED: number;
-    const UNAVAILABLE: number;
-    const UNIMPLEMENTED: number;
-    const UNKNOWN: number;
+  export enum StatusCode {
+    ABORTED,
+    ALREADY_EXISTS,
+    CANCELLED,
+    DATA_LOSS,
+    DEADLINE_EXCEEDED,
+    FAILED_PRECONDITION,
+    INTERNAL,
+    INVALID_ARGUMENT,
+    NOT_FOUND,
+    OK,
+    OUT_OF_RANGE,
+    PERMISSION_DENIED,
+    RESOURCE_EXHAUSTED,
+    UNAUTHENTICATED,
+    UNAVAILABLE,
+    UNIMPLEMENTED,
+    UNKNOWN,
   }
 
   export namespace MethodType {
