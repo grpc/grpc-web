@@ -73,7 +73,6 @@ WORKDIR /github/grpc-web
 # Copy only files necessary to build the protoc-gen-grpc-web first as an optimization because they
 # are rarely updated compared with the javascript files.
 COPY ./WORKSPACE ./WORKSPACE
-COPY ./bazel ./bazel
 COPY ./javascript/net/grpc/web/grpc_generator.cc javascript/net/grpc/web/grpc_generator.cc
 COPY ./javascript/net/grpc/web/BUILD.bazel javascript/net/grpc/web/BUILD.bazel
 
@@ -96,4 +95,4 @@ COPY ./src ./src
 COPY ./test ./test
 
 RUN /usr/local/bin/buildifier \
-  --mode=check --lint=warn --warnings=all -r ./WORKSPACE bazel javascript net
+  --mode=check --lint=warn --warnings=all -r ./WORKSPACE javascript net
