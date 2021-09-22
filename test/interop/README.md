@@ -13,7 +13,7 @@ Run interop tests
 
 ```sh
 $ cd grpc-web
-$ docker-compose build common prereqs node-interop-server interop-client
+$ docker-compose build prereqs node-interop-server interop-client
 ```
 
 
