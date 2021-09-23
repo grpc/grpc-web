@@ -23,9 +23,7 @@
  * @author stanleycheung@google.com (Stanley Cheung)
  */
 goog.module('grpc.web.Status');
-
 goog.module.declareLegacyNamespace();
-
 
 
 /** @record */

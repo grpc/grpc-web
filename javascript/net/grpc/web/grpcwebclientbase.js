@@ -42,6 +42,7 @@ const XhrIo = goog.require('goog.net.XhrIo');
 const googCrypt = goog.require('goog.crypt.base64');
 const {Status} = goog.require('grpc.web.Status');
 const {StreamInterceptor, UnaryInterceptor} = goog.require('grpc.web.Interceptor');
+const {toObject} = goog.require('goog.collections.maps');
 
 
 
@@ -193,10 +194,13 @@ class GrpcWebClientBase {
     stream.setResponseDeserializeFn(
         methodDescriptor.getResponseDeserializeFn());
 
-    xhr.headers.addAll(request.getMetadata());
+    const metadata = request.getMetadata();
+    for(const key in metadata) {
+      xhr.headers.set(key, metadata[key]);
+    }
     this.processHeaders_(xhr);
     if (this.suppressCorsPreflight_) {
-      const headerObject = xhr.headers.toObject();
+      const headerObject = toObject(xhr.headers);
       xhr.headers.clear();
       path = GrpcWebClientBase.setCorsOverride_(path, headerObject);
     }
@@ -310,11 +314,11 @@ class GrpcWebClientBase {
     }
     xhr.headers.set('X-User-Agent', 'grpc-web-javascript/0.1');
     xhr.headers.set('X-Grpc-Web', '1');
-    if (xhr.headers.containsKey('deadline')) {
-      const deadline = xhr.headers.get('deadline');  // in ms
+    if (xhr.headers.has('deadline')) {
+      const deadline = Number(xhr.headers.get('deadline'));  // in ms
       const currentTime = (new Date()).getTime();
       let timeout = Math.round(deadline - currentTime);
-      xhr.headers.remove('deadline');
+      xhr.headers.delete('deadline');
       if (timeout === Infinity) {
         // grpc-timeout header defaults to infinity if not set.
         timeout = 0;
