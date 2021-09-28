@@ -32,5 +32,5 @@ WORKDIR /github/grpc-web
 RUN cd ./third_party/protobuf && \
   ./autogen.sh && ./configure && make && make install && ldconfig
 
-RUN cd ./javascript/net/grpc/web && \
+RUN cd ./javascript/net/grpc/web/generator && \
   make protoc-gen-grpc-web

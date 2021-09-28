@@ -21,5 +21,5 @@ set -ex
 cd /github/grpc-web && \
   bazel clean && \
   bazel build \
-    //javascript/net/grpc/web/... \
-    //net/grpc/gateway/examples/...
+    //javascript/net/grpc/web/generator/... \
+    //net/grpc/gateway/examples/echo/...

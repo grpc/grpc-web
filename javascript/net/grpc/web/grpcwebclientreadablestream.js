@@ -152,16 +152,16 @@ class GrpcWebClientReadableStream {
         var byteSource = new Uint8Array(
             /** @type {!ArrayBuffer} */ (self.xhr_.getResponse()));
       } else {
-        self.handleError_(new RpcError(
-            StatusCode.UNKNOWN, 'Unknown Content-type received.'));
+        self.handleError_(
+            new RpcError(StatusCode.UNKNOWN, 'Unknown Content-type received.'));
         return;
       }
       var messages = null;
       try {
         messages = self.parser_.parse(byteSource);
       } catch (err) {
-        self.handleError_(new RpcError(
-            StatusCode.UNKNOWN, 'Error in parsing response body'));
+        self.handleError_(
+            new RpcError(StatusCode.UNKNOWN, 'Error in parsing response body'));
       }
       if (messages) {
         var FrameType = GrpcWebStreamParser.FrameType;
@@ -169,15 +169,16 @@ class GrpcWebClientReadableStream {
           if (FrameType.DATA in messages[i]) {
             var data = messages[i][FrameType.DATA];
             if (data) {
+              let response;
               try {
-                var response = self.responseDeserializeFn_(data);
-                if (response) {
-                  self.sendDataCallbacks_(response);
-                }
+                response = self.responseDeserializeFn_(data);
               } catch (err) {
                 self.handleError_(new RpcError(
-                    StatusCode.UNKNOWN,
-                    'Error in response deserializer function.'));
+                    StatusCode.INTERNAL,
+                    `Error when deserializing response data: ${response}`));
+              }
+              if (response) {
+                self.sendDataCallbacks_(response);
               }
             }
           }
@@ -193,15 +194,16 @@ class GrpcWebClientReadableStream {
               var grpcStatusCode = StatusCode.OK;
               var grpcStatusMessage = '';
               if (GRPC_STATUS in trailers) {
-                grpcStatusCode = trailers[GRPC_STATUS];
+                grpcStatusCode =
+                    /** @type {!StatusCode} */ (Number(trailers[GRPC_STATUS]));
                 delete trailers[GRPC_STATUS];
               }
               if (GRPC_STATUS_MESSAGE in trailers) {
                 grpcStatusMessage = trailers[GRPC_STATUS_MESSAGE];
                 delete trailers[GRPC_STATUS_MESSAGE];
               }
-              self.handleError_(new RpcError(
-                  Number(grpcStatusCode), grpcStatusMessage, trailers));
+              self.handleError_(
+                  new RpcError(grpcStatusCode, grpcStatusMessage, trailers));
             }
           }
         }
@@ -210,7 +212,7 @@ class GrpcWebClientReadableStream {
 
     events.listen(this.xhr_, EventType.COMPLETE, function(e) {
       var lastErrorCode = self.xhr_.getLastErrorCode();
-      var grpcStatusCode;
+      var grpcStatusCode = StatusCode.UNKNOWN;
       var grpcStatusMessage = '';
       var initialMetadata = /** @type {!Metadata} */ ({});
 
@@ -249,14 +251,14 @@ class GrpcWebClientReadableStream {
 
       // Check whethere there are grpc specific response headers
       if (GRPC_STATUS in responseHeaders) {
-        grpcStatusCode = self.xhr_.getResponseHeader(GRPC_STATUS);
+        grpcStatusCode = /** @type {!StatusCode} */ (
+            Number(self.xhr_.getResponseHeader(GRPC_STATUS)));
         if (GRPC_STATUS_MESSAGE in responseHeaders) {
           grpcStatusMessage = self.xhr_.getResponseHeader(GRPC_STATUS_MESSAGE);
         }
-        if (Number(grpcStatusCode) != StatusCode.OK) {
+        if (grpcStatusCode != StatusCode.OK) {
           self.handleError_(new RpcError(
-              Number(grpcStatusCode), grpcStatusMessage || '',
-              responseHeaders));
+              grpcStatusCode, grpcStatusMessage || '', responseHeaders));
           errorEmitted = true;
         }
       }

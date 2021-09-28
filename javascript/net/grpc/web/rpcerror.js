@@ -26,16 +26,21 @@
 goog.module('grpc.web.RpcError');
 
 const Metadata = goog.require('grpc.web.Metadata');
+const StatusCode = goog.require('grpc.web.StatusCode');
 
+/**
+ * gRPC-Web Error object, contains the {@link StatusCode}, a string message
+ * and {@link Metadata} contained in the error response.
+ */
 class RpcError extends Error {
   /**
-   * @param {number} code
+   * @param {!StatusCode} code
    * @param {string} message
    * @param {!Metadata=} metadata
    */
   constructor(code, message, metadata = {}) {
     super(message);
-    /** @type {number} */
+    /** @type {!StatusCode} */
     this.code = code;
     /** @type {!Metadata} */
     this.metadata = metadata;

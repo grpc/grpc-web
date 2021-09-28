@@ -24,12 +24,17 @@ const MethodDescriptor = goog.require('grpc.web.MethodDescriptor');
 const ReadyState = goog.require('goog.net.XmlHttp.ReadyState');
 const Request = goog.requireType('grpc.web.Request');
 const RpcError = goog.require('grpc.web.RpcError');
+const StatusCode = goog.require('grpc.web.StatusCode');
 const XhrIo = goog.require('goog.testing.net.XhrIo');
 const googCrypt = goog.require('goog.crypt.base64');
 const testSuite = goog.require('goog.testing.testSuite');
 const {StreamInterceptor} = goog.require('grpc.web.Interceptor');
 goog.require('goog.testing.jsunit');
 
+// This parses to [ { DATA: [4, 5, 6] }, { TRAILER: "a: b" } ]
+const DEFAULT_RPC_RESPONSE =
+    new Uint8Array([0, 0, 0, 0, 3, 4, 5, 6, 128, 0, 0, 0, 4, 97, 58, 32, 98]);
+const DEFAULT_RPC_RESPONSE_DATA = [4, 5, 6];
 const DEFAULT_UNARY_HEADERS =
     ['Content-Type', 'Accept', 'X-User-Agent', 'X-Grpc-Web'];
 const DEFAULT_UNARY_HEADER_VALUES = [
@@ -47,7 +52,7 @@ testSuite({
     const xhr = new XhrIo();
     const client = new GrpcWebClientBase(/* options= */ {}, xhr);
     const methodDescriptor = createMethodDescriptor((bytes) => {
-      assertElementsEquals([4, 5, 6], [].slice.call(bytes));
+      assertElementsEquals(DEFAULT_RPC_RESPONSE_DATA, [].slice.call(bytes));
       return new MockReply('value');
     });
 
@@ -58,10 +63,8 @@ testSuite({
             assertNull(error);
             resolve(response);
           });
-      // This parses to [ { DATA: [4,5,6] }, { TRAILER: "a: b" } ]
       xhr.simulatePartialResponse(
-          googCrypt.encodeByteArray(new Uint8Array(
-              [0, 0, 0, 0, 3, 4, 5, 6, 128, 0, 0, 0, 4, 97, 58, 32, 98])),
+          googCrypt.encodeByteArray(new Uint8Array(DEFAULT_RPC_RESPONSE)),
           DEFAULT_RESPONSE_HEADERS);
       xhr.simulateReadyStateChange(ReadyState.COMPLETE);
     });
@@ -86,10 +89,8 @@ testSuite({
             assertNull(error);
             resolve();
           });
-      // This parses to [ { DATA: [4,5,6] }, { TRAILER: "a: b" } ]
       xhr.simulatePartialResponse(
-          googCrypt.encodeByteArray(new Uint8Array(
-              [0, 0, 0, 0, 3, 4, 5, 6, 128, 0, 0, 0, 4, 97, 58, 32, 98])),
+          googCrypt.encodeByteArray(new Uint8Array(DEFAULT_RPC_RESPONSE)),
           DEFAULT_RESPONSE_HEADERS);
       xhr.simulateReadyStateChange(ReadyState.COMPLETE);
     });
@@ -122,11 +123,34 @@ testSuite({
     assertEquals(3, error.code);
   },
 
+  async testRpcDeserializationError() {
+    const xhr = new XhrIo();
+    const client = new GrpcWebClientBase(/* options= */ {}, xhr);
+
+    const responseDeserializeFn = () => {
+      throw new Error('Decoding error :)');
+    };
+    const methodDescriptor = createMethodDescriptor(responseDeserializeFn);
+    const error = await new Promise((resolve, reject) => {
+      client.rpcCall(
+          'urlurl', new MockRequest(), /* metadata= */ {}, methodDescriptor,
+          (error, response) => {
+            assertNull(response);
+            resolve(error);
+          });
+      xhr.simulatePartialResponse(
+          googCrypt.encodeByteArray(new Uint8Array(DEFAULT_RPC_RESPONSE)),
+          DEFAULT_RESPONSE_HEADERS);
+    });
+    assertTrue(error instanceof RpcError);
+    assertEquals(StatusCode.INTERNAL, error.code);
+  },
+
   async testRpcResponseHeader() {
     const xhr = new XhrIo();
     const client = new GrpcWebClientBase(/* options= */ {}, xhr);
     const methodDescriptor = createMethodDescriptor((bytes) => {
-      assertElementsEquals([4, 5, 6], [].slice.call(bytes));
+      assertElementsEquals(DEFAULT_RPC_RESPONSE_DATA, [].slice.call(bytes));
       return new MockReply('value');
     });
 
@@ -139,11 +163,8 @@ testSuite({
       call.on('metadata', (metadata) => {
         resolve(metadata);
       });
-      // This parses to [ { DATA: [4,5,6] }, { TRAILER: "a: b" } ]
       xhr.simulatePartialResponse(
-          googCrypt.encodeByteArray(new Uint8Array(
-              [0, 0, 0, 0, 3, 4, 5, 6, 128, 0, 0, 0, 4, 97, 58, 32, 98])),
-          {
+          googCrypt.encodeByteArray(new Uint8Array(DEFAULT_RPC_RESPONSE)), {
             'Content-Type': 'application/grpc-web-text',
             'initial-metadata-key': 'initial-metadata-value',
           });
@@ -156,7 +177,7 @@ testSuite({
     const xhr = new XhrIo();
     const interceptor = new StreamResponseInterceptor();
     const methodDescriptor = createMethodDescriptor((bytes) => {
-      assertElementsEquals([4, 5, 6], [].slice.call(bytes));
+      assertElementsEquals(DEFAULT_RPC_RESPONSE_DATA, [].slice.call(bytes));
       return new MockReply('value');
     });
     const client =
@@ -169,10 +190,8 @@ testSuite({
             assertNull(error);
             resolve(response);
           });
-      // This parses to [ { DATA: [4,5,6] }, { TRAILER: "a: b" } ]
       xhr.simulatePartialResponse(
-          googCrypt.encodeByteArray(new Uint8Array(
-              [0, 0, 0, 0, 3, 4, 5, 6, 128, 0, 0, 0, 4, 97, 58, 32, 98])),
+          googCrypt.encodeByteArray(new Uint8Array(DEFAULT_RPC_RESPONSE)),
           DEFAULT_RESPONSE_HEADERS);
       xhr.simulateReadyStateChange(ReadyState.COMPLETE);
     });
