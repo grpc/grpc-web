@@ -45,8 +45,8 @@ trap cleanup EXIT
 
 echo "Using Headless Chrome."
 # Updates Selenium Webdriver.
-echo "$PROTRACTOR_BIN_PATH/webdriver-manager update --gecko=false"
-$PROTRACTOR_BIN_PATH/webdriver-manager update --gecko=false
+echo "$PROTRACTOR_BIN_PATH/webdriver-manager update --versions.chrome=93.0.4577.63 --gecko=false"
+$PROTRACTOR_BIN_PATH/webdriver-manager update --versions.chrome=93.0.4577.63 --gecko=false
 
 # Run the tests using Protractor! (Protractor should run selenium automatically)
 $PROTRACTOR_BIN_PATH/protractor protractor.conf.js

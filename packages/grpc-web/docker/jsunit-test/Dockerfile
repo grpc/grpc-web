@@ -1,4 +1,4 @@
-FROM selenium/standalone-chrome:93.0
+FROM selenium/standalone-chrome:93.0.4577.63
 
 # Matching the node version used in the node:12.22.6-stretch image.
 ARG NODE_VERSION=12.22.6
