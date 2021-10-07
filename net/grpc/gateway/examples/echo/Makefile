@@ -13,9 +13,9 @@
 # limitations under the License.
 
 ROOT_DIR = ../../../../..
+NPM_DIR = ./node_modules
 PROTOC = protoc
 PROTOS_PATH = ../..
-EXAMPLES_PATH = net/grpc/gateway/examples/echo
 HTML_DIR = /var/www/html
 JS_IMPORT_STYLE = import_style=closure,binary
 JS_PATH = javascript/net/grpc/web
@@ -28,24 +28,16 @@ all: client
 client: proto-js compiled-js
 
 compiled-js:
-	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/*_test.js || true
-	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/binary/*_test.js || true
-	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/commonjs/*_test.js || true
-	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/compatibility_tests/v3.0.0/*_test.js || true
-	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/compatibility_tests/v3.0.0/binary/*_test.js || true
-	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/compatibility_tests/v3.0.0/commonjs/*_test.js || true
-	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/compatibility_tests/v3.1.0/*_test.js || true
-	rm $(ROOT_DIR)/$(PROTOBUF_PATH)/js/compatibility_tests/v3.1.0/binary/*_test.js || true
-	java \
-  -jar $(ROOT_DIR)/closure-compiler.jar \
-  --js $(ROOT_DIR)/javascript \
-  --js $(ROOT_DIR)/net \
-  --js $(ROOT_DIR)/third_party/closure-library \
-  --js $(ROOT_DIR)/$(PROTOBUF_PATH)/js \
+	./node_modules/.bin/google-closure-compiler \
+  --js=*.js \
+  --js=$(OUT_DIR)/*.js \
+  --js=$(ROOT_DIR)/javascript \
+  --js=$(ROOT_DIR)/$(PROTOBUF_PATH)/js \
+  --js='!$(ROOT_DIR)/$(PROTOBUF_PATH)/js/**/*_test.js' \
+  --js=$(NPM_DIR)/google-closure-library \
   --entry_point=goog:proto.grpc.gateway.testing.EchoServiceClient \
   --dependency_mode=PRUNE \
   --js_output_file compiled.js
-	cd $(ROOT_DIR)/$(PROTOBUF_PATH) && git checkout .
 
 proto-js:
 	mkdir -p $(OUT_DIR)
@@ -64,4 +56,5 @@ install:
 
 clean:
 	rm -f compiled.js
+	rm -f *_pb.js
 	rm -rf $(OUT_DIR)

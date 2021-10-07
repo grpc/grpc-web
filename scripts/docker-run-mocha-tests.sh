@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2018 Google LLC
+# Copyright 2021 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,12 +17,6 @@ set -ex
 # This script is intended to be run within the base image from
 # net/grpc/gateway/docker/prereqs/Dockerfile
 
-cd /github/grpc-web && \
-  bazel clean && \
-  bazel test --cache_test_results=no \
-    //javascript/net/grpc/web/... \
-    //net/grpc/gateway/examples/...
-
-cd /github/grpc-web/packages/grpc-web && \
-  npm run prepare && \
-  npm test
+cd /github/grpc-web/packages/grpc-web
+npm run prepare && \
+  npm run test-mocha

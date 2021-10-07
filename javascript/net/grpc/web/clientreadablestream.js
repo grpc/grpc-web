@@ -45,6 +45,21 @@ const ClientReadableStream = function() {};
 /**
  * Register a callback to handle different stream events.
  *
+ * Available event types for gRPC-Web:
+ * 'data': The 'data' event is emitted when a new response message chunk is
+ * received and successfully handled by gRPC-Web client.
+ * 'status': the google RPC status of the response stream.
+ * 'end': The 'end' event is emitted when all the data have been successfully
+ * consumed from the stream.
+ * 'error': typically, this may occur when an  underlying internal failure
+ * happens, or a stream implementation attempts to push an invalid chunk of
+ * data.
+ * 'metadata': the response metadata. Response headers should be read via
+ * 'metadata' callbacks.
+ *
+ * For server-streaming calls. the 'data' and 'status' callbacks (if exist)
+ * will always precede 'metadata', 'error', or 'end' callbacks.
+ *
  * @param {string} eventType The event type
  * @param {function(?)} callback The callback to handle the event with
  * an optional input object

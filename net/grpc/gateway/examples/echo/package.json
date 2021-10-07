@@ -1,0 +1,11 @@
+{
+    "name": "echo-closure-example",
+    "version": "0.1.0",
+    "description": "gRPC-Web Closure JS client example",
+    "license": "Apache-2.0",
+    "dependencies": {},
+    "devDependencies": {
+        "google-closure-compiler": "~20200224.0.0",
+        "google-closure-library": "~20210808.0.0"
+    }
+}

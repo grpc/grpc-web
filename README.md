@@ -251,7 +251,7 @@ using the binary wire format
 ```sh
 $ protoc -I=$DIR echo.proto \
   --js_out=import_style=commonjs,binary:$OUT_DIR \
-  --grpc-web_out=import_style=typescript,mode=grpcwebtext:$OUT_DIR
+  --grpc-web_out=import_style=typescript,mode=grpcweb:$OUT_DIR
 ```
 
 It will generate the following files:
@@ -274,7 +274,7 @@ const request = new EchoRequest();
 request.setMessage('Hello World!');
 
 const call = echoService.echo(request, {'custom-header-1': 'value1'},
-  (err: grpcWeb.Error, response: EchoResponse) => {
+  (err: grpcWeb.RpcError, response: EchoResponse) => {
     console.log(response.getMessage());
   });
 call.on('status', (status: grpcWeb.Status) => {

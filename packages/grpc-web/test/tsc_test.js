@@ -54,7 +54,11 @@ function runTscCmd(tscCmd) {
   }
 }
 const outputDir = './test/tsc-tests/generated';
-const tscCompilerOptions = `--allowJs --strict --noImplicitReturns`
+// --skipLibCheck is needed because some of our node_modules/ targets es6 but
+// our test doesn't pass with `--target es6`
+// TODO: Find out how we can enable --target es6!
+const tscCompilerOptions =
+    `--allowJs --strict --noImplicitReturns --skipLibCheck`;
 
 describe('tsc test01: nested messages', function() {
   before(function() {

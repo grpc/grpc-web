@@ -83,6 +83,9 @@ describe('grpc-web generated code eval test (typescript)', function() {
 
   it('should eval', function() {
     execSync(genCodeCmd);
-    execSync(`tsc --strict ${genTsCodePath}`);
+    // --skipLibCheck is needed because some of our node_modules/ targets es6
+    // but our test doesn't pass with `--target es6`
+    // TODO: Find out how we can enable --target es6!
+    execSync(`tsc --strict --skipLibCheck ${genTsCodePath}`);
   });
 });

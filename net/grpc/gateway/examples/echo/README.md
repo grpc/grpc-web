@@ -16,8 +16,6 @@ This step downloads the necessary pre-requisites, and serves as the base docker
 image for the subsequent docker images.
 
 ```sh
-$ docker build -t grpcweb/common \
-  -f net/grpc/gateway/docker/common/Dockerfile .
 $ docker build -t grpcweb/prereqs \
   -f net/grpc/gateway/docker/prereqs/Dockerfile .
 ```

@@ -1,0 +1,12 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+cc_binary(
+    name = "protoc-gen-grpc-web",
+    srcs = [
+        "grpc_generator.cc",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_google_protobuf//:protoc_lib",
+    ],
+)

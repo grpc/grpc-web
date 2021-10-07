@@ -45,6 +45,7 @@ a nice response and send it back to the client via `callback(null, response)`.
 ```js
 var PROTO_PATH = __dirname + '/helloworld.proto';
 
+var assert = require('assert');
 var grpc = require('@grpc/grpc-js');
 var protoLoader = require('@grpc/proto-loader');
 var packageDefinition = protoLoader.loadSync(

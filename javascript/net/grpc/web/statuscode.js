@@ -26,7 +26,8 @@ goog.module('grpc.web.StatusCode');
 
 /**
  * gRPC Status Codes
- * See: https://github.com/grpc/grpc/blob/master/include/grpc%2B%2B/impl/codegen/status_code_enum.h
+ * See:
+ * https://github.com/grpc/grpc/blob/master/include/grpcpp/impl/codegen/status_code_enum.h
  * @enum {number}
  */
 const StatusCode = {
@@ -140,11 +141,11 @@ const StatusCode = {
 
 /**
  * Convert HTTP Status code to gRPC Status code
- * @param {number} http_status HTTP Status Code
- * @return {number} gRPC Status Code
+ * @param {number} httpStatus HTTP Status Code
+ * @return {!StatusCode} gRPC Status Code
  */
-StatusCode.fromHttpStatus = function(http_status) {
-  switch (http_status) {
+StatusCode.fromHttpStatus = function(httpStatus) {
+  switch (httpStatus) {
     case 200:
       return StatusCode.OK;
     case 400:
@@ -174,6 +175,46 @@ StatusCode.fromHttpStatus = function(http_status) {
     /* everything else is unknown */
     default:
       return StatusCode.UNKNOWN;
+  }
+};
+
+
+/**
+ * Convert a {@link StatusCode} to an HTTP Status code
+ * @param {!StatusCode} statusCode GRPC Status Code
+ * @return {number} HTTP Status code
+ */
+StatusCode.getHttpStatus = function(statusCode) {
+  switch (statusCode) {
+    case StatusCode.OK:
+      return 200;
+    case StatusCode.INVALID_ARGUMENT:
+      return 400;
+    case StatusCode.UNAUTHENTICATED:
+      return 401;
+    case StatusCode.PERMISSION_DENIED:
+      return 403;
+    case StatusCode.NOT_FOUND:
+      return 404;
+    case StatusCode.ABORTED:
+      return 409;
+    case StatusCode.FAILED_PRECONDITION:
+      return 412;
+    case StatusCode.RESOURCE_EXHAUSTED:
+      return 429;
+    case StatusCode.CANCELLED:
+      return 499;
+    case StatusCode.UNKNOWN:
+      return 500;
+    case StatusCode.UNIMPLEMENTED:
+      return 501;
+    case StatusCode.UNAVAILABLE:
+      return 503;
+    case StatusCode.DEADLINE_EXCEEDED:
+      return 504;
+    /* everything else is unknown */
+    default:
+      return 0;
   }
 };
 
