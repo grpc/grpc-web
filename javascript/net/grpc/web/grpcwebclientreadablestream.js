@@ -34,8 +34,8 @@ goog.module.declareLegacyNamespace();
 const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
 const ErrorCode = goog.require('goog.net.ErrorCode');
 const EventType = goog.require('goog.net.EventType');
-const GrpcWebError = goog.require('grpc.web.Error');
 const GrpcWebStreamParser = goog.require('grpc.web.GrpcWebStreamParser');
+const RpcError = goog.require('grpc.web.RpcError');
 const StatusCode = goog.require('grpc.web.StatusCode');
 const XhrIo = goog.require('goog.net.XhrIo');
 const events = goog.require('goog.events');
@@ -104,7 +104,7 @@ class GrpcWebClientReadableStream {
     /**
      * @const
      * @private
-     * @type {!Array<function(!GrpcWebError)>} The list of error callbacks
+     * @type {!Array<function(!RpcError)>} The list of error callbacks
      */
     this.onErrorCallbacks_ = [];
 
@@ -152,22 +152,16 @@ class GrpcWebClientReadableStream {
         var byteSource = new Uint8Array(
             /** @type {!ArrayBuffer} */ (self.xhr_.getResponse()));
       } else {
-        self.handleError_({
-          code: StatusCode.UNKNOWN,
-          message: 'Unknown Content-type received.',
-          metadata: {},
-        });
+        self.handleError_(
+            new RpcError(StatusCode.UNKNOWN, 'Unknown Content-type received.'));
         return;
       }
       var messages = null;
       try {
         messages = self.parser_.parse(byteSource);
       } catch (err) {
-        self.handleError_({
-          code: StatusCode.UNKNOWN,
-          message: 'Error in parsing response body',
-          metadata: {},
-        });
+        self.handleError_(
+            new RpcError(StatusCode.UNKNOWN, 'Error in parsing response body'));
       }
       if (messages) {
         var FrameType = GrpcWebStreamParser.FrameType;
@@ -175,17 +169,16 @@ class GrpcWebClientReadableStream {
           if (FrameType.DATA in messages[i]) {
             var data = messages[i][FrameType.DATA];
             if (data) {
+              let response;
               try {
-                var response = self.responseDeserializeFn_(data);
-                if (response) {
-                  self.sendDataCallbacks_(response);
-                }
+                response = self.responseDeserializeFn_(data);
               } catch (err) {
-                self.handleError_({
-                  code: StatusCode.UNKNOWN,
-                  message: 'Error in response deserializer function.',
-                  metadata: {},
-                });
+                self.handleError_(new RpcError(
+                    StatusCode.INTERNAL,
+                    `Error when deserializing response data: ${response}`));
+              }
+              if (response) {
+                self.sendDataCallbacks_(response);
               }
             }
           }
@@ -201,18 +194,16 @@ class GrpcWebClientReadableStream {
               var grpcStatusCode = StatusCode.OK;
               var grpcStatusMessage = '';
               if (GRPC_STATUS in trailers) {
-                grpcStatusCode = trailers[GRPC_STATUS];
+                grpcStatusCode =
+                    /** @type {!StatusCode} */ (Number(trailers[GRPC_STATUS]));
                 delete trailers[GRPC_STATUS];
               }
               if (GRPC_STATUS_MESSAGE in trailers) {
                 grpcStatusMessage = trailers[GRPC_STATUS_MESSAGE];
                 delete trailers[GRPC_STATUS_MESSAGE];
               }
-              self.handleError_({
-                code: Number(grpcStatusCode),
-                message: grpcStatusMessage,
-                metadata: trailers,
-              });
+              self.handleError_(
+                  new RpcError(grpcStatusCode, grpcStatusMessage, trailers));
             }
           }
         }
@@ -221,7 +212,7 @@ class GrpcWebClientReadableStream {
 
     events.listen(this.xhr_, EventType.COMPLETE, function(e) {
       var lastErrorCode = self.xhr_.getLastErrorCode();
-      var grpcStatusCode;
+      var grpcStatusCode = StatusCode.UNKNOWN;
       var grpcStatusMessage = '';
       var initialMetadata = /** @type {!Metadata} */ ({});
 
@@ -251,11 +242,8 @@ class GrpcWebClientReadableStream {
         if (grpcStatusCode == StatusCode.ABORTED && self.aborted_) {
           return;
         }
-        self.handleError_({
-          code: grpcStatusCode,
-          message: ErrorCode.getDebugMessage(lastErrorCode),
-          metadata: {},
-        });
+        self.handleError_(new RpcError(
+            grpcStatusCode, ErrorCode.getDebugMessage(lastErrorCode)));
         return;
       }
 
@@ -263,16 +251,14 @@ class GrpcWebClientReadableStream {
 
       // Check whethere there are grpc specific response headers
       if (GRPC_STATUS in responseHeaders) {
-        grpcStatusCode = self.xhr_.getResponseHeader(GRPC_STATUS);
+        grpcStatusCode = /** @type {!StatusCode} */ (
+            Number(self.xhr_.getResponseHeader(GRPC_STATUS)));
         if (GRPC_STATUS_MESSAGE in responseHeaders) {
           grpcStatusMessage = self.xhr_.getResponseHeader(GRPC_STATUS_MESSAGE);
         }
-        if (Number(grpcStatusCode) != StatusCode.OK) {
-          self.handleError_({
-            code: Number(grpcStatusCode),
-            message: grpcStatusMessage,
-            metadata: responseHeaders
-          });
+        if (grpcStatusCode != StatusCode.OK) {
+          self.handleError_(new RpcError(
+              grpcStatusCode, grpcStatusMessage || '', responseHeaders));
           errorEmitted = true;
         }
       }
@@ -375,15 +361,12 @@ class GrpcWebClientReadableStream {
    * A central place to handle errors
    *
    * @private
-   * @param {!GrpcWebError} error The error object
+   * @param {!RpcError} error The error object
    */
   handleError_(error) {
     if (error.code != StatusCode.OK) {
-      this.sendErrorCallbacks_({
-        code: error.code,
-        message: decodeURIComponent(error.message || ''),
-        metadata: error.metadata
-      });
+      this.sendErrorCallbacks_(new RpcError(
+          error.code, decodeURIComponent(error.message || ''), error.metadata));
     }
     this.sendStatusCallbacks_(/** @type {!Status} */ ({
       code: error.code,
@@ -424,7 +407,7 @@ class GrpcWebClientReadableStream {
 
   /**
    * @private
-   * @param {!GrpcWebError} error The error to send back
+   * @param {!RpcError} error The error to send back
    */
   sendErrorCallbacks_(error) {
     for (var i = 0; i < this.onErrorCallbacks_.length; i++) {

@@ -1,16 +1,9 @@
 version: '3'
 services:
-  common:
-    build:
-      context: ./
-      dockerfile: ./net/grpc/gateway/docker/common/Dockerfile
-    image: grpcweb/common
   prereqs:
     build:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/prereqs/Dockerfile
-    depends_on:
-      - common
     image: grpcweb/prereqs
   echo-server:
     build:
@@ -34,8 +27,6 @@ services:
     build:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/node_interop_server/Dockerfile
-    depends_on:
-      - common
     image: grpcweb/node-interop-server
     ports:
       - "7074:7074"
@@ -114,3 +105,8 @@ services:
     depends_on:
       - prereqs
     image: grpcweb/protoc-plugin
+  jsunit-test:
+    build:
+      context: ./
+      dockerfile: ./packages/grpc-web/docker/jsunit-test/Dockerfile
+    image: grpcweb/jsunit-test

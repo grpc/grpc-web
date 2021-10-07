@@ -1,7 +1,6 @@
 goog.module('grpc.web.ClientOptions');
 goog.module.declareLegacyNamespace();
 
-const XmlHttpFactory = goog.requireType('goog.net.XmlHttpFactory');
 const {StreamInterceptor, UnaryInterceptor} = goog.require('grpc.web.Interceptor');
 
 
@@ -47,18 +46,20 @@ class ClientOptions {
     this.format;
 
     /**
-     * The XmlHttpFactory for server-streaming calls.
-     * Example: use 'goog.net.FetchXmlHttpFactory' to reduce memory consumption
-     * during high throughput server-streaming calls.
-     * <pre>
-     * ...
-     *
-     * const xmlHttpFactory =
-     *   new FetchXmlHttpFactory({streamBinaryChunks: true});
-     * </pre>
-     * @type {!XmlHttpFactory|undefined}
+     * The Worker global scope. Once this option is specified, gRPC-Web will
+     * also use 'fetch' API as the underlying transport instead of native
+     * XmlHttpRequest.
+     * @type {!WorkerGlobalScope|undefined}
      */
-    this.streamingXmlHttpFactory;
+    this.workerScope;
+
+    /**
+     * This is an experimental feature to reduce memory consumption
+     * during high throughput server-streaming calls by using
+     * 'streamBinaryChunks' mode FetchXmlHttpFactory.
+     * @type {boolean|undefined}
+     */
+    this.useFetchDownloadStreams;
   }
 }
 

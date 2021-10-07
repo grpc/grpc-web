@@ -376,8 +376,8 @@ describe('grpc-web generated code (commonjs+grpcwebtext)', function() {
         if (response) {
           assert.fail('should not receive response');
         }
-        assert.equal(2, err.code);
-        assert.equal(true, err.message.toLowerCase().includes('deserialize'));
+        assert.equal(13 /* StatusCode.INTERNAL */, err.code);
+        assert.equal(true, err.message.toLowerCase().includes('deserializing'));
         assert.equal(true, err.message.toLowerCase().includes('error'));
         done();
     });

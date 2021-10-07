@@ -19,19 +19,24 @@
     "build": "node scripts/build.js",
     "prepare": "npm run build",
     "prepublishOnly": "npm run build",
-    "test": "mocha --timeout 60000 \"./test/**/*_test.js\""
+    "test": "npm run test-jsunit && npm run test-mocha",
+    "test-mocha": "mocha --timeout 10000 \"./test/**/*_test.js\"",
+    "test-jsunit": "./scripts/generate_test_files.sh && ./scripts/run_jsunit_tests.sh && rm -rf ./generated"
   },
   "license": "Apache-2.0",
   "devDependencies": {
     "@types/google-protobuf": "~3.7.0",
     "command-exists": "~1.2.8",
     "google-closure-compiler": "~20200224.0.0",
-    "google-closure-library": "~20201102.0.1",
+    "google-closure-deps": "~20210601.0.0",
+    "google-closure-library": "~20210808.0.0",
     "google-protobuf": "~3.14.0",
     "gulp": "~4.0.2",
+    "gulp-connect": "~5.7.0",
     "gulp-eval": "~1.0.0",
     "mocha": "~5.2.0",
     "mock-xmlhttprequest": "~2.0.0",
+    "protractor": "~7.0.0",
     "typescript": "~3.8.0"
   }
 }

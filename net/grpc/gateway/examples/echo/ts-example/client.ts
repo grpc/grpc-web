@@ -55,7 +55,7 @@ class EchoApp {
     request.setMessage(msg);
     const call = this.echoService.echo(
         request, {'custom-header-1': 'value1'},
-        (err: grpcWeb.Error, response: EchoResponse) => {
+        (err: grpcWeb.RpcError, response: EchoResponse) => {
           if (err) {
             if (err.code !== grpcWeb.StatusCode.OK) {
               EchoApp.addRightMessage(
@@ -75,18 +75,16 @@ class EchoApp {
     });
   }
 
-  echoError() {
-    EchoApp.addLeftMessage('Error');
+  echoError(msg: string) {
+    EchoApp.addLeftMessage(`Error: ${msg}`);
     const request = new EchoRequest();
-    request.setMessage('error');
+    request.setMessage(msg);
     this.echoService.echoAbort(
-        request, {}, (err: grpcWeb.Error, response: EchoResponse) => {
-          if (err) {
-            if (err.code !== grpcWeb.StatusCode.OK) {
-              EchoApp.addRightMessage(
-                  'Error code: ' + err.code + ' "' + decodeURI(err.message) +
-                  '"');
-            }
+        request, {}, (err: grpcWeb.RpcError, response: EchoResponse) => {
+          if (err && err.code !== grpcWeb.StatusCode.OK) {
+            EchoApp.addRightMessage(
+                'Error code: ' + err.code + ' "' + decodeURI(err.message) +
+                '"');
           }
         });
   }
@@ -120,7 +118,7 @@ class EchoApp {
         console.log(status.metadata);
       }
     });
-    this.stream.on('error', (err: grpcWeb.Error) => {
+    this.stream.on('error', (err: grpcWeb.RpcError) => {
       EchoApp.addRightMessage(
           'Error code: ' + err.code + ' "' + err.message + '"');
     });
@@ -139,11 +137,11 @@ class EchoApp {
       const count = msg.substr(0, msg.indexOf(' '));
       if (/^\d+$/.test(count)) {
         this.repeatEcho(msg.substr(msg.indexOf(' ') + 1), Number(count));
+      } else if (count === 'err') {
+        this.echoError(msg.substr(msg.indexOf(' ') + 1));
       } else {
         this.echo(msg);
       }
-    } else if (msg === 'error') {
-      this.echoError();
     } else if (msg === 'cancel') {
       this.cancel();
     } else {
