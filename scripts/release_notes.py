@@ -55,6 +55,7 @@ import subprocess
 API_BASE_URL = "https://api.github.com/repos/grpc/grpc-web"
 GRPC_WEB_TEAM = [
     "stanley-cheung",
+    "sampajano",
     "fengli79",
     "vnorigoog",
     "wenbozhu",
@@ -196,7 +197,7 @@ class ProcessChangelog:
             else:
                 title = pr['title']
             if author not in GRPC_WEB_TEAM:
-                credit = " [@{}](https://github.com/{})".format(author, author)
+                credit = f" @{author}"
             else:
                 credit = ""
 
