@@ -1,6 +1,29 @@
 [//]: # (GENERATED FILE -- DO NOT EDIT!)
 [//]: # (See scripts/release_notes.py for more details.)
 
+## 1.3.0
+
+### Major Features
+
+- [#1139](https://github.com/grpc/grpc-web/pull/1139) Improve error type with `RpcError` & internal code sync (contributor: @TomiBelan)
+  + (experimental) Typescript users need to update type references from `Error` -> `RpcError`
+
+### Other Changes
+
+- [#1140](https://github.com/grpc/grpc-web/pull/1140) Improve `RpcError.code` typing & internal code sync (contributor:  @richieforeman)
+- [#1138](https://github.com/grpc/grpc-web/pull/1138) Remove Bazel in Javascript toolchain
+- [#1137](https://github.com/grpc/grpc-web/pull/1137) Revamp Closure JsUnit tests runtime and optimize test/build flows.
+- [#1115](https://github.com/grpc/grpc-web/pull/1115) Bump Bazel version -> 4.1.0 and Protobuf version -> 3.17.3
+- [#1107](https://github.com/grpc/grpc-web/pull/1107) Allow for custom install prefix @06kellyjac
+- [#1063](https://github.com/grpc/grpc-web/pull/1063) Also set timeout on HTTP request if deadline for grpc call is set @Yannic
+- [#1004](https://github.com/grpc/grpc-web/pull/1004) Bump closure library version to v20201102
+- [#1002](https://github.com/grpc/grpc-web/pull/1002) Bump Envoy version to 1.16.1
+- [#998](https://github.com/grpc/grpc-web/pull/998) Fix GrpcWebClientBaseOptions types in index.d.ts @acalvo
+- [#971](https://github.com/grpc/grpc-web/pull/971) Add grpc.web.ClientOptions to better document options and add type res... @jennnnny
+- [#969](https://github.com/grpc/grpc-web/pull/969) Fix non-determinism in code generator
+- [#941](https://github.com/grpc/grpc-web/pull/941) Fix Protobuf .d.ts typings for .proto files without package @Yannic
+
+
 ## 1.2.1
 
 - [#910](https://github.com/grpc/grpc-web/pull/910) Add test to show how to access metadata in interceptor
@@ -194,4 +217,3 @@
 - [#209](https://github.com/grpc/grpc-web/pull/209) Add bazel integration and tests
 - [#206](https://github.com/grpc/grpc-web/pull/206) Surface underlying XHR errors better
 - [#185](https://github.com/grpc/grpc-web/pull/185) Support for proto files without packages [@zaucy](https://github.com/zaucy)
-
