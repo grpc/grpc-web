@@ -15,8 +15,16 @@
 CXX ?= g++
 CPPFLAGS += -I/usr/local/include -pthread
 CXXFLAGS += -std=c++11
-LDFLAGS += -L/usr/local/lib -lprotoc -lprotobuf -lpthread -ldl -static
+LDFLAGS += -L/usr/local/lib -lprotoc -lprotobuf -lpthread -ldl
 PREFIX ?= /usr/local
+MIN_MACOS_VERSION := 10.7 # Supports OS X Lion
+
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+  CXXFLAGS += -stdlib=libc++ -mmacosx-version-min=$(MIN_MACOS_VERSION)
+else ifeq ($(UNAME_S),Linux)
+  LDFLAGS += -static
+endif
 
 all: protoc-gen-grpc-web
 
