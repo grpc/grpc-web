@@ -24,8 +24,8 @@ protoc-3.14.0-linux-x86_64.zip -o protoc.zip && \
   unzip -qq protoc.zip && \
   cp ./bin/protoc /usr/local/bin/protoc
 
-RUN curl -sSL https://github.com/grpc/grpc-web/releases/download/1.2.1/\
-protoc-gen-grpc-web-1.2.1-linux-x86_64 -o /usr/local/bin/protoc-gen-grpc-web && \
+RUN curl -sSL https://github.com/grpc/grpc-web/releases/download/1.3.0/\
+protoc-gen-grpc-web-1.3.0-linux-x86_64 -o /usr/local/bin/protoc-gen-grpc-web && \
   chmod +x /usr/local/bin/protoc-gen-grpc-web
 
 WORKDIR /var/www/html/dist
@@ -39,4 +39,3 @@ RUN git clone https://github.com/grpc/grpc-web . && \
   mvn package --no-transfer-progress
 
 ENTRYPOINT ["java", "-cp", "net/grpc/gateway/examples/grpc-web-java/interop-test-service/target/interop-test-0.1-jar-with-dependencies.jar", "grpcweb.examples.StartServiceAndGrpcwebProxy"]
-
