@@ -600,7 +600,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
                                 : "grpcWeb.MethodType.UNARY";
       if (!method->client_streaming()) {
         printer->Print(vars,
-                       "methodInfo$method_name$ = "
+                       "methodDescriptor$method_name$ = "
                        "new grpcWeb.MethodDescriptor(\n");
         printer->Indent();
         printer->Print(vars,
@@ -627,7 +627,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
                          "  '/$package_dot$$service_name$/$method_name$',\n"
                          "request,\n"
                          "metadata || {},\n"
-                         "this.methodInfo$method_name$);\n");
+                         "this.methodDescriptor$method_name$);\n");
           printer->Outdent();
           printer->Outdent();
           printer->Print("}\n\n");
@@ -666,7 +666,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
                          "  '/$package_dot$$service_name$/$method_name$',\n"
                          "request,\n"
                          "metadata || {},\n"
-                         "this.methodInfo$method_name$,\n"
+                         "this.methodDescriptor$method_name$,\n"
                          "callback);\n");
           printer->Outdent();
           printer->Outdent();
@@ -678,7 +678,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
                          "  '/$package_dot$$service_name$/$method_name$',\n"
                          "request,\n"
                          "metadata || {},\n"
-                         "this.methodInfo$method_name$);\n");
+                         "this.methodDescriptor$method_name$);\n");
           printer->Outdent();
           printer->Print("}\n\n");
         }
