@@ -6,12 +6,16 @@
  */
 goog.module('grpc.web.Exports');
 
-const GrpcWebClientBase = goog.require('grpc.web.GrpcWebClientBase');
-const StatusCode = goog.require('grpc.web.StatusCode');
+const CallOptions = goog.require('grpc.web.CallOptions');
 const MethodDescriptor = goog.require('grpc.web.MethodDescriptor');
+const GrpcWebClientBase = goog.require('grpc.web.GrpcWebClientBase');
+const RpcError = goog.require('grpc.web.RpcError');
+const StatusCode = goog.require('grpc.web.StatusCode');
 const MethodType = goog.require('grpc.web.MethodType');
 
-module['exports']['GrpcWebClientBase'] = GrpcWebClientBase;
-module['exports']['StatusCode'] = StatusCode;
+module['exports']['CallOptions'] = CallOptions;
 module['exports']['MethodDescriptor'] = MethodDescriptor;
+module['exports']['GrpcWebClientBase'] = GrpcWebClientBase;
+module['exports']['RpcError'] = RpcError;
+module['exports']['StatusCode'] = StatusCode;
 module['exports']['MethodType'] = MethodType;
