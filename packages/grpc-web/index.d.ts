@@ -83,10 +83,10 @@ declare module "grpc-web" {
                         status?: Status): UnaryResponse<REQ, RESP>;
     getName(): string;
     getMethodType(): string;
-    getResponseMessageCtor(): any;
-    getRequestMessageCtor(): any;
-    getResponseDeserializeFn(): any;
-    getRequestSerializeFn(): any;
+    getRequestMessageCtor(): new (...args: unknown[]) => REQ;
+    getResponseMessageCtor(): new (...args: unknown[]) => RESP;
+    getRequestSerializeFn(): (request: REQ) => Uint8Array;
+    getResponseDeserializeFn(): (bytes: Uint8Array) => RESP;
   }
 
   export class Request<REQ, RESP> {
