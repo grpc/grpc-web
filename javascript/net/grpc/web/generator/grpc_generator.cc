@@ -136,14 +136,6 @@ string Lowercase(string s) {
   return s;
 }
 
-string UppercaseFirstLetter(string s) {
-  if (s.empty()) {
-    return s;
-  }
-  s[0] = ::toupper(s[0]);
-  return s;
-}
-
 string Uppercase(string s) {
   if (s.empty()) {
     return s;
@@ -1478,8 +1470,7 @@ string GeneratorOptions::OutputFile(const string& proto_file) const {
     string directory;
     string basename;
     PathSplit(proto_file, &directory, &basename);
-    return directory + UppercaseFirstLetter(StripProto(basename)) +
-           "ServiceClientPb.ts";
+    return directory + StripProto(basename) + "_grpc_web_pb.ts";
   }
   if (!file_name_.empty()) {
     return file_name_;
