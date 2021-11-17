@@ -40,9 +40,9 @@ class RpcError extends Error {
    */
   constructor(code, message, metadata = {}) {
     super(message);
-    /** @type {!StatusCode} */
+    /** @export {!StatusCode} */
     this.code = code;
-    /** @type {!Metadata} */
+    /** @export {!Metadata} */
     this.metadata = metadata;
   }
 }
