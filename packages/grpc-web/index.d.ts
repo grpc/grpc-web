@@ -70,9 +70,9 @@ declare module "grpc-web" {
 
   export class MethodDescriptor<REQ, RESP> {
     constructor(name: string,
-                methodType: any,
-                requestType: any,
-                responseType: any,
+                methodType: string,
+                requestType: new (...args: unknown[]) => REQ,
+                responseType: new (...args: unknown[]) => RESP,
                 requestSerializeFn: any,
                 responseDeserializeFn: any);
     createRequest(requestMessage: REQ,
@@ -83,10 +83,10 @@ declare module "grpc-web" {
                         status?: Status): UnaryResponse<REQ, RESP>;
     getName(): string;
     getMethodType(): string;
-    getResponseMessageCtor(): any;
-    getRequestMessageCtor(): any;
-    getResponseDeserializeFn(): any;
+    getRequestMessageCtor(): new (...args: unknown[]) => REQ;
+    getResponseMessageCtor(): new (...args: unknown[]) => RESP;
     getRequestSerializeFn(): any;
+    getResponseDeserializeFn(): any;
   }
 
   export class Request<REQ, RESP> {
