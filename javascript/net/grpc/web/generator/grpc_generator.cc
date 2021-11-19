@@ -600,8 +600,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
                                 : "grpcWeb.MethodType.UNARY";
       if (!method->client_streaming()) {
         printer->Print(vars,
-                       "methodDescriptor$method_name$: "
-                       "grpcWeb.MethodDescriptor<$input_type$, $output_type$> = "
+                       "methodDescriptor$method_name$ = "
                        "new grpcWeb.MethodDescriptor(\n");
         printer->Indent();
         printer->Print(vars,
