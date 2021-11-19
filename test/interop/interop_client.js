@@ -50,6 +50,17 @@ function doEmptyUnary(done) {
   });
 }
 
+function doEmptyUnaryWithDeadline(done) {
+  var testService = new TestServiceClient(SERVER_HOST, null, null);
+  const deadlineMs = 1000; // 1 second
+  testService.emptyCall(new Empty(), {deadline: Date.now() + deadlineMs},
+    (err, response) => {
+      assert.ifError(err);
+      assert(response instanceof Empty);
+      done();
+    });
+}
+
 function doLargeUnary(done) {
   var testService = new TestServiceClient(SERVER_HOST, null, null);
   var req = new SimpleRequest();
@@ -167,6 +178,7 @@ function doUnimplementedMethod(done) {
 
 var testCases = {
   'empty_unary': {testFunc: doEmptyUnary},
+  'empty_unary_with_deadline': {testFunc: doEmptyUnaryWithDeadline},
   'large_unary': {testFunc: doLargeUnary},
   'server_streaming': {testFunc: doServerStreaming,
                        skipBinaryMode: true},
