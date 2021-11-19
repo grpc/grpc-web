@@ -71,10 +71,10 @@ declare module "grpc-web" {
   export class MethodDescriptor<REQ, RESP> {
     constructor(name: string,
                 methodType: string,
-                requestType: any,
-                responseType: any,
-                requestSerializeFn: (request: REQ) => Uint8Array,
-                responseDeserializeFn: (bytes: Uint8Array) => RESP);
+                requestType: new (...args: unknown[]) => REQ,
+                responseType: new (...args: unknown[]) => RESP,
+                requestSerializeFn: any,
+                responseDeserializeFn: any);
     createRequest(requestMessage: REQ,
                   metadata?: Metadata,
                   callOptions?: CallOptions): Request<REQ, RESP>;
