@@ -33,7 +33,7 @@ streaming example.
 From the repo root directory:
 
 ```sh
-$ docker-compose pull node-server envoy commonjs-client
+$ docker-compose pull prereqs node-server envoy commonjs-client
 $ docker-compose up node-server envoy commonjs-client
 ```
 
