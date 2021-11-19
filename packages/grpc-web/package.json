@@ -37,6 +37,6 @@
     "mocha": "~5.2.0",
     "mock-xmlhttprequest": "~2.0.0",
     "protractor": "~7.0.0",
-    "typescript": "~3.8.0"
+    "typescript": "latest"
   }
 }

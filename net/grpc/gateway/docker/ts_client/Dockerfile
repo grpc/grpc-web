@@ -14,8 +14,6 @@
 
 FROM grpcweb/prereqs
 
-RUN npm install -g typescript
-
 WORKDIR /github/grpc-web/net/grpc/gateway/examples/echo
 
 RUN protoc -I=. echo.proto \
@@ -26,7 +24,10 @@ WORKDIR /github/grpc-web/net/grpc/gateway/examples/echo/ts-example
 
 RUN npm install && \
   npm link grpc-web && \
-  tsc && \
+  npx tsc && \
+  # Since typescript@4.5.2, tsc has apparently stopped moving dependent js files into dist/ dir, so
+  # we'll move them manually.
+  mv *_pb.js dist/ && \
   npx webpack && \
   cp echotest.html /var/www/html && \
   cp dist/main.js /var/www/html/dist

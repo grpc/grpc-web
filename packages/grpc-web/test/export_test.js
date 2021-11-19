@@ -15,7 +15,14 @@ describe('grpc-web export test', function() {
     assert.equal(typeof grpc.web.GrpcWebClientBase.prototype.serverStreaming, 'function');
   });
 
-  it('should have grpc StatusCode exported', function() {
+  it('should have RpcError properties exported', function() {
+    const rpcError = new grpc.web.RpcError(/* code= */ 0, 'message');
+    assert.equal(typeof rpcError.code, 'number');
+    assert.equal(typeof rpcError.message, 'string');
+    assert.equal(typeof rpcError.metadata, 'object');
+  });
+
+  it('should have StatusCode exported', function() {
     assert.deepEqual(grpc.web.StatusCode, {
       ABORTED: 10,
       ALREADY_EXISTS: 6,
