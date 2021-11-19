@@ -619,7 +619,8 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
           printer->Indent();
           printer->Print(vars,
                          "request: $input_type$,\n"
-                         "metadata?: grpcWeb.Metadata) {\n");
+                         "metadata?: grpcWeb.Metadata): "
+                         "grpcWeb.ClientReadableStream<$output_type$> {\n");
           printer->Print(vars, "return this.client_.serverStreaming(\n");
           printer->Indent();
           printer->Print(vars,
