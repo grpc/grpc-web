@@ -43,7 +43,7 @@ docker-compose build prereqs node-interop-server java-interop-server
 echo -e "\n[Running] Interop test #1 - against Envoy"
 pid1=$(docker run -d \
   -v "$(pwd)"/test/interop/envoy.yaml:/etc/envoy/envoy.yaml:ro \
-  --network=host envoyproxy/envoy:v1.17.0)
+  --network=host envoyproxy/envoy:v1.20.0)
 pid2=$(docker run -d --network=host grpcweb/node-interop-server)
 
 run_tests
