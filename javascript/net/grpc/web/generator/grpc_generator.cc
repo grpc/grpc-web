@@ -825,11 +825,11 @@ void PrintProtoDtsMessage(Printer* printer, const Descriptor* desc,
                      "set$js_field_name$(value?: $js_field_type$): "
                      "$class_name$;\n");
     }
-    if ((field->type() == FieldDescriptor::TYPE_MESSAGE || field->is_optional()) &&
+    if ((field->type() == FieldDescriptor::TYPE_MESSAGE || field->has_optional_keyword()) &&
         !field->is_repeated() && !field->is_map()) {
       printer->Print(vars, "has$js_field_name$(): boolean;\n");
     }
-    if (field->type() == FieldDescriptor::TYPE_MESSAGE || field->is_optional() ||
+    if (field->type() == FieldDescriptor::TYPE_MESSAGE || field->has_optional_keyword() ||
         field->is_repeated() || field->is_map()) {
       printer->Print(vars, "clear$js_field_name$(): $class_name$;\n");
     }
@@ -887,7 +887,7 @@ void PrintProtoDtsMessage(Printer* printer, const Descriptor* desc,
     }
     vars["js_field_name"] = js_field_name;
     vars["js_field_type"] = AsObjectFieldType(field, file);
-    if ((field->type() != FieldDescriptor::TYPE_MESSAGE && !field->is_optional()) ||
+    if ((field->type() != FieldDescriptor::TYPE_MESSAGE && !field->has_optional_keyword()) ||
         field->is_repeated()) {
       printer->Print(vars, "$js_field_name$: $js_field_type$,\n");
     } else {
