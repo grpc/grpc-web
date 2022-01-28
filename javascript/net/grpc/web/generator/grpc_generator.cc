@@ -825,8 +825,9 @@ void PrintProtoDtsMessage(Printer* printer, const Descriptor* desc,
                      "set$js_field_name$(value?: $js_field_type$): "
                      "$class_name$;\n");
     }
-    if ((field->type() == FieldDescriptor::TYPE_MESSAGE || field->has_optional_keyword()) &&
-        !field->is_repeated() && !field->is_map()) {
+    if (field->has_optional_keyword() ||
+        (field->type() == FieldDescriptor::TYPE_MESSAGE &&
+            !field->is_repeated() && !field->is_map())) {
       printer->Print(vars, "has$js_field_name$(): boolean;\n");
     }
     if (field->type() == FieldDescriptor::TYPE_MESSAGE || field->has_optional_keyword() ||
