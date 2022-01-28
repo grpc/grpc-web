@@ -111,13 +111,11 @@ For more information about the gRPC-web wire format, see the
 
   - `Content-type: application/grpc-web-text`
   - Payload are base64-encoded.
-  - Both unary and server streaming calls are supported.
 
 `mode=grpcweb`: A binary protobuf format is also supported.
 
   - `Content-type: application/grpc-web+proto`
   - Payload are in the binary protobuf format.
-  - Only unary calls are supported for now.
 
 ## How It Works
 
