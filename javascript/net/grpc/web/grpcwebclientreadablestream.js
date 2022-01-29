@@ -175,7 +175,8 @@ class GrpcWebClientReadableStream {
               } catch (err) {
                 self.handleError_(new RpcError(
                     StatusCode.INTERNAL,
-                    `Error when deserializing response data: ${response}`));
+                    `Error when deserializing response data; error: ${err}` +
+                    `, response: ${response}`));
               }
               if (response) {
                 self.sendDataCallbacks_(response);
