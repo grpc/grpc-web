@@ -1,6 +1,16 @@
 [//]: # (GENERATED FILE -- DO NOT EDIT!)
 [//]: # (See scripts/release_notes.py for more details.)
 
+## 1.3.1
+
+- [#1184](https://github.com/grpc/grpc-web/pull/1184) Correctly support proto3 optional fields in commonjs+dts .d.ts output @mattnathan
+- [#1173](https://github.com/grpc/grpc-web/pull/1173) Update envoy version to 1.20
+- [#1172](https://github.com/grpc/grpc-web/pull/1172) Fix issue where **no RPC is issued when `deadline` is specified.**
+- [#1167](https://github.com/grpc/grpc-web/pull/1167) Fix missing TypeScript return type for `serverStreaming` calls. @lukasmoellerch
+- [#1166](https://github.com/grpc/grpc-web/pull/1166) Add missing exports from `RpcError` and add test.
+- [#1164](https://github.com/grpc/grpc-web/pull/1164) Add missing class exports @tinrab
+- [#1160](https://github.com/grpc/grpc-web/pull/1160) Expose MethodDescriptor's public methods @tomferreira
+
 ## 1.3.0
 
 ### Major Features
