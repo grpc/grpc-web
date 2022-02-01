@@ -32,11 +32,3 @@ module.UnaryResponse.prototype.getResponseMessage = function() {};
 module.UnaryResponse.prototype.getMetadata = function() {};
 module.UnaryResponse.prototype.getMethodDescriptor = function() {};
 module.UnaryResponse.prototype.getStatus = function() {};
-
-module.MethodDescriptor = function() {};
-module.MethodDescriptor.getName = function() {};
-module.MethodDescriptor.getMethodType = function() {};
-module.MethodDescriptor.getResponseMessageCtor = function() {};
-module.MethodDescriptor.getRequestMessageCtor = function() {};
-module.MethodDescriptor.getResponseDeserializeFn = function() {};
-module.MethodDescriptor.getRequestSerializeFn = function() {};
