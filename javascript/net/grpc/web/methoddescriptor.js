@@ -74,7 +74,6 @@ const MethodDescriptor = class {
 
   /**
    * @override
-   * @export
    */
   getName() {
     return this.name;
@@ -82,7 +81,6 @@ const MethodDescriptor = class {
 
   /**
    * @override
-   * @export
    */
   getMethodType() {
     return this.methodType;
@@ -90,7 +88,6 @@ const MethodDescriptor = class {
 
   /**
    * @override
-   * @export
    * @return {function(new: RESPONSE, ...)}
    */
   getResponseMessageCtor() {
@@ -99,25 +96,18 @@ const MethodDescriptor = class {
 
   /**
    * @override
-   * @export
    * @return {function(new: REQUEST, ...)}
    */
   getRequestMessageCtor() {
     return this.requestType;
   }
 
-  /**
-   * @override
-   * @export
-   */
+  /** @override */
   getResponseDeserializeFn() {
     return this.responseDeserializeFn;
   }
 
-  /**
-   * @override
-   * @export
-   */
+  /** @override */
   getRequestSerializeFn() {
     return this.requestSerializeFn;
   }
