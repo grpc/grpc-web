@@ -158,7 +158,8 @@ class ProcessChangelog:
                 if pr['merged_at'] is None: # not merged
                     continue
                 label_level = self._get_pr_label_level(pr['labels'])
-                m = re.search(r'author: ?@([A-Za-z\d-]+)', pr['body'])
+                m = None if pr['body'] is None else re.search(
+                    r'author: ?@([A-Za-z\d-]+)', pr['body'])
                 if m:
                     author = m[1] # author attribution override
                 else:
