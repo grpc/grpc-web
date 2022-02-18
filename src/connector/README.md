@@ -1,5 +1,7 @@
-Java gRPC-web in-process proxy
-==============================
+(On Hold) Java gRPC-web in-process proxy
+====================================================
+
+### _(Development on the Java in-process proxy is On Hold. No active development or bug fixes is being done at this moment.)_
 
 ### Background & Motivation
 This project enables gRPC-web support in a Java Service that currently
