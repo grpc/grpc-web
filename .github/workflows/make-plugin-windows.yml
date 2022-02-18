@@ -1,0 +1,37 @@
+name: Make Windows Plugin
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_number:
+        description: 'Version number'
+        required: true
+        default: '1.x.x'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Print Bazel version
+      run: |
+        bazel version
+    - name: build
+      run: bazel build javascript/net/grpc/web/generator:protoc-gen-grpc-web
+    - name: move
+      run: |
+        mv bazel-bin/javascript/net/grpc/web/generator/protoc-gen-grpc-web.exe \
+          ./protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-windows-x86_64.exe
+      shell: bash
+    - name: gen sha256
+      run: |
+        openssl dgst -sha256 -r -out protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-windows-x86_64.exe.sha256 \
+          protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-windows-x86_64.exe
+      shell: bash
+    # TODO: Check sha256 (sha256sum not available for now. )
+    #- name: verify sha256
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: plugin
+        path: protoc-gen-grpc-web*

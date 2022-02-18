@@ -1,0 +1,32 @@
+name: Make Linux Plugin
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_number:
+        description: 'Version number'
+        required: true
+        default: '1.x.x'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build plugin docker image
+      run: docker-compose build prereqs protoc-plugin
+    - name: Copy binary from Docker image
+      run: |
+        docker cp $(docker create grpcweb/protoc-plugin):/github/grpc-web/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
+          ./protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-x86_64
+    - name: gen sha256
+      run: |
+        openssl dgst -sha256 -r -out protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-x86_64.sha256 \
+          protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-x86_64
+    - name: verify sha256
+      run: sha256sum -c protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-x86_64.sha256
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: plugin
+        path: protoc-gen-grpc-web*

@@ -1,0 +1,48 @@
+name: Make MacOS Plugin
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_number:
+        description: 'Version number'
+        required: true
+        default: '1.x.x'
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install build utils
+      run: brew install coreutils automake
+    - name: Checkout protobuf code
+      run: |
+        ./scripts/init_submodules.sh
+    # Protobuf build instructions from:
+    # https://github.com/protocolbuffers/protobuf/blob/master/src/README.md
+    - name: Build protobuf (configure & make)
+      run: |
+        cd ./third_party/protobuf
+        ./autogen.sh
+        ./configure
+        make -j$(nproc)
+        make install
+    - name: Remove dynamite dependencies (similar to `-static` on linux)
+      run: rm /usr/local/lib/libproto*.dylib
+    - name: make
+      run: make clean && make plugin
+    - name: move
+      run: |
+        mv javascript/net/grpc/web/generator/protoc-gen-grpc-web \
+          ./protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-darwin-x86_64
+    - name: gen sha256
+      run: |
+        openssl dgst -sha256 -r -out protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-darwin-x86_64.sha256 \
+          protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-darwin-x86_64
+    - name: verify sha256
+      run: sha256sum -c protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-darwin-x86_64.sha256
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: plugin
+        path: protoc-gen-grpc-web*
