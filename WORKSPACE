@@ -13,19 +13,19 @@ http_archive(
 
 http_archive(
     name = "com_google_protobuf",
-    sha256 = "77ad26d3f65222fd96ccc18b055632b0bfedf295cb748b712a98ba1ac0b704b2",
-    strip_prefix = "protobuf-3.17.3",
+    sha256 = "ba0650be1b169d24908eeddbe6107f011d8df0da5b1a5a4449a913b10e578faf",
+    strip_prefix = "protobuf-3.19.4",
     urls = [
-        "https://github.com/protocolbuffers/protobuf/releases/download/v3.17.3/protobuf-all-3.17.3.tar.gz",
+        "https://github.com/protocolbuffers/protobuf/releases/download/v3.19.4/protobuf-all-3.19.4.tar.gz",
     ],
 )
 
 http_archive(
     name = "com_github_grpc_grpc",
-    sha256 = "43feda4d7ce2892400d5a0cbccecc5b1790f3253244a171360018d84c2949fb7",
-    strip_prefix = "grpc-1.33.2",
+    sha256 = "de2d3168e77e5ffb27758b07e87f6066fd0d8087fe272f278771e7780e6aaacb",
+    strip_prefix = "grpc-1.44.0",
     urls = [
-        "https://github.com/grpc/grpc/archive/v1.33.2.zip",
+        "https://github.com/grpc/grpc/archive/v1.44.0.zip",
     ],
 )
 
