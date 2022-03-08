@@ -22,7 +22,7 @@
 FROM buildpack-deps:stretch AS prepare
 
 ARG BUILDIFIER_VERSION=1.0.0
-ARG PROTOBUF_VERSION=3.17.3
+ARG PROTOBUF_VERSION=3.19.4
 
 RUN apt-get -qq update && apt-get -qq install -y curl unzip
 
