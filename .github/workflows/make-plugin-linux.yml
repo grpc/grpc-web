@@ -19,10 +19,10 @@ jobs:
         install: true
     - name: Build plugin docker image
       uses: docker/bake-action@master
-        with:
-          files: docker-compose.yml
-          targets: prereqs, protoc-plugin
-          load: true
+      with:
+        files: docker-compose.yml
+        targets: prereqs, protoc-plugin
+        load: true
     - name: Copy binary from Docker image
       run: |
         docker cp $(docker create grpcweb/protoc-plugin):/github/grpc-web/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
