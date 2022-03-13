@@ -21,20 +21,22 @@
 # node:... Docker image is based on buildpack-deps:stretch
 FROM buildpack-deps:stretch AS prepare
 
-ARG BUILDIFIER_VERSION=1.0.0
+ARG BUILDIFIER_VERSION=5.0.1
 ARG PROTOBUF_VERSION=3.19.4
+ARG TARGETARCH
 
 RUN apt-get -qq update && apt-get -qq install -y curl unzip
 
 WORKDIR /tmp
 
-RUN curl -sSL https://github.com/protocolbuffers/protobuf/releases/download/v$PROTOBUF_VERSION/\
-protoc-$PROTOBUF_VERSION-linux-x86_64.zip -o protoc.zip && \
+RUN case $TARGETARCH in arm64) arch="aarch_64"; ;; amd64) arch="x86_64"; ;; *) echo "ERROR: Machine type $mach not supported."; ;; esac && \
+curl -sSL https://github.com/protocolbuffers/protobuf/releases/download/v$PROTOBUF_VERSION/\
+protoc-$PROTOBUF_VERSION-linux-$arch.zip -o protoc.zip && \
   unzip -qq protoc.zip && \
   cp ./bin/protoc /usr/local/bin/protoc
 
 RUN wget -nv -O buildifier \
-  https://github.com/bazelbuild/buildtools/releases/download/$BUILDIFIER_VERSION/buildifier && \
+  https://github.com/bazelbuild/buildtools/releases/download/$BUILDIFIER_VERSION/buildifier-linux-$TARGETARCH && \
   chmod +x ./buildifier && \
   cp ./buildifier /usr/local/bin/buildifier
 
@@ -52,7 +54,9 @@ RUN ./scripts/init_submodules.sh
 FROM node:12.22.6-stretch AS copy-and-build
 
 ARG MAKEFLAGS=-j8
-ARG BAZEL_VERSION=4.1.0
+ARG BAZEL_VERSION=5.0.0
+ARG BAZELISK_VERSION=1.11.0
+ARG TARGETARCH
 
 RUN mkdir -p /var/www/html/dist
 RUN echo "\nloglevel=error\n" >> $HOME/.npmrc
@@ -61,12 +65,10 @@ COPY --from=prepare /usr/local/bin/protoc /usr/local/bin/
 COPY --from=prepare /usr/local/bin/buildifier /usr/local/bin/
 COPY --from=prepare /github/grpc-web/third_party /github/grpc-web/third_party
 
-RUN wget -nv -O bazel-installer.sh \
-  https://github.com/bazelbuild/bazel/releases/download/$BAZEL_VERSION/\
-bazel-$BAZEL_VERSION-installer-linux-x86_64.sh && \
-  chmod +x ./bazel-installer.sh && \
-  ./bazel-installer.sh && \
-  rm ./bazel-installer.sh
+RUN wget -nv -O /usr/local/bin/bazelisk \
+  https://github.com/bazelbuild/bazelisk/releases/download/v$BAZELISK_VERSION/bazelisk-linux-$TARGETARCH && \
+  chmod +x /usr/local/bin/bazelisk && \
+  bazelisk
 
 WORKDIR /github/grpc-web
 
@@ -75,8 +77,8 @@ WORKDIR /github/grpc-web
 COPY ./WORKSPACE ./WORKSPACE
 COPY ./javascript/net/grpc/web/generator javascript/net/grpc/web/generator
 
-RUN bazel build javascript/net/grpc/web/generator:protoc-gen-grpc-web && \
-  cp $(bazel info bazel-genfiles)/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
+RUN bazelisk build javascript/net/grpc/web/generator:protoc-gen-grpc-web && \
+  cp $(bazelisk info bazel-genfiles)/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
   /usr/local/bin/protoc-gen-grpc-web
 
 COPY ./javascript ./javascript
