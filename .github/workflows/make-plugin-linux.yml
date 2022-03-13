@@ -17,6 +17,11 @@ jobs:
       uses: docker/setup-buildx-action@v1  
       with:
         install: true
+    - name: Set up QEMU
+      id: qemu
+      uses: docker/setup-qemu-action@v1
+      with:
+        image: tonistiigi/binfmt:latest
     - name: Build plugin docker image
       uses: docker/bake-action@master
       with:
