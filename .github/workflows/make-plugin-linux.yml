@@ -13,8 +13,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1  
+      with:
+        install: true
     - name: Build plugin docker image
-      run: docker-compose build prereqs protoc-plugin
+      uses: docker/bake-action@master
+        with:
+          files: docker-compose.yml
+          targets: prereqs, protoc-plugin
+          load: true
     - name: Copy binary from Docker image
       run: |
         docker cp $(docker create grpcweb/protoc-plugin):/github/grpc-web/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
