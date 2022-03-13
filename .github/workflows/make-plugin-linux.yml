@@ -23,8 +23,9 @@ jobs:
         files: docker-compose.yml
         targets: prereqs, protoc-plugin
         load: true
-        set: target.platform=linux/arm64
-        set: target.platform=linux/amd64
+        set: |
+          target.platform=linux/arm64
+          target.platform=linux/amd64
     - name: Copy binary from Docker image
       run: |
         docker cp $(docker create grpcweb/protoc-plugin):/github/grpc-web/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
