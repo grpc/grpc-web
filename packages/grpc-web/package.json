@@ -30,7 +30,7 @@
     "google-closure-compiler": "^20220301.0.0",
     "google-closure-deps": "^20220202.0.0",
     "google-closure-library": "^20220202.0.0",
-    "google-protobuf": "~3.14.0",
+    "google-protobuf": "~3.19.4",
     "gulp": "~4.0.2",
     "gulp-connect": "~5.7.0",
     "gulp-eval": "~1.0.0",
