@@ -43,6 +43,8 @@ jobs:
         push: true
         tags: ${{ steps.docker_meta_prereqs.outputs.tags }}
         labels: ${{ steps.docker_meta_prereqs.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
         platforms: linux/amd64,linux/arm64
 
     - name: Docker meta
@@ -65,6 +67,8 @@ jobs:
         push: true
         tags: ${{ steps.docker_meta_plugin.outputs.tags }}
         labels: ${{ steps.docker_meta_plugin.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
         platforms: linux/amd64,linux/arm64
 
     - name: Copy binary from Docker image
