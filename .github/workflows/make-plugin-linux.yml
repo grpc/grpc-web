@@ -40,8 +40,7 @@ jobs:
       with:
         context: ${{ github.workspace }}
         file: ./net/grpc/gateway/docker/prereqs/Dockerfile
-        push: false
-        load: true
+        push: true
         tags: ${{ steps.docker_meta_prereqs.outputs.tags }}
         labels: ${{ steps.docker_meta_prereqs.outputs.labels }}
         platforms: linux/amd64,linux/arm64
@@ -63,8 +62,7 @@ jobs:
       with:
         context: ${{ github.workspace }}
         file: ./net/grpc/gateway/docker/protoc_plugin/Dockerfile
-        push: false
-        load: true
+        push: true
         tags: ${{ steps.docker_meta_plugin.outputs.tags }}
         labels: ${{ steps.docker_meta_plugin.outputs.labels }}
         platforms: linux/amd64,linux/arm64
