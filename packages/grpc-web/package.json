@@ -27,9 +27,9 @@
   "devDependencies": {
     "@types/google-protobuf": "~3.7.0",
     "command-exists": "~1.2.8",
-    "google-closure-compiler": "~20200224.0.0",
-    "google-closure-deps": "~20210601.0.0",
-    "google-closure-library": "~20210808.0.0",
+    "google-closure-compiler": "^20220301.0.0",
+    "google-closure-deps": "^20220202.0.0",
+    "google-closure-library": "^20220202.0.0",
     "google-protobuf": "~3.14.0",
     "gulp": "~4.0.2",
     "gulp-connect": "~5.7.0",
