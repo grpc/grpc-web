@@ -54,7 +54,6 @@ RUN ./scripts/init_submodules.sh
 FROM node:12.22.6-stretch AS copy-and-build
 
 ARG MAKEFLAGS=-j8
-ARG BAZEL_VERSION=5.0.0
 ARG BAZELISK_VERSION=1.11.0
 ARG TARGETARCH
 
