@@ -35,7 +35,7 @@ jobs:
           latest=false
 
     - name: Build and push Docker image
-      id: docker_build
+      id: docker_build_prereqs
       uses: docker/build-push-action@v2
       with:
         context: ${{ github.workspace }}
@@ -58,11 +58,11 @@ jobs:
           latest=false
 
     - name: Build and push Docker image
-      id: docker_build
+      id: docker_build_plugin
       uses: docker/build-push-action@v2
       with:
         context: ${{ github.workspace }}
-        file: ./net/grpc/gateway/docker/prereqs/Dockerfile
+        file: ./net/grpc/gateway/docker/protoc_plugin/Dockerfile
         push: false
         load: true
         tags: ${{ steps.docker_meta_plugin.outputs.tags }}
