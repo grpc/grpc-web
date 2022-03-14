@@ -19,7 +19,7 @@
 # Stage 1: Fetch binaries
 ######################################
 # node:... Docker image is based on buildpack-deps:stretch
-FROM buildpack-deps:stretch AS prepare
+FROM buildpack-deps:bullseye AS prepare
 
 ARG BUILDIFIER_VERSION=5.0.1
 ARG PROTOBUF_VERSION=3.19.4
@@ -51,7 +51,7 @@ RUN ./scripts/init_submodules.sh
 ######################################
 # Stage 2: Copy source files and build
 ######################################
-FROM node:12.22.6-stretch AS copy-and-build
+FROM node:16-bullseye AS copy-and-build
 
 ARG MAKEFLAGS=-j8
 ARG BAZELISK_VERSION=1.11.0
