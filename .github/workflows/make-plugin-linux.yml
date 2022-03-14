@@ -22,12 +22,53 @@ jobs:
       uses: docker/setup-qemu-action@v1
       with:
         image: tonistiigi/binfmt:latest
-    - name: Build plugin docker image
-      uses: docker/bake-action@master
+
+    - name: Docker meta prereqs
+      id: docker_meta_prereqs
+      uses: docker/metadata-action@v3
       with:
-        files: docker-compose.yml
-        targets: prereqs, protoc-plugin
+        images: strophy/prereqs
+        tags: |
+          type=semver,pattern={{version}},value=${{ github.event.inputs.version_number }}
+          type=raw,value=latest-dev
+        flavor: |
+          latest=false
+
+    - name: Build and push Docker image
+      id: docker_build
+      uses: docker/build-push-action@v2
+      with:
+        context: ${{ github.workspace }}
+        file: ./net/grpc/gateway/docker/prereqs/Dockerfile
+        push: false
         load: true
+        tags: ${{ steps.docker_meta_prereqs.outputs.tags }}
+        labels: ${{ steps.docker_meta_prereqs.outputs.labels }}
+        platforms: linux/amd64,linux/arm64
+
+    - name: Docker meta
+      id: docker_meta_plugin
+      uses: docker/metadata-action@v3
+      with:
+        images: strophy/protoc-plugin
+        tags: |
+          type=semver,pattern={{version}},value=${{ github.event.inputs.version_number }}
+          type=raw,value=latest-dev
+        flavor: |
+          latest=false
+
+    - name: Build and push Docker image
+      id: docker_build
+      uses: docker/build-push-action@v2
+      with:
+        context: ${{ github.workspace }}
+        file: ./net/grpc/gateway/docker/prereqs/Dockerfile
+        push: false
+        load: true
+        tags: ${{ steps.docker_meta_plugin.outputs.tags }}
+        labels: ${{ steps.docker_meta_plugin.outputs.labels }}
+        platforms: linux/amd64,linux/arm64
+
     - name: Copy binary from Docker image
       run: |
         docker cp $(docker create strophy/protoc-plugin):/github/grpc-web/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
