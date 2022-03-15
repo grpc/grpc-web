@@ -43,7 +43,7 @@ jobs:
           type=semver,pattern={{version}},value=${{ github.event.inputs.version_number }}
           type=raw,value=latest-dev
         flavor: |
-          latest=false
+          latest=true
 
     - name: Build and push Docker image prereqs
       id: docker_build_prereqs
@@ -67,7 +67,7 @@ jobs:
           type=semver,pattern={{version}},value=${{ github.event.inputs.version_number }}
           type=raw,value=latest-dev
         flavor: |
-          latest=false
+          latest=true
 
     - name: Build and push Docker image plugin
       id: docker_build_plugin
