@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM strophy/prereqs:latest
+FROM grpcweb/prereqs:latest
 
 ARG MAKEFLAGS=-j8
 

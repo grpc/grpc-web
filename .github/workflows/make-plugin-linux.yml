@@ -38,12 +38,9 @@ jobs:
       id: docker_meta_prereqs
       uses: docker/metadata-action@v3
       with:
-        images: strophy/prereqs
-        tags: |
-          type=semver,pattern={{version}},value=${{ github.event.inputs.version_number }}
-          type=raw,value=latest-dev
-        flavor: |
-          latest=true
+        images: grpcweb/prereqs
+        tags: type=semver,pattern={{version}},value=${{ github.event.inputs.version_number }}
+        flavor: latest=true
 
     - name: Build and push Docker image prereqs
       id: docker_build_prereqs
@@ -62,12 +59,9 @@ jobs:
       id: docker_meta_plugin
       uses: docker/metadata-action@v3
       with:
-        images: strophy/protoc-plugin
-        tags: |
-          type=semver,pattern={{version}},value=${{ github.event.inputs.version_number }}
-          type=raw,value=latest-dev
-        flavor: |
-          latest=true
+        images: grpcweb/protoc-plugin
+        tags: type=semver,pattern={{version}},value=${{ github.event.inputs.version_number }}
+        flavor: latest=true
 
     - name: Build and push Docker image plugin
       id: docker_build_plugin
@@ -84,12 +78,12 @@ jobs:
 
     - name: Copy binary from Docker image x86_64
       run: |
-        docker cp $(docker create --platform linux/amd64 strophy/protoc-plugin):/github/grpc-web/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
+        docker cp $(docker create --platform linux/amd64 grpcweb/protoc-plugin):/github/grpc-web/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
           ./protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-x86_64
 
     - name: Copy binary from Docker image arm64
       run: |
-        docker cp $(docker create --platform linux/arm64 strophy/protoc-plugin):/github/grpc-web/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
+        docker cp $(docker create --platform linux/arm64 grpcweb/protoc-plugin):/github/grpc-web/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
           ./protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-arm64
 
     - name: gen sha256 x86_64

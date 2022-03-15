@@ -4,14 +4,14 @@ services:
     build:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/prereqs/Dockerfile
-    image: strophy/prereqs
+    image: grpcweb/prereqs
   echo-server:
     build:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/echo_server/Dockerfile
     depends_on:
       - prereqs
-    image: strophy/echo-server
+    image: grpcweb/echo-server
     ports:
       - "9090:9090"
   node-server:
@@ -20,21 +20,21 @@ services:
       dockerfile: ./net/grpc/gateway/docker/node_server/Dockerfile
     depends_on:
       - prereqs
-    image: strophy/node-server
+    image: grpcweb/node-server
     ports:
       - "9090:9090"
   node-interop-server:
     build:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/node_interop_server/Dockerfile
-    image: strophy/node-interop-server
+    image: grpcweb/node-interop-server
     ports:
       - "7074:7074"
   envoy:
     build:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/envoy/Dockerfile
-    image: strophy/envoy
+    image: grpcweb/envoy
     ports:
       - "8080:8080"
     links:
@@ -43,7 +43,7 @@ services:
     build:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/grpcwebproxy/Dockerfile
-    image: strophy/grpcwebproxy
+    image: grpcweb/grpcwebproxy
     ports:
       - "8080:8080"
     links:
@@ -54,7 +54,7 @@ services:
       dockerfile: ./net/grpc/gateway/docker/commonjs_client/Dockerfile
     depends_on:
       - prereqs
-    image: strophy/commonjs-client
+    image: grpcweb/commonjs-client
     ports:
       - "8081:8081"
   closure-client:
@@ -63,7 +63,7 @@ services:
       dockerfile: ./net/grpc/gateway/docker/closure_client/Dockerfile
     depends_on:
       - prereqs
-    image: strophy/closure-client
+    image: grpcweb/closure-client
     ports:
       - "8081:8081"
   ts-client:
@@ -72,7 +72,7 @@ services:
       dockerfile: ./net/grpc/gateway/docker/ts_client/Dockerfile
     depends_on:
       - prereqs
-    image: strophy/ts-client
+    image: grpcweb/ts-client
     ports:
       - "8081:8081"
   binary-client:
@@ -81,7 +81,7 @@ services:
       dockerfile: ./net/grpc/gateway/docker/binary_client/Dockerfile
     depends_on:
       - prereqs
-    image: strophy/binary-client
+    image: grpcweb/binary-client
     ports:
       - "8081:8081"
   interop-client:
@@ -90,23 +90,23 @@ services:
       dockerfile: ./net/grpc/gateway/docker/interop_client/Dockerfile
     depends_on:
       - prereqs
-    image: strophy/interop-client
+    image: grpcweb/interop-client
     ports:
       - "8081:8081"
   java-interop-server:
     build:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/java_interop_server/Dockerfile
-    image: strophy/java-interop-server
+    image: grpcweb/java-interop-server
   protoc-plugin:
     build:
       context: ./
       dockerfile: ./net/grpc/gateway/docker/protoc_plugin/Dockerfile
     depends_on:
       - prereqs
-    image: strophy/protoc-plugin
+    image: grpcweb/protoc-plugin
   jsunit-test:
     build:
       context: ./
       dockerfile: ./packages/grpc-web/docker/jsunit-test/Dockerfile
-    image: strophy/jsunit-test
+    image: grpcweb/jsunit-test
