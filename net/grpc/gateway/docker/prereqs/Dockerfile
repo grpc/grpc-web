@@ -29,7 +29,7 @@ RUN apt-get -qq update && apt-get -qq install -y curl unzip
 
 WORKDIR /tmp
 
-RUN case $TARGETARCH in arm64) arch="aarch_64"; ;; amd64) arch="x86_64"; ;; *) echo "ERROR: Machine type $mach not supported."; ;; esac && \
+RUN case $TARGETARCH in arm64) arch="aarch_64"; ;; amd64) arch="x86_64"; ;; *) echo "ERROR: Machine type $TARGETARCH not supported."; ;; esac && \
 curl -sSL https://github.com/protocolbuffers/protobuf/releases/download/v$PROTOBUF_VERSION/\
 protoc-$PROTOBUF_VERSION-linux-$arch.zip -o protoc.zip && \
   unzip -qq protoc.zip && \
