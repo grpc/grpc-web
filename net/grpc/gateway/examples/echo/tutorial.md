@@ -66,12 +66,12 @@ static_resources:
                 name: local_route
                 virtual_hosts:
                   - name: local_service
-                    domains: [ "*" ]
+                    domains: ["*"]
                     routes:
                       - match: { prefix: "/" }
                         route:
                           cluster: echo_service
-                          max_grpc_timeout: 0s
+                          timeout: 0s
               http_filters:
                 - name: envoy.filters.http.grpc_web
                   typed_config:
@@ -89,11 +89,11 @@ static_resources:
         cluster_name: cluster_0
         endpoints:
           - lb_endpoints:
-              - endpoint:
-                  address:
-                    socket_address:
-                      address: node-server
-                      port_value: 9090
+            - endpoint:
+                address:
+                  socket_address:
+                    address: node-server
+                    port_value: 9090
 ```
 
 You may also need to add some CORS setup to make sure the browser can request
