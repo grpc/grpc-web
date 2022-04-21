@@ -1,4 +1,4 @@
-# gRPC Web
+# gRPC Web &middot; [![npm version](https://img.shields.io/npm/v/grpc-web.svg?style=flat)](https://www.npmjs.com/package/grpc-web)
 
 A JavaScript implementation of [gRPC][] for browser clients. For more information,
 including a **quick start**, see the [gRPC-web documentation][grpc-web-docs].
