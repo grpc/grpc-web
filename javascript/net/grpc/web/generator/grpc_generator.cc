@@ -364,7 +364,76 @@ string AsObjectFieldType(const FieldDescriptor* desc,
   return field_type;
 }
 
+
+bool IsUpperCamel(const std::string& input) {
+    if (input.empty()) {
+        return false;
+    }
+
+    if (input.find('_') != string::npos) {
+        return false;
+    }
+
+    if (input[0] < 'A' || input[0] > 'Z') {
+        return false;
+    }
+
+    for (int i = 0; i < input.size(); i++) {
+        if (input[i] >= 'A' && input[i] <= 'Z') {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool IsLowerCamel(const std::string& input) {
+    if (input.empty()) {
+        return false;
+    }
+
+    if (input.find('_') != string::npos) {
+        return false;
+    }
+
+    if (input[0] >= 'A' && input[0] <= 'Z') {
+        return false;
+    }
+
+    for (int i = 0; i < input.size(); i++) {
+        if (i != 0 && input[i] >= 'A' && input[i] <= 'Z') {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+// Like ToUpperCamel except the first letter is not converted.
+string ToCamelCase(const std::vector<string>& words) {
+    if (words.empty()) {
+        return "";
+    }
+    string result = words[0];
+    return result + ToUpperCamel(std::vector<string>(
+            words.begin() + 1, words.begin() + words.size()));
+}
+
 string JSElementName(const FieldDescriptor* desc) {
+   string js_field_name;
+   if (IsUpperCamel(desc->name())) {
+       return desc->name();
+   }
+
+   if (IsLowerCamel(desc->name())) {
+       string name = desc->name();
+
+       name[0] = ::toupper(name[0]);
+
+       return name;
+   }
+
   return ToUpperCamel(ParseLowerUnderscore(desc->name()));
 }
 
@@ -378,19 +447,20 @@ string JSFieldName(const FieldDescriptor* desc) {
   return js_field_name;
 }
 
-// Like ToUpperCamel except the first letter is not converted.
-string ToCamelCase(const std::vector<string>& words) {
-  if (words.empty()) {
-    return "";
-  }
-  string result = words[0];
-  return result + ToUpperCamel(std::vector<string>(
-                      words.begin() + 1, words.begin() + words.size()));
-}
-
 // Like JSFieldName, but with first letter not uppercased
 string CamelCaseJSFieldName(const FieldDescriptor* desc) {
-  string js_field_name = ToCamelCase(ParseLowerUnderscore(desc->name()));
+  string js_field_name;
+  if (IsUpperCamel(desc->name())) {
+      string name = desc->name();
+      name[0] = ::tolower(name[0]);
+
+      js_field_name = name;
+  } else if (IsLowerCamel(desc->name())) {
+      js_field_name = desc->name();
+  } else {
+      js_field_name = ToCamelCase(ParseLowerUnderscore(desc->name()));
+  }
+
   if (desc->is_map()) {
     js_field_name += "Map";
   } else if (desc->is_repeated()) {
