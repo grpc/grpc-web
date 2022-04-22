@@ -34,6 +34,15 @@ do
     { echo >&2 "$p is required but not installed. Aborting."; exit 1; }
 done
 
+function cleanup () {
+  echo "Killing lingering Docker servers..."
+  docker rm -f "$pid1"
+  docker rm -f "$pid2"
+  docker rm -f "$pid3"
+}
+
+trap cleanup EXIT
+
 # Build all relevant docker images. They should all build successfully.
 docker-compose build prereqs node-interop-server java-interop-server
 
@@ -43,7 +52,7 @@ docker-compose build prereqs node-interop-server java-interop-server
 echo -e "\n[Running] Interop test #1 - against Envoy"
 pid1=$(docker run -d \
   -v "$(pwd)"/test/interop/envoy.yaml:/etc/envoy/envoy.yaml:ro \
-  --network=host envoyproxy/envoy:v1.20.0)
+  --network=host envoyproxy/envoy:v1.22.0)
 pid2=$(docker run -d --network=host grpcweb/node-interop-server)
 
 run_tests
@@ -57,7 +66,9 @@ docker rm -f "$pid2"
 ##########################################################
 echo -e "\n[Running] Interop test #2 - against Java interop server"
 pid3=$(docker run -d --network=host grpcweb/java-interop-server)
+
 run_tests
+
 docker rm -f "$pid3"
 
 # Clean up

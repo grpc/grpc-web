@@ -1,3 +1,6 @@
+// NOTE: This client is used for debugging the node gRPC server WITHOUT the
+// Envoy proxy. It does not use the gRPC-Web protocol.
+
 var PROTO_PATH = __dirname + '/helloworld.proto';
 
 var async = require('async');

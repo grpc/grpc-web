@@ -50,36 +50,50 @@ To forward the gRPC requests to the backend server, we need a block like
 this:
 
 ```yaml
+static_resources:
   listeners:
-  - name: listener_0
-    address:
-      socket_address: { address: 0.0.0.0, port_value: 8080 }
-    filter_chains:
-    - filters:
-      - name: envoy.http_connection_manager
-        config:
-          codec_type: auto
-          stat_prefix: ingress_http
-          route_config:
-            name: local_route
-            virtual_hosts:
-            - name: local_service
-              domains: ["*"]
-              routes:
-              - match: { prefix: "/" }
-                route:
-                  cluster: echo_service
-                  max_grpc_timeout: 0s
-          http_filters:
-          - name: envoy.grpc_web
-          - name: envoy.router
+    - name: listener_0
+      address:
+        socket_address: { address: 0.0.0.0, port_value: 8080 }
+      filter_chains:
+        - filters:
+          - name: envoy.filters.network.http_connection_manager
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+              codec_type: auto
+              stat_prefix: ingress_http
+              route_config:
+                name: local_route
+                virtual_hosts:
+                  - name: local_service
+                    domains: ["*"]
+                    routes:
+                      - match: { prefix: "/" }
+                        route:
+                          cluster: echo_service
+                          timeout: 0s
+              http_filters:
+                - name: envoy.filters.http.grpc_web
+                  typed_config:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_web.v3.GrpcWeb
+                - name: envoy.filters.http.router
+                  typed_config:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
   clusters:
-  - name: echo_service
-    connect_timeout: 0.25s
-    type: logical_dns
-    http2_protocol_options: {}
-    lb_policy: round_robin
-    hosts: [{ socket_address: { address: node-server, port_value: 9090 }}]
+    - name: echo_service
+      connect_timeout: 0.25s
+      type: logical_dns
+      http2_protocol_options: {}
+      lb_policy: round_robin
+      load_assignment:
+        cluster_name: cluster_0
+        endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: node-server
+                    port_value: 9090
 ```
 
 You may also need to add some CORS setup to make sure the browser can request
