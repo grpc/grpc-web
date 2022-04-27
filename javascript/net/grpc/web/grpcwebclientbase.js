@@ -123,18 +123,18 @@ class GrpcWebClientBase {
       let unaryStatus;
       let unaryMsg;
       GrpcWebClientBase.setCallback_(
-          stream, (error, response, status, metadata) => {
+          stream, (error, response, status, metadata, unaryEndOfStream) => {
             if (error) {
               reject(error);
-            } else if (response) {
-              unaryMsg = response;
             } else if (status) {
               unaryStatus = status;
             } else if (metadata) {
               unaryMetadata = metadata;
-            } else {
+            } else if (unaryEndOfStream) {
               resolve(request.getMethodDescriptor().createUnaryResponse(
                   unaryMsg, unaryMetadata, unaryStatus));
+            } else {
+              unaryMsg = response;
             }
           }, true);
     });
@@ -222,7 +222,7 @@ class GrpcWebClientBase {
    * @static
    * @template RESPONSE
    * @param {!ClientReadableStream<RESPONSE>} stream
-   * @param {function(?RpcError, ?RESPONSE, ?Status=, ?Object<string, string>=)|
+   * @param {function(?RpcError, ?RESPONSE, ?Status=, ?Object<string, string>=, ?boolean)|
    *     function(?RpcError,?RESPONSE)} callback
    * @param {boolean} useUnaryResponse
    */
@@ -276,7 +276,7 @@ class GrpcWebClientBase {
         }
       }
       if (useUnaryResponse) {
-        callback(null, null);  // trigger unaryResponse
+        callback(null, null, null, null, /* unaryEndOfStream= */ true);
       }
     });
   }
