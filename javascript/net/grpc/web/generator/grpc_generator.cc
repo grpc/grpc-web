@@ -16,8 +16,6 @@
  *
  */
 
-#include "version.h"
-
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/compiler/plugin.h>
 #include <google/protobuf/compiler/plugin.pb.h>
@@ -80,6 +78,9 @@ const char* kKeyword[] = {
     "transient",  "try",          "typeof",     "var",     "void",
     "volatile",   "while",        "with",
 };
+
+// Edit the version here prior to release
+const std::string grpc_web_version = "1.3.1";
 
 string GetVersion() { return grpc_web_version; }
 
@@ -1739,6 +1740,7 @@ int main(int argc, char* argv[]) {
     std::cout << argv[0] << " " << grpc::web::GetVersion() << std::endl;
     return 0;
   }
+
   grpc::web::GrpcCodeGenerator generator;
   PluginMain(argc, argv, &generator);
   return 0;
