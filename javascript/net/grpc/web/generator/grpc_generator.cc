@@ -1735,6 +1735,10 @@ class GrpcCodeGenerator : public CodeGenerator {
 }  // namespace grpc
 
 int main(int argc, char* argv[]) {
+  if (argc == 2 && std::string(argv[1]) == "--version") {
+    std::cout << argv[0] << " " << grpc::web::GetVersion() << std::endl;
+    return 0;
+  }
   grpc::web::GrpcCodeGenerator generator;
   PluginMain(argc, argv, &generator);
   return 0;
