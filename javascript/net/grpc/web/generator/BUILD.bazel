@@ -3,6 +3,7 @@ load("@rules_cc//cc:defs.bzl", "cc_binary")
 cc_binary(
     name = "protoc-gen-grpc-web",
     srcs = [
+        "version.h",
         "grpc_generator.cc",
     ],
     visibility = ["//visibility:public"],
