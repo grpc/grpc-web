@@ -80,9 +80,7 @@ const char* kKeyword[] = {
 };
 
 // Edit the version here prior to release
-const std::string grpc_web_version = "1.3.1";
-
-string GetVersion() { return grpc_web_version; }
+static const std::string GRPC_WEB_VERSION = "1.3.1";
 
 string GetProtocVersion(GeneratorContext* context) {
   Version compiler_version;
@@ -1577,7 +1575,7 @@ class GrpcCodeGenerator : public CodeGenerator {
       return true;
     }
 
-    vars["version"]        = GetVersion();
+    vars["version"]        = GRPC_WEB_VERSION;
     vars["protoc_version"] = GetProtocVersion(context);
     vars["source_file"]    = file->name();
 
@@ -1745,7 +1743,7 @@ class GrpcCodeGenerator : public CodeGenerator {
 
 int main(int argc, char* argv[]) {
   if (argc == 2 && std::string(argv[1]) == "--version") {
-    std::cout << argv[0] << " " << grpc::web::GetVersion() << std::endl;
+    std::cout << argv[0] << " " << grpc::web::GRPC_WEB_VERSION << std::endl;
     return 0;
   }
 
