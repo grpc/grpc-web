@@ -934,15 +934,33 @@ void PrintProtoDtsMessage(Printer* printer, const Descriptor* desc,
   printer->Print("}\n\n");
 }
 
+// IsUsingImportType returns true if the provided import alias is used by the file.
+bool IsUsingImportType(const FileDescriptor* file, const string alias) {
+  for (int i = 0; i < file->message_type_count(); i++) {
+    const Descriptor* desc = file->message_type(i);
+    for (int j = 0; j < desc->field_count(); j++) {
+      const string field_type = JSFieldType(desc->field(j), file);
+      if (field_type.find(alias) != std::string::npos) {
+        // The import alias is a substring of field_type, thus used by the file
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 void PrintProtoDtsFile(Printer* printer, const FileDescriptor* file) {
   printer->Print("import * as jspb from 'google-protobuf'\n\n");
 
   for (int i = 0; i < file->dependency_count(); i++) {
     const string& name = file->dependency(i)->name();
-    // We need to give each cross-file import an alias.
-    printer->Print("import * as $alias$ from '$dep_filename$_pb';\n", "alias",
-                   ModuleAlias(name), "dep_filename",
-                   GetRootPath(file->name(), name) + StripProto(name));
+    const string alias = ModuleAlias(name);
+    if (IsUsingImportType(file, alias)) {
+      // We need to give each cross-file import an alias.
+      printer->Print("import * as $alias$ from '$dep_filename$_pb';\n",
+                     "alias", alias,
+                     "dep_filename", GetRootPath(file->name(), name) + StripProto(name));
+    }
   }
   printer->Print("\n\n");
 
