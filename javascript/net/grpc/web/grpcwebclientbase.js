@@ -112,7 +112,7 @@ class GrpcWebClientBase {
    * @override
    * @export
    */
-  thenableCall(method, requestMessage, metadata, methodDescriptor) {
+  thenableCall(method, requestMessage, metadata, methodDescriptor, abortSignal) {
     methodDescriptor = AbstractClientBase.ensureMethodDescriptor(
         method, requestMessage, MethodType.UNARY, methodDescriptor);
     var hostname = AbstractClientBase.getHostname(method, methodDescriptor);
@@ -136,6 +136,14 @@ class GrpcWebClientBase {
                   unaryMsg, unaryMetadata, unaryStatus));
             }
           }, true);
+      if (abortSignal) {
+        abortSignal.addEventListener("abort", () => {
+          stream.cancel();
+        });
+        if (abortSignal.aborted) {
+          stream.cancel();
+        }
+      }
     });
     var invoker = GrpcWebClientBase.runInterceptors_(
         initialInvoker, this.unaryInterceptors_);
@@ -152,12 +160,13 @@ class GrpcWebClientBase {
    * @param {!MethodDescriptor<REQUEST, RESPONSE>|
    *     !AbstractClientBase.MethodInfo<REQUEST,RESPONSE>}
    *   methodDescriptor Information of this RPC method
+   * @param {?AbortSignal} abortSignal Signal to abort the call
    * @return {!Promise<RESPONSE>}
    * @template REQUEST, RESPONSE
    */
-  unaryCall(method, requestMessage, metadata, methodDescriptor) {
+  unaryCall(method, requestMessage, metadata, methodDescriptor, abortSignal) {
     return /** @type {!Promise<RESPONSE>}*/ (
-        this.thenableCall(method, requestMessage, metadata, methodDescriptor));
+        this.thenableCall(method, requestMessage, metadata, methodDescriptor, abortSignal));
   }
 
   /**

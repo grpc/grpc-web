@@ -65,10 +65,11 @@ const AbstractClientBase = class {
    * @param {!MethodDescriptor<REQUEST, RESPONSE>|
    *     !AbstractClientBase.MethodInfo<REQUEST,RESPONSE>}
    *   methodDescriptor Information of this RPC method
+   * @param {?AbortSignal} abortSignal Signal to abort the call
    * @return {!IThenable <!RESPONSE>}
    *   A promise that resolves to the response message
    */
-  thenableCall(method, requestMessage, metadata, methodDescriptor) {}
+  thenableCall(method, requestMessage, metadata, methodDescriptor, abortSignal) {}
 
   /**
    * @abstract

@@ -1,12 +1,12 @@
 {
-  "name": "grpc-web",
+  "name": "@safetyculture/grpc-web",
   "version": "1.2.1",
   "author": "Google Inc.",
   "description": "gRPC-Web Client Runtime Library",
   "homepage": "https://grpc.io/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/grpc/grpc-web.git"
+    "url": "https://github.com/SafetyCulture/grpc-web.git"
   },
   "bugs": "https://github.com/grpc/grpc-web/issues",
   "files": [

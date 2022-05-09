@@ -15,7 +15,8 @@ declare module "grpc-web" {
       method: string,
       request: REQ,
       metadata: Metadata,
-      methodDescriptor: MethodDescriptor<REQ, RESP>
+      methodDescriptor: MethodDescriptor<REQ, RESP>,
+      abortSignal: AbortSignal
     ): Promise<RESP>;
 
     rpcCall<REQ, RESP> (
@@ -56,7 +57,7 @@ declare module "grpc-web" {
                     callback: (response: RESP) => void): void;
     removeListener (eventType: "end",
                     callback: () => void): void;
-                    
+
     cancel (): void;
   }
 
@@ -87,14 +88,14 @@ declare module "grpc-web" {
                   metadata: Metadata,
                   callOptions: CallOptions): UnaryResponse<REQ, RESP>;
   }
-  
+
   export class Request<REQ, RESP> {
     getRequestMessage(): REQ;
     getMethodDescriptor(): MethodDescriptor<REQ, RESP>;
     getMetadata(): Metadata;
     getCallOptions(): CallOptions;
   }
-  
+
   export class UnaryResponse<REQ, RESP> {
     getResponseMessage(): RESP;
     getMetadata(): Metadata;
