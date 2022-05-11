@@ -651,7 +651,8 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
           printer->Indent();
           printer->Print(vars,
                          "request: $input_type$,\n"
-                         "metadata: grpcWeb.Metadata | null): "
+                         "metadata: grpcWeb.Metadata | null,\n"
+                         "abortSignal: AbortSignal | null): "
                          "$promise$<$output_type$>;\n\n");
           printer->Outdent();
 
@@ -742,7 +743,8 @@ void PrintGrpcWebDtsClientClass(Printer* printer, const FileDescriptor* file,
             printer->Indent();
             printer->Print(vars,
                            "request: $input_type$,\n"
-                           "metadata?: grpcWeb.Metadata\n");
+                           "metadata?: grpcWeb.Metadata,\n"
+                           "abortSignal?: AbortSignal\n");
             printer->Outdent();
             printer->Print(vars, "): $promise$<$output_type$>;\n\n");
           } else {
@@ -1168,6 +1170,7 @@ void PrintPromiseUnaryCall(Printer* printer, std::map<string, string> vars) {
                  " *     request proto\n"
                  " * @param {?Object<string, string>=} metadata User defined\n"
                  " *     call metadata\n"
+                 " * @param {?AbortSignal} abortSignal Signal to abort the call\n"
                  " * @return {!$promise$<!proto.$out$>}\n"
                  " *     Promise that resolves to the response\n"
                  " */\n"
@@ -1175,7 +1178,7 @@ void PrintPromiseUnaryCall(Printer* printer, std::map<string, string> vars) {
                  ".$js_method_name$ =\n");
   printer->Indent();
   printer->Print(vars,
-                 "  function(request, metadata) {\n"
+                 "  function(request, metadata, abortSignal) {\n"
                  "return this.client_.unaryCall(this.hostname_ +\n");
   printer->Indent();
   printer->Indent();
@@ -1188,7 +1191,8 @@ void PrintPromiseUnaryCall(Printer* printer, std::map<string, string> vars) {
   printer->Print(vars,
                  "request,\n"
                  "metadata || {},\n"
-                 "$method_descriptor$);\n");
+                 "$method_descriptor$,\n"
+                 "abortSignal);\n");
   printer->Outdent();
   printer->Outdent();
   printer->Outdent();
