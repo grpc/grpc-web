@@ -599,7 +599,7 @@ void PrintCommonJsMessagesDeps(Printer* printer, const FileDescriptor* file) {
 void PrintES6Imports(Printer* printer, const FileDescriptor* file) {
   std::map<string, string> vars;
 
-  printer->Print("import * as grpcWeb from 'grpc-web';\n\n");
+  printer->Print("import * as grpcWeb from '@safetyculture/grpc-web';\n\n");
 
   std::set<string> imports;
   for (const Descriptor* message : GetAllMessages(file)) {

@@ -1,4 +1,4 @@
-declare module "grpc-web" {
+declare module "@safetyculture/grpc-web" {
 
   export interface Metadata { [s: string]: string; }
 
