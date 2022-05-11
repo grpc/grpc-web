@@ -27,53 +27,8 @@ jobs:
     - name: Reset QEMU 
       run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
-    - name: Login to DockerHub
-      uses: docker/login-action@v1
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-    - name: Docker meta prereqs
-      id: docker_meta_prereqs
-      uses: docker/metadata-action@v3
-      with:
-        images: grpcweb/prereqs
-        tags: type=semver,pattern={{version}},value=${{ github.event.inputs.version_number }}
-        flavor: latest=true
-
-    - name: Build and push Docker image prereqs
-      id: docker_build_prereqs
-      uses: docker/build-push-action@v2
-      with:
-        context: ${{ github.workspace }}
-        file: ./net/grpc/gateway/docker/prereqs/Dockerfile
-        push: true
-        tags: ${{ steps.docker_meta_prereqs.outputs.tags }}
-        labels: ${{ steps.docker_meta_prereqs.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-        platforms: linux/amd64,linux/arm64
-
-    - name: Docker meta plugin
-      id: docker_meta_plugin
-      uses: docker/metadata-action@v3
-      with:
-        images: grpcweb/protoc-plugin
-        tags: type=semver,pattern={{version}},value=${{ github.event.inputs.version_number }}
-        flavor: latest=true
-
-    - name: Build and push Docker image plugin
-      id: docker_build_plugin
-      uses: docker/build-push-action@v2
-      with:
-        context: ${{ github.workspace }}
-        file: ./net/grpc/gateway/docker/protoc_plugin/Dockerfile
-        push: true
-        tags: ${{ steps.docker_meta_plugin.outputs.tags }}
-        labels: ${{ steps.docker_meta_plugin.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-        platforms: linux/amd64,linux/arm64
+    - name: Build plugin docker image
+      run: docker buildx bake -f release.hcl release --set *.platform=linux/arm64,linux/amd64
 
     - name: Copy binary from Docker image x86_64
       run: |
