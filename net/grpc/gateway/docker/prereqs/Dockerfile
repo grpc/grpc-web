@@ -21,7 +21,7 @@
 # node:... Docker image is based on buildpack-deps:stretch
 FROM buildpack-deps:bullseye AS prepare
 
-ARG BUILDIFIER_VERSION=5.0.1
+ARG BUILDIFIER_VERSION=5.1.0
 ARG PROTOBUF_VERSION=3.19.4
 ARG TARGETARCH
 
