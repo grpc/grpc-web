@@ -12,17 +12,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1  
+      uses: docker/setup-buildx-action@v2
       with:
         install: true
 
     - name: Set up QEMU
       id: qemu
-      uses: docker/setup-qemu-action@v1
-      with:
-        image: tonistiigi/binfmt:latest
+      uses: docker/setup-qemu-action@v2
 
     # Temporary fix for https://github.com/bazelbuild/bazel/issues/11379
     - name: Reset QEMU 
