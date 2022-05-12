@@ -36,12 +36,20 @@ jobs:
     - name: Reset QEMU 
       run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
+    - name: Cache Docker layers
+      uses: actions/cache@v3
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-${{ matrix.arch }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.arch }}-buildx-
+
     - name: Build plugin docker image
       run: |
         docker buildx bake -f release.hcl release \
           --set *.platform=linux/${{ matrix.arch }} \
-          --set *.cache-from=type=gha \
-          --set *.cache-to=type=gha,mode=max \
+          --set *.cache-from=type=local,src=/tmp/.buildx-cache \
+          --set *.cache-to=type=local,mode=max,dest=/tmp/.buildx-cache-new \
           --load
 
     - name: Copy binary from Docker image
@@ -62,3 +70,9 @@ jobs:
       with:
         name: plugin
         path: protoc-gen-grpc-web*
+
+
+    - name: Move cache
+      run: |
+        rm -rf /tmp/.buildx-cache
+        mv /tmp/.buildx-cache-new /tmp/.buildx-cache
