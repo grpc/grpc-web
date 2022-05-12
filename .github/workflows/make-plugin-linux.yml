@@ -45,8 +45,8 @@ jobs:
       run: |
         docker buildx bake -f release.hcl release \
           --set *.platform=linux/${{ matrix.arch }} \
-          --cache-from: type=gha \
-          --cache-to: type=gha,mode=max \
+          --set *.cache-from=type=gha \
+          --set *.cache-to=type=gha,mode=max \
           --load
 
     - name: Copy binary from Docker image
