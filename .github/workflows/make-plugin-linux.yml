@@ -19,7 +19,7 @@ jobs:
           - arch: amd64
             archstring: x86_64
           - arch: arm64
-            archstring: arm64 
+            archstring: arm64
     steps:
     - uses: actions/checkout@v3
 
