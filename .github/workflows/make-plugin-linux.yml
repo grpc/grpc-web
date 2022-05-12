@@ -37,24 +37,24 @@ jobs:
 
     - name: Debug vars
       run: |
-        echo arch is {{ matrix.arch }}        
-        echo archstring is {{ matrix.archstring }}
+        echo arch is ${{ matrix.arch }}        
+        echo archstring is ${{ matrix.archstring }}
 
     - name: Build plugin docker image
-      run: docker buildx bake -f release.hcl release --set *.platform=linux/{{ matrix.arch }} --load
+      run: docker buildx bake -f release.hcl release --set *.platform=linux/${{ matrix.arch }} --load
 
     - name: Copy binary from Docker image
       run: |
         docker cp $(docker create --platform linux/{{ matrix.arch }} grpcweb/protoc-plugin):/github/grpc-web/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
-          ./protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-{{ matrix.archstring }}
+          ./protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-${{ matrix.archstring }}
 
     - name: gen sha256
       run: |
-        openssl dgst -sha256 -r -out protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-{{ matrix.archstring }}.sha256 \
-          protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-{{ matrix.archstring }}
+        openssl dgst -sha256 -r -out protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-${{ matrix.archstring }}.sha256 \
+          protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-${{ matrix.archstring }}
 
     - name: verify sha256 x86_64
-      run: sha256sum -c protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-{{ matrix.archstring }}.sha256
+      run: sha256sum -c protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-${{ matrix.archstring }}.sha256
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
