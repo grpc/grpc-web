@@ -42,7 +42,12 @@ jobs:
         echo archstring is ${{ matrix.archstring }}
 
     - name: Build plugin docker image
-      run: docker buildx bake -f release.hcl release --set *.platform=linux/${{ matrix.arch }} --load
+      run: |
+        docker buildx bake -f release.hcl release \
+          --set *.platform=linux/${{ matrix.arch }} \
+          --cache-from: type=gha \
+          --cache-to: type=gha,mode=max \
+          --load
 
     - name: Copy binary from Docker image
       run: |
