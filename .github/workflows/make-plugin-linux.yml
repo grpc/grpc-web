@@ -52,6 +52,10 @@ jobs:
           --set *.cache-to=type=local,mode=max,dest=/tmp/.buildx-cache-new \
           --load
 
+    - name: Setup tmate session
+      if: ${{ failure() }}
+      uses: mxschmitt/action-tmate@v3
+
     - name: Copy binary from Docker image
       run: |
         docker cp $(docker create --platform linux/${{ matrix.arch }} grpcweb/protoc-plugin):/github/grpc-web/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
