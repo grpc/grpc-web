@@ -10,6 +10,14 @@ on:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+        include:
+          - arch: amd64
+            archstring: x86_64
+          - arch: arm64
+            archstring: arm64 
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -28,33 +36,20 @@ jobs:
       run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
     - name: Build plugin docker image
-      run: docker buildx bake -f release.hcl release --set *.platform=linux/arm64,linux/amd64 --load
+      run: docker buildx bake -f release.hcl release --set *.platform=linux/{{ matrix.arch }} --load
 
-    - name: Copy binary from Docker image x86_64
+    - name: Copy binary from Docker image
       run: |
-        docker cp $(docker create --platform linux/amd64 grpcweb/protoc-plugin):/github/grpc-web/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
-          ./protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-x86_64
+        docker cp $(docker create --platform linux/{{ matrix.arch }} grpcweb/protoc-plugin):/github/grpc-web/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
+          ./protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-{{ matrix.archstring }}
 
-    - name: Copy binary from Docker image arm64
+    - name: gen sha256
       run: |
-        docker cp $(docker create --platform linux/arm64 grpcweb/protoc-plugin):/github/grpc-web/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
-          ./protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-arm64
-
-    - name: gen sha256 x86_64
-      run: |
-        openssl dgst -sha256 -r -out protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-x86_64.sha256 \
-          protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-x86_64
-
-    - name: gen sha256 arm64
-      run: |
-        openssl dgst -sha256 -r -out protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-arm64.sha256 \
-          protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-arm64
+        openssl dgst -sha256 -r -out protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-{{ matrix.archstring }}.sha256 \
+          protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-{{ matrix.archstring }}
 
     - name: verify sha256 x86_64
-      run: sha256sum -c protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-x86_64.sha256
-
-    - name: verify sha256 arm64
-      run: sha256sum -c protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-arm64.sha256
+      run: sha256sum -c protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-{{ matrix.archstring }}.sha256
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
