@@ -10,6 +10,7 @@ on:
 
 jobs:
   build:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         arch: [amd64, arm64]
@@ -18,7 +19,6 @@ jobs:
             archstring: x86_64
           - arch: arm64
             archstring: arm64 
-    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
 
@@ -34,6 +34,11 @@ jobs:
     # Temporary fix for https://github.com/bazelbuild/bazel/issues/11379
     - name: Reset QEMU 
       run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+    - name: Debug vars
+      run: |
+        echo arch is {{ matrix.arch }}        
+        echo archstring is {{ matrix.archstring }}
 
     - name: Build plugin docker image
       run: docker buildx bake -f release.hcl release --set *.platform=linux/{{ matrix.arch }} --load
