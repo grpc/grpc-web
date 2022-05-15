@@ -76,7 +76,7 @@ WORKDIR /github/grpc-web
 COPY ./WORKSPACE ./WORKSPACE
 COPY ./javascript/net/grpc/web/generator javascript/net/grpc/web/generator
 
-RUN bazelisk build --jobs=1 javascript/net/grpc/web/generator:protoc-gen-grpc-web && \
+RUN bazelisk build javascript/net/grpc/web/generator:protoc-gen-grpc-web && \
   cp $(bazelisk info bazel-genfiles)/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
   /usr/local/bin/protoc-gen-grpc-web
 
