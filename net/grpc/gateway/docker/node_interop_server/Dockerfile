@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM node:16.15.0-stretch
+FROM node:16.15.0-bullseye
 
 WORKDIR /github/grpc-node
 
