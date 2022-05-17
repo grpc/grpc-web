@@ -11,68 +11,22 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [amd64, arm64]
-        include:
-          - arch: amd64
-            archstring: x86_64
-          - arch: arm64
-            archstring: arm64
     steps:
-    - uses: actions/checkout@v3
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-      with:
-        install: true
-
-    - name: Set up QEMU
-      id: qemu
-      uses: docker/setup-qemu-action@v2
-
-    # Temporary fix for https://github.com/bazelbuild/bazel/issues/11379
-    - name: Reset QEMU 
-      run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-
-    - name: Cache Docker layers
-      uses: actions/cache@v3
-      with:
-        path: /tmp/.buildx-cache
-        key: ${{ runner.os }}-${{ matrix.arch }}-buildx-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-${{ matrix.arch }}-buildx-
-
+    - uses: actions/checkout@v2
     - name: Build plugin docker image
-      run: |
-        docker buildx bake -f release.hcl release \
-          --set *.platform=linux/${{ matrix.arch }} \
-          --set *.cache-from=type=local,src=/tmp/.buildx-cache \
-          --set *.cache-to=type=local,mode=max,dest=/tmp/.buildx-cache-new \
-          --load
-
+      run: docker-compose build prereqs protoc-plugin
     - name: Copy binary from Docker image
       run: |
-        docker cp $(docker create --platform linux/${{ matrix.arch }} grpcweb/protoc-plugin):/github/grpc-web/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
-          ./protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-${{ matrix.archstring }}
-
+        docker cp $(docker create grpcweb/protoc-plugin):/github/grpc-web/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
+          ./protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-x86_64
     - name: gen sha256
       run: |
-        openssl dgst -sha256 -r -out protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-${{ matrix.archstring }}.sha256 \
-          protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-${{ matrix.archstring }}
-
-    - name: verify sha256 x86_64
-      run: sha256sum -c protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-${{ matrix.archstring }}.sha256
-
+        openssl dgst -sha256 -r -out protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-x86_64.sha256 \
+          protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-x86_64
+    - name: verify sha256
+      run: sha256sum -c protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-linux-x86_64.sha256
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
         name: plugin
         path: protoc-gen-grpc-web*
-
-
-    - name: Move cache
-      run: |
-        rm -rf /tmp/.buildx-cache
-        mv /tmp/.buildx-cache-new /tmp/.buildx-cache

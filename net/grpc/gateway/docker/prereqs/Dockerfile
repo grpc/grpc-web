@@ -18,7 +18,7 @@
 ######################################
 # Stage 1: Fetch binaries
 ######################################
-# node:... Docker image is based on buildpack-deps:stretch
+# node:... Docker image is based on buildpack-deps:bullseye
 FROM buildpack-deps:bullseye AS prepare
 
 ARG BUILDIFIER_VERSION=5.1.0
@@ -51,7 +51,7 @@ RUN ./scripts/init_submodules.sh
 ######################################
 # Stage 2: Copy source files and build
 ######################################
-FROM node:16-bullseye AS copy-and-build
+FROM node:16.15.0-bullseye AS copy-and-build
 
 ARG MAKEFLAGS=-j8
 ARG BAZELISK_VERSION=1.11.0

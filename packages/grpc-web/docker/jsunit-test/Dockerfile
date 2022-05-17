@@ -1,7 +1,7 @@
 FROM selenium/standalone-chrome:93.0.4577.63
 
-# Matching the node version used in the node:12.22.6-stretch image.
-ARG NODE_VERSION=12.22.6
+# Matching the node version used in the node:16.15.0-bullseye image.
+ARG NODE_VERSION=16.15.0
 
 USER root
 
