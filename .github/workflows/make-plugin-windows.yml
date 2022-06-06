@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Print Bazel version
       run: |
         bazel version
@@ -31,7 +31,7 @@ jobs:
     # TODO: Check sha256 (sha256sum not available for now. )
     #- name: verify sha256
     - name: Upload artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: plugin
         path: protoc-gen-grpc-web*
