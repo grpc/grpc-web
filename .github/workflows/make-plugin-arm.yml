@@ -17,9 +17,10 @@ jobs:
         submodules: 'recursive'
     - name: Setup Zig
       run: |
-        mkdir /zig
-        curl 'https://ziglang.org/download/0.9.1/zig-linux-x86_64-0.9.1.tar.xz' | tar xJ --strip-components=1 --directory=/zig
-        ln -s /zig/zig /usr/bin/zig
+        mkdir -p $HOME/.local/bin $HOME/.local/zig
+        curl 'https://ziglang.org/download/0.9.1/zig-linux-x86_64-0.9.1.tar.xz' | tar xJ --strip-components=1 --directory=$HOME/.local/zig
+        ln -s $HOME/.local/zig/zig $HOME/.local/bin/zig
+        echo "PATH=$PATH:$HOME/.local/bin" >> $GITHUB_ENV
     - name: Build plugin
       env:
         VERSION: ${{ github.event.inputs.version_number }}
