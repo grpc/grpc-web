@@ -594,7 +594,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
     }
     printer->Print(vars,
                    "this.client_ = new grpcWeb.$mode$ClientBase(options);\n"
-                   "this.hostname_ = hostname;\n"
+                   "this.hostname_ = hostname.replace(/\\/+$$/, '');\n"
                    "this.credentials_ = credentials;\n"
                    "this.options_ = options;\n");
     printer->Outdent();
@@ -1082,11 +1082,11 @@ void PrintServiceConstructor(Printer* printer, std::map<string, string> vars,
         "   */\n"
         "  this.client_ = new grpc.web.$mode$ClientBase(options);\n\n");
   }
-  printer->Print(vars,
+  printer->PrintRaw(
                  "  /**\n"
                  "   * @private @const {string} The hostname\n"
                  "   */\n"
-                 "  this.hostname_ = hostname;\n\n"
+                 "  this.hostname_ = hostname.replace(/\\/+$/, '');\n\n"
                  "};\n\n\n");
 }
 
