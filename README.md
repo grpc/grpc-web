@@ -284,18 +284,21 @@ For the full TypeScript example, see
 
 ## Proxy Interoperability
 
-Multiple proxies support the gRPC-web protocol. The current default proxy
-is [Envoy][], which supports gRPC-web out of the box.
+Multiple proxies support the gRPC-web protocol.
 
-```sh
-$ docker-compose up -d node-server envoy commonjs-client
-```
+1. The current **default proxy** is [Envoy][], which supports gRPC-web out of the box.
 
-You can also try the [gRPC-web Go proxy][].
+	```sh
+	$ docker-compose up -d node-server envoy commonjs-client
+	```
 
-```sh
-$ docker-compose up -d node-server grpcwebproxy binary-client
-```
+2. You can also try the [gRPC-web Go proxy][].
+
+	```sh
+	$ docker-compose up -d node-server grpcwebproxy binary-client
+	```
+
+3. Apache [APISIX](https://apisix.apache.org/) has also added grpc-web support, and more details can be found [here](https://apisix.apache.org/blog/2022/01/25/apisix-grpc-web-integration/).
 
 [Envoy]: https://www.envoyproxy.io
 [gRPC]: https://grpc.io
