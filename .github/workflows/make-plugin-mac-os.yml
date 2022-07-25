@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install build utils
       run: brew install coreutils automake
     - name: Checkout protobuf code
@@ -42,7 +42,7 @@ jobs:
     - name: verify sha256
       run: sha256sum -c protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-darwin-x86_64.sha256
     - name: Upload artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: plugin
         path: protoc-gen-grpc-web*

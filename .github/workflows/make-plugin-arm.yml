@@ -1,0 +1,42 @@
+name: Make ARM Plugins (Windows/macOS/Linux)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_number:
+        description: 'Version number'
+        required: true
+        default: '1.x.x'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+    - name: Setup Zig
+      run: |
+        mkdir -p $HOME/.local/bin $HOME/.local/zig
+        curl 'https://ziglang.org/download/0.9.1/zig-linux-x86_64-0.9.1.tar.xz' | tar xJ --strip-components=1 --directory=$HOME/.local/zig
+        ln -s $HOME/.local/zig/zig $HOME/.local/bin/zig
+        echo "PATH=$PATH:$HOME/.local/bin" >> $GITHUB_ENV
+    - name: Build plugin
+      env:
+        VERSION: ${{ github.event.inputs.version_number }}
+      run: |
+        cd javascript/net/grpc/web/generator
+        zig build -Drelease-fast
+    - name: gen and verify sha256
+      run: |
+        cd javascript/net/grpc/web/generator/zig-out/bin
+        for exe in $(ls)
+        do
+          openssl dgst -sha256 -r -out $exe'.sha256' $exe
+          sha256sum -c $exe'.sha256'
+        done
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: plugin
+        path: javascript/net/grpc/web/generator/zig-out/bin/
