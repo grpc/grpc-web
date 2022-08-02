@@ -282,7 +282,9 @@ call.on('status', (status: grpcWeb.Status) => {
 For the full TypeScript example, see
 [ts-example/client.ts](net/grpc/gateway/examples/echo/ts-example/client.ts).
 
-## Proxy Interoperability
+## Ecosystem
+
+### Proxy Interoperability
 
 Multiple proxies support the gRPC-web protocol.
 
@@ -299,6 +301,9 @@ Multiple proxies support the gRPC-web protocol.
 	```
 
 3. Apache [APISIX](https://apisix.apache.org/) has also added grpc-web support, and more details can be found [here](https://apisix.apache.org/blog/2022/01/25/apisix-grpc-web-integration/).
+
+### Web Frameworks with gRPC-Web support
+- [Armeria](https://armeria.dev/docs/server-grpc/#grpc-web)
 
 [Envoy]: https://www.envoyproxy.io
 [gRPC]: https://grpc.io
