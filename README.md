@@ -52,7 +52,9 @@ You can download the `protoc-gen-grpc-web` protoc plugin from our
 [release](https://github.com/grpc/grpc-web/releases) page:
 
 If you don't already have `protoc` installed, you will have to download it
-first from [here](https://github.com/protocolbuffers/protobuf/releases).
+first from [here](https://github.com/protocolbuffers/protobuf-javascript/releases).
+
+> **NOTE:** Javascript output is no longer supported by `protocolbuffers/protobuf` package as it previously did. Please use the releases from [protocolbuffers/protobuf-javascript](https://github.com/protocolbuffers/protobuf-javascript/releases) instead.
 
 Make sure they are both executable and are discoverable from your PATH.
 
