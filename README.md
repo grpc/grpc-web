@@ -10,6 +10,13 @@ In the future, we expect gRPC-web to be supported in language-specific web
 frameworks for languages such as Python, Java, and Node. For details, see the
 [roadmap](doc/roadmap.md).
 
+## Streaming Support
+gRPC-web currently supports 2 RPC modes:
+- Unary RPCs ([example](#make-a-unary-rpc-call))
+- Server-side Streaming RPCs ([example](#server-side-streaming))
+
+Client-side and Bi-directional streaming is not currently supported (see [streaming roadmap](doc/streaming-roadmap.md)).
+
 ## Quick Start
 
 Eager to get started? Try the [Hello World example][]. From this example, you'll
@@ -170,7 +177,7 @@ var echoService = new proto.mypackage.EchoServiceClient(
   'http://localhost:8080');
 ```
 
-Make a unary RPC call:
+#### Make a unary RPC call:
 
 ```js
 var request = new proto.mypackage.EchoRequest();
@@ -186,7 +193,7 @@ echoService.echo(request, metadata, function(err, response) {
 });
 ```
 
-Server-side streaming is supported!
+#### Server-side streaming:
 
 ```js
 var stream = echoService.serverStreamingEcho(streamRequest, metadata);
