@@ -225,7 +225,7 @@ should be a Unix timestamp, in milliseconds.
 var deadline = new Date();
 deadline.setSeconds(deadline.getSeconds() + 1);
 
-client.sayHelloAfterDelay(request, {deadline: deadline.getTime()},
+client.sayHelloAfterDelay(request, {deadline: deadline.getTime().toString()},
   (err, response) => {
     // err will be populated if the RPC exceeds the deadline
     ...

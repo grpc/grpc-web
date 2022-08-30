@@ -84,8 +84,8 @@ testSuite({
     deadline.setSeconds(deadline.getSeconds() + 1);
     await new Promise((resolve, reject) => {
       client.rpcCall(
-          'url', new MockRequest(), {'deadline': deadline}, methodDescriptor,
-          (error, response) => {
+          'url', new MockRequest(), {'deadline': deadline.getTime().toString()},
+          methodDescriptor, (error, response) => {
             assertNull(error);
             resolve();
           });
