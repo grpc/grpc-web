@@ -52,8 +52,10 @@ function doEmptyUnary(done) {
 
 function doEmptyUnaryWithDeadline(done) {
   var testService = new TestServiceClient(SERVER_HOST, null, null);
-  const deadlineMs = 1000; // 1 second
-  testService.emptyCall(new Empty(), {deadline: Date.now() + deadlineMs},
+
+  const deadline = new Date();
+  deadline.setSeconds(deadline.getSeconds() + 1);
+  testService.emptyCall(new Empty(), {deadline: deadline.getTime().toString()},
     (err, response) => {
       assert.ifError(err);
       assert(response instanceof Empty);
