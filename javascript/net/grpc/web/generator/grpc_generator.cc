@@ -335,7 +335,7 @@ string JSElementType(const FieldDescriptor* desc, const FileDescriptor* file) {
                               desc->enum_type()->file()->package());
         return StripPrefixString(enum_name, ".");
       }
-      return ModuleAlias(desc->enum_type()->file()->name()) +
+      return ModuleAlias(desc->enum_type()->file()->name()) + "." +
              StripPrefixString(desc->enum_type()->full_name(),
                                desc->enum_type()->file()->package());
 
