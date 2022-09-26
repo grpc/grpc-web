@@ -5,7 +5,7 @@ const {StreamInterceptor, UnaryInterceptor} = goog.require('grpc.web.Interceptor
 
 
 /**
- * Options that are availavle during the client construction.
+ * Options that are available during the client construction.
  * @record
  */
 class ClientOptions {
