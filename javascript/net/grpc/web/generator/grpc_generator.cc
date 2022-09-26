@@ -177,12 +177,18 @@ inline bool HasPrefixString(const string& str, const string& prefix) {
          str.compare(0, prefix.size(), prefix) == 0;
 }
 
+// Strips the given prefix from the string, as well as the remaining leading dot
+// if it exists.
 inline string StripPrefixString(const string& str, const string& prefix) {
-  if (HasPrefixString(str, prefix)) {
-    return str.substr(prefix.size());
-  } else {
+  if (!HasPrefixString(str, prefix)) {
     return str;
   }
+
+  string remaining_str = str.substr(prefix.size());
+  if (!remaining_str.empty() && remaining_str[0] == '.') {
+    remaining_str = remaining_str.substr(1);
+  }
+  return remaining_str;
 }
 
 inline bool HasSuffixString(const string& str, const string& suffix) {
@@ -278,11 +284,7 @@ string ModuleAlias(const string& filename) {
 }
 
 string JSMessageType(const Descriptor* desc, const FileDescriptor* file) {
-  string class_name;
-  class_name = StripPrefixString(desc->full_name(), desc->file()->package());
-  if (!class_name.empty() && class_name[0] == '.') {
-    class_name = class_name.substr(1);
-  }
+  string class_name = StripPrefixString(desc->full_name(), desc->file()->package());
   if (desc->file() == file) {
     // [for protobuf .d.ts files only] Do not add the module prefix for local
     // messages.
@@ -330,10 +332,8 @@ string JSElementType(const FieldDescriptor* desc, const FileDescriptor* file) {
       if (desc->enum_type()->file() == file) {
         // [for protobuf .d.ts files only] Do not add the module prefix for
         // local messages.
-        string enum_name =
-            StripPrefixString(desc->enum_type()->full_name(),
-                              desc->enum_type()->file()->package());
-        return StripPrefixString(enum_name, ".");
+        return StripPrefixString(desc->enum_type()->full_name(),
+                                 desc->enum_type()->file()->package());
       }
       return ModuleAlias(desc->enum_type()->file()->name()) + "." +
              StripPrefixString(desc->enum_type()->full_name(),
