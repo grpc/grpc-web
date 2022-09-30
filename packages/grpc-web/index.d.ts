@@ -75,18 +75,7 @@ declare module "grpc-web" {
                 responseType: new (...args: unknown[]) => RESP,
                 requestSerializeFn: any,
                 responseDeserializeFn: any);
-    createRequest(requestMessage: REQ,
-                  metadata?: Metadata,
-                  callOptions?: CallOptions): Request<REQ, RESP>;
-    createUnaryResponse(responseMessage: RESP,
-                        metadata?: Metadata,
-                        status?: Status): UnaryResponse<REQ, RESP>;
     getName(): string;
-    getMethodType(): string;
-    getRequestMessageCtor(): new (...args: unknown[]) => REQ;
-    getResponseMessageCtor(): new (...args: unknown[]) => RESP;
-    getRequestSerializeFn(): any;
-    getResponseDeserializeFn(): any;
   }
 
   export class Request<REQ, RESP> {

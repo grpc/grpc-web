@@ -74,6 +74,7 @@ const MethodDescriptor = class {
 
   /**
    * @override
+   * @export
    */
   getName() {
     return this.name;
