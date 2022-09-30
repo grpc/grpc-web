@@ -1,6 +1,30 @@
 [//]: # (GENERATED FILE -- DO NOT EDIT!)
 [//]: # (See scripts/release_notes.py for more details.)
 
+## 1.4.1
+
+- [#1286](https://github.com/grpc/grpc-web/pull/1286) Fix duplicate dot in enum name (when "package" is specified)
+
+## 1.4.0
+
+### Major Features
+
+- [#1249](https://github.com/grpc/grpc-web/pull/1249) Use Zig to build aarch64 binaries @hronro
+- [#1203](https://github.com/grpc/grpc-web/pull/1203) Github Actions (workflows) for building `protoc-gen-grpc-web` plugins
+
+### Other Changes
+
+- [#1279](https://github.com/grpc/grpc-web/pull/1279) Fixes the status codes ordering in typescript definitions @chandraaditya
+- [#1278](https://github.com/grpc/grpc-web/pull/1278) Fix Enum with module in generated TS interface.
+- [#1254](https://github.com/grpc/grpc-web/pull/1254) Remove Trailing Slashes from Hostname @jkjk822
+- [#1252](https://github.com/grpc/grpc-web/pull/1252) Fix Zig setup step in CI @hronro
+- [#1231](https://github.com/grpc/grpc-web/pull/1231) Add version flag and version info in generated code @meling
+- [#1225](https://github.com/grpc/grpc-web/pull/1225) Improve error message & Internal code sync
+- [#1222](https://github.com/grpc/grpc-web/pull/1222) Update envoy version to 1.22 (with config updates) @tomk9
+- [#1211](https://github.com/grpc/grpc-web/pull/1211) Upgrade protobuf and grpc deps @aapeliv
+- [#1199](https://github.com/grpc/grpc-web/pull/1199) Revert "Expose MethodDescriptor's public methods"
+
+
 ## 1.3.1
 
 - [#1184](https://github.com/grpc/grpc-web/pull/1184) Correctly support proto3 optional fields in commonjs+dts .d.ts output @mattnathan
