@@ -102,6 +102,28 @@ testSuite({
     assertElementsEquals(DEFAULT_UNARY_HEADER_VALUES, Object.values(headers));
   },
 
+  async testRpcResponseThenableCall() {
+    const xhr = new XhrIo();
+    const client = new GrpcWebClientBase(/* options= */ {}, xhr);
+    const methodDescriptor = createMethodDescriptor((bytes) => {
+      assertElementsEquals(DEFAULT_RPC_RESPONSE_DATA, [].slice.call(bytes));
+      return new MockReply('value');
+    });
+
+    const responsePromise = client.thenableCall(
+      'url', new MockRequest(), /* metadata= */ {}, methodDescriptor);
+    xhr.simulatePartialResponse(
+        googCrypt.encodeByteArray(new Uint8Array(DEFAULT_RPC_RESPONSE)),
+        DEFAULT_RESPONSE_HEADERS);
+    xhr.simulateReadyStateChange(ReadyState.COMPLETE);
+    const response = await responsePromise;
+
+    assertEquals('value', response.data);
+    const headers = /** @type {!Object} */ (xhr.getLastRequestHeaders());
+    assertElementsEquals(DEFAULT_UNARY_HEADERS, Object.keys(headers));
+    assertElementsEquals(DEFAULT_UNARY_HEADER_VALUES, Object.values(headers));
+  },
+
   async testRpcFalsyResponseThenableCall_ForNonProtobufDescriptor() {
     const xhr = new XhrIo();
     const client = new GrpcWebClientBase(/* options= */ {}, xhr);
