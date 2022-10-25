@@ -123,10 +123,10 @@ class GrpcWebClientBase {
       let unaryStatus;
       let unaryMsg;
       GrpcWebClientBase.setCallback_(
-          stream, (error, response, status, metadata) => {
+          stream, (error, response, status, metadata, unaryResponseReceived) => {
             if (error) {
               reject(error);
-            } else if (response) {
+            } else if (unaryResponseReceived) {
               unaryMsg = response;
             } else if (status) {
               unaryStatus = status;
@@ -222,9 +222,16 @@ class GrpcWebClientBase {
    * @static
    * @template RESPONSE
    * @param {!ClientReadableStream<RESPONSE>} stream
-   * @param {function(?RpcError, ?RESPONSE, ?Status=, ?Object<string, string>=)|
+   * @param {function(?RpcError, ?RESPONSE, ?Status=, ?Object<string, string>=, ?boolean)|
    *     function(?RpcError,?RESPONSE)} callback
-   * @param {boolean} useUnaryResponse
+   * @param {boolean} useUnaryResponse Pass true to have the client make
+   * multiple calls to the callback, using (error, response, status,
+   * metadata, unaryResponseReceived) arguments. One of error, status,
+   * metadata, or unaryResponseReceived will be truthy to indicate which piece
+   * of information the client is providing in that call. After the stream
+   * ends, it will call the callback an additional time with all falsy
+   * arguments. Pass false to have the client make one call to the callback
+   * using (error, response) arguments.
    */
   static setCallback_(stream, callback, useUnaryResponse) {
     let isResponseReceived = false;
@@ -272,11 +279,11 @@ class GrpcWebClientBase {
             message: 'Incomplete response',
           });
         } else {
-          callback(null, responseReceived);
+          callback(null, responseReceived, null, null, /* unaryResponseReceived= */ true);
         }
       }
       if (useUnaryResponse) {
-        callback(null, null);  // trigger unaryResponse
+        callback(null, null);
       }
     });
   }

@@ -170,16 +170,18 @@ class GrpcWebClientReadableStream {
           if (FrameType.DATA in messages[i]) {
             const data = messages[i][FrameType.DATA];
             if (data) {
+              let isResponseDeserialized = false;
               let response;
               try {
                 response = self.responseDeserializeFn_(data);
+                isResponseDeserialized = true;
               } catch (err) {
                 self.handleError_(new RpcError(
                     StatusCode.INTERNAL,
                     `Error when deserializing response data; error: ${err}` +
                         `, response: ${response}`));
               }
-              if (response) {
+              if (isResponseDeserialized) {
                 self.sendDataCallbacks_(response);
               }
             }
