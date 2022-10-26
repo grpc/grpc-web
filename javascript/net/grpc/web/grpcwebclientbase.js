@@ -278,8 +278,10 @@ class GrpcWebClientBase {
             code: StatusCode.UNKNOWN,
             message: 'Incomplete response',
           });
-        } else {
+        } else if (useUnaryResponse) {
           callback(null, responseReceived, null, null, /* unaryResponseReceived= */ true);
+        } else {
+          callback(null, responseReceived);
         }
       }
       if (useUnaryResponse) {
