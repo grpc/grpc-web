@@ -169,7 +169,7 @@ You will need a `package.json` file
   "name": "grpc-web-commonjs-example",
   "dependencies": {
     "google-protobuf": "~3.14.0",
-    "grpc-web": "~1.4.1"
+    "grpc-web": "~1.4.2"
   },
   "devDependencies": {
     "webpack": "~4.43.0",

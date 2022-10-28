@@ -1,6 +1,11 @@
 [//]: # (GENERATED FILE -- DO NOT EDIT!)
 [//]: # (See scripts/release_notes.py for more details.)
 
+## 1.4.2
+
+- [#1289](https://github.com/grpc/grpc-web/pull/1289) Expose getName() in MethodDescriptor and fix TS definitions.
+- [#1230](https://github.com/grpc/grpc-web/pull/1230) GrpcWebClientReadableStream: keep falsy data @pro-wh
+
 ## 1.4.1
 
 - [#1286](https://github.com/grpc/grpc-web/pull/1286) Fix duplicate dot in enum name (when "package" is specified)
