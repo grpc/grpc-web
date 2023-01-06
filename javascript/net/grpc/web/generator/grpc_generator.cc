@@ -562,8 +562,10 @@ void PrintES6Imports(Printer* printer, const FileDescriptor* file) {
     }
     imports.insert(dep_filename);
     // We need to give each cross-file import an alias.
-    printer->Print("import * as $alias$ from '$dep_filename$_pb';\n", "alias",
-                   ModuleAlias(name), "dep_filename", dep_filename);
+    printer->Print("import * as $alias$ from '$dep_filename$_pb'; // proto import: \"$proto_import$\"\n",
+                   "alias", ModuleAlias(name),
+                   "dep_filename", dep_filename,
+                   "proto_import", name);
   }
   printer->Print("\n\n");
 }
