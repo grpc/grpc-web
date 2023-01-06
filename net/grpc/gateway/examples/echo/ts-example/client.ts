@@ -55,7 +55,7 @@ class EchoApp {
     request.setMessage(msg);
     const call = this.echoService.echo(
         request, {'custom-header-1': 'value1'},
-        (err: grpcWeb.RpcError, response: EchoResponse) => {
+        (err: grpcWeb.RpcError | null, response: EchoResponse | null) => {
           if (err) {
             if (err.code !== grpcWeb.StatusCode.OK) {
               EchoApp.addRightMessage(
@@ -80,7 +80,7 @@ class EchoApp {
     const request = new EchoRequest();
     request.setMessage(msg);
     this.echoService.echoAbort(
-        request, {}, (err: grpcWeb.RpcError, response: EchoResponse) => {
+        request, {}, (err: grpcWeb.RpcError | null, response: EchoResponse | null) => {
           if (err && err.code !== grpcWeb.StatusCode.OK) {
             EchoApp.addRightMessage(
                 'Error code: ' + err.code + ' "' + decodeURI(err.message) +

@@ -660,8 +660,8 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
           printer->Print(vars,
                          "request: $input_type$,\n"
                          "metadata: grpcWeb.Metadata | null,\n"
-                         "callback: (err: grpcWeb.RpcError,\n"
-                         "           response: $output_type$) => void): "
+                         "callback: (err: grpcWeb.RpcError | null,\n"
+                         "           response: $output_type$ | null) => void): "
                          "grpcWeb.ClientReadableStream<$output_type$>;\n\n");
           printer->Outdent();
 
@@ -670,8 +670,8 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
           printer->Print(vars,
                          "request: $input_type$,\n"
                          "metadata: grpcWeb.Metadata | null,\n"
-                         "callback?: (err: grpcWeb.RpcError,\n"
-                         "           response: $output_type$) => void) {\n");
+                         "callback?: (err: grpcWeb.RpcError | null,\n"
+                         "            response: $output_type$ | null) => void) {\n");
           printer->Print(vars, "if (callback !== undefined) {\n");
           printer->Indent();
           printer->Print(vars, "return this.client_.rpcCall(\n");
@@ -751,8 +751,8 @@ void PrintGrpcWebDtsClientClass(Printer* printer, const FileDescriptor* file,
             printer->Print(vars,
                            "request: $input_type$,\n"
                            "metadata: grpcWeb.Metadata | undefined,\n"
-                           "callback: (err: grpcWeb.RpcError,\n"
-                           "           response: $output_type$) => void\n");
+                           "callback: (err: grpcWeb.RpcError | null,\n"
+                           "           response: $output_type$ | null) => void\n");
             printer->Outdent();
             printer->Print(vars,
                            "): grpcWeb.ClientReadableStream<$output_type$>;");
