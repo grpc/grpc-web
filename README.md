@@ -271,7 +271,7 @@ definitions for `echo_pb.js`.
 
 ```ts
 import * as grpcWeb from 'grpc-web';
-import {EchoServiceClient} from './echo_grpc_web_pb';
+import {EchoServiceClient} from './EchoServiceClientPb';
 import {EchoRequest, EchoResponse} from './echo_pb';
 
 const echoService = new EchoServiceClient('http://localhost:8080', null, null);
@@ -289,7 +289,7 @@ call.on('status', (status: grpcWeb.Status) => {
 ```
 
 For the full TypeScript example, see
-[ts-example/client.ts](net/grpc/gateway/examples/echo/ts-example/client.ts).
+[ts-example/client.ts](net/grpc/gateway/examples/echo/ts-example/client.ts) with the [instructions](net/grpc/gateway/examples/echo/ts-example) to run.
 
 ## Ecosystem
 
