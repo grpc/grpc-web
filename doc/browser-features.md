@@ -17,6 +17,7 @@ On the server-side, [Envoy](https://www.envoyproxy.io/) is the official proxy wi
   * Access-Control-Allow-Credentials to allow Authorization headers
   * Access-Control-Allow-Methods to allow POST and (preflight) OPTIONS only
   * Access-Control-Allow-Headers to whatever the preflight request carries
+  * Access-Control-Expose-Headers to allow Javascript access to `grpc-status,grpc-message` headers.
 * The client library is expected to support header overwrites to avoid preflight
   * https://github.com/whatwg/fetch/issues/210
 * CSP support to be specified
