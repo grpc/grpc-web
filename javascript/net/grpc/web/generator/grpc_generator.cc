@@ -555,15 +555,17 @@ void PrintES6Imports(Printer* printer, const FileDescriptor* file) {
 
   std::set<string> imports;
   for (const auto& entry : GetAllMessages(file)) {
-    const string& name = entry.second->file()->name();
-    string dep_filename = GetRootPath(file->name(), name) + StripProto(name);
+    const string& proto_filename = entry.second->file()->name();
+    string dep_filename = GetRootPath(file->name(), proto_filename) + StripProto(proto_filename);
     if (imports.find(dep_filename) != imports.end()) {
       continue;
     }
     imports.insert(dep_filename);
     // We need to give each cross-file import an alias.
-    printer->Print("import * as $alias$ from '$dep_filename$_pb';\n", "alias",
-                   ModuleAlias(name), "dep_filename", dep_filename);
+    printer->Print("import * as $alias$ from '$dep_filename$_pb'; // proto import: \"$proto_filename$\"\n",
+                   "alias", ModuleAlias(proto_filename),
+                   "dep_filename", dep_filename,
+                   "proto_filename", proto_filename);
   }
   printer->Print("\n\n");
 }
