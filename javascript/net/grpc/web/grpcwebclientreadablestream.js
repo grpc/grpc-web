@@ -220,7 +220,15 @@ class GrpcWebClientReadableStream {
       let grpcStatusMessage = '';
       const initialMetadata = /** @type {!Metadata} */ ({});
 
-      const responseHeaders = self.xhr_.getResponseHeaders();
+      // Get response headers with lower case keys.
+      const rawResponseHeaders = self.xhr_.getResponseHeaders();
+      const responseHeaders = {};
+      for (const key in rawResponseHeaders) {
+        if (rawResponseHeaders.hasOwnProperty(key)) {
+          responseHeaders[key.toLowerCase()] = rawResponseHeaders[key];
+        }
+      }
+
       Object.keys(responseHeaders).forEach((header_) => {
         if (!(EXCLUDED_RESPONSE_HEADERS.includes(header_))) {
           initialMetadata[header_] = responseHeaders[header_];
@@ -262,9 +270,9 @@ class GrpcWebClientReadableStream {
       // Check whethere there are grpc specific response headers
       if (GRPC_STATUS in responseHeaders) {
         grpcStatusCode = /** @type {!StatusCode} */ (
-            Number(self.xhr_.getResponseHeader(GRPC_STATUS)));
+            Number(responseHeaders[GRPC_STATUS]));
         if (GRPC_STATUS_MESSAGE in responseHeaders) {
-          grpcStatusMessage = self.xhr_.getResponseHeader(GRPC_STATUS_MESSAGE);
+          grpcStatusMessage = responseHeaders[GRPC_STATUS_MESSAGE];
         }
         if (grpcStatusCode != StatusCode.OK) {
           self.handleError_(new RpcError(
