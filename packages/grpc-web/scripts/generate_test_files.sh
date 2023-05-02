@@ -32,7 +32,7 @@ cd "$REPO_DIR"
 mkdir -p "$GEN_DIR"
 
 echo "Generating dependency file..."
-$(npm bin)/closure-make-deps \
+npx closure-make-deps \
     --closure-path="node_modules/google-closure-library/closure/goog" \
     --file="node_modules/google-closure-library/closure/goog/deps.js" \
     --root="$JAVASCRIPT_DIR" \

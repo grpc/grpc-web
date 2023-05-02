@@ -27,7 +27,6 @@
 set -e
 
 cd "$(dirname $(dirname "$0"))"
-NPM_BIN_PATH=$(npm bin)
 PROTRACTOR_BIN_PATH="./node_modules/protractor/bin"
 
 function cleanup () {
@@ -37,7 +36,7 @@ function cleanup () {
 
 # Start the local webserver.
 echo "Starting local HTP Server..."
-$NPM_BIN_PATH/gulp serve &
+npx gulp serve &
 serverPid=$!
 echo "Local HTTP Server started with PID $serverPid."
 

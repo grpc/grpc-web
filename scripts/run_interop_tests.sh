@@ -25,7 +25,6 @@ REPO_DIR=$(realpath "${SCRIPT_DIR}/..")
 # Set up
 cd "${REPO_DIR}"
 
-
 # These programs need to be already installed
 progs=(docker docker-compose npm)
 for p in "${progs[@]}"
@@ -38,18 +37,17 @@ function cleanup () {
   echo "Killing lingering Docker servers..."
   docker rm -f "$pid1"
   docker rm -f "$pid2"
-  docker rm -f "$pid3"
 }
 
 trap cleanup EXIT
 
 # Build all relevant docker images. They should all build successfully.
-docker-compose build prereqs node-interop-server java-interop-server
+docker-compose build prereqs node-interop-server
 
 ##########################################################
 # Run interop tests (against Envoy)
 ##########################################################
-echo -e "\n[Running] Interop test #1 - against Envoy"
+echo -e "\n[Running] Interop test (Envoy)"
 pid1=$(docker run -d \
   -v "$(pwd)"/test/interop/envoy.yaml:/etc/envoy/envoy.yaml:ro \
   --network=host envoyproxy/envoy:v1.22.0)
@@ -59,18 +57,3 @@ run_tests
 
 docker rm -f "$pid1"
 docker rm -f "$pid2"
-
-
-##########################################################
-# Run interop tests (against grpc-web Java connector code)
-##########################################################
-echo -e "\n[Running] Interop test #2 - against Java interop server"
-pid3=$(docker run -d --network=host grpcweb/java-interop-server)
-
-run_tests
-
-docker rm -f "$pid3"
-
-# Clean up
-git clean -f -d -x
-echo 'Completed'

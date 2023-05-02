@@ -93,11 +93,6 @@ services:
     image: grpcweb/interop-client
     ports:
       - "8081:8081"
-  java-interop-server:
-    build:
-      context: ./
-      dockerfile: ./net/grpc/gateway/docker/java_interop_server/Dockerfile
-    image: grpcweb/java-interop-server
   protoc-plugin:
     build:
       context: ./
