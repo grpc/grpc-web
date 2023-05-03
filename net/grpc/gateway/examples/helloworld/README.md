@@ -159,7 +159,7 @@ static_resources:
 >         address: host.docker.internal
 > ```
 >
-> or if your version of Docker on Mac older then v18.03.0, change it to:
+> or if your version of Docker on Mac is older than v18.03.0, change it to:
 >
 > ```yaml
 >     ...
