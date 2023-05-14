@@ -210,8 +210,8 @@ the `client.js` files.
     "google-protobuf": "~3.14.0",
     "grpc-web": "~1.4.2",
     "lodash": "~4.17.0",
-    "webpack": "~4.43.0",
-    "webpack-cli": "~3.3.11"
+    "webpack": "~5.82.1",
+    "webpack-cli": "~5.1.1"
   }
 }
 ```

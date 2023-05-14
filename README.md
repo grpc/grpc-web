@@ -311,6 +311,8 @@ Multiple proxies support the gRPC-web protocol.
 
 3. Apache [APISIX](https://apisix.apache.org/) has also added grpc-web support, and more details can be found [here](https://apisix.apache.org/blog/2022/01/25/apisix-grpc-web-integration/).
 
+4. [Nginx](https://www.nginx.com/) has a grpc-web module ([doc](https://nginx.org/en/docs/http/ngx_http_grpc_module.html), [announcement](https://www.nginx.com/blog/nginx-1-13-10-grpc/))), and seems to work with simple configs, according to user [feedback](https://github.com/grpc/grpc-web/discussions/1322).
+
 ### Web Frameworks with gRPC-Web support
 - [Armeria (JVM)](https://armeria.dev/docs/server-grpc/#grpc-web)
 - [Tonic (Rust)](https://docs.rs/tonic-web/latest/tonic_web/)
