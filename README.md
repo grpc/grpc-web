@@ -13,7 +13,7 @@ frameworks for languages such as Python, Java, and Node. For details, see the
 ## Streaming Support
 gRPC-web currently supports 2 RPC modes:
 - Unary RPCs ([example](#make-a-unary-rpc-call))
-- Server-side Streaming RPCs ([example](#server-side-streaming))
+- Server-side Streaming RPCs ([example](#server-side-streaming)) (NOTE: Only when [`grpcwebtext`](#wire-format-mode) mode is used.)
 
 Client-side and Bi-directional streaming is not currently supported (see [streaming roadmap](doc/streaming-roadmap.md)).
 
