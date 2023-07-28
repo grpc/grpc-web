@@ -29,8 +29,6 @@ RUN npm install && \
   cp index.html /var/www/html && \
   cp dist/main.js /var/www/html/dist
 
-RUN apt-get -qq update && apt-get -qq install -y python
-
 WORKDIR /var/www/html
 
 EXPOSE 8081
