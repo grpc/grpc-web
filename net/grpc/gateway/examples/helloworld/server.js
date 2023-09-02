@@ -16,20 +16,21 @@
  *
  */
 
-var PROTO_PATH = __dirname + "/helloworld.proto";
+var PROTO_PATH = __dirname + '/helloworld.proto';
 
-var assert = require("assert");
-var async = require("async");
-var _ = require("lodash");
-var grpc = require("@grpc/grpc-js");
-var protoLoader = require("@grpc/proto-loader");
-var packageDefinition = protoLoader.loadSync(PROTO_PATH, {
-  keepCase: true,
-  longs: String,
-  enums: String,
-  defaults: true,
-  oneofs: true,
-});
+var assert = require('assert');
+var async = require('async');
+var _ = require('lodash');
+var grpc = require('@grpc/grpc-js');
+var protoLoader = require('@grpc/proto-loader');
+var packageDefinition = protoLoader.loadSync(
+    PROTO_PATH,
+    {keepCase: true,
+     longs: String,
+     enums: String,
+     defaults: true,
+     oneofs: true
+    });
 var protoDescriptor = grpc.loadPackageDefinition(packageDefinition);
 var helloworld = protoDescriptor.helloworld;
 
@@ -38,7 +39,7 @@ var helloworld = protoDescriptor.helloworld;
  * @param {function():?} callback
  */
 function doSayHello(call, callback) {
-  callback({ code: 0, message: "Hello World Error!" });
+  callback({code: 0, message: 'Hello world error!'});
 }
 
 /**
@@ -49,7 +50,7 @@ function doSayRepeatHello(call) {
   function sender(name) {
     return (callback) => {
       call.write({
-        message: "Hey! " + name,
+        message: 'Hey! ' + name
       });
       _.delay(callback, 500); // in ms
     };
@@ -77,13 +78,10 @@ function getServer() {
 if (require.main === module) {
   var server = getServer();
   server.bindAsync(
-    "0.0.0.0:9090",
-    grpc.ServerCredentials.createInsecure(),
-    (err, port) => {
+    '0.0.0.0:9090', grpc.ServerCredentials.createInsecure(), (err, port) => {
       assert.ifError(err);
       server.start();
-    }
-  );
+  });
 }
 
 exports.getServer = getServer;
