@@ -68,7 +68,7 @@ To minimize maintenance overhead, we will only support Envoy as the official pro
 This is to provide first-class support for gRPC API and gRPC-Web in popular Web
 frameworks such as Angular. 
 
-Note Dart gRPC will use gRPC-Web as the underlying implementation on the
+Note: Dart gRPC will use gRPC-Web as the underlying implementation on the
 Dart Web platform.
 
 ### TypeScript Support
