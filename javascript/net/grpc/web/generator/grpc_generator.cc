@@ -940,11 +940,12 @@ void PrintProtoDtsFile(Printer* printer, const FileDescriptor* file) {
   printer->Print("import * as jspb from 'google-protobuf'\n\n");
 
   for (int i = 0; i < file->dependency_count(); i++) {
-    const string& name = file->dependency(i)->name();
+    const string& proto_filename = file->dependency(i)->name();
     // We need to give each cross-file import an alias.
-    printer->Print("import * as $alias$ from '$dep_filename$_pb';\n", "alias",
-                   ModuleAlias(name), "dep_filename",
-                   GetRootPath(file->name(), name) + StripProto(name));
+    printer->Print("import * as $alias$ from '$dep_filename$_pb'; // proto import: \"$proto_filename$\"\n",
+                   "alias", ModuleAlias(proto_filename),
+                   "dep_filename", GetRootPath(file->name(), proto_filename) + StripProto(proto_filename),
+                   "proto_filename", proto_filename);
   }
   printer->Print("\n\n");
 
