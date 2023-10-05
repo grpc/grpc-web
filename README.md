@@ -104,8 +104,8 @@ typings file will also be generated for the protobuf messages and service stub.
 in TypeScript. See **TypeScript Support** below for information on how to
 generate TypeScript files.
 
-**Note: The `commonjs+dts` and `typescript` styles are only supported by
-`--grpc-web_out=import_style=...`, not by `--js_out=import_style=...`.**
+> **Note:** The `commonjs+dts` and `typescript` styles are only supported by
+`--grpc-web_out=import_style=...`, not by `--js_out=import_style=...`.
 
 ### Wire Format Mode
 
@@ -294,9 +294,14 @@ call.on('status', (status: grpcWeb.Status) => {
 
 ### (Option) Using Promises (Limited features)
 
-NOTE: It is not possible to access the `.on(...)` callbacks (e.g. for `metadata` and `status`) when Promise is used.
+> **NOTE:** It is not possible to access the `.on(...)` callbacks (e.g. for `metadata` and `status`) when Promise is used.
 
 ```ts
+// Create a Promise client instead
+const echoService = new EchoServicePromiseClient('http://localhost:8080', null, null);
+
+... (same as above)
+
 this.echoService.echo(request, {'custom-header-1': 'value1'})
   .then((response: EchoResponse) => {
     console.log(`Received response: ${response.getMessage()}`);
@@ -307,6 +312,18 @@ this.echoService.echo(request, {'custom-header-1': 'value1'})
 
 For the full TypeScript example, see
 [ts-example/client.ts](net/grpc/gateway/examples/echo/ts-example/client.ts) with the [instructions](net/grpc/gateway/examples/echo/ts-example) to run.
+
+## Custom Interceptors
+
+Custom interceptors can be implemented and chained, which could be useful for features like auth, retries, etc.
+
+There are 2 types of interceptors ([interfaces](https://github.com/grpc/grpc-web/blob/3cd7e0d43493d4694fed78400e4ad78031d70c09/packages/grpc-web/index.d.ts#L55-L65)):
+
+- `UnaryInterceptor` ([doc](https://grpc.io/blog/grpc-web-interceptor/#stream-interceptor-example), [example](https://github.com/grpc/grpc-web/blob/master/packages/grpc-web/test/tsc-tests/client04.ts)) - Intercept Unary RPCs; can only be used with Promise clients.
+- `StreamInterceptor` ([doc](https://grpc.io/blog/grpc-web-interceptor/#stream-interceptor-example), [example](https://github.com/grpc/grpc-web/blob/master/packages/grpc-web/test/tsc-tests/client03.ts)) - More versatile; can be used with regular clients.
+
+For more details, see [this blog post](https://grpc.io/blog/grpc-web-interceptor/).
+
 
 ## Ecosystem
 
