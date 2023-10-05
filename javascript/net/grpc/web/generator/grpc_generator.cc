@@ -653,7 +653,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
           printer->Indent();
           printer->Print(vars,
                          "request: $input_type$,\n"
-                         "metadata: grpcWeb.Metadata | null): "
+                         "metadata?: grpcWeb.Metadata | null): "
                          "$promise$<$output_type$>;\n\n");
           printer->Outdent();
 
@@ -671,7 +671,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
           printer->Indent();
           printer->Print(vars,
                          "request: $input_type$,\n"
-                         "metadata: grpcWeb.Metadata | null,\n"
+                         "metadata?: grpcWeb.Metadata | null,\n"
                          "callback?: (err: grpcWeb.RpcError,\n"
                          "           response: $output_type$) => void) {\n");
           printer->Print(vars, "if (callback !== undefined) {\n");
