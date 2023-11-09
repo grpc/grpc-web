@@ -208,7 +208,7 @@ the `client.js` files.
     "@grpc/proto-loader": "~0.5.4",
     "async": "~1.5.2",
     "google-protobuf": "~3.14.0",
-    "grpc-web": "~1.4.2",
+    "grpc-web": "~1.5.0",
     "lodash": "~4.17.0",
     "webpack": "~5.82.1",
     "webpack-cli": "~5.1.1"
@@ -256,7 +256,7 @@ To generate the protobuf messages and client service stub class from your
 > For example, in MacOS, you can do:
 >
 > ```sh
-> $ sudo mv ~/Downloads/protoc-gen-grpc-web-1.4.2-darwin-x86_64 \
+> $ sudo mv ~/Downloads/protoc-gen-grpc-web-1.5.0-darwin-x86_64 \
 >   /usr/local/bin/protoc-gen-grpc-web
 > $ sudo chmod +x /usr/local/bin/protoc-gen-grpc-web
 > ```

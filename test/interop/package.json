@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "google-protobuf": "~3.14.0",
-    "grpc-web": "~1.4.2"
+    "grpc-web": "~1.5.0"
   },
   "devDependencies": {
     "assert": "^2.0.0",
