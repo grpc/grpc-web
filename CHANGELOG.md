@@ -1,6 +1,14 @@
 [//]: # (GENERATED FILE -- DO NOT EDIT!)
 [//]: # (See scripts/release_notes.py for more details.)
 
+## 1.5.0
+
+- [#1369](https://github.com/grpc/grpc-web/pull/1369) (Typescript) Mark some `metadata` parameters as optional @andrewmbenton
+- [#1335](https://github.com/grpc/grpc-web/pull/1335) Update Debian (and other deps) and remove Java In-process Proxy
+- [#1334](https://github.com/grpc/grpc-web/pull/1334) Allow mixed-case headers
+- [#1330](https://github.com/grpc/grpc-web/pull/1330) Update ES6 .d.ts imports with comment about corresponding proto import... @gonzojive
+- [#1313](https://github.com/grpc/grpc-web/pull/1313) Update ES6 imports with comment about corresponding proto import path. @reddaly
+
 ## 1.4.2
 
 - [#1289](https://github.com/grpc/grpc-web/pull/1289) Expose getName() in MethodDescriptor and fix TS definitions.
