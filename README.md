@@ -347,9 +347,12 @@ Multiple proxies support the gRPC-web protocol.
 
 4. [Nginx](https://www.nginx.com/) has a grpc-web module ([doc](https://nginx.org/en/docs/http/ngx_http_grpc_module.html), [announcement](https://www.nginx.com/blog/nginx-1-13-10-grpc/))), and seems to work with simple configs, according to user [feedback](https://github.com/grpc/grpc-web/discussions/1322).
 
-### Web Frameworks with gRPC-Web support
+### Server Frameworks with gRPC-Web support
 - [Armeria (JVM)](https://armeria.dev/docs/server-grpc/#grpc-web)
 - [Tonic (Rust)](https://docs.rs/tonic-web/latest/tonic_web/)
+
+### Web Frameworks Compatibility
+- **Vite** - See this [demo app](https://github.com/a2not/vite-grpc-web), as well as this [comment](https://github.com/grpc/grpc-web/issues/1242#issuecomment-1816249928).
 
 [Envoy]: https://www.envoyproxy.io
 [gRPC]: https://grpc.io
