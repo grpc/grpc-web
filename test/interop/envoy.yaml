@@ -48,7 +48,12 @@ static_resources:
     - name: interop_service
       connect_timeout: 0.25s
       type: logical_dns
-      http2_protocol_options: {}
+      # HTTP/2 support
+      typed_extension_protocol_options:
+        envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+          "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+          explicit_http_config:
+            http2_protocol_options: {}
       lb_policy: round_robin
       load_assignment:
         cluster_name: cluster_0
