@@ -123,7 +123,7 @@ For more information about the gRPC-web wire format, see the
 
   - `Content-type: application/grpc-web+proto`
   - Payload are in the binary protobuf format.
-  - Only unary calls are supported for now.
+  - Only unary calls are supported.
 
 ## How It Works
 
