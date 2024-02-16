@@ -13,7 +13,7 @@ frameworks for languages such as Python, Java, and Node. For details, see the
 ## Streaming Support
 gRPC-web currently supports 2 RPC modes:
 - Unary RPCs ([example](#make-a-unary-rpc-call))
-- Server-side Streaming RPCs ([example](#server-side-streaming)) (NOTE: Only when [`grpcwebtext`](#wire-format-mode) mode is used.)
+- Server-side Streaming RPCs ([example](#server-side-streaming)) (NOTE: Only when [`grpcwebtext`](#wire-format-mode) mode is used, or when [Nginx](#ecosystem) is used)
 
 Client-side and Bi-directional streaming is not currently supported (see [streaming roadmap](doc/streaming-roadmap.md)).
 
@@ -123,7 +123,7 @@ For more information about the gRPC-web wire format, see the
 
   - `Content-type: application/grpc-web+proto`
   - Payload are in the binary protobuf format.
-  - Only unary calls are supported for now.
+  - Only unary calls are supported, unless when [Nginx](#ecosystem) is used.
 
 ## How It Works
 
@@ -337,15 +337,16 @@ Multiple proxies support the gRPC-web protocol.
 	$ docker-compose up -d node-server envoy commonjs-client
 	```
 
-2. You can also try the [gRPC-web Go proxy][].
+2. [Nginx](https://www.nginx.com/) has a grpc-web module ([doc](https://nginx.org/en/docs/http/ngx_http_grpc_module.html), [announcement](https://www.nginx.com/blog/nginx-1-13-10-grpc/)). It seems to work with simple configs, according to [user feedbacks](https://github.com/grpc/grpc-web/discussions/1322)), even with server-streaming support ([user feedback](https://github.com/grpc/grpc-web/issues/1391)).
+
+3. You can also try the [gRPC-web Go proxy][].
 
 	```sh
 	$ docker-compose up -d node-server grpcwebproxy binary-client
 	```
 
-3. Apache [APISIX](https://apisix.apache.org/) has also added grpc-web support, and more details can be found [here](https://apisix.apache.org/blog/2022/01/25/apisix-grpc-web-integration/).
+4. Apache [APISIX](https://apisix.apache.org/) has also added grpc-web support, and more details can be found [here](https://apisix.apache.org/blog/2022/01/25/apisix-grpc-web-integration/).
 
-4. [Nginx](https://www.nginx.com/) has a grpc-web module ([doc](https://nginx.org/en/docs/http/ngx_http_grpc_module.html), [announcement](https://www.nginx.com/blog/nginx-1-13-10-grpc/))), and seems to work with simple configs, according to user [feedback](https://github.com/grpc/grpc-web/discussions/1322).
 
 ### Server Frameworks with gRPC-Web support
 - [Armeria (JVM)](https://armeria.dev/docs/server-grpc/#grpc-web)

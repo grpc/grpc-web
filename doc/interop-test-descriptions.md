@@ -4,7 +4,7 @@ gRPC-Web Interop Tests
 This document describes the set of tests any gRPC-Web clients or proxies need
 to implement. The proto definition for the messages and RPCs we are using for
 the tests can be found
-[here](src/proto/grpc/testing/test.proto).
+[here](https://github.com/grpc/grpc/blob/master/src/proto/grpc/testing/test.proto).
 
 The canonical set of interop tests was defined in the main
 [grpc/grpc repo](https://github.com/grpc/grpc/blob/master/doc/interop-test-descriptions.md).
