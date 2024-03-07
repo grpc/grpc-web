@@ -42,7 +42,6 @@ RUN wget -nv -O buildifier \
 WORKDIR /github/grpc-web
 
 RUN git clone https://github.com/grpc/grpc-web .
-COPY ./scripts/init_submodules.sh ./scripts/
 RUN ./scripts/init_submodules.sh
 
 
