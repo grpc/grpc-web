@@ -64,6 +64,8 @@ first from [here](https://github.com/protocolbuffers/protobuf-javascript/release
 > **NOTE:** Javascript output is no longer supported by `protocolbuffers/protobuf` package as it previously did. Please use the releases from [protocolbuffers/protobuf-javascript](https://github.com/protocolbuffers/protobuf-javascript/releases) instead.
 
 Make sure they are both executable and are discoverable from your PATH.
+Also make sure to rename the executable to protoc-gen-grpc-web by removing any os/version info
+from the name of the executable.
 
 For example, in MacOS, you can do:
 
