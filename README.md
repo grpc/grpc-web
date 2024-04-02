@@ -37,13 +37,13 @@ streaming example.
 From the repo root directory:
 
 ```sh
-$ docker-compose pull prereqs node-server envoy commonjs-client
-$ docker-compose up node-server envoy commonjs-client
+$ docker compose pull prereqs node-server envoy commonjs-client
+$ docker compose up node-server envoy commonjs-client
 ```
 
 Open a browser tab, and visit http://localhost:8081/echotest.html.
 
-To shutdown: `docker-compose down`.
+To shutdown: `docker compose down`.
 
 ## Runtime Library
 
@@ -334,7 +334,7 @@ Multiple proxies support the gRPC-web protocol.
 1. The current **default proxy** is [Envoy][], which supports gRPC-web out of the box.
 
 	```sh
-	$ docker-compose up -d node-server envoy commonjs-client
+	$ docker compose up -d node-server envoy commonjs-client
 	```
 
 2. [Nginx](https://www.nginx.com/) has a grpc-web module ([doc](https://nginx.org/en/docs/http/ngx_http_grpc_module.html), [announcement](https://www.nginx.com/blog/nginx-1-13-10-grpc/)). It seems to work with simple configs, according to [user feedbacks](https://github.com/grpc/grpc-web/discussions/1322)), even with server-streaming support ([user feedback](https://github.com/grpc/grpc-web/issues/1391)).
@@ -342,7 +342,7 @@ Multiple proxies support the gRPC-web protocol.
 3. You can also try the [gRPC-web Go proxy][].
 
 	```sh
-	$ docker-compose up -d node-server grpcwebproxy binary-client
+	$ docker compose up -d node-server grpcwebproxy binary-client
 	```
 
 4. Apache [APISIX](https://apisix.apache.org/) has also added grpc-web support, and more details can be found [here](https://apisix.apache.org/blog/2022/01/25/apisix-grpc-web-integration/).

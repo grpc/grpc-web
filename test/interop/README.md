@@ -13,7 +13,7 @@ Run interop tests
 
 ```sh
 $ cd grpc-web
-$ docker-compose build prereqs node-interop-server interop-client
+$ docker compose build prereqs node-interop-server interop-client
 ```
 
 
@@ -49,7 +49,7 @@ $ docker run --network=host --rm grpcweb/prereqs /bin/bash \
 Or from the browser:
 
 ```sh
-$ docker-compose up interop-client
+$ docker compose up interop-client
 ```
 
 Open up the browser and go to `http://localhost:8081/index.html` and open up

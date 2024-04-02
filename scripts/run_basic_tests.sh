@@ -22,7 +22,7 @@ cd "${REPO_DIR}"
 
 
 # These programs need to be already installed
-progs=(docker docker-compose curl)
+progs=(docker curl)
 for p in "${progs[@]}"
 do
   command -v "$p" > /dev/null 2>&1 || \
@@ -34,12 +34,12 @@ done
 ##########################################################
 echo -e "\n[Running] Basic test #1 - Runnning unit tests"
 # Run jsunit tests
-docker-compose build jsunit-test
+docker compose build jsunit-test
 docker run --rm grpcweb/jsunit-test /bin/bash \
     /grpc-web/scripts/docker-run-jsunit-tests.sh
 
 # Run (mocha) unit tests
-docker-compose build prereqs
+docker compose build prereqs
 docker run --rm grpcweb/prereqs /bin/bash \
   /github/grpc-web/scripts/docker-run-mocha-tests.sh
 
@@ -48,18 +48,18 @@ docker run --rm grpcweb/prereqs /bin/bash \
 # Step 2: Test echo server
 ##########################################################
 echo -e "\n[Running] Basic test #2 - Testing echo server"
-docker-compose build prereqs envoy node-server
+docker compose build prereqs envoy node-server
 
 # Bring up the Echo server and the Envoy proxy (in background).
 # The 'sleep' seems necessary for the docker containers to be fully up
 # and listening before we test the with curl requests
-docker-compose up -d node-server envoy && sleep 5;
+docker compose up -d node-server envoy && sleep 5;
 
 # Run a curl request and verify the output
 source ./scripts/test-proxy.sh
 
 # Remove all docker containers
-docker-compose down
+docker compose down
 
 
 ##########################################################
@@ -68,10 +68,10 @@ docker-compose down
 echo -e "\n[Running] Basic test #3 - Testing everything buids"
 if [[ "$MASTER" == "1" ]]; then
   # Build all for continuous_integration
-  docker-compose build
+  docker compose build
 else
   # Only build a subset of docker images for presubmit runs
-  docker-compose build commonjs-client closure-client ts-client
+  docker compose build commonjs-client closure-client ts-client
 fi
 
 # Run build tests to ensure all Bazel targets can build.

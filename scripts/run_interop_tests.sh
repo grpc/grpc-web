@@ -26,7 +26,7 @@ REPO_DIR=$(realpath "${SCRIPT_DIR}/..")
 cd "${REPO_DIR}"
 
 # These programs need to be already installed
-progs=(docker docker-compose npm)
+progs=(docker npm)
 for p in "${progs[@]}"
 do
   command -v "$p" > /dev/null 2>&1 || \
@@ -42,7 +42,7 @@ function cleanup () {
 trap cleanup EXIT
 
 # Build all relevant docker images. They should all build successfully.
-docker-compose build prereqs node-interop-server
+docker compose build prereqs node-interop-server
 
 ##########################################################
 # Run interop tests (against Envoy)

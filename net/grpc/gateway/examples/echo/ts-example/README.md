@@ -4,7 +4,7 @@
 
 ```bash
 # From root dir
-docker-compose up --build node-server envoy ts-client
+docker compose up --build node-server envoy ts-client
 ```
 
 Visit http://localhost:8081/echotest.html
@@ -15,7 +15,7 @@ Visit http://localhost:8081/echotest.html
 
 ```bash
 # From root dir
-docker-compose up --build node-server envoy
+docker compose up --build node-server envoy
 ```
 
 ### Step 2 - Codegen
