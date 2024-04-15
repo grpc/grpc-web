@@ -245,30 +245,21 @@ And that's it! We have all the code ready. Let's run the example!
 
 ## Generate Protobuf Messages and Client Service Stub
 
+### Install Plugins
+
 To generate the protobuf messages and client service stub class from your
 `.proto` definitions, we need:
  - the `protoc` binary, _and_
+ - the `protoc-gen-js` binary, _and_
  - the `protoc-gen-grpc-web` plugin.
 
-> You can download the `protoc-gen-grpc-web` protoc plugin from our
-> [release](https://github.com/grpc/grpc-web/releases) page.
->
-> If you don't already have `protoc` installed, you will have to download it
-> first from [here](https://github.com/protocolbuffers/protobuf/releases).
->
-> Make sure they are both executable and are discoverable from your PATH.
->
-> For example, in MacOS, you can do:
->
-> ```sh
-> $ sudo mv ~/Downloads/protoc-gen-grpc-web-1.5.0-darwin-x86_64 \
->   /usr/local/bin/protoc-gen-grpc-web
-> $ sudo chmod +x /usr/local/bin/protoc-gen-grpc-web
-> ```
+Follow the instructions [here](https://github.com/grpc/grpc-web?tab=readme-ov-file#code-generator-plugins)
+if you don't have them installed already.
 
+### Generating stubs
 
-When you have both `protoc` and `protoc-gen-grpc-web` installed, you can now
-run this command:
+When you have both `protoc`, `protoc-gen-js`, and `protoc-gen-grpc-web`
+installed, you can now run this command:
 
 ```sh
 $ protoc -I=. helloworld.proto \
