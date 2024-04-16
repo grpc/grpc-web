@@ -60,7 +60,7 @@ $ npm i grpc-web
 If you don't already have [`protoc`](https://github.com/protocolbuffers/protobuf)
 installed, download it first from [here](https://github.com/protocolbuffers/protobuf/releases) and install it on your PATH.
 
-Or run:
+If you use Homebrew (on macOS), you could run:
 
 ```sh
 brew install protobuf
