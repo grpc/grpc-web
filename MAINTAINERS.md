@@ -8,8 +8,9 @@ See [CONTRIBUTING.md](https://github.com/grpc/grpc-community/blob/master/CONTRIB
 for general contribution guidelines.
 
 ## Maintainers (in alphabetical order)
-- [stanley-cheung](https://github.com/stanley-cheung), Google Inc.
+- [sampajano](https://github.com/sampajano), Google Inc.
 - [wenbozhu](https://github.com/wenbozhu), Google Inc.
 
 ## Emeritus Maintainers (in alphabetical order)
-- [fengli79](https://github.com/fengli79), Google Inc.
+- [fengli79](https://github.com/fengli79)
+- [stanley-cheung](https://github.com/stanley-cheung)
