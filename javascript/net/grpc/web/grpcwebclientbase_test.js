@@ -118,7 +118,7 @@ testSuite({
     xhr.simulateReadyStateChange(ReadyState.COMPLETE);
     const response = await responsePromise;
 
-    assertEquals('value', response.data);
+    assertEquals('value', /** @type {!MockReply} */ (response).data);
     const headers = /** @type {!Object} */ (xhr.getLastRequestHeaders());
     assertElementsEquals(DEFAULT_UNARY_HEADERS, Object.keys(headers));
     assertElementsEquals(DEFAULT_UNARY_HEADER_VALUES, Object.values(headers));
@@ -294,8 +294,18 @@ class MockReply {
 }
 
 /**
- * @param {function(string): !MockReply} responseDeSerializeFn
- * @return {!MethodDescriptor<!MockRequest, !MockReply>}
+ * Typedef for allowed response types.
+ *
+ * Number is allowed specifically for supporting falsy responses `0`, see:
+ * https://github.com/grpc/grpc-web/pull/1025
+ *
+ * @typedef {!MockReply|number}
+ */
+let AllowedResponseType;
+
+/**
+ * @param {function(string): !AllowedResponseType} responseDeSerializeFn
+ * @return {!MethodDescriptor<!MockRequest, !AllowedResponseType>}
  */
 function createMethodDescriptor(responseDeSerializeFn) {
   return new MethodDescriptor(
