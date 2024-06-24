@@ -10,11 +10,6 @@ module.ClientReadableStream.prototype.removeListener =
   function(eventType, callback) {};
 module.ClientReadableStream.prototype.cancel = function() {};
 
-module.GenericClient = function() {};
-module.GenericClient.prototype.unaryCall = function(request) {};
-module.GenericClient.prototype.call = function(requestMessage,
-                                               methodDescriptor) {};
-
 module.UnaryInterceptor = function() {};
 module.UnaryInterceptor.prototype.intercept = function(request, invoker) {};
 

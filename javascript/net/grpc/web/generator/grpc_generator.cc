@@ -689,7 +689,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
           printer->Outdent();
           printer->Print(vars,
                          "}\n"
-                         "return this.client_.unaryCall(\n");
+                         "return this.client_.thenableCall(\n");
           printer->Print(vars,
                          "this.hostname_ +\n"
                          "  '/$package_dot$$service_name$/$method_name$',\n"
@@ -1179,7 +1179,7 @@ void PrintPromiseUnaryCall(Printer* printer, std::map<string, string> vars) {
   printer->Indent();
   printer->Print(vars,
                  "  function(request, metadata) {\n"
-                 "return this.client_.unaryCall(this.hostname_ +\n");
+                 "return this.client_.thenableCall(this.hostname_ +\n");
   printer->Indent();
   printer->Indent();
   if (vars["mode"] == GetModeVar(Mode::OP)) {
