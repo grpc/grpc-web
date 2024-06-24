@@ -16,7 +16,24 @@ everything, we also need keep the balance between creating a reusable and stable
 open-source solution and meeting those requirements unique to Google's Web applications
 (such as search). 
 
-## Roadmap Features (in no particular order)
+## Roadmap Features
+
+### TypeScript Codebase (2024)
+Migrate the codebase to TypeScript and update the related toolchains (incl. remove
+dependency on `closure-compiler`). Enhance overall TypeScript support.
+
+### Streaming Support
+
+Enhance Fetch/streams support (e.g. cancellation support) and improve runtime
+support, including service workers.
+
+See streaming roadmap [here](streaming-roadmap.md).
+
+### Bidi Streaming
+
+We plan to leverage [WebTransport](https://web.dev/webtransport/) for bi-directional streaming.
+
+Also see the dedicate road-map doc on [bidi streaming](streaming-roadmap.md).
 
 ### Non-Binary Message Encoding
 
@@ -27,22 +44,6 @@ definition increases.
 For Google's Web applications (e.g. gmail), we use a JSON like format which is
 comparable to JSON in efficiency but also very compact in both the message size
 and code size.
-
-### Streaming Support
-
-Currently the gRPC-Web client library uses XHR to ensure cross-browser support
-and to support platforms such as React-Native.
-
-We do plan to add fetch/streams support at some point, which is more efficient
-for binary streams and incurs less memory overhead on the client-side.
-
-However, fetch still has certain gaps compared to XHR, most notably the lack of
-cancellation support. Progressing events, I/O event throttling are other
-concerns.
-
-### Bidi Streaming
-
-We plan to leverage [WebTransport](https://web.dev/webtransport/) for bi-directional streaming. Also see the dedicate road-map doc on [bidi streaming](streaming-roadmap.md).
 
 ### Security
 
@@ -70,11 +71,6 @@ frameworks such as Angular.
 
 Note: Dart gRPC will use gRPC-Web as the underlying implementation on the
 Dart Web platform.
-
-### TypeScript Support
-
-We now have experimental TypeScript Support! See the main README for more
-information.
 
 ### Non-Closure compiler support
 

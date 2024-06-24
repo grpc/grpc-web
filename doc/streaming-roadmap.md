@@ -8,10 +8,10 @@ This document describes the road-map for gRPC-Web to support different streaming
 ## Server-streaming
 
 We will keep improving server-streaming in the following areas:
-* Fetch cancellation support - 2023
-* Finalizing keep-alive support (via Envoy) - 2023+
-* Performance improvements and whatwg Fetch/streams support, including service workers - 2023+
-* Addressing runtime behavior gaps between Fetch and XHR - 2023+
+* Fetch cancellation support - 2024
+* Performance improvements and whatwg Fetch/streams support, including service workers - 2024
+* Finalizing keep-alive support (via Envoy) - 2024+
+* Addressing runtime behavior gaps between Fetch and XHR - 2024+
 
 ## Client-streaming and half-duplex streaming
 
