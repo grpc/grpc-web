@@ -74,7 +74,7 @@ if [[ "$MASTER" == "1" ]]; then
   # https://github.com/grpc/grpc-web/pull/1445) by building
   # everything but it.
   # TODO: Revert to building all targets.
-  docker-compose build prereqs echo-server node-server node-interop-server envoy grpcwebproxy commonjs-client closure-client ts-client binary-client interop-client protoc-plugin jsunit-test
+  docker-compose build prereqs echo-server node-server node-interop-server envoy grpcwebproxy commonjs-client closure-client ts-client binary-client interop-client jsunit-test
 else
   # Only build a subset of docker images for presubmit runs
   docker-compose build commonjs-client closure-client ts-client
