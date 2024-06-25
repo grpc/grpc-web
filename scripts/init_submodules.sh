@@ -16,4 +16,3 @@ set -ex
 
 cd "$(dirname "$0")"/..
 git submodule --quiet update --init --recursive
-(cd third_party/protobuf && git checkout tags/v3.15.6)
