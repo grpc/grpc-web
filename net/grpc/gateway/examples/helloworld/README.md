@@ -212,7 +212,7 @@ the `client.js` files.
     "@grpc/grpc-js": "~1.0.5",
     "@grpc/proto-loader": "~0.5.4",
     "async": "~1.5.2",
-    "google-protobuf": "~3.14.0",
+    "google-protobuf": "~3.21.4",
     "grpc-web": "~1.5.0",
     "lodash": "~4.17.0",
     "webpack": "~5.82.1",

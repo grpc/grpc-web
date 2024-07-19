@@ -173,7 +173,7 @@ You will need a `package.json` file
 {
   "name": "grpc-web-commonjs-example",
   "dependencies": {
-    "google-protobuf": "~3.14.0",
+    "google-protobuf": "~3.21.4",
     "grpc-web": "~1.5.0"
   },
   "devDependencies": {
