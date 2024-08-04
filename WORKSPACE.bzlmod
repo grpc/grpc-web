@@ -1,0 +1,2 @@
+# Empty workspace file so that MODULE.bazel is used instead of the WORKSPACE system.
+# See https://bazel.build/external/migration#workspace.bzlmod
