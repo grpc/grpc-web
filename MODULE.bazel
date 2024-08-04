@@ -1,6 +1,6 @@
 module(
-    name = "grpc_web",
-    version = "1.5.0",
+    name = "grpc-web",
+    version = "1.5.0.bcr",  # This isn't exactly version 1.5.0, so add a .bcr suffix
     compatibility_level = 1,
     repo_name = "com_github_grpc_grpc_web",
 )
