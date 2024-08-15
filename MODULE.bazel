@@ -1,3 +1,10 @@
+"""
+A bazel module for the grpc-web project.
+
+Visit https://grpc.io/ and https://github.com/grpc/grpc-web for
+more information about the project.
+"""
+
 module(
     name = "grpc-web",
     version = "1.6.0",

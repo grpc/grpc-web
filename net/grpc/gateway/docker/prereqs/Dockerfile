@@ -52,7 +52,7 @@ RUN ./scripts/init_submodules.sh
 FROM node:20.0.0-bullseye AS copy-and-build
 
 ARG MAKEFLAGS=-j8
-ARG BAZEL_VERSION=6.5.0
+ARG BAZEL_VERSION=7.3.0
 
 RUN apt-get -qq update && apt-get -qq install -y python
 
@@ -98,4 +98,4 @@ COPY ./src ./src
 COPY ./test ./test
 
 RUN /usr/local/bin/buildifier \
-  --mode=check --lint=warn --warnings=all -r ./WORKSPACE javascript net
+  --mode=check --lint=warn --warnings=all -r ./MODULE.bazel javascript net
