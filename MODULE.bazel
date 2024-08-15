@@ -1,11 +1,11 @@
 module(
     name = "grpc-web",
-    version = "1.6.0.rc1",
+    version = "1.6.0",
     compatibility_level = 1,
     repo_name = "com_github_grpc_grpc_web",
 )
 
-bazel_dep(name = "protobuf", version = "23.1", repo_name = "com_google_protobuf")
+bazel_dep(name = "protobuf", version = "27.1", repo_name = "com_google_protobuf")
 bazel_dep(name = "grpc", version = "1.65.0", repo_name = "com_github_grpc_grpc")
 bazel_dep(name = "rules_cc", version = "0.0.2")
 bazel_dep(name = "rules_proto", version = "6.0.2")
