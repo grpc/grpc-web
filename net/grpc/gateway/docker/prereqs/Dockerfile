@@ -52,7 +52,7 @@ RUN ./scripts/init_submodules.sh
 FROM node:20.0.0-bullseye AS copy-and-build
 
 ARG MAKEFLAGS=-j8
-ARG BAZEL_VERSION=6.5.0
+ARG BAZEL_VERSION=7.3.0
 
 RUN apt-get -qq update && apt-get -qq install -y python
 
@@ -74,7 +74,8 @@ WORKDIR /github/grpc-web
 
 # Copy only files necessary to build the protoc-gen-grpc-web first as an optimization because they
 # are rarely updated compared with the javascript files.
-COPY ./WORKSPACE ./WORKSPACE
+COPY ./MODULE.bazel ./MODULE.bazel
+COPY ./MODULE.bazel.lock ./MODULE.bazel.lock
 COPY ./.bazelrc ./.bazelrc
 COPY ./javascript/net/grpc/web/generator javascript/net/grpc/web/generator
 
@@ -97,4 +98,4 @@ COPY ./src ./src
 COPY ./test ./test
 
 RUN /usr/local/bin/buildifier \
-  --mode=check --lint=warn --warnings=all -r ./WORKSPACE javascript net
+  --mode=check --lint=warn --warnings=all -r ./MODULE.bazel javascript net
