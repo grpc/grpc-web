@@ -778,7 +778,7 @@ void PrintProtoDtsEnum(Printer* printer, const EnumDescriptor* desc) {
   std::map<string, string> vars;
   vars["enum_name"] = desc->name();
 
-  printer->Print(vars, "export enum $enum_name$ { \n");
+  printer->Print(vars, "export const enum $enum_name$ {\n");
   printer->Indent();
   for (int i = 0; i < desc->value_count(); i++) {
     vars["value_name"] = Uppercase(desc->value(i)->name());
@@ -794,7 +794,7 @@ void PrintProtoDtsOneofCase(Printer* printer, const OneofDescriptor* desc) {
   vars["oneof_name"] = ToUpperCamel(ParseLowerUnderscore(desc->name()));
   vars["oneof_name_upper"] = Uppercase(desc->name());
 
-  printer->Print(vars, "export enum $oneof_name$Case { \n");
+  printer->Print(vars, "export const enum $oneof_name$Case {\n");
   printer->Indent();
   printer->Print(vars, "$oneof_name_upper$_NOT_SET = 0,\n");
   for (int i = 0; i < desc->field_count(); i++) {
@@ -901,13 +901,13 @@ void PrintProtoDtsMessage(Printer* printer, const Descriptor* desc,
     vars["js_field_name"] = js_field_name;
     vars["js_field_type"] = AsObjectFieldType(field, file);
     if (!field->has_presence()) {
-      printer->Print(vars, "$js_field_name$: $js_field_type$,\n");
+      printer->Print(vars, "$js_field_name$: $js_field_type$;\n");
     } else {
-      printer->Print(vars, "$js_field_name$?: $js_field_type$,\n");
+      printer->Print(vars, "$js_field_name$?: $js_field_type$;\n");
     }
   }
   printer->Outdent();
-  printer->Print("}\n");
+  printer->Print("};\n");
 
   for (int i = 0; i < desc->nested_type_count(); i++) {
     if (desc->nested_type(i)->options().map_entry()) {
