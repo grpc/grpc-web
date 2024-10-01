@@ -1,0 +1,36 @@
+name: Publish Stable Source Archive
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  # Whenever a release is published, this uploads an accompanying stable source archive.
+  #
+  # Github doesn't guarantee stability of source archives for more than 6 months[1].
+  # More stability is required by projects like Bazel Central Registry[2][3].
+  #
+  # [1]: https://github.blog/open-source/git/update-on-the-future-stability-of-source-code-archives-and-hashes/
+  # [2]: https://github.com/bazelbuild/bazel-central-registry/blob/main/docs/README.md#validations
+  # [3]: https://blog.bazel.build/2023/02/15/github-archive-checksum.html
+  bazel-release-archive:
+    defaults:
+        run:
+          # https://vaneyckt.io/posts/safer_bash_scripts_with_set_euxo_pipefail/
+          shell: /usr/bin/bash -euxo pipefail {0}
+    env:
+      # github.ref_name is defined here:
+      # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs#github-context
+      TAG: ${{github.ref_name}}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout
+      # GITHUB_REF is defined here:
+      # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/store-information-in-variables#default-environment-variables
+      - run: git archive --format zip    --prefix "grpc-web-$TAG/" --output "grpc-web-source-${TAG}.zip"    "$GITHUB_REF"
+      - run: git archive --format tar.gz --prefix "grpc-web-$TAG/" --output "grpc-web-source-${TAG}.tar.gz" "$GITHUB_REF"
+      - run: gh release upload "${TAG}" "grpc-web-source-${TAG}.zip" "grpc-web-source-${TAG}.tar.gz"
+        env:
+          GH_TOKEN: ${{ github.token }}
