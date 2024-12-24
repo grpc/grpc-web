@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "build": "task build"
+  },
   "devDependencies": {
     "@types/google-protobuf": "~3.15.12",
     "@types/jquery": "~3.3.6",

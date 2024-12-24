@@ -1,0 +1,8 @@
+version: '3'
+
+tasks:
+
+includes:
+  docs:
+    taskfile: ./ts-example/Taskfile.yml
+    dir: ./ts-example
