@@ -3,7 +3,7 @@ version: '3'
 tasks:
   build:
     cmds:
-      - npx tsc && mv *_pb.js dist/ && npx webpack
+      - task genpb-ts && npx tsc && cp *_pb.js dist/ && npx webpack
   genpb-cdts:
     cmds:
       - >
