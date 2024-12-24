@@ -1,11 +1,14 @@
 {
   "scripts": {
-    "build": "task build"
+    "build": "task build",
+    "start-web": "task start-web",
+    "start-servers": "task start-servers"
   },
   "devDependencies": {
     "@types/google-protobuf": "~3.15.12",
     "@types/jquery": "~3.3.6",
     "@types/node": "~10.17.0",
+    "esbuild": "^0.24.2",
     "google-protobuf": "~3.21.4",
     "grpc-web": "~1.5.0",
     "jquery": "~3.5.1",

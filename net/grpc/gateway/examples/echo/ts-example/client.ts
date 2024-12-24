@@ -24,9 +24,9 @@ import * as $ from 'jquery';
 // import {EchoServiceClient} from './echo_grpc_web_pb';
 
 // Option 2: import_style=typescript
-import {EchoServiceClient} from './EchoServiceClientPb';
+import {EchoServiceClient} from './protos/EchoServiceClientPb';
 
-import {EchoRequest, EchoResponse, ServerStreamingEchoRequest, ServerStreamingEchoResponse} from './echo_pb';
+import {EchoRequest, EchoResponse, ServerStreamingEchoRequest, ServerStreamingEchoResponse} from './protos/echo_pb';
 
 class EchoApp {
   static readonly INTERVAL = 500;  // ms

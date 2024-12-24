@@ -1,18 +1,29 @@
 version: '3'
 
 tasks:
+
   build:
     cmds:
-      - npx tsc && mv *_pb.js dist/ && npx webpack
+      - rm -fr dist/ && task genpb-ts && npx tsc && esbuild dist/client.js --outfile=dist/main.js --bundle --minify --sourcemap
+
+  start-web:
+    cmds:
+      - python3 -m http.server 8081
+
+  start-servers:
+    cmds:
+      - cd $(git rev-parse --show-toplevel) && docker-compose pull prereqs node-server envoy
+      - cd $(git rev-parse --show-toplevel) && docker-compose up node-server envoy
+
   genpb-cdts:
     cmds:
       - >
-        protoc -I=../ echo.proto \
+        protoc -I=./ */**.proto \
          --js_out=import_style=commonjs:. \
          --grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:.
   genpb-ts:
     cmds:
       - >
-        protoc -I=../ echo.proto \
+        protoc -I=./ */**.proto \
          --js_out=import_style=commonjs:. \
          --grpc-web_out=import_style=typescript,mode=grpcwebtext:.

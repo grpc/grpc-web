@@ -8,7 +8,7 @@
 // versions:
 // 	protoc-gen-grpc-web v1.5.0
 // 	protoc              v5.29.2
-// source: echo.proto
+// source: protos/echo.proto
 
 
 /* eslint-disable */
@@ -17,7 +17,7 @@
 
 import * as grpcWeb from 'grpc-web';
 
-import * as echo_pb from './echo_pb'; // proto import: "echo.proto"
+import * as protos_echo_pb from '../protos/echo_pb'; // proto import: "protos/echo.proto"
 
 
 export class EchoServiceClient {
@@ -42,29 +42,29 @@ export class EchoServiceClient {
   methodDescriptorEcho = new grpcWeb.MethodDescriptor(
     '/grpc.gateway.testing.EchoService/Echo',
     grpcWeb.MethodType.UNARY,
-    echo_pb.EchoRequest,
-    echo_pb.EchoResponse,
-    (request: echo_pb.EchoRequest) => {
+    protos_echo_pb.EchoRequest,
+    protos_echo_pb.EchoResponse,
+    (request: protos_echo_pb.EchoRequest) => {
       return request.serializeBinary();
     },
-    echo_pb.EchoResponse.deserializeBinary
+    protos_echo_pb.EchoResponse.deserializeBinary
   );
 
   echo(
-    request: echo_pb.EchoRequest,
-    metadata?: grpcWeb.Metadata | null): Promise<echo_pb.EchoResponse>;
+    request: protos_echo_pb.EchoRequest,
+    metadata?: grpcWeb.Metadata | null): Promise<protos_echo_pb.EchoResponse>;
 
   echo(
-    request: echo_pb.EchoRequest,
+    request: protos_echo_pb.EchoRequest,
     metadata: grpcWeb.Metadata | null,
     callback: (err: grpcWeb.RpcError,
-               response: echo_pb.EchoResponse) => void): grpcWeb.ClientReadableStream<echo_pb.EchoResponse>;
+               response: protos_echo_pb.EchoResponse) => void): grpcWeb.ClientReadableStream<protos_echo_pb.EchoResponse>;
 
   echo(
-    request: echo_pb.EchoRequest,
+    request: protos_echo_pb.EchoRequest,
     metadata?: grpcWeb.Metadata | null,
     callback?: (err: grpcWeb.RpcError,
-               response: echo_pb.EchoResponse) => void) {
+               response: protos_echo_pb.EchoResponse) => void) {
     if (callback !== undefined) {
       return this.client_.rpcCall(
         this.hostname_ +
@@ -85,29 +85,29 @@ export class EchoServiceClient {
   methodDescriptorEchoAbort = new grpcWeb.MethodDescriptor(
     '/grpc.gateway.testing.EchoService/EchoAbort',
     grpcWeb.MethodType.UNARY,
-    echo_pb.EchoRequest,
-    echo_pb.EchoResponse,
-    (request: echo_pb.EchoRequest) => {
+    protos_echo_pb.EchoRequest,
+    protos_echo_pb.EchoResponse,
+    (request: protos_echo_pb.EchoRequest) => {
       return request.serializeBinary();
     },
-    echo_pb.EchoResponse.deserializeBinary
+    protos_echo_pb.EchoResponse.deserializeBinary
   );
 
   echoAbort(
-    request: echo_pb.EchoRequest,
-    metadata?: grpcWeb.Metadata | null): Promise<echo_pb.EchoResponse>;
+    request: protos_echo_pb.EchoRequest,
+    metadata?: grpcWeb.Metadata | null): Promise<protos_echo_pb.EchoResponse>;
 
   echoAbort(
-    request: echo_pb.EchoRequest,
+    request: protos_echo_pb.EchoRequest,
     metadata: grpcWeb.Metadata | null,
     callback: (err: grpcWeb.RpcError,
-               response: echo_pb.EchoResponse) => void): grpcWeb.ClientReadableStream<echo_pb.EchoResponse>;
+               response: protos_echo_pb.EchoResponse) => void): grpcWeb.ClientReadableStream<protos_echo_pb.EchoResponse>;
 
   echoAbort(
-    request: echo_pb.EchoRequest,
+    request: protos_echo_pb.EchoRequest,
     metadata?: grpcWeb.Metadata | null,
     callback?: (err: grpcWeb.RpcError,
-               response: echo_pb.EchoResponse) => void) {
+               response: protos_echo_pb.EchoResponse) => void) {
     if (callback !== undefined) {
       return this.client_.rpcCall(
         this.hostname_ +
@@ -128,29 +128,29 @@ export class EchoServiceClient {
   methodDescriptorNoOp = new grpcWeb.MethodDescriptor(
     '/grpc.gateway.testing.EchoService/NoOp',
     grpcWeb.MethodType.UNARY,
-    echo_pb.Empty,
-    echo_pb.Empty,
-    (request: echo_pb.Empty) => {
+    protos_echo_pb.Empty,
+    protos_echo_pb.Empty,
+    (request: protos_echo_pb.Empty) => {
       return request.serializeBinary();
     },
-    echo_pb.Empty.deserializeBinary
+    protos_echo_pb.Empty.deserializeBinary
   );
 
   noOp(
-    request: echo_pb.Empty,
-    metadata?: grpcWeb.Metadata | null): Promise<echo_pb.Empty>;
+    request: protos_echo_pb.Empty,
+    metadata?: grpcWeb.Metadata | null): Promise<protos_echo_pb.Empty>;
 
   noOp(
-    request: echo_pb.Empty,
+    request: protos_echo_pb.Empty,
     metadata: grpcWeb.Metadata | null,
     callback: (err: grpcWeb.RpcError,
-               response: echo_pb.Empty) => void): grpcWeb.ClientReadableStream<echo_pb.Empty>;
+               response: protos_echo_pb.Empty) => void): grpcWeb.ClientReadableStream<protos_echo_pb.Empty>;
 
   noOp(
-    request: echo_pb.Empty,
+    request: protos_echo_pb.Empty,
     metadata?: grpcWeb.Metadata | null,
     callback?: (err: grpcWeb.RpcError,
-               response: echo_pb.Empty) => void) {
+               response: protos_echo_pb.Empty) => void) {
     if (callback !== undefined) {
       return this.client_.rpcCall(
         this.hostname_ +
@@ -171,17 +171,17 @@ export class EchoServiceClient {
   methodDescriptorServerStreamingEcho = new grpcWeb.MethodDescriptor(
     '/grpc.gateway.testing.EchoService/ServerStreamingEcho',
     grpcWeb.MethodType.SERVER_STREAMING,
-    echo_pb.ServerStreamingEchoRequest,
-    echo_pb.ServerStreamingEchoResponse,
-    (request: echo_pb.ServerStreamingEchoRequest) => {
+    protos_echo_pb.ServerStreamingEchoRequest,
+    protos_echo_pb.ServerStreamingEchoResponse,
+    (request: protos_echo_pb.ServerStreamingEchoRequest) => {
       return request.serializeBinary();
     },
-    echo_pb.ServerStreamingEchoResponse.deserializeBinary
+    protos_echo_pb.ServerStreamingEchoResponse.deserializeBinary
   );
 
   serverStreamingEcho(
-    request: echo_pb.ServerStreamingEchoRequest,
-    metadata?: grpcWeb.Metadata): grpcWeb.ClientReadableStream<echo_pb.ServerStreamingEchoResponse> {
+    request: protos_echo_pb.ServerStreamingEchoRequest,
+    metadata?: grpcWeb.Metadata): grpcWeb.ClientReadableStream<protos_echo_pb.ServerStreamingEchoResponse> {
     return this.client_.serverStreaming(
       this.hostname_ +
         '/grpc.gateway.testing.EchoService/ServerStreamingEcho',
@@ -193,17 +193,17 @@ export class EchoServiceClient {
   methodDescriptorServerStreamingEchoAbort = new grpcWeb.MethodDescriptor(
     '/grpc.gateway.testing.EchoService/ServerStreamingEchoAbort',
     grpcWeb.MethodType.SERVER_STREAMING,
-    echo_pb.ServerStreamingEchoRequest,
-    echo_pb.ServerStreamingEchoResponse,
-    (request: echo_pb.ServerStreamingEchoRequest) => {
+    protos_echo_pb.ServerStreamingEchoRequest,
+    protos_echo_pb.ServerStreamingEchoResponse,
+    (request: protos_echo_pb.ServerStreamingEchoRequest) => {
       return request.serializeBinary();
     },
-    echo_pb.ServerStreamingEchoResponse.deserializeBinary
+    protos_echo_pb.ServerStreamingEchoResponse.deserializeBinary
   );
 
   serverStreamingEchoAbort(
-    request: echo_pb.ServerStreamingEchoRequest,
-    metadata?: grpcWeb.Metadata): grpcWeb.ClientReadableStream<echo_pb.ServerStreamingEchoResponse> {
+    request: protos_echo_pb.ServerStreamingEchoRequest,
+    metadata?: grpcWeb.Metadata): grpcWeb.ClientReadableStream<protos_echo_pb.ServerStreamingEchoResponse> {
     return this.client_.serverStreaming(
       this.hostname_ +
         '/grpc.gateway.testing.EchoService/ServerStreamingEchoAbort',
