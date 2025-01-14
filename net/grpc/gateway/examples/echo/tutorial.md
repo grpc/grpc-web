@@ -191,7 +191,7 @@ into one single JS library that can be used in the browser.
 
 ```sh
 $ npm install
-$ npx webpack client.js
+$ npx webpack ./client.js
 ```
 
 Now embed `dist/main.js` into your project and see it in action!

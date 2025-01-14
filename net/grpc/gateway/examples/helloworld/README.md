@@ -284,7 +284,7 @@ can be consumed by the browser.
 
 ```sh
 $ npm install
-$ npx webpack client.js
+$ npx webpack ./client.js
 ```
 
 Here we use `webpack` and give it an entry point `client.js`. You can also use
