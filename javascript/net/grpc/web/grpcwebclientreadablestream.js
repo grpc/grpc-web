@@ -153,8 +153,9 @@ class GrpcWebClientReadableStream {
         byteSource = new Uint8Array(
             /** @type {!ArrayBuffer} */ (self.xhr_.getResponse()));
       } else {
+        const metadata = {'httpStatusCode': self.xhr_.getStatus().toString()};
         self.handleError_(
-            new RpcError(StatusCode.UNKNOWN, 'Unknown Content-type received.'));
+            new RpcError(StatusCode.UNKNOWN, 'Unknown Content-type received.', metadata));
         return;
       }
       let messages = null;
@@ -257,11 +258,14 @@ class GrpcWebClientReadableStream {
           return;
         }
         let errorMessage = ErrorCode.getDebugMessage(lastErrorCode);
+
+        const metadata = {};
         if (xhrStatusCode != -1) {
           errorMessage += ', http status code: ' + xhrStatusCode;
+          metadata['httpStatusCode'] = self.xhr_.getStatus().toString();
         }
 
-        self.handleError_(new RpcError(grpcStatusCode, errorMessage));
+        self.handleError_(new RpcError(grpcStatusCode, errorMessage, metadata));
         return;
       }
 
