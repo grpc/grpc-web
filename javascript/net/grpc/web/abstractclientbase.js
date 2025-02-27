@@ -33,6 +33,20 @@ const RpcError = goog.require('grpc.web.RpcError');
 
 
 /**
+ * @constructor
+ * @struct
+ * @final
+ */
+const PromiseCallOptions = function() {};
+
+/**
+ * An AbortSignal to abort the call.
+ * @type {AbortSignal|undefined}
+ */
+PromiseCallOptions.prototype.signal;
+
+
+/**
  * This interface represents a grpc-web client
  * @interface
  */
@@ -62,10 +76,11 @@ const AbstractClientBase = class {
    * @param {!Object<string, string>} metadata User defined call metadata
    * @param {!MethodDescriptor<REQUEST, RESPONSE>}
    *   methodDescriptor Information of this RPC method
+   * @param options Options for the call
    * @return {!IThenable<RESPONSE>}
    *   A promise that resolves to the response message
    */
-  thenableCall(method, requestMessage, metadata, methodDescriptor) {}
+  thenableCall(method, requestMessage, metadata, methodDescriptor, options) {}
 
   /**
    * @abstract
@@ -78,21 +93,19 @@ const AbstractClientBase = class {
    * @return {!ClientReadableStream<RESPONSE>} The Client Readable Stream
    */
   serverStreaming(method, requestMessage, metadata, methodDescriptor) {}
-
-  /**
-   * Get the hostname of the current request.
-   * @static
-   * @template REQUEST, RESPONSE
-   * @param {string} method
-   * @param {!MethodDescriptor<REQUEST,RESPONSE>} methodDescriptor
-   * @return {string}
-   */
-  static getHostname(method, methodDescriptor) {
-    // method = hostname + methodDescriptor.name(relative path of this method)
-    return method.substr(0, method.length - methodDescriptor.name.length);
-  }
 };
 
+/**
+ * Get the hostname of the current request.
+ * @template REQUEST, RESPONSE
+ * @param {string} method
+ * @param {!MethodDescriptor<REQUEST,RESPONSE>} methodDescriptor
+ * @return {string}
+ */
+function getHostname(method, methodDescriptor) {
+  // method = hostname + methodDescriptor.name(relative path of this method)
+  return method.substr(0, method.length - methodDescriptor.name.length);
+}
 
 
-exports = AbstractClientBase;
+exports = {AbstractClientBase, PromiseCallOptions, getHostname};
