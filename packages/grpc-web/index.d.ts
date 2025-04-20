@@ -7,7 +7,8 @@ declare module "grpc-web" {
       method: string,
       request: REQ,
       metadata: Metadata,
-      methodDescriptor: MethodDescriptor<REQ, RESP>
+      methodDescriptor: MethodDescriptor<REQ, RESP>,
+      options?: PromiseCallOptions
     ): Promise<RESP>;
 
     rpcCall<REQ, RESP> (
@@ -64,8 +65,10 @@ declare module "grpc-web" {
       Promise<UnaryResponse<REQ, RESP>>): Promise<UnaryResponse<REQ, RESP>>;
   }
 
-  export class CallOptions {
-    constructor(options: { [index: string]: any; });
+  /** Options for gRPC-Web calls returning a Promise. */
+  export interface PromiseCallOptions {
+    /** An AbortSignal to abort the call. */
+    readonly signal?: AbortSignal;
   }
 
   export class MethodDescriptor<REQ, RESP> {
@@ -82,7 +85,6 @@ declare module "grpc-web" {
     getRequestMessage(): REQ;
     getMethodDescriptor(): MethodDescriptor<REQ, RESP>;
     getMetadata(): Metadata;
-    getCallOptions(): CallOptions;
   }
 
   export class UnaryResponse<REQ, RESP> {

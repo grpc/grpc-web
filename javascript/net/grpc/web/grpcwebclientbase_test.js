@@ -19,6 +19,7 @@ goog.module('grpc.web.GrpcWebClientBaseTest');
 goog.setTestOnly('grpc.web.GrpcWebClientBaseTest');
 
 const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
+const ErrorCode = goog.require('goog.net.ErrorCode');
 const GrpcWebClientBase = goog.require('grpc.web.GrpcWebClientBase');
 const MethodDescriptor = goog.require('grpc.web.MethodDescriptor');
 const ReadyState = goog.require('goog.net.XmlHttp.ReadyState');
@@ -144,6 +145,58 @@ testSuite({
     const headers = /** @type {!Object} */ (xhr.getLastRequestHeaders());
     assertElementsEquals(DEFAULT_UNARY_HEADERS, Object.keys(headers));
     assertElementsEquals(DEFAULT_UNARY_HEADER_VALUES, Object.values(headers));
+  },
+
+
+  async testCancelledThenableCall() {
+    const xhr = new XhrIo();
+    const client = new GrpcWebClientBase(/* options= */ {}, xhr);
+    const methodDescriptor = createMethodDescriptor((bytes) => {
+      assertElementsEquals(DEFAULT_RPC_RESPONSE_DATA, [].slice.call(bytes));
+      return 0;
+    });
+
+    const abortController = new AbortController();
+    const signal = abortController.signal;
+    const responsePromise = client.thenableCall(
+        'url', new MockRequest(), /* metadata= */ {}, methodDescriptor,
+        {signal});
+    abortController.abort();
+
+    const error = await assertRejects(responsePromise);
+    assertTrue(error instanceof RpcError);
+    assertEquals(StatusCode.CANCELLED, /** @type {!RpcError} */ (error).code);
+    assertEquals('Aborted', /** @type {!RpcError} */ (error).message);
+    // Default abort reason if none provided.
+    const cause = /** @type {!RpcError} */ (error).cause;
+    assertTrue(cause instanceof Error);
+    assertEquals('AbortError', /** @type {!Error} */ (cause).name);
+    assertEquals(ErrorCode.ABORT, xhr.getLastErrorCode());
+  },
+
+  async testCancelledThenableCallWithReason() {
+    const xhr = new XhrIo();
+    const client = new GrpcWebClientBase(/* options= */ {}, xhr);
+    const methodDescriptor = createMethodDescriptor((bytes) => {
+      assertElementsEquals(DEFAULT_RPC_RESPONSE_DATA, [].slice.call(bytes));
+      return 0;
+    });
+
+    const abortController = new AbortController();
+    const signal = abortController.signal;
+    const responsePromise = client.thenableCall(
+        'url', new MockRequest(), /* metadata= */ {}, methodDescriptor,
+        {signal});
+    abortController.abort('cancelling');
+
+    const error = await assertRejects(responsePromise);
+    assertTrue(error instanceof RpcError);
+    assertEquals(StatusCode.CANCELLED, /** @type {!RpcError} */ (error).code);
+    assertEquals('Aborted', /** @type {!RpcError} */ (error).message);
+    // Abort reason forwarded as cause.
+    const cause = /** @type {!RpcError} */ (error).cause;
+    assertEquals('cancelling', cause);
+    assertEquals(ErrorCode.ABORT, xhr.getLastErrorCode());
   },
 
   async testDeadline() {

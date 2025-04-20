@@ -1,4 +1,4 @@
-FROM selenium/standalone-chrome:93.0.4577.63
+FROM selenium/standalone-chrome:112.0.5615.165
 
 # Matching the node version used in the node:20.0.0-bullseye image.
 ARG NODE_VERSION=20.0.0
