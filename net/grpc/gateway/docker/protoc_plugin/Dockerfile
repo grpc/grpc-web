@@ -17,24 +17,24 @@ FROM grpcweb/prereqs
 ARG MAKEFLAGS=-j8
 
 RUN apt-get -qq update && apt-get -qq install -y \
-  autoconf \
-  automake \
+  cmake \
   build-essential \
   curl \
   git \
   libtool \
   libssl-dev \
   make \
-  zip
+  zip 
+  
 
-WORKDIR /github/grpc-web
+WORKDIR /github/grpc-web/third_party/protobuf
+RUN cmake . -DCMAKE_CXX_STANDARD=17 
+RUN cmake --build .
 
-RUN cd ./third_party/protobuf && \
-  ./autogen.sh && \
-  ./configure && \
-  make && \
-  make install && \
-  ldconfig
+  
+RUN cd /github/grpc-web/javascript/net/grpc/web/generator && \
+make protoc-gen-grpc-web
 
-RUN cd ./javascript/net/grpc/web/generator && \
-  make protoc-gen-grpc-web
+
+
+
