@@ -21,12 +21,12 @@ import * as $ from 'jquery';
 
 // Uncomment either one of the following:
 // Option 1: import_style=commonjs+dts
-import {EchoServiceClient} from './echo_grpc_web_pb';
+// import {EchoServiceClient} from './echo_grpc_web_pb';
 
 // Option 2: import_style=typescript
-// import {EchoServiceClient} from './EchoServiceClientPb';
+import {EchoServiceClient} from './protos/EchoServiceClientPb';
 
-import {EchoRequest, EchoResponse, ServerStreamingEchoRequest, ServerStreamingEchoResponse} from './echo_pb';
+import {EchoRequest, EchoResponse, ServerStreamingEchoRequest, ServerStreamingEchoResponse} from './protos/echo_pb';
 
 class EchoApp {
   static readonly INTERVAL = 500;  // ms

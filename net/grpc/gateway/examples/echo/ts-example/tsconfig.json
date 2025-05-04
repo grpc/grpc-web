@@ -6,15 +6,8 @@
     "allowJs": true,
     "outDir": "./dist",
     "types": ["node"],
+    "sourceMap": true
   },
-  "include": [
-    "client.ts",
-    "echo_pb.js",
-    "echo_pb.d.ts",
-    "echo_grpc_web_pb.js",
-    "echo_grpc_web_pb.d.ts",
-    "EchoServiceClientPb.ts"
-  ],
   "exclude": [
     "node_modules"
   ]
