@@ -172,6 +172,18 @@ static_resources:
 >         address: docker.for.mac.localhost
 > ```
 
+> NOTE: As per
+> [Envoy - Envoy Networking](ttps://www.envoyproxy.io/docs/envoy/latest/start/quick-start/run-envoy#envoy-networking),
+> if your environment does not enable IPv6, enable only IPv4 in the cluster
+> by adding the `dns_lookup_family: V4_ONLY` field:
+>
+> ```yaml
+>     ...
+>     clusters:
+>       - name: greeter_service
+>       dns_lookup_family: V4_ONLY
+> ```
+
 ## Write Client Code
 
 Now, we are ready to write some client code! Put this in a `client.js` file.
