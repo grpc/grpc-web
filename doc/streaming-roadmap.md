@@ -3,7 +3,6 @@
 This document describes the road-map for gRPC-Web to support different streaming features.
 * Server-streaming
 * Client-streaming and half-duplex streaming
-* Full-duplex streaming over WebTransport
 
 ## Server-streaming
 
@@ -19,9 +18,9 @@ We don’t plan to support client-streaming via Fetch/upload-streams (See [Appen
 
 Client-streaming and half-duplex bidi streaming will be addressed when Full-duplex streaming is supported via WebTransport (see below).
 
-## Full-duplex streaming over WebTransport
+## Full-duplex streaming
 
-We will be leveraging [WebTransport](https://web.dev/webtransport/) to enable full-duplex (bi-directional) streaming. Planned for 2023+.
+Not planned.
 
 ## Issues with WebSockets
 

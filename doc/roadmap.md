@@ -18,7 +18,17 @@ open-source solution and meeting those requirements unique to Google's Web appli
 
 ## Roadmap Features
 
-### TypeScript Codebase (2024)
+> NOTE: Due to the status of two of gRPC-Web’s core dependencies — [Google
+Closure](https://github.com/google/closure-library/issues/1214), which has been
+archived, and [Protobuf
+JavaScript](https://github.com/protocolbuffers/protobuf-javascript?tab=readme-ov-file#project-status),
+which is receiving only minimal updates — the gRPC-Web project is no longer able
+to deliver new, modern solutions for the open source community. As a result, we
+do not plan to be adding new features going forward.
+>
+> We recommend you to use [gRPC-Gateway](https://github.com/grpc-ecosystem/grpc-gateway) as an alternative.
+
+### TypeScript Codebase
 Migrate the codebase to TypeScript and update the related toolchains (incl. remove
 dependency on `closure-compiler`). Enhance overall TypeScript support.
 
@@ -28,12 +38,6 @@ Enhance Fetch/streams support (e.g. cancellation support) and improve runtime
 support, including service workers.
 
 See streaming roadmap [here](streaming-roadmap.md).
-
-### Bidi Streaming
-
-We plan to leverage [WebTransport](https://web.dev/webtransport/) for bi-directional streaming.
-
-Also see the dedicate road-map doc on [bidi streaming](streaming-roadmap.md).
 
 ### Non-Binary Message Encoding
 
@@ -53,17 +57,6 @@ applications.
 Native support such as XSRF, XSS prevention may also be added to the gRPC-Web
 protocol.
 
-### In-process Proxies
-
-[In-process proxies](https://github.com/grpc/grpc-web/blob/master/doc/in-process-proxy.md)
-will eliminate the need to deploy Envoy to use gRPC-Web. 
-
-We have plans to add in-process proxy support in Python, Java, Node, C++ etc. Let us know
-if you are interested in implementing any language-specific in-process
-gRPC-Web proxy.
-
-To minimize maintenance overhead, we will only support Envoy as the official proxy for gRPC-Web.
-
 ### Web Framework Integration
 
 This is to provide first-class support for gRPC API and gRPC-Web in popular Web
@@ -77,11 +70,3 @@ Dart Web platform.
 With the addition of CommonJS style imports, gRPC-Web client stubs can now be
 compiled with various tools such as Browserify, Webpack, etc. Let us know
 what else we should try!
-
-### Web UI Support
-
-This allows the user to construct and submit a gRPC request directly using the
-browser.
-
-We need define a standard look & feel for creating and rendering nested protobuf
-messages.
