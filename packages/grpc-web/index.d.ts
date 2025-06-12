@@ -1,6 +1,9 @@
 declare module "grpc-web" {
 
   export interface Metadata { [s: string]: string; }
+  export type StatusMetadata = Metadata & {
+    httpStatusCode?: number
+  };
 
   export class AbstractClientBase {
     thenableCall<REQ, RESP> (
@@ -107,15 +110,15 @@ declare module "grpc-web" {
   }
 
   export class RpcError extends Error {
-    constructor(code: StatusCode, message: string, metadata: Metadata);
+    constructor(code: StatusCode, message: string, metadata: StatusMetadata);
     code: StatusCode;
-    metadata: Metadata;
+    metadata: StatusMetadata;
   }
 
   export interface Status {
     code: number;
     details: string;
-    metadata?: Metadata;
+    metadata?: StatusMetadata;
   }
 
   export enum StatusCode {
