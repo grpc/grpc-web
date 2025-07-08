@@ -45,6 +45,8 @@ RUN git clone https://github.com/grpc/grpc-web .
 COPY ./scripts/init_submodules.sh ./scripts/
 RUN ./scripts/init_submodules.sh
 
+# Add this to ensure abseil-cpp is available
+RUN git clone --depth 1 https://github.com/abseil/abseil-cpp.git third_party/abseil-cpp
 
 ######################################
 # Stage 2: Copy source files and build
