@@ -38,6 +38,7 @@ RUN rm -rf /usr/local/include/absl /usr/local/lib/libabsl*
 WORKDIR /github/grpc-web/third_party/abseil-cpp
 RUN cmake -S . -B cmake/build \
     -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+    -DCMAKE_CXX_STANDARD=17 \
     -DCMAKE_BUILD_TYPE=Release && \
     cmake --build cmake/build --target install
 
