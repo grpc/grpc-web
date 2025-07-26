@@ -31,6 +31,9 @@ WORKDIR /github/grpc-web
 # Copy full grpc-web source including third_party
 COPY . /github/grpc-web
 
+# Add this to ensure abseil-cpp is available
+RUN git clone --depth 1 https://github.com/abseil/abseil-cpp.git third_party/abseil-cpp
+
 # Clean existing Abseil install (if rebuilding)
 RUN rm -rf /usr/local/include/absl /usr/local/lib/libabsl*
 
