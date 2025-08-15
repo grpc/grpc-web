@@ -19,8 +19,7 @@ https://help.github.com/articles/creating-a-personal-access-token-for-the-comman
 
 1. Create a draft release notes / changelog, by running:
 
-$ python3 scripts/release_notes.py --token=<token> --output_unreleased \
-  --output_without_labels
+$ python3 scripts/release_notes.py --token=<token>  --unreleased_only
 
 2. Adjust each PR, if necessary, after reading the draft:
 
@@ -46,7 +45,7 @@ $ python3 scripts/release_notes.py --token=<token> > CHANGELOG.md
 
 from collections import defaultdict
 import urllib
-from urllib.request import Request, urlopen, HTTPError
+from urllib.request import Request, urlopen
 from enum import Enum
 import json
 import re
@@ -94,6 +93,10 @@ class ProcessChangelog:
         self.releases = []
         self.merged_prs = []
         self.changelog_by_release = defaultdict(ReleaseNotes)
+        # When True, only gather and output the Unreleased section and
+        # stop querying older PR pages as soon as we encounter the first
+        # PR that belongs to a released tag.
+        self.unreleased_only = False
 
     # Make a Github API call
     def github_api(self, url):
@@ -126,26 +129,35 @@ class ProcessChangelog:
             elif label['name'] == "release notes: major":
                 _label_level = LabelLevel.MAJOR_FEATURE
             elif label['name'] == "release notes: breaking":
-                _label_level = LabelLevel.BREAKING
+                _label_level = LabelLevel.BREAKING_CHANGE
             if _label_level > label_level: # retain the highest level
                 label_level = _label_level
         return label_level
 
     # Retrieve the list of all the releases
     def get_releases(self):
-        # Might get into trouble if we ever have more than 30 releases
-        github_releases, _ = self.github_api('/releases')
-        for release in github_releases:
-            ref_data, _ = self.github_api(
-                '/git/ref/tags/' + release['tag_name'])
-            tag_data, _ = self.github_api(
-                '/git/commits/' + ref_data['object']['sha'])
+        if self.unreleased_only:
+            # Optimization: only need the latest release to detect boundary
+            latest_release, _ = self.github_api('/releases/latest')
+            ref_data, _ = self.github_api('/git/ref/tags/' + latest_release['tag_name'])
+            tag_data, _ = self.github_api('/git/commits/' + ref_data['object']['sha'])
             self.releases.append({
-                'release': release['tag_name'],
+                'release': latest_release['tag_name'],
                 'date': tag_data['author']['date'],
                 'sha': ref_data['object']['sha'][0:7]
             })
-        self.releases.sort(key=lambda val:val['date'])
+        else:
+            # Might get into trouble if we ever have more than 30 releases
+            github_releases, _ = self.github_api('/releases')
+            for release in github_releases:
+                ref_data, _ = self.github_api('/git/ref/tags/' + release['tag_name'])
+                tag_data, _ = self.github_api('/git/commits/' + ref_data['object']['sha'])
+                self.releases.append({
+                    'release': release['tag_name'],
+                    'date': tag_data['author']['date'],
+                    'sha': ref_data['object']['sha'][0:7]
+                })
+            self.releases.sort(key=lambda val:val['date'])
 
     # Retrieve the list of all merged PRs
     def get_merged_prs(self, num_pages):
@@ -173,6 +185,13 @@ class ProcessChangelog:
                     'release': release,
                     'label_level': label_level,
                 })
+
+                # Optimization: if only unreleased requested and we hit
+                # a PR that's already part of a released tag, we can
+                # stop. The API returns PRs in reverse chronological
+                # order, so older ones will also be released.
+                if self.unreleased_only and release != UNRELEASED:
+                    return
 
             num_pages -= 1
             if num_pages == 0:
@@ -215,11 +234,13 @@ class ProcessChangelog:
                 release_notes.without_labels.append(final_formatted_line)
 
     # Print the final result in the form of CHANGELOG.md
-    def print_changelog(self, output_without_labels, output_unreleased):
+    def print_changelog(self, output_without_labels, output_unreleased_only):
         print("[//]: # (GENERATED FILE -- DO NOT EDIT!)")
         print("[//]: # (See scripts/release_notes.py for more details.)")
         for release, release_notes in self.changelog_by_release.items():
-            if release == UNRELEASED and output_unreleased == False:
+            # Always include Unreleased unless we're filtering to only
+            # unreleased (handled by the check below).
+            if output_unreleased_only and release != UNRELEASED:
                 continue
             print_other_changes_heading = False
             print("")
@@ -268,26 +289,28 @@ def build_args_parser():
                         default=False,
                         action='store_true',
                         help='Whether to output PRs without labels')
-    parser.add_argument('--output_unreleased',
+    parser.add_argument('--unreleased_only',
                         default=False,
                         action='store_true',
-                        help='Whether to output unreleased')
+                        help='Only output the Unreleased section (Including PRs without labels)')
     return parser
 
 def main():
     parser = build_args_parser()
     args = parser.parse_args()
     token, num_pages = args.token, args.num_pages
-    output_unreleased = args.output_unreleased
-    output_without_labels = args.output_without_labels
+    unreleased_only = args.unreleased_only
+    # If --unreleased_only is set, we implicitly enable without-labels output.
+    output_without_labels = args.output_without_labels or unreleased_only
     if token == "":
         print("Error: Github API token is required --token=<token>")
         return
 
     worker = ProcessChangelog()
     worker.token = token
+    worker.unreleased_only = unreleased_only
 
-    # Retrieve the list of all the releases
+    # Retrieve the list of all the releases (optimized when unreleased_only)
     worker.get_releases()
 
     # Retrieve the list of all merged PRs
@@ -298,7 +321,7 @@ def main():
     worker.format_release_notes()
 
     # Print the final result in the form of CHANGELOG.md
-    worker.print_changelog(output_without_labels, output_unreleased)
+    worker.print_changelog(output_without_labels, unreleased_only)
 
 if __name__ == "__main__":
     main()
