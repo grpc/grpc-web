@@ -1526,6 +1526,7 @@ class GrpcCodeGenerator : public CodeGenerator {
     return CodeGenerator::FEATURE_PROTO3_OPTIONAL | CodeGenerator::FEATURE_SUPPORTS_EDITIONS;
   }
 
+  // Keep synced with protoc-gen-js: https://github.com/protocolbuffers/protobuf-javascript/blob/861c8020a5c0cba9b7cdf915dffde96a4421a1f4/generator/js_generator.h#L157-L158
   Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
   Edition GetMaximumEdition() const override { return Edition::EDITION_2023; }
 
