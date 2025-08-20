@@ -14,6 +14,11 @@
 
 FROM grpcweb/prereqs
 
+WORKDIR /github/grpc-web
+
+# Bring in current workspace
+COPY ./net/grpc/gateway/examples/echo ./net/grpc/gateway/examples/echo
+
 WORKDIR /github/grpc-web/net/grpc/gateway/examples/echo
 
 RUN protoc -I=. echo.proto \
