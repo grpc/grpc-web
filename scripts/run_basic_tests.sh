@@ -68,13 +68,7 @@ docker-compose down
 echo -e "\n[Running] Basic test #3 - Testing everything buids"
 if [[ "$MASTER" == "1" ]]; then
   # Build all for continuous_integration
-  # docker-compose build
-
-  # Temporary fix `protoc-plugin` build failure (introduced in
-  # https://github.com/grpc/grpc-web/pull/1445) by building
-  # everything but it.
-  # TODO: Revert to building all targets.
-  docker-compose build prereqs echo-server node-server node-interop-server envoy grpcwebproxy commonjs-client closure-client ts-client binary-client interop-client jsunit-test
+  docker-compose build
 else
   # Only build a subset of docker images for presubmit runs
   docker-compose build commonjs-client closure-client ts-client
