@@ -1,48 +1,80 @@
-name: Make MacOS Plugin
+name: Make macOS Plugin
 
 on:
+  push:
+    paths:
+      - .github/workflows/make-plugin-mac-os.yml
+  pull_request:
+    paths:
+      - .github/workflows/make-plugin-mac-os.yml
   workflow_dispatch:
     inputs:
       version_number:
         description: 'Version number'
         required: true
-        default: '1.x.x'
+        default: '2.x.x'
 
 jobs:
   build:
-    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-13, macos-14]
+    runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v3
-    - name: Install build utils
-      run: brew install coreutils automake
-    - name: Checkout protobuf code
-      run: |
-        ./scripts/init_submodules.sh
-    # Protobuf build instructions from:
-    # https://github.com/protocolbuffers/protobuf/blob/master/src/README.md
-    - name: Build protobuf (configure & make)
-      run: |
-        cd ./third_party/protobuf
-        ./autogen.sh
-        ./configure
-        make -j$(nproc)
-        make install
-    - name: Remove dynamite dependencies (similar to `-static` on linux)
-      run: rm /usr/local/lib/libproto*.dylib
-    - name: make
-      run: make clean && make plugin
-    - name: move
-      run: |
-        mv javascript/net/grpc/web/generator/protoc-gen-grpc-web \
-          ./protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-darwin-x86_64
-    - name: gen sha256
-      run: |
-        openssl dgst -sha256 -r -out protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-darwin-x86_64.sha256 \
-          protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-darwin-x86_64
-    - name: verify sha256
-      run: sha256sum -c protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-darwin-x86_64.sha256
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: plugin
-        path: protoc-gen-grpc-web*
+      - uses: actions/checkout@v4
+      - name: Compute VERSION_NUMBER
+        run: |
+          INPUT_VERSION="${{ github.event.inputs.version_number }}"
+          if [ -n "$INPUT_VERSION" ]; then
+            VERSION="$INPUT_VERSION"
+          else
+            VERSION="$GITHUB_REF_NAME"
+          fi
+          # Minimal sanitization: replace slashes with dashes to keep filenames valid
+          VERSION="${VERSION//\//-}"
+          echo "VERSION_NUMBER=$VERSION" >> "$GITHUB_ENV"
+          echo "Computed VERSION_NUMBER=$VERSION"
+      - name: Compute ARCH suffix and artifact name
+        id: meta
+        run: |
+          ARCH=$(uname -m)
+          case "$ARCH" in
+            arm64)
+              ARCH_SUFFIX="aarch64"
+              ;;
+            x86_64)
+              ARCH_SUFFIX="x86_64"
+              ;;
+            *)
+              echo "Unsupported architecture: $ARCH" >&2
+              exit 1
+              ;;
+          esac
+          ARTIFACT="protoc-gen-grpc-web-${VERSION_NUMBER}-darwin-${ARCH_SUFFIX}"
+          echo "ARTIFACT=$ARTIFACT" >> "$GITHUB_ENV"
+          echo "artifact=$ARTIFACT" >> "$GITHUB_OUTPUT"
+          echo "Will produce artifact: $ARTIFACT"
+      - name: Install Bazelisk (Bazel)
+        run: |
+          brew update
+          brew install bazelisk
+          bazelisk version
+      - name: Build protoc-gen-grpc-web with Bazel
+        run: |
+          bazelisk build //javascript/net/grpc/web/generator:protoc-gen-grpc-web
+      - name: Move artifact
+        run: |
+          mv bazel-bin/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
+            ./${ARTIFACT}
+      - name: Generate sha256
+        run: |
+          openssl dgst -sha256 -r -out ${ARTIFACT}.sha256 \
+            ${ARTIFACT}
+      - name: Verify sha256
+        run: shasum -a 256 -c ${ARTIFACT}.sha256
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.meta.outputs.artifact }}
+          path: protoc-gen-grpc-web*

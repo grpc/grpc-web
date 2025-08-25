@@ -1,14 +1,10 @@
-build --copt=-Wno-error=deprecated-declarations --host_copt=-Wno-error=deprecated-declarations
+# Common build settings for unix-like systems
+build --copt=-Wno-error=deprecated-declarations
+build --host_copt=-Wno-error=deprecated-declarations
 
 # Required until this is the default; expected in Bazel 7
 common --enable_bzlmod
 
-# Load any settings specific to the current user.
-# .bazelrc.user should appear in .gitignore so that settings are not shared with team members
-# This needs to be last statement in this
-# config, as the user configuration should be able to overwrite flags from this file.
-# See https://docs.bazel.build/versions/master/best-practices.html#bazelrc
-# (Note that we use .bazelrc.user so the file appears next to .bazelrc in directory listing,
-# rather than user.bazelrc as suggested in the Bazel docs)
+# Per-user settings (gitignored). Keep last so local flags can override.
+# Docs: https://bazel.build/configure/best-practices#bazelrc
 try-import %workspace%/.bazelrc.user
-    
