@@ -2,7 +2,8 @@ declare module "grpc-web" {
 
   export interface Metadata { [s: string]: string; }
   export type StatusMetadata = Metadata & {
-    httpStatusCode?: number
+    httpStatusCode?: number,
+    httpResponseText?: string
   };
 
   export class AbstractClientBase {

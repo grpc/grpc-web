@@ -258,6 +258,7 @@ class GrpcWebClientReadableStream {
         if (xhrStatusCode != -1) {
           errorMessage += ', http status code: ' + xhrStatusCode;
           errorMetadata['httpStatusCode'] = xhrStatusCode;
+          errorMetadata['httpResponseText'] = self.xhr_.getResponseText();
         }
 
         self.handleError_(new RpcError(grpcStatusCode, errorMessage, errorMetadata));
