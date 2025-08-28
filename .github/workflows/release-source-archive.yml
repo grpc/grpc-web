@@ -26,7 +26,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout
+      - uses: actions/checkout@v4
       # GITHUB_REF is defined here:
       # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/store-information-in-variables#default-environment-variables
       - run: git archive --format zip    --prefix "grpc-web-$TAG/" --output "grpc-web-source-${TAG}.zip"    "$GITHUB_REF"
