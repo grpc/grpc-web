@@ -1,6 +1,22 @@
 [//]: # (GENERATED FILE -- DO NOT EDIT!)
 [//]: # (See scripts/release_notes.py for more details.)
 
+## 2.0.0
+
+### Major Features
+
+- [#1490](https://github.com/grpc/grpc-web/pull/1490) Enable support for Editions in protoc-gen-grpc-web. @Quarke
+- [#1445](https://github.com/grpc/grpc-web/pull/1445) Upgrade protobuf to 27.1 and modernize codegen using new APIs @benjaminp
+
+### Other Changes
+
+- [#1496](https://github.com/grpc/grpc-web/pull/1496) Rework release workflows using Github runners (replacing Zig)
+- [#1494](https://github.com/grpc/grpc-web/pull/1494) Updates Closure compiler (`20250820.0.0`) and library
+- [#1463](https://github.com/grpc/grpc-web/pull/1463) fix: format of typescript definition @nnnnoel
+- [#1456](https://github.com/grpc/grpc-web/pull/1456) Bazel bzlmod support for grpc-web. @gonzojive
+- [#1452](https://github.com/grpc/grpc-web/pull/1452) Update protobuf-JS `3.14.0` -> `3.21.4`
+- [#1441](https://github.com/grpc/grpc-web/pull/1441) Upgrade to Bazel 6.5.0
+
 ## 1.5.0
 
 - [#1369](https://github.com/grpc/grpc-web/pull/1369) (Typescript) Mark some `metadata` parameters as optional @andrewmbenton
