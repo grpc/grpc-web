@@ -92,6 +92,9 @@ sudo mv protoc-gen-grpc-web-2.0.0-darwin-aarch64 \
 chmod +x /usr/local/bin/protoc-gen-grpc-web
 ```
 
+Note: If you are using our Docker setup, the `prereqs` image already includes
+both `protoc` and the `protoc-gen-grpc-web` plugin on the PATH.
+
 ### (Optional) 4. Verify Installations
 
 You can optionally verify the plugins work by following our [Hello World example](https://github.com/grpc/grpc-web/tree/master/net/grpc/gateway/examples/helloworld#generating-stubs):

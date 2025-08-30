@@ -93,13 +93,6 @@ services:
     image: grpcweb/interop-client
     ports:
       - "8081:8081"
-  protoc-plugin:
-    build:
-      context: ./
-      dockerfile: ./net/grpc/gateway/docker/protoc_plugin/Dockerfile
-    depends_on:
-      - prereqs
-    image: grpcweb/protoc-plugin
   jsunit-test:
     build:
       context: ./
