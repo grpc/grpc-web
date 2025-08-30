@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# TODO: Migrate to be using bazel build.
 FROM grpcweb/prereqs
 
 ARG MAKEFLAGS=-j8

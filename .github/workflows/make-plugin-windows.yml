@@ -1,37 +1,102 @@
 name: Make Windows Plugin
 
 on:
+  push:
+    paths:
+      - .github/workflows/make-plugin-windows.yml
+  pull_request:
+    paths:
+      - .github/workflows/make-plugin-windows.yml
   workflow_dispatch:
     inputs:
       version_number:
         description: 'Version number'
         required: true
-        default: '1.x.x'
+        default: '2.x.x'
 
 jobs:
   build:
-    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2025, windows-11-arm]
+    runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v3
-    - name: Print Bazel version
-      run: |
-        bazel version
-    - name: build
-      run: bazel build javascript/net/grpc/web/generator:protoc-gen-grpc-web
-    - name: move
-      run: |
-        mv bazel-bin/javascript/net/grpc/web/generator/protoc-gen-grpc-web.exe \
-          ./protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-windows-x86_64.exe
-      shell: bash
-    - name: gen sha256
-      run: |
-        openssl dgst -sha256 -r -out protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-windows-x86_64.exe.sha256 \
-          protoc-gen-grpc-web-${{ github.event.inputs.version_number }}-windows-x86_64.exe
-      shell: bash
-    # TODO: Check sha256 (sha256sum not available for now. )
-    #- name: verify sha256
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: plugin
-        path: protoc-gen-grpc-web*
+      - uses: actions/checkout@v4
+      - name: Compute VERSION_NUMBER
+        run: |
+          INPUT_VERSION="${{ github.event.inputs.version_number }}"
+          if [ -n "$INPUT_VERSION" ]; then
+            VERSION="$INPUT_VERSION"
+          else
+            VERSION="$GITHUB_REF_NAME"
+          fi
+          # Minimal sanitization: replace slashes with dashes to keep filenames valid
+          VERSION="${VERSION//\//-}"
+          echo "VERSION_NUMBER=$VERSION" >> "$GITHUB_ENV"
+          echo "Computed VERSION_NUMBER=$VERSION"
+        shell: bash
+      - name: Compute ARCH suffix and artifact name
+        id: meta
+        shell: powershell
+        run: |
+          $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
+          switch ($arch) {
+            'Arm64' { $archSuffix = 'aarch64' }
+            'X64'   { $archSuffix = 'x86_64' }
+            default { Write-Error "Unsupported architecture: $arch"; exit 1 }
+          }
+          $artifact = "protoc-gen-grpc-web-$($env:VERSION_NUMBER)-windows-$archSuffix.exe"
+          "ARTIFACT=$artifact" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "artifact=$artifact" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          Write-Host "Will produce artifact: $artifact"
+      - name: Install Bazelisk (Bazel)
+        shell: powershell
+        run: |
+          $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
+          switch ($arch) {
+            'Arm64' { $suffix = 'arm64' }
+            'X64'   { $suffix = 'amd64' }
+            default { Write-Error "Unsupported architecture: $arch"; exit 1 }
+          }
+          $url = "https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-windows-$suffix.exe"
+          $destDir = "$env:RUNNER_TEMP"
+          $dest = Join-Path $destDir 'bazelisk.exe'
+          Write-Host "Downloading Bazelisk from $url to $dest"
+          Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $dest
+          # Add to PATH for subsequent steps
+          $destDir | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      - name: Print Bazelisk version
+        shell: powershell
+        run: bazelisk version
+      - name: Build protoc-gen-grpc-web with Bazel
+        run: bazelisk --noworkspace_rc --bazelrc=.bazelrc.windows build //javascript/net/grpc/web/generator:protoc-gen-grpc-web
+        shell: powershell
+      - name: Move artifact
+        run: |
+          mv bazel-bin/javascript/net/grpc/web/generator/protoc-gen-grpc-web.exe "./${ARTIFACT}"
+        shell: bash
+      - name: Generate sha256
+        run: |
+          openssl dgst -sha256 -r -out "${ARTIFACT}.sha256" "${ARTIFACT}"
+        shell: bash
+      - name: Verify sha256
+        shell: powershell
+        run: |
+          $shaFile = "${env:ARTIFACT}.sha256"
+          if (-not (Test-Path $shaFile)) { Write-Error "SHA256 file not found: $shaFile"; exit 1 }
+          $line = Get-Content -Raw $shaFile
+          if (-not $line) { Write-Error "Empty sha256 file: $shaFile"; exit 1 }
+          $expected = ($line -split '\s+')[0].ToLower()
+          $actual = (Get-FileHash "${env:ARTIFACT}" -Algorithm SHA256).Hash.ToLower()
+          if ($actual -ne $expected) {
+            Write-Error "SHA256 mismatch. Expected $expected, got $actual"
+            exit 1
+          } else {
+            Write-Host "SHA256 verified: $actual"
+          }
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.meta.outputs.artifact }}
+          path: protoc-gen-grpc-web*

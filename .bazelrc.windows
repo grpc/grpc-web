@@ -1,0 +1,13 @@
+# This is a Windows-specific bazelrc file for use in GitHub Actions.
+# It contains settings from the main .bazelrc file that are relevant for Windows builds.
+
+# Windows specific settings
+build --copt=-DABSL_HAVE_WORKING_GCC_WNO_DEPRECATED_DECLARATIONS=0
+build --host_copt=-DABSL_HAVE_WORKING_GCC_WNO_DEPRECATED_DECLARATIONS=0
+
+# Required until this is the default; expected in Bazel 7
+common --enable_bzlmod
+
+# Per-user settings (gitignored). Keep last so local flags can override.
+# Docs: https://bazel.build/configure/best-practices#bazelrc
+try-import %workspace%/.bazelrc.user
