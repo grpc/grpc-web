@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, ubuntu-24.04-arm]
+        os: [ubuntu-22.04, ubuntu-22.04-arm]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
@@ -77,9 +77,13 @@ jobs:
         # Also provide `bazel` symlink for tools that expect it
         sudo ln -sf /usr/local/bin/bazelisk /usr/local/bin/bazel
         bazelisk version
-    - name: Build protoc-gen-grpc-web with Bazel
+    - name: Build protoc-gen-grpc-web with Bazel (older glibc baseline)
       run: |
-        bazelisk build //javascript/net/grpc/web/generator:protoc-gen-grpc-web
+        # Partially static link libstdc++/libgcc to reduce GLIBCXX constraints
+        bazelisk build \
+          --linkopt=-static-libstdc++ \
+          --linkopt=-static-libgcc \
+          //javascript/net/grpc/web/generator:protoc-gen-grpc-web
     - name: Move artifact
       run: |
         mv bazel-bin/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
