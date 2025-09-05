@@ -81,7 +81,7 @@ const char* kKeyword[] = {
 };
 
 // Edit the version here prior to release
-static const std::string GRPC_WEB_VERSION = "2.0.0";
+static const std::string GRPC_WEB_VERSION = "2.0.1";
 
 string GetProtocVersion(GeneratorContext* context) {
   Version compiler_version;
