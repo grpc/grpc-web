@@ -779,7 +779,10 @@ void PrintProtoDtsEnum(Printer* printer, const EnumDescriptor* desc) {
   std::map<string, string> vars;
   vars["enum_name"] = desc->name();
 
-  printer->Print(vars, "export const enum $enum_name$ {\n");
+  // Use regular enums for broad TypeScript compatibility. `const enum`
+  // triggers TS2748 when `verbatimModuleSyntax` is enabled (default in
+  // TypeScript 5.9+), so prefer `enum` here.
+  printer->Print(vars, "export enum $enum_name$ {\n");
   printer->Indent();
   for (int i = 0; i < desc->value_count(); i++) {
     vars["value_name"] = Uppercase(desc->value(i)->name());
@@ -795,7 +798,9 @@ void PrintProtoDtsOneofCase(Printer* printer, const OneofDescriptor* desc) {
   vars["oneof_name"] = ToUpperCamel(ParseLowerUnderscore(desc->name()));
   vars["oneof_name_upper"] = Uppercase(desc->name());
 
-  printer->Print(vars, "export const enum $oneof_name$Case {\n");
+  // Oneof case enums also use regular enums to avoid ambient `const enum`
+  // issues under `verbatimModuleSyntax`.
+  printer->Print(vars, "export enum $oneof_name$Case {\n");
   printer->Indent();
   printer->Print(vars, "$oneof_name_upper$_NOT_SET = 0,\n");
   for (int i = 0; i < desc->field_count(); i++) {
