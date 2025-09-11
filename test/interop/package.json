@@ -14,7 +14,7 @@
     "assert": "^2.0.0",
     "minimist": "~1.2.5",
     "mocha": "~7.1.1",
-    "webpack": "~5.82.1",
+    "webpack": "5.101.3",
     "webpack-cli": "~5.1.1",
     "xhr2": "~0.2.0"
   }
