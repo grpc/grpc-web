@@ -1,6 +1,6 @@
 {
   "name": "grpc-web",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "author": "Google Inc.",
   "description": "gRPC-Web Client Runtime Library",
   "homepage": "https://grpc.io/",
