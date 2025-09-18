@@ -136,9 +136,8 @@ class GrpcWebClientReadableStream {
 
     const self = this;
     events.listen(this.xhr_, EventType.READY_STATE_CHANGE, function(e) {
-      let contentType = self.xhr_.getStreamingResponseHeader('Content-Type');
-      if (!contentType) return;
-      contentType = contentType.toLowerCase();
+      const contentType = (self.xhr_.getStreamingResponseHeader('Content-Type') || '').toLowerCase();
+      if (!contentType.startsWith('application/grpc')) return;
 
       let byteSource;
       if (googString.startsWith(contentType, 'application/grpc-web-text')) {
@@ -152,11 +151,8 @@ class GrpcWebClientReadableStream {
       } else if (googString.startsWith(contentType, 'application/grpc')) {
         byteSource = new Uint8Array(
             /** @type {!ArrayBuffer} */ (self.xhr_.getResponse()));
-      } else {
-        self.handleError_(
-            new RpcError(StatusCode.UNKNOWN, 'Unknown Content-type received.'));
-        return;
       }
+
       let messages = null;
       try {
         messages = self.parser_.parse(byteSource);
@@ -257,11 +253,15 @@ class GrpcWebClientReadableStream {
           return;
         }
         let errorMessage = ErrorCode.getDebugMessage(lastErrorCode);
+
+        const errorMetadata = /** @type {!StatusMetadata} */ ({});
         if (xhrStatusCode != -1) {
           errorMessage += ', http status code: ' + xhrStatusCode;
+          errorMetadata['httpStatusCode'] = xhrStatusCode;
+          errorMetadata['httpResponseText'] = self.xhr_.getResponseText();
         }
 
-        self.handleError_(new RpcError(grpcStatusCode, errorMessage));
+        self.handleError_(new RpcError(grpcStatusCode, errorMessage, errorMetadata));
         return;
       }
 
