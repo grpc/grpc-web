@@ -4,7 +4,6 @@
 ## 2.0.2
 
 - [#1507](https://github.com/grpc/grpc-web/pull/1507) Use regular enums for compatibility with TypeScript 5.9+
-- [#1505](https://github.com/grpc/grpc-web/pull/1505) Update dependencies.
 
 ## 2.0.1
 
