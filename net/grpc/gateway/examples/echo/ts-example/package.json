@@ -4,7 +4,7 @@
     "@types/jquery": "~3.3.6",
     "@types/node": "latest",
     "google-protobuf": "~3.21.4",
-    "grpc-web": "~2.0.1",
+    "grpc-web": "~2.0.2",
     "jquery": "~3.5.1",
     "mock-xmlhttprequest": "~2.0.0",
     "typescript": "latest",

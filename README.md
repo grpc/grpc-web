@@ -86,7 +86,7 @@ Make sure all executables are discoverable from your PATH.
 For example, on macOS, you can do:
 
 ```sh
-sudo mv protoc-gen-grpc-web-2.0.0-darwin-aarch64 \
+sudo mv protoc-gen-grpc-web-2.0.2-darwin-aarch64 \
     /usr/local/bin/protoc-gen-grpc-web
 
 chmod +x /usr/local/bin/protoc-gen-grpc-web

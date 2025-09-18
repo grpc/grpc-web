@@ -8,7 +8,7 @@
     "@grpc/proto-loader": "~0.5.4",
     "async": "~3.2.3",
     "google-protobuf": "~3.21.4",
-    "grpc-web": "~2.0.1",
+    "grpc-web": "~2.0.2",
     "lodash": "~4.17.0",
     "webpack": "5.101.3",
     "webpack-cli": "~5.1.1"

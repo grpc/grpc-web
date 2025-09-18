@@ -5,7 +5,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "google-protobuf": "~3.21.4",
-    "grpc-web": "~2.0.1"
+    "grpc-web": "~2.0.2"
   },
   "devDependencies": {
     "webpack": "5.101.3",
