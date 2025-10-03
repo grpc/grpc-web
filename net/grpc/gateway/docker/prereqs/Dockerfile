@@ -78,6 +78,9 @@ COPY ./MODULE.bazel.lock ./MODULE.bazel.lock
 COPY ./.bazelrc ./.bazelrc
 COPY ./javascript/net/grpc/web/generator javascript/net/grpc/web/generator
 
+# Pre-build the protobuf compiler lib so the following plugin build can reuse Bazel cache.
+RUN bazel build "@com_google_protobuf//:protoc_lib"
+
 RUN bazel build javascript/net/grpc/web/generator:protoc-gen-grpc-web && \
   cp $(bazel info bazel-genfiles)/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
   /usr/local/bin/protoc-gen-grpc-web
