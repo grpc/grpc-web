@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package test;
+
+import "google/protobuf/descriptor.proto";
+
+message Int64PrecisionTest {
+  int64 normal_int64 = 1;
+  int64 string_int64 = 2 [jstype = JS_STRING];
+  uint64 normal_uint64 = 3;
+  uint64 string_uint64 = 4 [jstype = JS_STRING];
+  sint64 normal_sint64 = 5;
+  sint64 string_sint64 = 6 [jstype = JS_STRING];
+  fixed64 normal_fixed64 = 7;
+  fixed64 string_fixed64 = 8 [jstype = JS_STRING];
+  sfixed64 normal_sfixed64 = 9;
+  sfixed64 string_sfixed64 = 10 [jstype = JS_STRING];
+}
