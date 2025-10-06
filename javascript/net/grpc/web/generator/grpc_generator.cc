@@ -30,6 +30,9 @@
 #include <string>
 
 using google::protobuf::Descriptor;
+#if GOOGLE_PROTOBUF_VERSION >= 4023000
+using google::protobuf::Edition;
+#endif
 using google::protobuf::EnumDescriptor;
 using google::protobuf::FieldDescriptor;
 using google::protobuf::FileDescriptor;
@@ -1532,8 +1535,18 @@ class GrpcCodeGenerator : public CodeGenerator {
 
   uint64_t GetSupportedFeatures() const override {
     // Code generators must explicitly support proto3 optional.
+#if GOOGLE_PROTOBUF_VERSION >= 4023000
+    return CodeGenerator::FEATURE_PROTO3_OPTIONAL | CodeGenerator::FEATURE_SUPPORTS_EDITIONS;
+#else
     return CodeGenerator::FEATURE_PROTO3_OPTIONAL;
+#endif
   }
+
+#if GOOGLE_PROTOBUF_VERSION >= 4023000
+  // Keep synced with protoc-gen-js: https://github.com/protocolbuffers/protobuf-javascript/blob/861c8020a5c0cba9b7cdf915dffde96a4421a1f4/generator/js_generator.h#L157-L158
+  Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
+  Edition GetMaximumEdition() const override { return Edition::EDITION_2023; }
+#endif
 
   bool Generate(const FileDescriptor* file, const string& parameter,
                 GeneratorContext* context, string* error) const override {
