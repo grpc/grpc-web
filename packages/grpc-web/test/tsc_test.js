@@ -359,3 +359,56 @@ describe('tsc test06: promise-based client', function() {
     assertFileExists('./tsc-tests/dist/generated/echo_pb.js');
   });
 });
+
+describe('tsc test: int64 precision with force_int64_string', function() {
+  before(function() {
+    cleanup();
+    createGeneratedCodeDir();
+  });
+
+  after(function() {
+    cleanup();
+  });
+
+  it('default behavior: normal fields are number, jstype fields are string', function() {
+    const genCmd = `protoc -I=./test/protos int64_precision_test.proto \
+      --js_out=import_style=commonjs:${outputDir} \
+      --grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:${outputDir}`;
+    execSync(genCmd);
+
+    assertFileExists('./tsc-tests/generated/int64_precision_test_pb.d.ts');
+    
+    const dtsContent = fs.readFileSync(
+      relativePath('./tsc-tests/generated/int64_precision_test_pb.d.ts'),
+      'utf8'
+    );
+    
+    // Normal int64 fields should be number
+    assert(dtsContent.includes('getNormalInt64(): number'));
+    assert(dtsContent.includes('setNormalInt64(value: number)'));
+    
+    // Fields with [jstype = JS_STRING] should be string
+    assert(dtsContent.includes('getStringInt64(): string'));
+    assert(dtsContent.includes('setStringInt64(value: string)'));
+  });
+
+  it('force_int64_string=True: all int64 fields are string', function() {
+    const genCmd = `protoc -I=./test/protos int64_precision_test.proto \
+      --js_out=import_style=commonjs:${outputDir} \
+      --grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext,force_int64_string=True:${outputDir}`;
+    execSync(genCmd);
+
+    assertFileExists('./tsc-tests/generated/int64_precision_test_pb.d.ts');
+    
+    const dtsContent = fs.readFileSync(
+      relativePath('./tsc-tests/generated/int64_precision_test_pb.d.ts'),
+      'utf8'
+    );
+    
+    // ALL int64 fields should now be string (including normal ones)
+    assert(dtsContent.includes('getNormalInt64(): string'));
+    assert(dtsContent.includes('setNormalInt64(value: string)'));
+    assert(dtsContent.includes('getStringInt64(): string'));
+    assert(dtsContent.includes('setStringInt64(value: string)'));
+  });
+});

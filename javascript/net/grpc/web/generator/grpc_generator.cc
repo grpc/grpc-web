@@ -30,7 +30,9 @@
 #include <string>
 
 using google::protobuf::Descriptor;
+#if GOOGLE_PROTOBUF_VERSION >= 4023000
 using google::protobuf::Edition;
+#endif
 using google::protobuf::EnumDescriptor;
 using google::protobuf::FieldDescriptor;
 using google::protobuf::FileDescriptor;
@@ -298,7 +300,7 @@ string JSMessageType(const Descriptor* desc) {
   return JSMessageType(desc, nullptr);
 }
 
-string JSElementType(const FieldDescriptor* desc, const FileDescriptor* file) {
+string JSElementType(const FieldDescriptor* desc, const FileDescriptor* file, bool force_int64_string = false) {
   switch (desc->type()) {
     case FieldDescriptor::TYPE_DOUBLE:
     case FieldDescriptor::TYPE_FLOAT:
@@ -314,7 +316,7 @@ string JSElementType(const FieldDescriptor* desc, const FileDescriptor* file) {
     case FieldDescriptor::TYPE_SINT64:
     case FieldDescriptor::TYPE_FIXED64:
     case FieldDescriptor::TYPE_SFIXED64:
-      if (desc->options().jstype() == FieldOptions::JS_STRING) {
+      if (force_int64_string || desc->options().jstype() == FieldOptions::JS_STRING) {
         return "string";
       } else {
         return "number";
@@ -348,11 +350,11 @@ string JSElementType(const FieldDescriptor* desc, const FileDescriptor* file) {
   }
 }
 
-string JSFieldType(const FieldDescriptor* desc, const FileDescriptor* file) {
-  string js_field_type = JSElementType(desc, file);
+string JSFieldType(const FieldDescriptor* desc, const FileDescriptor* file, bool force_int64_string = false) {
+  string js_field_type = JSElementType(desc, file, force_int64_string);
   if (desc->is_map()) {
-    string key_type = JSFieldType(desc->message_type()->field(0), file);
-    string value_type = JSFieldType(desc->message_type()->field(1), file);
+    string key_type = JSFieldType(desc->message_type()->field(0), file, force_int64_string);
+    string value_type = JSFieldType(desc->message_type()->field(1), file, force_int64_string);
     return "jspb.Map<" + key_type + ", " + value_type + ">";
   }
   if (desc->is_repeated()) {
@@ -362,14 +364,14 @@ string JSFieldType(const FieldDescriptor* desc, const FileDescriptor* file) {
 }
 
 string AsObjectFieldType(const FieldDescriptor* desc,
-                         const FileDescriptor* file) {
+                         const FileDescriptor* file, bool force_int64_string = false) {
   if (desc->type() != FieldDescriptor::TYPE_MESSAGE) {
-    return JSFieldType(desc, file);
+    return JSFieldType(desc, file, force_int64_string);
   }
   if (desc->is_map()) {
     const Descriptor* message = desc->message_type();
-    string key_type = AsObjectFieldType(message->field(0), file);
-    string value_type = AsObjectFieldType(message->field(1), file);
+    string key_type = AsObjectFieldType(message->field(0), file, force_int64_string);
+    string value_type = AsObjectFieldType(message->field(1), file, force_int64_string);
     return "Array<[" + key_type + ", " + value_type + "]>";
   }
   string field_type = JSMessageType(desc->message_type(), file) + ".AsObject";
@@ -814,7 +816,7 @@ void PrintProtoDtsOneofCase(Printer* printer, const OneofDescriptor* desc) {
 }
 
 void PrintProtoDtsMessage(Printer* printer, const Descriptor* desc,
-                          const FileDescriptor* file) {
+                          const FileDescriptor* file, bool force_int64_string = false) {
   const string& class_name = desc->name();
   std::map<string, string> vars;
   vars["class_name"] = class_name;
@@ -824,7 +826,7 @@ void PrintProtoDtsMessage(Printer* printer, const Descriptor* desc,
   for (int i = 0; i < desc->field_count(); i++) {
     const FieldDescriptor* field = desc->field(i);
     vars["js_field_name"] = JSFieldName(field);
-    vars["js_field_type"] = JSFieldType(field, file);
+    vars["js_field_type"] = JSFieldType(field, file, force_int64_string);
     if (field->type() != FieldDescriptor::TYPE_MESSAGE ||
         field->is_repeated()) {
       printer->Print(vars, "get$js_field_name$(): $js_field_type$;\n");
@@ -856,7 +858,7 @@ void PrintProtoDtsMessage(Printer* printer, const Descriptor* desc,
     }
     if (field->is_repeated() && !field->is_map()) {
       vars["js_field_name"] = JSElementName(field);
-      vars["js_field_type"] = JSElementType(field, file);
+      vars["js_field_type"] = JSElementType(field, file, force_int64_string);
       if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
         printer->Print(vars,
                        "add$js_field_name$(value: $js_field_type$, "
@@ -871,8 +873,8 @@ void PrintProtoDtsMessage(Printer* printer, const Descriptor* desc,
     printer->Print("\n");
   }
 
-  for (int i = 0; i < desc->real_oneof_decl_count(); i++) {
-    const OneofDescriptor *oneof = desc->real_oneof_decl(i);
+  for (int i = 0; i < desc->oneof_decl_count(); i++) {
+    const OneofDescriptor *oneof = desc->oneof_decl(i);
     vars["js_oneof_name"] = ToUpperCamel(ParseLowerUnderscore(oneof->name()));
     printer->Print(
         vars, "get$js_oneof_name$Case(): $class_name$.$js_oneof_name$Case;\n");
@@ -905,7 +907,7 @@ void PrintProtoDtsMessage(Printer* printer, const Descriptor* desc,
       js_field_name = "pb_" + js_field_name;
     }
     vars["js_field_name"] = js_field_name;
-    vars["js_field_type"] = AsObjectFieldType(field, file);
+    vars["js_field_type"] = AsObjectFieldType(field, file, force_int64_string);
     if (!field->has_presence()) {
       printer->Print(vars, "$js_field_name$: $js_field_type$;\n");
     } else {
@@ -920,7 +922,7 @@ void PrintProtoDtsMessage(Printer* printer, const Descriptor* desc,
       continue;
     }
     printer->Print("\n");
-    PrintProtoDtsMessage(printer, desc->nested_type(i), file);
+    PrintProtoDtsMessage(printer, desc->nested_type(i), file, force_int64_string);
   }
 
   for (int i = 0; i < desc->enum_type_count(); i++) {
@@ -937,7 +939,7 @@ void PrintProtoDtsMessage(Printer* printer, const Descriptor* desc,
   printer->Print("}\n\n");
 }
 
-void PrintProtoDtsFile(Printer* printer, const FileDescriptor* file) {
+void PrintProtoDtsFile(Printer* printer, const FileDescriptor* file, bool force_int64_string = false) {
   printer->Print("import * as jspb from 'google-protobuf'\n\n");
 
   for (int i = 0; i < file->dependency_count(); i++) {
@@ -951,7 +953,7 @@ void PrintProtoDtsFile(Printer* printer, const FileDescriptor* file) {
   printer->Print("\n\n");
 
   for (int i = 0; i < file->message_type_count(); i++) {
-    PrintProtoDtsMessage(printer, file->message_type(i), file);
+    PrintProtoDtsMessage(printer, file->message_type(i), file, force_int64_string);
   }
 
   for (int i = 0; i < file->enum_type_count(); i++) {
@@ -1432,6 +1434,7 @@ class GeneratorOptions {
   bool generate_closure_es6() const { return generate_closure_es6_; }
   bool multiple_files() const { return multiple_files_; }
   bool goog_promise() const { return goog_promise_; }
+  bool force_int64_string() const { return force_int64_string_; }
 
  private:
   string file_name_;
@@ -1442,6 +1445,7 @@ class GeneratorOptions {
   bool generate_closure_es6_;
   bool multiple_files_;
   bool goog_promise_;
+  bool force_int64_string_;
 };
 
 GeneratorOptions::GeneratorOptions()
@@ -1452,7 +1456,8 @@ GeneratorOptions::GeneratorOptions()
       generate_dts_(false),
       generate_closure_es6_(false),
       multiple_files_(false),
-      goog_promise_(false) {}
+      goog_promise_(false),
+      force_int64_string_(false) {}
 
 bool GeneratorOptions::ParseFromOptions(const string& parameter,
                                         string* error) {
@@ -1492,6 +1497,8 @@ bool GeneratorOptions::ParseFromOptions(
       plugins_ = option.second;
     } else if ("goog_promise" == option.first) {
       goog_promise_ = "True" == option.second;
+    } else if ("force_int64_string" == option.first) {
+      force_int64_string_ = "True" == option.second;
     } else {
       *error = "unsupported option: " + option.first;
       return false;
@@ -1528,12 +1535,18 @@ class GrpcCodeGenerator : public CodeGenerator {
 
   uint64_t GetSupportedFeatures() const override {
     // Code generators must explicitly support proto3 optional.
+#if GOOGLE_PROTOBUF_VERSION >= 4023000
     return CodeGenerator::FEATURE_PROTO3_OPTIONAL | CodeGenerator::FEATURE_SUPPORTS_EDITIONS;
+#else
+    return CodeGenerator::FEATURE_PROTO3_OPTIONAL;
+#endif
   }
 
+#if GOOGLE_PROTOBUF_VERSION >= 4023000
   // Keep synced with protoc-gen-js: https://github.com/protocolbuffers/protobuf-javascript/blob/861c8020a5c0cba9b7cdf915dffde96a4421a1f4/generator/js_generator.h#L157-L158
   Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
   Edition GetMaximumEdition() const override { return Edition::EDITION_2023; }
+#endif
 
   bool Generate(const FileDescriptor* file, const string& parameter,
                 GeneratorContext* context, string* error) const override {
@@ -1575,7 +1588,7 @@ class GrpcCodeGenerator : public CodeGenerator {
       std::unique_ptr<ZeroCopyOutputStream> proto_dts_output(
           context->Open(proto_dts_file_name));
       Printer proto_dts_printer(proto_dts_output.get(), '$');
-      PrintProtoDtsFile(&proto_dts_printer, file);
+      PrintProtoDtsFile(&proto_dts_printer, file, generator_options.force_int64_string());
     }
 
     if (!file->service_count()) {
