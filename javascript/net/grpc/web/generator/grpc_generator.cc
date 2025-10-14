@@ -485,18 +485,17 @@ string GetBasename(string filename) {
   return basename;
 }
 
-//This is for reserved method name adding $
+//Adds $ suffix to reserved method names to avoid conflicts.
 static bool IsReservedMethodName(const std::string& name) {
   static const std::unordered_set<std::string> reserved = {
-    "extension", 
-    "Extension" 
+    "extension",
+    "JsPbMessageId"
   };
 
   std::string lower_name = name;
   std::transform(lower_name.begin(), lower_name.end(), lower_name.begin(), ::tolower);
 
-  bool is_reserved = reserved.count(lower_name) > 0;
-  return is_reserved;
+  return reserved.count(lower_name) > 0;
 }
 
 static std::string SafeAccessorName(const std::string& name) {
