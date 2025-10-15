@@ -489,11 +489,10 @@ string GetBasename(string filename) {
 static bool IsReservedMethodName(const std::string& name) {
   static const std::unordered_set<std::string> reserved = {
     "extension",
-    "JsPbMessageId"
+    "jspbmessageid"
   };
 
-  std::string lower_name = name;
-  std::transform(lower_name.begin(), lower_name.end(), lower_name.begin(), ::tolower);
+  std::string lower_name = Lowercase(name);
 
   return reserved.count(lower_name) > 0;
 }
@@ -845,10 +844,7 @@ void PrintProtoDtsMessage(Printer* printer, const Descriptor* desc,
   for (int i = 0; i < desc->field_count(); i++) {
     const FieldDescriptor* field = desc->field(i);
 
-    string base_js_field_name = JSFieldName(field);
-    string accessor_name = SafeAccessorName(base_js_field_name);
-
-    vars["js_field_name"] = accessor_name;
+    vars["js_field_name"] = SafeAccessorName(JSFieldName(field));
     vars["js_field_type"] = JSFieldType(field, file);
     if (field->type() != FieldDescriptor::TYPE_MESSAGE ||
         field->is_repeated()) {
@@ -881,10 +877,7 @@ void PrintProtoDtsMessage(Printer* printer, const Descriptor* desc,
     }
     if (field->is_repeated() && !field->is_map()) {
 
-      string base_elem_name = JSElementName(field);
-      string accessor_elem_name = SafeAccessorName(base_elem_name);
-
-      vars["js_field_name"] = accessor_elem_name;
+      vars["js_field_name"] = SafeAccessorName(JSElementName(field));
       vars["js_field_type"] = JSElementType(field, file);
       if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
         printer->Print(vars,
@@ -930,13 +923,12 @@ void PrintProtoDtsMessage(Printer* printer, const Descriptor* desc,
   for (int i = 0; i < desc->field_count(); i++) {
     const FieldDescriptor* field = desc->field(i);
     
-    string base_js_field_name = CamelCaseJSFieldName(field);
-    string accessor_name = SafeAccessorName(base_js_field_name);
-
-    if (IsReserved(accessor_name)) {
-      accessor_name = "pb_" + accessor_name;
+    string js_field_name = CamelCaseJSFieldName(field);
+    if (IsReserved(js_field_name)) {
+      js_field_name = "pb_" + js_field_name;
     }
-    vars["js_field_name"] = accessor_name;
+
+    vars["js_field_name"] = js_field_name;
     vars["js_field_type"] = AsObjectFieldType(field, file);
     if (!field->has_presence()) {
       printer->Print(vars, "$js_field_name$: $js_field_type$;\n");
