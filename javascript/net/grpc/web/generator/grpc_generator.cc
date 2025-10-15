@@ -485,6 +485,26 @@ string GetBasename(string filename) {
   return basename;
 }
 
+//Adds $ suffix to reserved method names to avoid conflicts.
+static bool IsReservedMethodName(const std::string& name) {
+  static const std::unordered_set<std::string> reserved = {
+    "extension",
+    "jspbmessageid"
+  };
+
+  std::string lower_name = Lowercase(name);
+
+  return reserved.count(lower_name) > 0;
+}
+
+static std::string SafeAccessorName(const std::string& name) {
+  std::string result = name;
+  if (IsReservedMethodName(name)) {
+    result += "$";
+  }
+  return result;
+}
+
 // Finds all message types used in all services in the file. Return results as a
 // map of full names to descriptors to get sorted results and deterministic
 // build outputs.
@@ -823,7 +843,8 @@ void PrintProtoDtsMessage(Printer* printer, const Descriptor* desc,
   printer->Indent();
   for (int i = 0; i < desc->field_count(); i++) {
     const FieldDescriptor* field = desc->field(i);
-    vars["js_field_name"] = JSFieldName(field);
+
+    vars["js_field_name"] = SafeAccessorName(JSFieldName(field));
     vars["js_field_type"] = JSFieldType(field, file);
     if (field->type() != FieldDescriptor::TYPE_MESSAGE ||
         field->is_repeated()) {
@@ -855,7 +876,8 @@ void PrintProtoDtsMessage(Printer* printer, const Descriptor* desc,
       printer->Print(vars, "clear$js_field_name$(): $class_name$;\n");
     }
     if (field->is_repeated() && !field->is_map()) {
-      vars["js_field_name"] = JSElementName(field);
+
+      vars["js_field_name"] = SafeAccessorName(JSElementName(field));
       vars["js_field_type"] = JSElementType(field, file);
       if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
         printer->Print(vars,
@@ -900,10 +922,12 @@ void PrintProtoDtsMessage(Printer* printer, const Descriptor* desc,
   printer->Indent();
   for (int i = 0; i < desc->field_count(); i++) {
     const FieldDescriptor* field = desc->field(i);
+    
     string js_field_name = CamelCaseJSFieldName(field);
     if (IsReserved(js_field_name)) {
       js_field_name = "pb_" + js_field_name;
     }
+
     vars["js_field_name"] = js_field_name;
     vars["js_field_type"] = AsObjectFieldType(field, file);
     if (!field->has_presence()) {
