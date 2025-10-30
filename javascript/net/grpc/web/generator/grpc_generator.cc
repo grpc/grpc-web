@@ -841,6 +841,9 @@ void PrintProtoDtsMessage(Printer* printer, const Descriptor* desc,
 
   printer->Print(vars, "export class $class_name$ extends jspb.Message {\n");
   printer->Indent();
+
+  printer->Print(vars, "constructor(opt_data?: $class_name$.AsObject);\n");
+  
   for (int i = 0; i < desc->field_count(); i++) {
     const FieldDescriptor* field = desc->field(i);
 
