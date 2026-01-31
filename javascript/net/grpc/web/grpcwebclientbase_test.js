@@ -247,6 +247,27 @@ testSuite({
     assertEquals(3, error.code);
   },
 
+  async testRpcErrorWithHttpStatusCode() {
+    const xhr = new XhrIo();
+    const client = new GrpcWebClientBase(/* options= */ {}, xhr);
+    const methodDescriptor = createMethodDescriptor((bytes) => new MockReply());
+
+    const error = await new Promise((resolve, reject) => {
+      client.rpcCall(
+          'urlurl', new MockRequest(), /* metadata= */ {}, methodDescriptor,
+          (error, response) => {
+            assertNull(response);
+            resolve(error);
+          });
+      // This decodes to "grpc-status: 3"
+      xhr.simulateResponse(505, '', {'Content-Type': 'text/html'});
+    });
+    assertTrue(error instanceof RpcError);
+    assert('metadata' in error);
+    assert('httpStatusCode' in error.metadata);
+    assertEquals(505, error.metadata.httpStatusCode);
+  },
+
   async testRpcDeserializationError() {
     const xhr = new XhrIo();
     const client = new GrpcWebClientBase(/* options= */ {}, xhr);

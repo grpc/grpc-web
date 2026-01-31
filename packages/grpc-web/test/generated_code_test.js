@@ -118,6 +118,29 @@ describe('grpc-web generated code: promise-based client', function() {
                });
   });
 
+  it('should receive error, on http error - Content-Type not matching application/grpc*', function(done) {
+    const {EchoServicePromiseClient} = require(genCodePath);
+    const {EchoRequest} = require(protoGenCodePath);
+    MockXMLHttpRequest.onSend = function(xhr) {
+      xhr.respond(
+        505, {'Content-Type': 'text/html'});
+    };
+    var echoService = new EchoServicePromiseClient('MyHostname', null, null);
+    var request = new EchoRequest();
+    request.setMessage('aaa');
+
+    echoService.echo(request, {})
+               .then((response) => {
+                 assert.fail('should not receive response');
+               })
+               .catch((error) => {
+                 assert('metadata' in error);
+                 assert('httpStatusCode' in error.metadata);
+                 assert.equal(505, error.metadata.httpStatusCode);
+                 done();
+               });
+  });
+
   it('should receive error', function(done) {
     const {EchoServicePromiseClient} = require(genCodePath);
     const {EchoRequest} = require(protoGenCodePath);
@@ -613,6 +636,36 @@ describe('grpc-web generated code: callbacks tests', function() {
     });
   });
 
+  it('should receive error, on http error - Content-Type not matching application/grpc*', function(done) {
+    done = multiDone(done, 2);
+    MockXMLHttpRequest.onSend = function(xhr) {
+      xhr.respond(
+        505, {'Content-Type': 'text/html'});
+    };
+    var call = echoService.echo(
+      request, {},
+      function(err, response) {
+        if (response) {
+          assert.fail('should not have received response with non-OK status');
+        } else {
+          assert('metadata' in err);
+          assert('httpStatusCode' in err.metadata);
+          assert.equal(505, err.metadata.httpStatusCode);
+        }
+        done();
+      }
+    );
+    call.on('status', (status) => {
+      assert('metadata' in status);
+      assert('httpStatusCode' in status.metadata);
+      assert.equal(505, status.metadata.httpStatusCode);
+      done();
+    });
+    call.on('error', (error) => {
+      assert.fail('error callback should not be called for unary calls');
+    });
+  });
+
   it('should receive error, on http error', function(done) {
     done = multiDone(done, 2);
     MockXMLHttpRequest.onSend = function(xhr) {
@@ -798,6 +851,30 @@ describe('grpc-web generated code: callbacks tests', function() {
     call.on('metadata', (metadata) => {
       assert('initial-header-1' in metadata);
       assert.equal('value1', metadata['initial-header-1']);
+      done();
+    });
+  });
+
+  it('should receive error, on http error (streaming) - Content-Type not matching application/grpc*', function(done) {
+    done = multiDone(done, 2);
+    MockXMLHttpRequest.onSend = function(xhr) {
+      xhr.respond(
+        505, {'Content-Type': 'text/html'});
+    };
+    var call = echoService.serverStreamingEcho(request, {});
+    call.on('data', (response) => {
+      assert.fail('should not receive data response');
+    });
+    call.on('status', (status) => {
+      assert('metadata' in status);
+      assert('httpStatusCode' in status.metadata);
+      assert.equal(505, status.metadata.httpStatusCode);
+      done();
+    });
+    call.on('error', (error) => {
+      assert('metadata' in error);
+      assert('httpStatusCode' in error.metadata);
+      assert.equal(505, error.metadata.httpStatusCode);
       done();
     });
   });
