@@ -70,7 +70,7 @@ brew install protobuf
 
 If you don't have [`protoc-gen-js`](https://github.com/protocolbuffers/protobuf-javascript) installed, download it from [protocolbuffers/protobuf-javascript](https://github.com/protocolbuffers/protobuf-javascript/releases) and install it on your PATH.
 
-Or, use the [official](https://www.npmjs.com/package/@protocolbuffers/protoc-gen-js)) npm installer:
+Or, use the [official](https://www.npmjs.com/package/@protocolbuffers/protoc-gen-js) npm installer:
 
 ```
 npm install -g @protocolbuffers/protoc-gen-js
