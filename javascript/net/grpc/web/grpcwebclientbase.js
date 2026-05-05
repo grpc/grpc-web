@@ -102,6 +102,87 @@ class GrpcWebClientBase {
    */
   rpcCall(method, requestMessage, metadata, methodDescriptor, callback) {
     const hostname = getHostname(method, methodDescriptor);
+
+    if (methodDescriptor.getMethodType() === 'unary' && this.unaryInterceptors_.length > 0) {
+      let realStream;
+      let cancelled = false;
+      const listeners = [];
+
+      // Unary interceptors return a Promise, but rpcCall must return a stream
+      // immediately. This proxy stream queues up listeners and handles cancellation
+      // until the real stream is created asynchronously by the interceptor chain.
+      const proxyStream = {
+        on: function(type, cb) {
+          if (realStream) {
+            realStream.on(type, cb);
+          } else {
+            listeners.push({type, cb});
+          }
+          return this;
+        },
+        removeListener: function(type, cb) {
+          if (realStream) {
+            realStream.removeListener(type, cb);
+          } else {
+            const index = listeners.findIndex(l => l.type === type && l.cb === cb);
+            if (index !== -1) {
+              listeners.splice(index, 1);
+            }
+          }
+          return this;
+        },
+        cancel: function() {
+          cancelled = true;
+          if (realStream) realStream.cancel();
+        }
+      };
+
+      const initialInvoker = (request) => new Promise((resolve, reject) => {
+        realStream = this.startStream_(request, hostname);
+        if (cancelled) {
+          realStream.cancel();
+        }
+        listeners.forEach(l => realStream.on(l.type, l.cb));
+
+        let unaryMetadata;
+        let unaryStatus;
+        let unaryMsg;
+        GrpcWebClientBase.setCallback_(
+            realStream,
+            (error, response, status, metadata, unaryResponseReceived) => {
+              if (error) {
+                reject(error);
+              } else if (unaryResponseReceived) {
+                unaryMsg = response;
+              } else if (status) {
+                unaryStatus = status;
+              } else if (metadata) {
+                unaryMetadata = metadata;
+              } else {
+                resolve(request.getMethodDescriptor().createUnaryResponse(
+                    unaryMsg, unaryMetadata, unaryStatus));
+              }
+            },
+            true);
+      });
+
+      const invoker = GrpcWebClientBase.runInterceptors_(
+          initialInvoker, this.unaryInterceptors_);
+
+      const unaryResponse = /** @type {!Promise<?>} */ (invoker.call(
+          this, methodDescriptor.createRequest(requestMessage, metadata)));
+
+      unaryResponse.then(
+          (response) => {
+            callback(null, response.getResponseMessage());
+          },
+          (error) => {
+            callback(/** @type {!RpcError} */ (error), null);
+          });
+
+      return new ClientUnaryCallImpl(/** @type {!ClientReadableStream<?>} */ (proxyStream));
+    }
+
     const invoker = GrpcWebClientBase.runInterceptors_(
         (request) => this.startStream_(request, hostname),
         this.streamInterceptors_);
