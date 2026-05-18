@@ -7,7 +7,8 @@
  * FooServiceClient is ClientReadableStream for BOTH unary calls and server
  * streaming calls, so StreamInterceptor is expected to be used for intercepting
  * FooServiceClient calls. The response type of PromiseClient is Promise, so use
- * UnaryInterceptor for PromiseClients.
+ * UnaryInterceptor for PromiseClients. Note that UnaryInterceptor can also be
+ * applied to unary calls in FooServiceClient if configured.
  */
 
 goog.module('grpc.web.Interceptor');

@@ -22,6 +22,7 @@ const ClientReadableStream = goog.require('grpc.web.ClientReadableStream');
 const ErrorCode = goog.require('goog.net.ErrorCode');
 const GrpcWebClientBase = goog.require('grpc.web.GrpcWebClientBase');
 const MethodDescriptor = goog.require('grpc.web.MethodDescriptor');
+const MethodType = goog.require('grpc.web.MethodType');
 const ReadyState = goog.require('goog.net.XmlHttp.ReadyState');
 const Request = goog.requireType('grpc.web.Request');
 const RpcError = goog.require('grpc.web.RpcError');
@@ -29,7 +30,7 @@ const StatusCode = goog.require('grpc.web.StatusCode');
 const XhrIo = goog.require('goog.testing.net.XhrIo');
 const googCrypt = goog.require('goog.crypt.base64');
 const testSuite = goog.require('goog.testing.testSuite');
-const {StreamInterceptor} = goog.require('grpc.web.Interceptor');
+const {StreamInterceptor, UnaryInterceptor} = goog.require('grpc.web.Interceptor');
 goog.require('goog.testing.jsunit');
 
 // This parses to [ { DATA: [4, 5, 6] }, { TRAILER: "a: b" } ]
@@ -322,6 +323,31 @@ testSuite({
     assertEquals('Intercepted value', response.data);
   },
 
+  async testUnaryInterceptor() {
+    const xhr = new XhrIo();
+    const interceptor = new UnaryResponseInterceptor();
+    const methodDescriptor = new MethodDescriptor(
+        /* name= */ '', /* methodType= */ MethodType.UNARY, MockRequest, MockReply,
+        (request) => [1, 2, 3], (bytes) => new MockReply('value'));
+        
+    const client =
+        new GrpcWebClientBase({'unaryInterceptors': [interceptor]}, xhr);
+
+    const response = await new Promise((resolve, reject) => {
+      client.rpcCall(
+          'url', new MockRequest(), /* metadata= */ {}, methodDescriptor,
+          (error, response) => {
+            assertNull(error);
+            resolve(response);
+          });
+      xhr.simulatePartialResponse(
+          googCrypt.encodeByteArray(new Uint8Array(DEFAULT_RPC_RESPONSE)),
+          DEFAULT_RESPONSE_HEADERS);
+      xhr.simulateReadyStateChange(ReadyState.COMPLETE);
+    });
+    assertEquals('Intercepted value', response.data);
+  },
+
 });
 
 /** Mocks a request proto object. */
@@ -438,5 +464,28 @@ class InterceptedStream {
   removeListener(eventType, callback) {
     this.stream.removeListener(eventType, callback);
     return this;
+  }
+}
+
+/**
+ * @implements {UnaryInterceptor}
+ * @unrestricted
+ */
+class UnaryResponseInterceptor {
+  constructor() {}
+
+  /**
+   * @override
+   * @template REQUEST, RESPONSE
+   * @param {!Request<REQUEST, RESPONSE>} request
+   * @param {function(!Request<REQUEST,RESPONSE>):!Promise<!UnaryResponse<RESPONSE>>} invoker
+   * @return {!Promise<!UnaryResponse<RESPONSE>>}
+   */
+  intercept(request, invoker) {
+    return invoker(request).then((response) => {
+      const msg = response.getResponseMessage();
+      msg.data = 'Intercepted ' + msg.data;
+      return response;
+    });
   }
 }
