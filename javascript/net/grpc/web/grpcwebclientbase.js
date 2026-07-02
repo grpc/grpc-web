@@ -154,9 +154,15 @@ class GrpcWebClientBase {
       const invoker = GrpcWebClientBase.runInterceptors_(
           initialInvoker, this.unaryInterceptors_);
 
-      Promise.resolve().then(() => invoker.call(
-          this, methodDescriptor.createRequest(requestMessage, metadata)))
-      .then(
+      let unaryResponse;
+      try {
+        unaryResponse = /** @type {!Promise<?>} */ (invoker.call(
+            this, methodDescriptor.createRequest(requestMessage, metadata)));
+      } catch (e) {
+        unaryResponse = Promise.reject(e);
+      }
+
+      unaryResponse.then(
           (response) => {
             callback(null, response.getResponseMessage());
           },
