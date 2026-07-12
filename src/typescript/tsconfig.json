@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "commonjs", 
+    "strict": true,
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": false,
+    "typeRoots": [
+      "../../packages/grpc-web/node_modules/@types"
+    ],
+    "types": ["jasmine", "node"],
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "bundler",
+    "paths": {
+      "@closure-net/blob": [
+        "../../packages/closure-wrapper/dist/grpc_web_blob_types.d.ts"
+      ]
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "**/generated/*_pb.js",
+    "**/generated/*_pb.d.ts"
+  ]
+}

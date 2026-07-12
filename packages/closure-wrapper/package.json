@@ -1,0 +1,52 @@
+{
+  "name": "@grpc-web/closure-wrapper",
+  "version": "1.0.0",
+  "description": "A wrapper of the closure-net packages from google for use outside of a closure compiled application",
+  "author": "Google Inc.",
+  "main": "./dist/grpc_web_blob_es2022.js",
+  "exports": {
+    ".": {
+       "types": "./dist/grpc_web_blob_types.d.ts",
+       "require": "./dist/grpc_web_blob_es2022.js",
+       "default": "./dist/esm/grpc_web_blob_es2022.js"
+    },
+    "./blob": {
+      "types": "./dist/grpc_web_blob_types.d.ts",
+      "require": "./dist/grpc_web_blob_es2022.js",
+      "default": "./dist/esm/grpc_web_blob_es2022.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "blob/package.json"
+  ],
+  "scripts": {
+    "dev": "watch 'npm run build' src",
+    "build": "mkdir -p dist dist/esm && cp -f node_modules/closure-net/grpc_web/grpc_web_blob_*.d.ts dist/ 2>/dev/null || true && touch dist/grpc_web_blob_es2022.js dist/esm/grpc_web_blob_es2022.js && rollup -c",
+    "prepare": "npm run build",
+    "test": "echo 'No test suite for closure-wrapper'",
+    "test:ci": "echo 'No test suite for closure-wrapper'"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "closure-net": "git+https://github.com/google/closure-net.git#main"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "21.1.0",
+    "rollup": "2.79.2",
+    "rollup-plugin-copy": "3.5.0",
+    "rollup-plugin-sourcemaps": "0.6.3",
+    "rollup-plugin-typescript2": "0.37.0",
+    "typescript": "5.5.4"
+  },
+  "repository": {
+    "directory": "packages/closure-wrapper",
+    "type": "git",
+    "url": "https://github.com/grpc/grpc-web.git"
+  },
+  "typings": "./dist/grpc_web_blob_types.d.ts",
+  "bugs": {
+    "url": "https://github.com/grpc/grpc-web/issues"
+  }
+}
