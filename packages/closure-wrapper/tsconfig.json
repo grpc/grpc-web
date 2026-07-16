@@ -4,6 +4,8 @@
       "outDir": "dist",
       "allowJs": true,
       "moduleResolution": "bundler",
+      "esModuleInterop": true,
+      "noImplicitAny": false,
       "types": [],
       // Removed baseUrl!
       "paths": {
