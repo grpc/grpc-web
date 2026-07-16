@@ -5,7 +5,7 @@
     "strict": true,
     "allowJs": true,
     "outDir": "./dist",
-    "types": ["node"],
+    "types": ["node"]
   },
   "include": [
     "client.ts",

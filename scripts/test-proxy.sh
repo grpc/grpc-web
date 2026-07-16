@@ -42,7 +42,7 @@ s1=$(echo "$out" | base64 -d | \
   { dd bs=1 count=13 ; dd skip=4 bs=1 count=15 ; } 2>/dev/null | \
   base64)
 
-echo "$s1" | base64 -d | xxd
+echo "$s1" | base64 -d | (xxd || od -t x1 || true)
 
 # Take the 28 bytes we cut out above, the base64-encoded string should be this
 if [[ "$s1" != "AAAAAAcKBWhlbGxvgGdycGMtc3RhdHVzOjANCg==" ]]; then

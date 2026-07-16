@@ -18,11 +18,11 @@
 
 const fs = require("fs");
 const path = require("path");
-const {exec} = require("child_process");
+const {execSync} = require("child_process");
 
 const cwd = process.cwd();
 
-const indexPath = path.relative(cwd, path.resolve(__dirname, "../index.js"));
+const indexPath = path.relative(cwd, path.resolve(__dirname, "../index.closure.js"));
 
 const jsPaths = [
   "../exports.js",
@@ -48,10 +48,7 @@ const closureCompilerBin =
 const closureCommand = closureCompilerBin + " " + closureArgs.join(' ');
 
 console.log(closureCommand);
-let child = exec(closureCommand);
-
-child.stdout.pipe(process.stdout);
-child.stderr.pipe(process.stderr);
+execSync(closureCommand, {stdio: "inherit"});
 
 function createSymlink(target, path) {
   fs.symlink(target, path, (err) => {
