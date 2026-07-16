@@ -925,7 +925,7 @@ void PrintProtoDtsMessage(Printer* printer, const Descriptor* desc,
   printer->Indent();
   for (int i = 0; i < desc->field_count(); i++) {
     const FieldDescriptor* field = desc->field(i);
-    
+
     string js_field_name = CamelCaseJSFieldName(field);
     if (IsReserved(js_field_name)) {
       js_field_name = "pb_" + js_field_name;
@@ -1560,7 +1560,7 @@ class GrpcCodeGenerator : public CodeGenerator {
 
   // Keep synced with protoc-gen-js: https://github.com/protocolbuffers/protobuf-javascript/blob/861c8020a5c0cba9b7cdf915dffde96a4421a1f4/generator/js_generator.h#L157-L158
   Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
-  Edition GetMaximumEdition() const override { return Edition::EDITION_2023; }
+  Edition GetMaximumEdition() const override { return Edition::EDITION_2024; }
 
   bool Generate(const FileDescriptor* file, const string& parameter,
                 GeneratorContext* context, string* error) const override {
