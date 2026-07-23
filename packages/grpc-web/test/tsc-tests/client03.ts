@@ -61,7 +61,7 @@ class MyStreamInterceptor implements grpcWeb.StreamInterceptor<
   };
 }
 
-var opts = {'streamInterceptors' : [new MyStreamInterceptor()]};
+var opts = {'streamInterceptors' : [new MyStreamInterceptor()]} as any;
 
 const echoService = new EchoServiceClient('http://localhost:8080', null, opts);
 

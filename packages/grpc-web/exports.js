@@ -19,6 +19,7 @@ module['exports']['GrpcWebClientBase'] = GrpcWebClientBase;
 module['exports']['RpcError'] = RpcError;
 module['exports']['StatusCode'] = StatusCode;
 module['exports']['MethodType'] = MethodType;
+module['exports']['MethodInfo'] = MethodDescriptor;
 
 // Temporary hack to fix https://github.com/grpc/grpc-web/issues/1153, which is
 // caused by `goog.global` not pointing to the global scope when grpc-web is

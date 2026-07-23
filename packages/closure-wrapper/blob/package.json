@@ -1,0 +1,7 @@
+  {
+    "description": "Packaged Closure dependencies for gRPC-Web",
+    "main": "../dist/grpc_web_blob_es2022.js",
+    "typings": "../dist/grpc_web_blob_types.d.ts"
+  }
+  
+  

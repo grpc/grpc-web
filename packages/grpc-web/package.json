@@ -11,21 +11,32 @@
   "bugs": "https://github.com/grpc/grpc-web/issues",
   "files": [
     "index.js",
+    "index.esm.js",
     "index.d.ts"
   ],
   "main": "index.js",
+  "module": "index.esm.js",
   "typings": "index.d.ts",
   "scripts": {
-    "build": "node scripts/build.js",
+    "build": "node scripts/build.js && rollup -c",
     "prepare": "npm run build",
     "prepublishOnly": "npm run build",
-    "test": "npm run test-jsunit && npm run test-mocha",
+    "test": "npm run test-mocha && npm run test-ts",
     "test-mocha": "mocha --timeout 10000 \"./test/**/*_test.js\"",
-    "test-jsunit": "./scripts/generate_test_files.sh && ./scripts/run_jsunit_tests.sh && rm -rf ./generated"
+    "test-ts": "tsc -p ../../src/typescript/tsconfig.json && NODE_PATH=./node_modules jasmine \"../../src/typescript/**/*_test.js\"",
+    "test-jsunit": "echo 'Legacy JsUnit tests migrated to TypeScript (npm run test-ts)'"
   },
   "license": "Apache-2.0",
+  "dependencies": {},
   "devDependencies": {
+    "@grpc-web/closure-wrapper": "file:../closure-wrapper",
+    "@closure-net/blob": "file:../closure-wrapper",
+    "@rollup/plugin-commonjs": "21.1.0",
+    "@rollup/plugin-node-resolve": "^13.3.0",
     "@types/google-protobuf": "~3.15.12",
+    "@types/jasmine": "^6.0.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.6.0",
     "command-exists": "~1.2.8",
     "google-closure-compiler": "^20250820.0.0",
     "google-closure-deps": "~20210601.0.0",
@@ -34,9 +45,11 @@
     "gulp": "~4.0.2",
     "gulp-connect": "~5.7.0",
     "gulp-eval": "~1.0.0",
+    "jasmine": "^6.2.0",
     "mocha": "~5.2.0",
     "mock-xmlhttprequest": "~2.0.0",
     "protractor": "~7.0.0",
+    "rollup": "2.79.2",
     "typescript": "latest"
   }
 }

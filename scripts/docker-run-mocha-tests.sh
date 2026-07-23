@@ -19,4 +19,5 @@ set -ex
 
 cd /github/grpc-web/packages/grpc-web
 npm run prepare && \
-  npm run test-mocha
+  npm run test-mocha && \
+  npm run test-ts

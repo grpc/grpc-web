@@ -3,6 +3,10 @@ declare module "grpc-web" {
   export interface Metadata { [s: string]: string; }
 
   export class AbstractClientBase {
+
+    /** @deprecated Use MethodDescriptor instead. */
+    static MethodInfo: new (...args: any[]) => any;
+  
     thenableCall<REQ, RESP> (
       method: string,
       request: REQ,
@@ -118,6 +122,9 @@ declare module "grpc-web" {
     code: StatusCode;
     metadata: Metadata;
   }
+
+  /** @deprecated Use RpcError instead. */
+  export { RpcError as Error };
 
   export interface Status {
     code: number;
