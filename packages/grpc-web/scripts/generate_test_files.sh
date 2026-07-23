@@ -31,6 +31,13 @@ cd "$REPO_DIR"
 
 mkdir -p "$GEN_DIR"
 
+# Compile TypeScript files and bridge the output into the javascript/ folder for headless Chrome
+echo "Compiling migrated TypeScript files to JavaScript directory..."
+npx tsc -p ../../src/typescript/tsconfig.json || true
+cp ../../src/typescript/dist/*.js "$JAVASCRIPT_DIR"/net/grpc/web/ 2>/dev/null || true
+cp ../../src/typescript/*.js "$JAVASCRIPT_DIR"/net/grpc/web/ 2>/dev/null || true
+cp ../../src/typescript/generated/*.js "$JAVASCRIPT_DIR"/net/grpc/web/ 2>/dev/null || true
+
 echo "Generating dependency file..."
 npx closure-make-deps \
     --closure-path="node_modules/google-closure-library/closure/goog" \

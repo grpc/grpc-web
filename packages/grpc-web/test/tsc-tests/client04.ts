@@ -48,7 +48,7 @@ class MyUnaryInterceptor implements grpcWeb.UnaryInterceptor<
     }
   }
 
-var opts = {'unaryInterceptors' : [new MyUnaryInterceptor()]};
+var opts = {'unaryInterceptors' : [new MyUnaryInterceptor()]} as any;
 
 const echoService = new EchoServicePromiseClient('http://localhost:8080',
                                                  null, opts);

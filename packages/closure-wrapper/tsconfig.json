@@ -1,0 +1,19 @@
+  {
+    "compilerOptions": {
+      "declaration": false,
+      "outDir": "dist",
+      "allowJs": true,
+      "moduleResolution": "bundler",
+      "types": [],
+      // Removed baseUrl!
+      "paths": {
+        "closure-net/*": ["../../node_modules/closure-net/*"]
+      }
+    },
+     "include": [
+    "./node_modules/closure-net/grpc_web", 
+    "index.ts"
+  ]
+  }
+  
+  
