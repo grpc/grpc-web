@@ -4,7 +4,7 @@ ARG NODE_VERSION=20.0.0
 USER root
 
 # Install Node.js dependencies
-RUN apt-get update && apt-get install -y nodejs npm curl
+RUN apt-get update && apt-get install -y nodejs npm curl git && npm install -g yarn
 
 # Install nvm and set up Node.js
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
@@ -20,8 +20,10 @@ WORKDIR /grpc-web
 # Copy all needed files before running npm install or compiler
 COPY ./packages ./packages
 COPY ./javascript ./javascript
+COPY ./src ./src
 COPY ./scripts ./scripts
 
 # Install npm dependencies and build the JS library
+RUN cd /grpc-web/packages/closure-wrapper && yarn install && yarn build
 WORKDIR /grpc-web/packages/grpc-web
-RUN npm install
+RUN npm install --ignore-scripts

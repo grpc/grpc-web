@@ -58,7 +58,7 @@ const outputDir = './test/tsc-tests/generated';
 // our test doesn't pass with `--target es6`
 // TODO: Find out how we can enable --target es6!
 const tscCompilerOptions =
-    `--allowJs --strict --noImplicitReturns --skipLibCheck`;
+    `--allowJs --strict --noImplicitReturns --skipLibCheck --module commonjs`;
 
 describe('tsc test01: nested messages', function() {
   before(function() {
@@ -359,3 +359,7 @@ describe('tsc test06: promise-based client', function() {
     assertFileExists('./tsc-tests/dist/generated/echo_pb.js');
   });
 });
+
+
+  
+  
