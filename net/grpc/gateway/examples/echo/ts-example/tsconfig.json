@@ -5,7 +5,12 @@
     "strict": true,
     "allowJs": true,
     "outDir": "./dist",
-    "types": ["node"]
+    "types": [
+      "node"
+    ],
+    "esModuleInterop": true,
+    "noImplicitAny": false,
+    "strictNullChecks": false
   },
   "include": [
     "client.ts",

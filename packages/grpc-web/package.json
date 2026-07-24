@@ -50,6 +50,6 @@
     "mock-xmlhttprequest": "~2.0.0",
     "protractor": "~7.0.0",
     "rollup": "2.79.2",
-    "typescript": "latest"
+    "typescript": "~5.5.4"
   }
 }
