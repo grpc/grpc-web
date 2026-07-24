@@ -3,7 +3,7 @@
       "declaration": false,
       "outDir": "dist",
       "allowJs": true,
-      "moduleResolution": "bundler",
+      "moduleResolution": "node",
       "types": [],
       // Removed baseUrl!
       "paths": {

@@ -2,12 +2,12 @@
   "devDependencies": {
     "@types/google-protobuf": "~3.15.12",
     "@types/jquery": "~3.3.6",
-    "@types/node": "latest",
+    "@types/node": "^20.14.0",
     "google-protobuf": "~3.21.4",
     "grpc-web": "~2.0.2",
     "jquery": "~3.5.1",
     "mock-xmlhttprequest": "~2.0.0",
-    "typescript": "latest",
+    "typescript": "~5.5.4",
     "webpack": "5.101.3",
     "webpack-cli": "~5.1.1"
   }
