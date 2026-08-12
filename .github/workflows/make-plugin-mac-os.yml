@@ -62,8 +62,18 @@ jobs:
           shasum -a 256 -c protoc-gen-grpc-web-${VERSION_NUMBER}-darwin-x86_64.sha256
           shasum -a 256 -c protoc-gen-grpc-web-${VERSION_NUMBER}-darwin-aarch64.sha256
           
-      - name: Upload artifacts
+      - name: Upload artifacts (Intel)
         uses: actions/upload-artifact@v4
         with:
-          name: protoc-gen-grpc-web-darwin
-          path: protoc-gen-grpc-web*
+          name: protoc-gen-grpc-web-${{ env.VERSION_NUMBER }}-darwin-x86_64
+          path: |
+            protoc-gen-grpc-web-${{ env.VERSION_NUMBER }}-darwin-x86_64
+            protoc-gen-grpc-web-${{ env.VERSION_NUMBER }}-darwin-x86_64.sha256
+
+      - name: Upload artifacts (Apple Silicon)
+        uses: actions/upload-artifact@v4
+        with:
+          name: protoc-gen-grpc-web-${{ env.VERSION_NUMBER }}-darwin-aarch64
+          path: |
+            protoc-gen-grpc-web-${{ env.VERSION_NUMBER }}-darwin-aarch64
+            protoc-gen-grpc-web-${{ env.VERSION_NUMBER }}-darwin-aarch64.sha256
