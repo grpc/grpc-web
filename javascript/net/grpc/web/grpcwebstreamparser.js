@@ -53,7 +53,19 @@ const asserts = goog.require('goog.asserts');
  * @final
  */
 class GrpcWebStreamParser {
-  constructor() {
+  /**
+   * @param {number=} maxMessageLength The maximum allowed length, in bytes, of
+   *     a single inbound message. Defaults to 4 MB, matching the receive limit
+   *     enforced by grpc-go, grpc-java and the C core. A value of 0 disables
+   *     the check.
+   */
+  constructor(maxMessageLength = 4 * 1024 * 1024) {
+    /**
+     * The maximum allowed inbound message length in bytes (0 = unlimited).
+     * @private @const {number}
+     */
+    this.maxMessageLength_ = maxMessageLength;
+
     /**
      * The current error message, if any.
      * @private {?string}
@@ -212,9 +224,22 @@ class GrpcWebStreamParser {
      */
     function processLengthByte(b) {
       parser.countLengthBytes_++;
-      parser.length_ = (parser.length_ << 8) + b;
+      // Message-Length is a 4-byte unsigned big-endian integer (see
+      // https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md).
+      // Multiply rather than left-shift: the JS `<<` operator coerces to a
+      // signed 32-bit int, which would misread any length >= 2^31 as negative.
+      parser.length_ = (parser.length_ * 256) + b;
 
       if (parser.countLengthBytes_ == 4) {  // no more length byte
+        // Reject an oversized (possibly attacker-controlled) length before
+        // allocating, so a bogus frame header cannot force a huge allocation.
+        if (parser.maxMessageLength_ > 0 &&
+            parser.length_ > parser.maxMessageLength_) {
+          throw new Error(
+              'grpc-web: message length ' + parser.length_ +
+              ' exceeds configured maximum of ' + parser.maxMessageLength_ +
+              ' bytes');
+        }
         parser.state_ = Parser.State_.MESSAGE;
         parser.countMessageBytes_ = 0;
         if (typeof Uint8Array !== 'undefined') {

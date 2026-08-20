@@ -65,8 +65,10 @@ class GrpcWebClientReadableStream {
   /**
    * @param {!GenericTransportInterface} genericTransportInterface The
    *   GenericTransportInterface
+   * @param {number=} maxMessageLength The maximum allowed inbound message
+   *   length in bytes, forwarded to the stream parser. Defaults to 4 MB.
    */
-  constructor(genericTransportInterface) {
+  constructor(genericTransportInterface, maxMessageLength = 4 * 1024 * 1024) {
     /**
      * @const
      * @private
@@ -132,7 +134,7 @@ class GrpcWebClientReadableStream {
      * @type {!GrpcWebStreamParser} The grpc-web stream parser
      * @const
      */
-    this.parser_ = new GrpcWebStreamParser();
+    this.parser_ = new GrpcWebStreamParser(maxMessageLength);
 
     const self = this;
     events.listen(this.xhr_, EventType.READY_STATE_CHANGE, function(e) {
