@@ -67,6 +67,14 @@ class GrpcWebStreamParser {
     this.maxMessageLength_ = maxMessageLength;
 
     /**
+     * Whether parsing failed because a frame declared a length exceeding
+     * maxMessageLength_. Lets the caller surface StatusCode.RESOURCE_EXHAUSTED
+     * (matching grpc-go/grpc-java/core) instead of a generic parse error.
+     * @private {boolean}
+     */
+    this.messageLengthExceeded_ = false;
+
+    /**
      * The current error message, if any.
      * @private {?string}
      */
@@ -134,6 +142,15 @@ class GrpcWebStreamParser {
    */
   getErrorMessage() {
     return this.errorMessage_;
+  }
+
+  /**
+   * Whether the last parse failure was caused by a message whose declared
+   * length exceeded the configured maxMessageLength_.
+   * @return {boolean}
+   */
+  getMessageLengthExceeded() {
+    return this.messageLengthExceeded_;
   }
 
   /**
@@ -233,12 +250,17 @@ class GrpcWebStreamParser {
       if (parser.countLengthBytes_ == 4) {  // no more length byte
         // Reject an oversized (possibly attacker-controlled) length before
         // allocating, so a bogus frame header cannot force a huge allocation.
+        // error_() marks the stream INVALID and throws, consistent with the
+        // other framing errors in this parser; the flag lets the caller map
+        // this to RESOURCE_EXHAUSTED.
         if (parser.maxMessageLength_ > 0 &&
             parser.length_ > parser.maxMessageLength_) {
-          throw new Error(
-              'grpc-web: message length ' + parser.length_ +
-              ' exceeds configured maximum of ' + parser.maxMessageLength_ +
-              ' bytes');
+          parser.messageLengthExceeded_ = true;
+          parser.error_(
+              inputBytes, pos,
+              'message length ' + parser.length_ +
+                  ' exceeds max receive message size ' +
+                  parser.maxMessageLength_);
         }
         parser.state_ = Parser.State_.MESSAGE;
         parser.countMessageBytes_ = 0;

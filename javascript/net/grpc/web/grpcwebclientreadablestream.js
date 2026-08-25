@@ -163,8 +163,16 @@ class GrpcWebClientReadableStream {
       try {
         messages = self.parser_.parse(byteSource);
       } catch (err) {
-        self.handleError_(
-            new RpcError(StatusCode.UNKNOWN, 'Error in parsing response body'));
+        if (self.parser_.getMessageLengthExceeded()) {
+          // Mirror grpc-go/grpc-java/core, which return RESOURCE_EXHAUSTED when
+          // an inbound message exceeds the configured max receive message size.
+          self.handleError_(new RpcError(
+              StatusCode.RESOURCE_EXHAUSTED,
+              'Received message larger than max receive message size'));
+        } else {
+          self.handleError_(
+              new RpcError(StatusCode.UNKNOWN, 'Error in parsing response body'));
+        }
       }
       if (messages) {
         const FrameType = GrpcWebStreamParser.FrameType;
