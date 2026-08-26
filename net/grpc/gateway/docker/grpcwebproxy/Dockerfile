@@ -17,7 +17,7 @@ FROM golang:1.16-alpine3.13
 RUN apk add --no-cache curl git ca-certificates && \
   rm -rf /var/lib/apt/lists/*
 
-ARG VERSION=0.14.0
+ARG VERSION=0.15.0
 
 WORKDIR /tmp
 
@@ -31,9 +31,13 @@ RUN mv grpc-web-$VERSION grpc-web
 
 WORKDIR /go/src/github.com/improbable-eng/grpc-web
 
-RUN dep ensure && \
-  go env -w GO111MODULE=auto && \
-  go install ./go/grpcwebproxy
+RUN go mod edit -replace nhooyr.io/websocket=github.com/nhooyr/websocket@v1.8.7
+  
+# 📥 Update missing checksums directly 
+RUN go mod download nhooyr.io/websocket
+  
+RUN go env -w GO111MODULE=on && \
+    go install ./go/grpcwebproxy
 
 ADD ./etc/localhost.crt /etc
 ADD ./etc/localhost.key /etc

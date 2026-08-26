@@ -111,6 +111,11 @@ declare module "grpc-web" {
     withCredentials?: boolean;
     unaryInterceptors?: UnaryInterceptor<unknown, unknown>[];
     streamInterceptors?: StreamInterceptor<unknown, unknown>[];
+    /**
+     * Maximum allowed inbound message size in bytes. Defaults to 4 MB.
+     * Set to 0 to disable the limit.
+     */
+    maxReceiveMessageSize?: number;
   }
 
   export class GrpcWebClientBase extends AbstractClientBase {

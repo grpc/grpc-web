@@ -16,13 +16,10 @@ on:
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [macos-13, macos-14]
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
+      
       - name: Compute VERSION_NUMBER
         run: |
           INPUT_VERSION="${{ github.event.inputs.version_number }}"
@@ -31,50 +28,52 @@ jobs:
           else
             VERSION="$GITHUB_REF_NAME"
           fi
-          # Minimal sanitization: replace slashes with dashes to keep filenames valid
           VERSION="${VERSION//\//-}"
           echo "VERSION_NUMBER=$VERSION" >> "$GITHUB_ENV"
           echo "Computed VERSION_NUMBER=$VERSION"
-      - name: Compute ARCH suffix and artifact name
-        id: meta
-        run: |
-          ARCH=$(uname -m)
-          case "$ARCH" in
-            arm64)
-              ARCH_SUFFIX="aarch64"
-              ;;
-            x86_64)
-              ARCH_SUFFIX="x86_64"
-              ;;
-            *)
-              echo "Unsupported architecture: $ARCH" >&2
-              exit 1
-              ;;
-          esac
-          ARTIFACT="protoc-gen-grpc-web-${VERSION_NUMBER}-darwin-${ARCH_SUFFIX}"
-          echo "ARTIFACT=$ARTIFACT" >> "$GITHUB_ENV"
-          echo "artifact=$ARTIFACT" >> "$GITHUB_OUTPUT"
-          echo "Will produce artifact: $ARTIFACT"
+          
       - name: Install Bazelisk (Bazel)
         run: |
           brew update
           brew install bazelisk
           bazelisk version
-      - name: Build protoc-gen-grpc-web with Bazel
+          
+      - name: Build protoc-gen-grpc-web for Intel (x86_64)
+        run: |
+          bazelisk build //javascript/net/grpc/web/generator:protoc-gen-grpc-web --macos_cpus=x86_64
+          mv bazel-bin/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
+            ./protoc-gen-grpc-web-${VERSION_NUMBER}-darwin-x86_64
+            
+      - name: Build protoc-gen-grpc-web for Apple Silicon (arm64)
         run: |
           bazelisk build //javascript/net/grpc/web/generator:protoc-gen-grpc-web
-      - name: Move artifact
-        run: |
           mv bazel-bin/javascript/net/grpc/web/generator/protoc-gen-grpc-web \
-            ./${ARTIFACT}
+            ./protoc-gen-grpc-web-${VERSION_NUMBER}-darwin-aarch64
+            
       - name: Generate sha256
         run: |
-          openssl dgst -sha256 -r -out ${ARTIFACT}.sha256 \
-            ${ARTIFACT}
+          openssl dgst -sha256 -r -out protoc-gen-grpc-web-${VERSION_NUMBER}-darwin-x86_64.sha256 \
+            protoc-gen-grpc-web-${VERSION_NUMBER}-darwin-x86_64
+          openssl dgst -sha256 -r -out protoc-gen-grpc-web-${VERSION_NUMBER}-darwin-aarch64.sha256 \
+            protoc-gen-grpc-web-${VERSION_NUMBER}-darwin-aarch64
+            
       - name: Verify sha256
-        run: shasum -a 256 -c ${ARTIFACT}.sha256
-      - name: Upload artifacts
+        run: |
+          shasum -a 256 -c protoc-gen-grpc-web-${VERSION_NUMBER}-darwin-x86_64.sha256
+          shasum -a 256 -c protoc-gen-grpc-web-${VERSION_NUMBER}-darwin-aarch64.sha256
+          
+      - name: Upload artifacts (Intel)
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.meta.outputs.artifact }}
-          path: protoc-gen-grpc-web*
+          name: protoc-gen-grpc-web-${{ env.VERSION_NUMBER }}-darwin-x86_64
+          path: |
+            protoc-gen-grpc-web-${{ env.VERSION_NUMBER }}-darwin-x86_64
+            protoc-gen-grpc-web-${{ env.VERSION_NUMBER }}-darwin-x86_64.sha256
+
+      - name: Upload artifacts (Apple Silicon)
+        uses: actions/upload-artifact@v4
+        with:
+          name: protoc-gen-grpc-web-${{ env.VERSION_NUMBER }}-darwin-aarch64
+          path: |
+            protoc-gen-grpc-web-${{ env.VERSION_NUMBER }}-darwin-aarch64
+            protoc-gen-grpc-web-${{ env.VERSION_NUMBER }}-darwin-aarch64.sha256
