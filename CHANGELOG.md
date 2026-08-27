@@ -1,6 +1,17 @@
 [//]: # (GENERATED FILE -- DO NOT EDIT!)
 [//]: # (See scripts/release_notes.py for more details.)
 
+## 2.1.1
+
+### Security
+
+- [#1547](https://github.com/grpc/grpc-web/pull/1547) limit maxReceiveMessageSize to 4MB to have parity with other runtimes @mbissa 
+
+### Other Changes
+
+- [#1548](https://github.com/grpc/grpc-web/pull/1548) fix(docker): resolve grpcwebproxy build failure caused by dead vanity ... @Vuhag123
+- [#1545](https://github.com/grpc/grpc-web/pull/1545) chore: upgrade macOS CI to macos-14 and prune unused rollup-plugin-cop... @Vuhag123
+
 ## 2.1.0
 
 ### Major Features
