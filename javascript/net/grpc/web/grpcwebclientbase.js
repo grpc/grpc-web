@@ -36,6 +36,7 @@ const HttpCors = goog.require('goog.net.rpc.HttpCors');
 const MethodDescriptor = goog.requireType('grpc.web.MethodDescriptor');
 const Request = goog.require('grpc.web.Request');
 const RpcError = goog.require('grpc.web.RpcError');
+const MethodType = goog.require('grpc.web.MethodType');
 const StatusCode = goog.require('grpc.web.StatusCode');
 const XhrIo = goog.require('goog.net.XhrIo');
 const googCrypt = goog.require('goog.crypt.base64');
@@ -117,6 +118,83 @@ class GrpcWebClientBase {
    */
   rpcCall(method, requestMessage, metadata, methodDescriptor, callback) {
     const hostname = getHostname(method, methodDescriptor);
+
+    if (methodDescriptor.getMethodType() === MethodType.UNARY && this.unaryInterceptors_.length > 0) {
+      let realStream;
+      let cancelled = false;
+      const listeners = [];
+
+      // Unary interceptors return a Promise, but rpcCall must return a stream
+      // immediately. This proxy stream queues up listeners and handles cancellation
+      // until the real stream is created asynchronously by the interceptor chain.
+      const proxyStream = {
+        on: function(type, cb) {
+          if (realStream) {
+            realStream.on(type, cb);
+          } else {
+            listeners.push({type, cb});
+          }
+          return this;
+        },
+        removeListener: function(type, cb) {
+          if (realStream) {
+            realStream.removeListener(type, cb);
+          } else {
+            const index = listeners.findIndex(l => l.type === type && l.cb === cb);
+            if (index !== -1) {
+              listeners.splice(index, 1);
+            }
+          }
+          return this;
+        },
+        cancel: function() {
+          cancelled = true;
+          if (realStream) realStream.cancel();
+        }
+      };
+
+      const streamInvoker = GrpcWebClientBase.runInterceptors_(
+          (req) => this.startStream_(req, hostname),
+          this.streamInterceptors_);
+
+      const initialInvoker = GrpcWebClientBase.makeUnaryInvoker_(
+          streamInvoker, null, (stream) => {
+            realStream = stream;
+            if (cancelled) {
+              realStream.cancel();
+            }
+            listeners.forEach(l => realStream.on(l.type, l.cb));
+          });
+
+      const invoker = GrpcWebClientBase.runInterceptors_(
+          initialInvoker, this.unaryInterceptors_);
+
+      let unaryResponse;
+      try {
+        unaryResponse = /** @type {!Promise<?>} */ (invoker.call(
+            this, methodDescriptor.createRequest(requestMessage, metadata)));
+      } catch (e) {
+        unaryResponse = Promise.reject(e);
+      }
+
+      unaryResponse.then(
+          (response) => {
+            callback(null, response.getResponseMessage());
+          },
+          (error) => {
+            let rpcError;
+            if (error instanceof RpcError) {
+              rpcError = error;
+            } else {
+              rpcError = new RpcError(error.code || StatusCode.UNKNOWN, error.message || '');
+              if (error.metadata) rpcError.metadata = error.metadata;
+            }
+            callback(rpcError, null);
+          });
+
+      return new ClientUnaryCallImpl(/** @type {!ClientReadableStream<?>} */ (proxyStream));
+    }
+
     const invoker = GrpcWebClientBase.runInterceptors_(
         (request) => this.startStream_(request, hostname),
         this.streamInterceptors_);
@@ -139,49 +217,11 @@ class GrpcWebClientBase {
       method, requestMessage, metadata, methodDescriptor, options = {}) {
     const hostname = getHostname(method, methodDescriptor);
     const signal = options && options.signal;
-    const initialInvoker = (request) => new Promise((resolve, reject) => {
-      // If the signal is already aborted, immediately reject the promise
-      // and don't issue the call.
-      if (signal && signal.aborted) {
-        const error = new RpcError(StatusCode.CANCELLED, 'Aborted');
-        error.cause = signal.reason;
-        reject(error);
-        return;
-      }
+    
+    const initialInvoker = GrpcWebClientBase.makeUnaryInvoker_(
+        (req) => this.startStream_(req, hostname),
+        signal, null);
 
-      const stream = this.startStream_(request, hostname);
-      let unaryMetadata;
-      let unaryStatus;
-      let unaryMsg;
-      GrpcWebClientBase.setCallback_(
-          stream,
-          (error, response, status, metadata, unaryResponseReceived) => {
-            if (error) {
-              reject(error);
-            } else if (unaryResponseReceived) {
-              unaryMsg = response;
-            } else if (status) {
-              unaryStatus = status;
-            } else if (metadata) {
-              unaryMetadata = metadata;
-            } else {
-              resolve(request.getMethodDescriptor().createUnaryResponse(
-                  unaryMsg, unaryMetadata, unaryStatus));
-            }
-          },
-          true);
-
-      // Wire up cancellation from the abort signal, if any.
-      if (signal) {
-        signal.addEventListener('abort', () => {
-          stream.cancel();
-
-          const error = new RpcError(StatusCode.CANCELLED, 'Aborted');
-          error.cause = /** @type {!AbortSignal} */ (signal).reason;
-          reject(error);
-        });
-      }
-    });
     const invoker = GrpcWebClientBase.runInterceptors_(
         initialInvoker, this.unaryInterceptors_);
     const unaryResponse = /** @type {!Promise<?>} */ (invoker.call(
@@ -402,6 +442,63 @@ class GrpcWebClientBase {
   static setCorsOverride_(method, headerObject) {
     return /** @type {string} */ (HttpCors.setHttpHeadersWithOverwriteParam(
         method, HttpCors.HTTP_HEADERS_PARAM_NAME, headerObject));
+  }
+
+  /**
+   * @private
+   * @static
+   * @template REQUEST, RESPONSE
+   * @param {function(!Request<REQUEST,RESPONSE>):!ClientReadableStream<RESPONSE>} streamCreator
+   * @param {?AbortSignal} signal
+   * @param {?function(!ClientReadableStream<RESPONSE>)} onStreamCreated
+   * @return {function(!Request<REQUEST,RESPONSE>):!Promise<?>}
+   */
+  static makeUnaryInvoker_(streamCreator, signal, onStreamCreated) {
+    return (request) => new Promise((resolve, reject) => {
+      if (signal && signal.aborted) {
+        const error = new RpcError(StatusCode.CANCELLED, 'Aborted');
+        error.cause = signal.reason;
+        reject(error);
+        return;
+      }
+
+      const stream = streamCreator(request);
+      
+      let unaryMetadata;
+      let unaryStatus;
+      let unaryMsg;
+      
+      GrpcWebClientBase.setCallback_(
+          stream,
+          (error, response, status, metadata, unaryResponseReceived) => {
+            if (error) {
+              reject(error);
+            } else if (unaryResponseReceived) {
+              unaryMsg = response;
+            } else if (status) {
+              unaryStatus = status;
+            } else if (metadata) {
+              unaryMetadata = metadata;
+            } else {
+              resolve(request.getMethodDescriptor().createUnaryResponse(
+                  unaryMsg, unaryMetadata, unaryStatus));
+            }
+          },
+          true);
+
+      if (onStreamCreated) {
+        onStreamCreated(stream);
+      }
+
+      if (signal) {
+        signal.addEventListener('abort', () => {
+          stream.cancel();
+          const error = new RpcError(StatusCode.CANCELLED, 'Aborted');
+          error.cause = /** @type {!AbortSignal} */ (signal).reason;
+          reject(error);
+        });
+      }
+    });
   }
 
   /**
