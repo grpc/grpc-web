@@ -390,7 +390,9 @@ Multiple proxies support the gRPC-web protocol.
 	$ docker-compose up -d node-server grpcwebproxy binary-client
 	```
 
-3. Apache [APISIX](https://apisix.apache.org/) has also added gRPC-web support, and more details can be found [here](https://apisix.apache.org/blog/2022/01/25/apisix-grpc-web-integration/).
+3. Apache [APISIX][] supports gRPC-web proxying through its built-in
+   [`grpc-web` plugin][APISIX gRPC-web], which translates gRPC-web requests
+   into native gRPC calls for upstream services.
 
 4. [Nginx](https://www.nginx.com/) has a gRPC-web module ([doc](https://nginx.org/en/docs/http/ngx_http_grpc_module.html), [announcement](https://www.nginx.com/blog/nginx-1-13-10-grpc/))), and seems to work with simple configs, according to user [feedback](https://github.com/grpc/grpc-web/discussions/1322).
 
@@ -406,3 +408,5 @@ Multiple proxies support the gRPC-web protocol.
 [grpc-web-docs]: https://grpc.io/docs/languages/web
 [gRPC-web Go Proxy]: https://github.com/improbable-eng/grpc-web/tree/master/go/grpcwebproxy
 [Hello World example]: net/grpc/gateway/examples/helloworld
+[APISIX]: https://apisix.apache.org/
+[APISIX gRPC-web]: https://apisix.apache.org/docs/apisix/plugins/grpc-web/
