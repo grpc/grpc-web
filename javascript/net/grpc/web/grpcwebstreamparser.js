@@ -53,7 +53,27 @@ const asserts = goog.require('goog.asserts');
  * @final
  */
 class GrpcWebStreamParser {
-  constructor() {
+  /**
+   * @param {number=} maxMessageLength The maximum allowed length, in bytes, of
+   *     a single inbound message. Defaults to 4 MB, matching the receive limit
+   *     enforced by grpc-go, grpc-java and the C core. A value of 0 disables
+   *     the check.
+   */
+  constructor(maxMessageLength = 4 * 1024 * 1024) {
+    /**
+     * The maximum allowed inbound message length in bytes (0 = unlimited).
+     * @private @const {number}
+     */
+    this.maxMessageLength_ = maxMessageLength;
+
+    /**
+     * Whether parsing failed because a frame declared a length exceeding
+     * maxMessageLength_. Lets the caller surface StatusCode.RESOURCE_EXHAUSTED
+     * (matching grpc-go/grpc-java/core) instead of a generic parse error.
+     * @private {boolean}
+     */
+    this.messageLengthExceeded_ = false;
+
     /**
      * The current error message, if any.
      * @private {?string}
@@ -122,6 +142,15 @@ class GrpcWebStreamParser {
    */
   getErrorMessage() {
     return this.errorMessage_;
+  }
+
+  /**
+   * Whether the last parse failure was caused by a message whose declared
+   * length exceeded the configured maxMessageLength_.
+   * @return {boolean}
+   */
+  getMessageLengthExceeded() {
+    return this.messageLengthExceeded_;
   }
 
   /**
@@ -212,9 +241,27 @@ class GrpcWebStreamParser {
      */
     function processLengthByte(b) {
       parser.countLengthBytes_++;
-      parser.length_ = (parser.length_ << 8) + b;
+      // Message-Length is a 4-byte unsigned big-endian integer (see
+      // https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md).
+      // Multiply rather than left-shift: the JS `<<` operator coerces to a
+      // signed 32-bit int, which would misread any length >= 2^31 as negative.
+      parser.length_ = (parser.length_ * 256) + b;
 
       if (parser.countLengthBytes_ == 4) {  // no more length byte
+        // Reject an oversized (possibly attacker-controlled) length before
+        // allocating, so a bogus frame header cannot force a huge allocation.
+        // error_() marks the stream INVALID and throws, consistent with the
+        // other framing errors in this parser; the flag lets the caller map
+        // this to RESOURCE_EXHAUSTED.
+        if (parser.maxMessageLength_ > 0 &&
+            parser.length_ > parser.maxMessageLength_) {
+          parser.messageLengthExceeded_ = true;
+          parser.error_(
+              inputBytes, pos,
+              'message length ' + parser.length_ +
+                  ' exceeds max receive message size ' +
+                  parser.maxMessageLength_);
+        }
         parser.state_ = Parser.State_.MESSAGE;
         parser.countMessageBytes_ = 0;
         if (typeof Uint8Array !== 'undefined') {

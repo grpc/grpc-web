@@ -143,10 +143,10 @@ import style.
 [CommonJS](https://requirejs.org/docs/commonjs.html) style `require()` is
 also supported.
 
-`import_style=commonjs+dts`: (Experimental) In addition to above, a `.d.ts`
-typings file will also be generated for the protobuf messages and service stub.
+`import_style=commonjs+dts`: In addition to above, a `.d.ts`
+typings file will also be generated for the protobuf messages and service stub
 
-`import_style=typescript`: (Experimental) The service stub will be generated
+`import_style=typescript`: The service stub will be generated
 in TypeScript. See **TypeScript Support** below for information on how to
 generate TypeScript files.
 
@@ -280,8 +280,9 @@ client.sayHelloAfterDelay(request, {deadline: deadline.getTime().toString()},
 
 ## TypeScript Support
 
-The `grpc-web` module can now be imported as a TypeScript module. This is
-currently an experimental feature. Any feedback welcome!
+The `grpc-web` runtime library is now **fully written in TypeScript**! This provides first-class type safety, zero runtime dependencies, and built-in type definitions out of the box. 
+
+You can simply import it into your TypeScript projects without needing external typings.
 
 When using the `protoc-gen-grpc-web` protoc plugin, mentioned above, pass in
 either:

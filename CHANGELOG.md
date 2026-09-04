@@ -1,6 +1,32 @@
 [//]: # (GENERATED FILE -- DO NOT EDIT!)
 [//]: # (See scripts/release_notes.py for more details.)
 
+## 2.1.1
+
+### Security
+
+- [#1547](https://github.com/grpc/grpc-web/pull/1547) limit maxReceiveMessageSize to 4MB to have parity with other runtimes @mbissa 
+
+### Other Changes
+
+- [#1548](https://github.com/grpc/grpc-web/pull/1548) fix(docker): resolve grpcwebproxy build failure caused by dead vanity ... @Vuhag123
+- [#1545](https://github.com/grpc/grpc-web/pull/1545) chore: upgrade macOS CI to macos-14 and prune unused rollup-plugin-cop... @Vuhag123
+
+## 2.1.0
+
+### Major Features
+
+- [#1534](https://github.com/grpc/grpc-web/pull/1534) TypeScript Migration: Core Library and Build Setup @Vuhag123
+- [#1529](https://github.com/grpc/grpc-web/pull/1529) Add support for edition 2024 @beatrausch
+
+### Other Changes
+
+- [#1526](https://github.com/grpc/grpc-web/pull/1526) chore: bump bazel modules @loeffel-io
+- [#1523](https://github.com/grpc/grpc-web/pull/1523) Bump webpack from 5.101.3 to 5.104.1 in /net/grpc/gateway/examples/ech... @dependabot[bot]
+- [#1521](https://github.com/grpc/grpc-web/pull/1521) fix-944 - Added unary Call in abstractclientbase. @Vuhag123
+- [#1515](https://github.com/grpc/grpc-web/pull/1515) Fix 1097 - typescript: add missing constructor definition in generated... @Vuhag123
+- [#1514](https://github.com/grpc/grpc-web/pull/1514) missing symbol $ in get/set functions in TypeScript output of grpc-web @Vuhag123##
+
 ## 2.0.2
 
 - [#1507](https://github.com/grpc/grpc-web/pull/1507) Use regular enums for compatibility with TypeScript 5.9+

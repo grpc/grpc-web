@@ -226,4 +226,59 @@ testSuite({
     assertElementsEquals([38, 39], message[FrameType.DATA]);
   },
 
+  // A message whose declared length is within the configured limit parses
+  // normally and does not flag the stream as exceeded.
+  testMessageLengthWithinLimit: function() {
+    var boundedParser = new GrpcWebStreamParser(2);
+    var arr = new Uint8Array([0, 0, 0, 0, 2, 38, 39]);  // DATA, length 2
+    var messages = boundedParser.parse(arr.buffer);
+    assertEquals(1, messages.length);
+    assertElementsEquals([38, 39], messages[0][FrameType.DATA]);
+    assertFalse(boundedParser.getMessageLengthExceeded());
+    assertTrue(boundedParser.isInputValid());
+  },
+
+  // A frame declaring a length greater than the configured maximum is rejected
+  // on the length prefix alone -- the body is withheld here, mirroring the DoS
+  // vector -- before any receive buffer is allocated. The stream is marked
+  // invalid and flagged so the caller can surface RESOURCE_EXHAUSTED.
+  testMessageLengthExceedsLimit: function() {
+    var boundedParser = new GrpcWebStreamParser(2);
+    var header = new Uint8Array([0, 0, 0, 0, 3]);  // DATA, length 3, no body
+    var err = assertThrows(function() {
+      boundedParser.parse(header.buffer);
+    });
+    assertTrue(boundedParser.getMessageLengthExceeded());
+    assertFalse(boundedParser.isInputValid());
+    assertTrue(
+        err.message.indexOf('exceeds max receive message size') != -1);
+  },
+
+  // The exact reported vector: a DATA frame advertising 0x7fffffff (~2 GB) with
+  // the body withheld must be rejected by the default 4 MB parser.
+  testDefaultLimitRejectsOversizedLength: function() {
+    var header = new Uint8Array([0, 127, 255, 255, 255]);  // length 0x7fffffff
+    assertThrows(function() { parser.parse(header.buffer); });
+    assertTrue(parser.getMessageLengthExceeded());
+  },
+
+  // 0x80000000 has the high bit set. A signed `<< 8` decode would read this as
+  // negative and slip past the `> max` check (then attempt a negative-size
+  // allocation); the unsigned decode treats it as ~2 GB and rejects it.
+  testLengthPrefixDecodedAsUnsigned: function() {
+    var boundedParser = new GrpcWebStreamParser(1024);
+    var header = new Uint8Array([0, 128, 0, 0, 0]);  // length 0x80000000
+    assertThrows(function() { boundedParser.parse(header.buffer); });
+    assertTrue(boundedParser.getMessageLengthExceeded());
+  },
+
+  // A maximum of 0 disables the check; normal messages still parse.
+  testZeroMaxDisablesLimit: function() {
+    var unlimitedParser = new GrpcWebStreamParser(0);
+    var arr = new Uint8Array([0, 0, 0, 0, 2, 38, 39]);
+    var messages = unlimitedParser.parse(arr.buffer);
+    assertEquals(1, messages.length);
+    assertFalse(unlimitedParser.getMessageLengthExceeded());
+  },
+
 });

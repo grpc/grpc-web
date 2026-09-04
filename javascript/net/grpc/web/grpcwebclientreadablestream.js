@@ -65,8 +65,10 @@ class GrpcWebClientReadableStream {
   /**
    * @param {!GenericTransportInterface} genericTransportInterface The
    *   GenericTransportInterface
+   * @param {number=} maxMessageLength The maximum allowed inbound message
+   *   length in bytes, forwarded to the stream parser. Defaults to 4 MB.
    */
-  constructor(genericTransportInterface) {
+  constructor(genericTransportInterface, maxMessageLength = 4 * 1024 * 1024) {
     /**
      * @const
      * @private
@@ -132,7 +134,7 @@ class GrpcWebClientReadableStream {
      * @type {!GrpcWebStreamParser} The grpc-web stream parser
      * @const
      */
-    this.parser_ = new GrpcWebStreamParser();
+    this.parser_ = new GrpcWebStreamParser(maxMessageLength);
 
     const self = this;
     events.listen(this.xhr_, EventType.READY_STATE_CHANGE, function(e) {
@@ -161,8 +163,16 @@ class GrpcWebClientReadableStream {
       try {
         messages = self.parser_.parse(byteSource);
       } catch (err) {
-        self.handleError_(
-            new RpcError(StatusCode.UNKNOWN, 'Error in parsing response body'));
+        if (self.parser_.getMessageLengthExceeded()) {
+          // Mirror grpc-go/grpc-java/core, which return RESOURCE_EXHAUSTED when
+          // an inbound message exceeds the configured max receive message size.
+          self.handleError_(new RpcError(
+              StatusCode.RESOURCE_EXHAUSTED,
+              'Received message larger than max receive message size'));
+        } else {
+          self.handleError_(
+              new RpcError(StatusCode.UNKNOWN, 'Error in parsing response body'));
+        }
       }
       if (messages) {
         const FrameType = GrpcWebStreamParser.FrameType;

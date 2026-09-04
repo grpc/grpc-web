@@ -79,6 +79,21 @@ class GrpcWebClientBase {
         goog.getObjectByName('withCredentials', options) || false;
 
     /**
+     * The maximum allowed inbound message length in bytes (0 = unlimited).
+     * @const
+     * @private {number}
+     */
+    let maxReceiveMessageSize = options.maxReceiveMessageSize;
+    if (maxReceiveMessageSize === undefined) {
+      maxReceiveMessageSize =
+          goog.getObjectByName('maxReceiveMessageSize', options);
+    }
+    this.maxReceiveMessageSize_ =
+        (maxReceiveMessageSize === undefined || maxReceiveMessageSize === null) ?
+        4 * 1024 * 1024 :
+        maxReceiveMessageSize;
+
+    /**
      * @const {!Array<!StreamInterceptor>}
      * @private
      */
@@ -220,7 +235,8 @@ class GrpcWebClientBase {
     const genericTransportInterface = {
       xhr: xhr,
     };
-    const stream = new GrpcWebClientReadableStream(genericTransportInterface);
+    const stream = new GrpcWebClientReadableStream(
+        genericTransportInterface, this.maxReceiveMessageSize_);
     stream.setResponseDeserializeFn(
         methodDescriptor.getResponseDeserializeFn());
 
