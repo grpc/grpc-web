@@ -18,11 +18,12 @@
 ######################################
 # Stage 1: Fetch binaries
 ######################################
-# node:... Docker image is based on buildpack-deps:bullseye (11)
-FROM buildpack-deps:bullseye AS prepare
+# node:... Docker image is based on buildpack-deps:trixie (13)
+FROM buildpack-deps:trixie AS prepare
 
-ARG BUILDIFIER_VERSION=1.0.0
-ARG PROTOBUF_VERSION=3.19.4
+ARG BUILDIFIER_VERSION=8.5.1
+ARG PROTOBUF_VERSION=36.1
+ARG PROTOBUF_JS_VERSION=3.21.4
 
 RUN apt-get -qq update && apt-get -qq install -y curl unzip
 
@@ -33,8 +34,14 @@ protoc-$PROTOBUF_VERSION-linux-x86_64.zip -o protoc.zip && \
   unzip -qq protoc.zip && \
   cp ./bin/protoc /usr/local/bin/protoc
 
+RUN curl -sSL https://github.com/protocolbuffers/protobuf-javascript/releases/download/\
+v$PROTOBUF_JS_VERSION/protobuf-javascript-$PROTOBUF_JS_VERSION-linux-x86_64.tar.gz -o protobuf-js.tar.gz && \
+  mkdir -p ./protobuf-js && \
+  tar -xzf protobuf-js.tar.gz -C ./protobuf-js && \
+  cp ./protobuf-js/bin/protoc-gen-js /usr/local/bin/protoc-gen-js
+
 RUN wget -nv -O buildifier \
-  https://github.com/bazelbuild/buildtools/releases/download/$BUILDIFIER_VERSION/buildifier && \
+  https://github.com/bazelbuild/buildtools/releases/download/v$BUILDIFIER_VERSION/buildifier-linux-amd64 && \
   chmod +x ./buildifier && \
   cp ./buildifier /usr/local/bin/buildifier
 
@@ -48,17 +55,18 @@ RUN ./scripts/init_submodules.sh
 ######################################
 # Stage 2: Copy source files and build
 ######################################
-FROM node:20.0.0-bullseye AS copy-and-build
+FROM node:24-trixie AS copy-and-build
 
 ARG MAKEFLAGS=-j8
 ARG BAZEL_VERSION=7.3.0
 
-RUN apt-get -qq update && apt-get -qq install -y python
+RUN apt-get -qq update && apt-get -qq install -y python3 python-is-python3
 
 RUN mkdir -p /var/www/html/dist
 RUN echo "\nloglevel=error\n" >> $HOME/.npmrc
 
 COPY --from=prepare /usr/local/bin/protoc /usr/local/bin/
+COPY --from=prepare /usr/local/bin/protoc-gen-js /usr/local/bin/
 COPY --from=prepare /usr/local/bin/buildifier /usr/local/bin/
 COPY --from=prepare /github/grpc-web/third_party /github/grpc-web/third_party
 
