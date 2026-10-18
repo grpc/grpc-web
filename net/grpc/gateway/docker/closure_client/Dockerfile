@@ -23,4 +23,4 @@ RUN make client && make install
 WORKDIR /var/www/html
 
 EXPOSE 8081
-CMD ["python", "-m", "SimpleHTTPServer", "8081"]
+CMD ["python3", "-m", "http.server", "8081"]
