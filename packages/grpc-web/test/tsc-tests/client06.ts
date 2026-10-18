@@ -29,6 +29,9 @@ req.setMessage('aaa');
 // this test tries to make sure that these types are as accurate as possible
 
 let p1 : Promise<EchoResponse> = echoService.echo(req, {});
+const abortController = new AbortController();
+let pWithOptions : Promise<EchoResponse> = echoService.echo(
+  req, {}, {signal: abortController.signal});
 
 // why does the .then() add this extra 'void' type to the returned Promise?
 let p2 : Promise<void | EchoResponse> = p1.then((response: EchoResponse) => {

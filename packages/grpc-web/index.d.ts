@@ -12,14 +12,15 @@ declare module "grpc-web" {
       request: REQ,
       metadata: Metadata,
       methodDescriptor: MethodDescriptor<REQ, RESP>,
-      options?: PromiseCallOptions
+      options?: PromiseCallOptions | null
     ): Promise<RESP>;
   
     unaryCall<REQ, RESP>(
       method: string,
       request: REQ,
       metadata: Metadata,
-      methodDescriptor: MethodDescriptor<REQ, RESP> 
+      methodDescriptor: MethodDescriptor<REQ, RESP>,
+      options?: PromiseCallOptions | null
     ): Promise<RESP>;
 
     rpcCall<REQ, RESP> (

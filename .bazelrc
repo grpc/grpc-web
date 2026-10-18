@@ -1,6 +1,8 @@
 # Common build settings for unix-like systems
 build --copt=-Wno-error=deprecated-declarations
 build --host_copt=-Wno-error=deprecated-declarations
+build --cxxopt=-include --cxxopt=cstdint
+build --host_cxxopt=-include --host_cxxopt=cstdint
 
 # Required until this is the default; expected in Bazel 7
 common --enable_bzlmod

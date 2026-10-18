@@ -674,7 +674,8 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
           printer->Indent();
           printer->Print(vars,
                          "request: $input_type$,\n"
-                         "metadata?: grpcWeb.Metadata | null): "
+                         "metadata?: grpcWeb.Metadata | null,\n"
+                         "options?: grpcWeb.PromiseCallOptions | null): "
                          "$promise$<$output_type$>;\n\n");
           printer->Outdent();
 
@@ -693,9 +694,10 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
           printer->Print(vars,
                          "request: $input_type$,\n"
                          "metadata?: grpcWeb.Metadata | null,\n"
-                         "callback?: (err: grpcWeb.RpcError,\n"
-                         "           response: $output_type$) => void) {\n");
-          printer->Print(vars, "if (callback !== undefined) {\n");
+                         "callbackOrOptions?: ((err: grpcWeb.RpcError,\n"
+                         "           response: $output_type$) => void) |\n"
+                         "          grpcWeb.PromiseCallOptions | null) {\n");
+          printer->Print(vars, "if (typeof callbackOrOptions === 'function') {\n");
           printer->Indent();
           printer->Print(vars, "return this.client_.rpcCall(\n");
           printer->Indent();
@@ -705,7 +707,7 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
                          "request,\n"
                          "metadata || {},\n"
                          "this.methodDescriptor$method_name$,\n"
-                         "callback);\n");
+                         "callbackOrOptions);\n");
           printer->Outdent();
           printer->Outdent();
           printer->Print(vars,
@@ -716,7 +718,8 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
                          "  '/$package_dot$$service_name$/$method_name$',\n"
                          "request,\n"
                          "metadata || {},\n"
-                         "this.methodDescriptor$method_name$);\n");
+                         "this.methodDescriptor$method_name$,\n"
+                         "callbackOrOptions || undefined);\n");
           printer->Outdent();
           printer->Print("}\n\n");
         }
@@ -724,6 +727,9 @@ void PrintTypescriptFile(Printer* printer, const FileDescriptor* file,
     }
     printer->Outdent();
     printer->Print("}\n\n");
+    printer->Print(vars,
+                   "export { $service_name$Client as "
+                   "$service_name$PromiseClient };\n\n");
   }
 }
 
@@ -765,7 +771,8 @@ void PrintGrpcWebDtsClientClass(Printer* printer, const FileDescriptor* file,
             printer->Indent();
             printer->Print(vars,
                            "request: $input_type$,\n"
-                           "metadata?: grpcWeb.Metadata\n");
+                           "metadata?: grpcWeb.Metadata,\n"
+                           "options?: grpcWeb.PromiseCallOptions | null\n");
             printer->Outdent();
             printer->Print(vars, "): $promise$<$output_type$>;\n\n");
           } else {
@@ -1199,6 +1206,8 @@ void PrintPromiseUnaryCall(Printer* printer, std::map<string, string> vars) {
                  " *     request proto\n"
                  " * @param {?Object<string, string>=} metadata User defined\n"
                  " *     call metadata\n"
+                 " * @param {?{signal: (!AbortSignal|undefined)}=} options\n"
+                 " *     Options for the call\n"
                  " * @return {!$promise$<!proto.$out$>}\n"
                  " *     Promise that resolves to the response\n"
                  " */\n"
@@ -1206,7 +1215,7 @@ void PrintPromiseUnaryCall(Printer* printer, std::map<string, string> vars) {
                  ".$js_method_name$ =\n");
   printer->Indent();
   printer->Print(vars,
-                 "  function(request, metadata) {\n"
+                 "  function(request, metadata, options) {\n"
                  "return this.client_.unaryCall(this.hostname_ +\n");
   printer->Indent();
   printer->Indent();
@@ -1219,7 +1228,8 @@ void PrintPromiseUnaryCall(Printer* printer, std::map<string, string> vars) {
   printer->Print(vars,
                  "request,\n"
                  "metadata || {},\n"
-                 "$method_descriptor$);\n");
+                 "$method_descriptor$,\n"
+                 "options);\n");
   printer->Outdent();
   printer->Outdent();
   printer->Outdent();

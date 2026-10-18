@@ -38,8 +38,24 @@ export interface AbstractClientBase {
     requestMessage: REQUEST,
     metadata: {[key: string]: string},
     methodDescriptor: MethodDescriptor<REQUEST, RESPONSE>,
-    options: PromiseCallOptions,
+    options?: PromiseCallOptions,
   ): PromiseLike<RESPONSE>;
+
+  /**
+   * @param method The method to invoke
+   * @param requestMessage The request proto
+   * @param metadata User defined call metadata
+   * @param methodDescriptor Information of this RPC method
+   * @param options Options for the call
+   * @return A promise that resolves to the response message
+   */
+  unaryCall<REQUEST, RESPONSE>(
+    method: string,
+    requestMessage: REQUEST,
+    metadata: {[key: string]: string},
+    methodDescriptor: MethodDescriptor<REQUEST, RESPONSE>,
+    options?: PromiseCallOptions | null,
+  ): Promise<RESPONSE>;
 
   /**
    * @param method The method to invoke

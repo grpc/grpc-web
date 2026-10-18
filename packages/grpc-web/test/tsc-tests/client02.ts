@@ -18,10 +18,19 @@
 import * as grpcWeb from 'grpc-web';
 
 import {Integer} from './generated/test03_pb';
-import {MyServiceClient} from './generated/Test02ServiceClientPb';
+import {MyServiceClient, MyServicePromiseClient} from './generated/Test02ServiceClientPb';
 
 const service = new MyServiceClient('http://mydummy.com', null, null);
+const promiseService = new MyServicePromiseClient('http://mydummy.com', null, null);
 const req = new Integer();
 
 service.addOne(req, {}, (err: grpcWeb.RpcError, resp: Integer) => {
 });
+
+export function verifyPromiseCallOptions(abortSignal: AbortSignal) {
+  const p1: Promise<Integer> = service.addOne(req, {}, {signal: abortSignal});
+  const p2: Promise<Integer> = promiseService.addOne(req, null, {signal: abortSignal});
+  return [p1, p2];
+}
+
+

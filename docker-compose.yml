@@ -11,6 +11,8 @@
       build:
         context: ./
         dockerfile: ./net/grpc/gateway/docker/ts_prereqs/Dockerfile
+      depends_on:
+        - prereqs
       image: grpcweb/ts-prereqs
     # -----------------------------------
   

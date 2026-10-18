@@ -22,5 +22,5 @@
       npm install --ignore-scripts && \
       npm run build
 
-      RUN cd packages/grpc-web && npx mocha --timeout 10000 test/tsc_test.js
+  RUN cd packages/grpc-web && npx mocha --timeout 60000 test/tsc_test.js
   

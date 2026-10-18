@@ -90,6 +90,20 @@ const AbstractClientBase = class {
    * @param {!Object<string, string>} metadata User defined call metadata
    * @param {!MethodDescriptor<REQUEST, RESPONSE>}
    *   methodDescriptor Information of this RPC method
+   * @param {?PromiseCallOptions=} options Options for the call
+   * @return {!Promise<RESPONSE>}
+   *   A promise that resolves to the response message
+   */
+  unaryCall(method, requestMessage, metadata, methodDescriptor, options) {}
+
+  /**
+   * @abstract
+   * @template REQUEST, RESPONSE
+   * @param {string} method The method to invoke
+   * @param {REQUEST} requestMessage The request proto
+   * @param {!Object<string, string>} metadata User defined call metadata
+   * @param {!MethodDescriptor<REQUEST, RESPONSE>}
+   *   methodDescriptor Information of this RPC method
    * @return {!ClientReadableStream<RESPONSE>} The Client Readable Stream
    */
   serverStreaming(method, requestMessage, metadata, methodDescriptor) {}

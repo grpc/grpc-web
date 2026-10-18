@@ -138,6 +138,29 @@ describe('grpc-web generated code: promise-based client', function() {
                  done();
                });
   });
+
+  it('should support abort signal via options', function(done) {
+    const {EchoServicePromiseClient} = require(genCodePath);
+    const {EchoRequest} = require(protoGenCodePath);
+    var echoService = new EchoServicePromiseClient('MyHostname', null, null);
+    var request = new EchoRequest();
+    request.setMessage('aaa');
+
+    const abortController = new AbortController();
+    MockXMLHttpRequest.onSend = function(xhr) {
+      abortController.abort('test-cancel');
+    };
+    echoService.echo(request, {}, {signal: abortController.signal})
+               .then((response) => {
+                 assert.fail('should not receive response');
+               })
+               .catch((error) => {
+                 assert.equal(1 /* StatusCode.CANCELLED */, error.code);
+                 assert.equal('Aborted', error.message);
+                 assert.equal('test-cancel', error.cause);
+                 done();
+               });
+  });
 });
 
 describe('grpc-web generated code (commonjs+grpcwebtext)', function() {

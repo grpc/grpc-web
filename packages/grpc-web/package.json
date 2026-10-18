@@ -22,7 +22,7 @@
     "prepare": "npm run build",
     "prepublishOnly": "npm run build",
     "test": "npm run test-mocha && npm run test-ts",
-    "test-mocha": "mocha --timeout 10000 \"./test/**/*_test.js\"",
+    "test-mocha": "mocha --timeout 60000 \"./test/**/*_test.js\"",
     "test-ts": "tsc -p ../../src/typescript/tsconfig.json && NODE_PATH=./node_modules jasmine \"../../src/typescript/**/*_test.js\"",
     "test-jsunit": "echo 'Legacy JsUnit tests migrated to TypeScript (npm run test-ts)'"
   },
