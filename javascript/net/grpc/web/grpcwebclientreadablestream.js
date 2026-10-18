@@ -43,6 +43,7 @@ const googCrypt = goog.require('goog.crypt.base64');
 const googString = goog.require('goog.string');
 const {GenericTransportInterface} = goog.require('grpc.web.GenericTransportInterface');
 const {Status} = goog.require('grpc.web.Status');
+const {ensureBinaryReaderCompatibility} = goog.require('grpc.web.ProtobufCompat');
 
 
 
@@ -183,6 +184,7 @@ class GrpcWebClientReadableStream {
               let isResponseDeserialized = false;
               let response;
               try {
+                ensureBinaryReaderCompatibility();
                 response = self.responseDeserializeFn_(data);
                 isResponseDeserialized = true;
               } catch (err) {

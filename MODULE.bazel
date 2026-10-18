@@ -11,6 +11,7 @@ module(
     repo_name = "com_github_grpc_grpc_web",
 )
 
-bazel_dep(name = "protobuf", version = "29.1", repo_name = "com_google_protobuf")
-bazel_dep(name = "grpc", version = "1.65.0", repo_name = "com_github_grpc_grpc")
+bazel_dep(name = "protobuf", version = "30.1", repo_name = "com_google_protobuf")
+bazel_dep(name = "grpc", version = "1.73.1", repo_name = "com_github_grpc_grpc")
 bazel_dep(name = "rules_cc", version = "0.2.17")
+bazel_dep(name = "abseil-cpp", version = "20250127.1")

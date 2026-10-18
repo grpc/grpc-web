@@ -7,6 +7,8 @@ cc_binary(
     ],
     visibility = ["//visibility:public"],
     deps = [
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
         "@com_google_protobuf//:protoc_lib",
     ],
 )

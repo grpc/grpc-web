@@ -46,6 +46,14 @@ import {Status} from './status';
 import {StatusCode} from './statuscode';
 import {UnaryResponse} from './unaryresponse';
 export { MethodDescriptor as MethodInfo } from './methoddescriptor';
+export {
+  ensureBinaryReaderCompatibility,
+  patchBinaryReaderPrototype,
+  PACKED_TYPES,
+} from './protobufcompat';
+import {ensureBinaryReaderCompatibility} from './protobufcompat';
+
+ensureBinaryReaderCompatibility();
   
   
 /**

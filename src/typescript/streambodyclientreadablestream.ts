@@ -17,6 +17,7 @@ import {Metadata} from './metadata';
 import {RpcError} from './rpcerror';
 import {Status} from './status';
 import {StatusCode, fromHttpStatus} from './statuscode';
+import {ensureBinaryReaderCompatibility} from './protobufcompat';
 
 /**
  * A stream that the client can read from. Used for calls that are streaming
@@ -85,6 +86,7 @@ export class StreamBodyClientReadableStream<RESPONSE>
 
         let responseMessage;
         try {
+          ensureBinaryReaderCompatibility();
           responseMessage = this.grpcResponseDeserializeFn(response);
         } catch (e) {
           this.sendErrorCallbacks(
@@ -159,6 +161,7 @@ export class StreamBodyClientReadableStream<RESPONSE>
         const messageBody = data['1'];
         let response;
         try {
+          ensureBinaryReaderCompatibility();
           response = this.grpcResponseDeserializeFn(messageBody);
         } catch (e) {
           this.sendErrorCallbacks(

@@ -14,8 +14,8 @@
 
 CXX ?= g++
 CPPFLAGS += -I/usr/local/include -pthread
-CXXFLAGS += -std=c++11
-LDFLAGS += -L/usr/local/lib -lprotoc -lprotobuf -lpthread -ldl
+CXXFLAGS += -std=c++17
+LDFLAGS += -L/usr/local/lib -lprotoc -lprotobuf -labsl_strings -labsl_strings_internal -labsl_string_view -labsl_base -labsl_spinlock_wait -labsl_raw_logging_internal -labsl_log_severity -labsl_int128 -lpthread -ldl
 PREFIX ?= /usr/local
 MIN_MACOS_VERSION := 10.7 # Supports OS X Lion
 STATIC ?= yes

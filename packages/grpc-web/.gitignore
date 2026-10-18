@@ -1,4 +1,7 @@
 /index.js
+/index.esm.js*
+/index.closure.js
+*.map
 /generated/
 
 package-lock.json

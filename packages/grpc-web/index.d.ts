@@ -161,4 +161,6 @@ declare module "grpc-web" {
     const UNARY: string;
     const SERVER_STREAMING: string;
   }
+
+  export function ensureBinaryReaderCompatibility(binaryReader?: any): boolean;
 }

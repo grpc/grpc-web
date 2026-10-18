@@ -12,6 +12,7 @@ const GrpcWebClientBase = goog.require('grpc.web.GrpcWebClientBase');
 const RpcError = goog.require('grpc.web.RpcError');
 const StatusCode = goog.require('grpc.web.StatusCode');
 const MethodType = goog.require('grpc.web.MethodType');
+const ProtobufCompat = goog.require('grpc.web.ProtobufCompat');
 
 module['exports']['CallOptions'] = CallOptions;
 module['exports']['MethodDescriptor'] = MethodDescriptor;
@@ -20,9 +21,15 @@ module['exports']['RpcError'] = RpcError;
 module['exports']['StatusCode'] = StatusCode;
 module['exports']['MethodType'] = MethodType;
 module['exports']['MethodInfo'] = MethodDescriptor;
+module['exports']['AbstractClientBase'] = {'MethodInfo': MethodDescriptor};
+module['exports']['ensureBinaryReaderCompatibility'] =
+    ProtobufCompat.ensureBinaryReaderCompatibility;
 
 // Temporary hack to fix https://github.com/grpc/grpc-web/issues/1153, which is
 // caused by `goog.global` not pointing to the global scope when grpc-web is
 // being imported as a CommonJS module.
 // TODO: Remove this hack after `goog.global` is fixed.
 goog.Timer.defaultTimerObject =  (typeof globalThis !== "undefined" && globalThis) || self;
+
+// Initialize Protobuf 3.x/4.x BinaryReader compatibility polyfill
+ProtobufCompat.ensureBinaryReaderCompatibility();

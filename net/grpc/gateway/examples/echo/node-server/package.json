@@ -6,7 +6,7 @@
     "@grpc/grpc-js": "1.13.4",
     "@grpc/proto-loader": "~0.5.0",
     "async": "~3.2.3",
-    "google-protobuf": "~3.21.4",
+    "google-protobuf": "^3.21.4 || ^4.0.0",
     "lodash": "~4.17.0"
   }
 }

@@ -38,6 +38,7 @@ import {Metadata} from './metadata';
 import {RpcError} from './rpcerror';
 import {Status} from './status';
 import {fromHttpStatus, StatusCode} from './statuscode';
+import {ensureBinaryReaderCompatibility} from './protobufcompat';
 
 import {GenericTransportInterface} from './generictransportinterface';
 
@@ -158,6 +159,7 @@ export class GrpcWebClientReadableStream<RESPONSE>
               let isResponseDeserialized = false;
               let response;
               try {
+                ensureBinaryReaderCompatibility();
                 response = this.responseDeserializeFn!(data);
                 isResponseDeserialized = true;
               } catch (err) {

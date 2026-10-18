@@ -1,4 +1,5 @@
 var module;
+var require;
 
 /**
  * List of functions we want to preserve when running the closure compiler
@@ -35,3 +36,5 @@ module.UnaryResponse.prototype.getStatus = function() {};
 
 module.MethodDescriptor = function() {};
 module.MethodDescriptor.getName = function() {};
+
+module.ensureBinaryReaderCompatibility = function(opt_binaryReader) {};

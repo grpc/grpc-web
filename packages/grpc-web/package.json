@@ -28,6 +28,14 @@
   },
   "license": "Apache-2.0",
   "dependencies": {},
+  "peerDependencies": {
+    "google-protobuf": "^3.21.4 || ^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "google-protobuf": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@grpc-web/closure-wrapper": "file:../closure-wrapper",
     "@closure-net/blob": "file:../closure-wrapper",
@@ -41,7 +49,7 @@
     "google-closure-compiler": "^20250820.0.0",
     "google-closure-deps": "~20210601.0.0",
     "google-closure-library": "^20230802.0.0",
-    "google-protobuf": "~3.21.4",
+    "google-protobuf": "^3.21.4 || ^4.0.0",
     "gulp": "~4.0.2",
     "gulp-connect": "~5.7.0",
     "gulp-eval": "~1.0.0",
