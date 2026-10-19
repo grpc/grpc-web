@@ -639,6 +639,40 @@ describe('grpc-web generated code: callbacks tests', function() {
     });
   });
 
+  it('should receive grpc error details and metadata, on http error', function(done) {
+    done = multiDone(done, 2);
+    MockXMLHttpRequest.onSend = function(xhr) {
+      xhr.respond(429, {
+        'Content-Type': 'application/grpc-web-text',
+        'Grpc-Status': '8',
+        'Grpc-Message': 'Rate%20limit%20exceeded',
+        'Grpc-Status-Details-Bin': 'Cg5yYXRlIGxpbWl0',
+        'X-Ratelimit-Reset': '60',
+      });
+    };
+    var call = echoService.echo(
+      request, {},
+      function(err, response) {
+        assert.ifError(response);
+        assert.equal(8, err.code);
+        assert.equal('Rate limit exceeded', err.message);
+        assert.equal('Cg5yYXRlIGxpbWl0', err.metadata['grpc-status-details-bin']);
+        assert.equal('60', err.metadata['x-ratelimit-reset']);
+        done();
+      }
+    );
+    call.on('status', (status) => {
+      assert.equal(8, status.code);
+      assert.equal('Rate limit exceeded', status.details);
+      assert.equal(
+        'Cg5yYXRlIGxpbWl0',
+        status.metadata['grpc-status-details-bin'],
+      );
+      assert.equal('60', status.metadata['x-ratelimit-reset']);
+      done();
+    });
+  });
+
   it('should receive error, on grpc error', function(done) {
     done = multiDone(done, 2);
     MockXMLHttpRequest.onSend = function(xhr) {

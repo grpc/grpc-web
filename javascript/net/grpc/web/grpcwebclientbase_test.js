@@ -247,6 +247,31 @@ testSuite({
     assertEquals(3, error.code);
   },
 
+  async testRpcErrorOnHttpErrorWithMetadata() {
+    const xhr = new XhrIo();
+    const client = new GrpcWebClientBase(/* options= */ {}, xhr);
+    const methodDescriptor = createMethodDescriptor((bytes) => new MockReply());
+
+    const error = await new Promise((resolve, reject) => {
+      client.rpcCall(
+          'urlurl', new MockRequest(), /* metadata= */ {}, methodDescriptor,
+          (error, response) => {
+            assertNull(response);
+            resolve(error);
+          });
+      xhr.simulateResponse(500, '', {
+        'Content-Type': 'application/grpc-web-text',
+        'Grpc-Status': '13',
+        'Grpc-Message': 'Internal%20error',
+        'X-Ratelimit-Reset': '60',
+      });
+    });
+    assertTrue(error instanceof RpcError);
+    assertEquals(StatusCode.INTERNAL, error.code);
+    assertEquals('Internal error', error.message);
+    assertEquals('60', error.metadata['x-ratelimit-reset']);
+  },
+
   async testRpcDeserializationError() {
     const xhr = new XhrIo();
     const client = new GrpcWebClientBase(/* options= */ {}, xhr);
