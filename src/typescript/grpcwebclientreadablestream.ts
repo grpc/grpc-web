@@ -53,6 +53,30 @@ const EXCLUDED_RESPONSE_HEADERS: string[] = [
 type Listener<T> = (value: T) => unknown;
 type EndListener = (...args: unknown[]) => unknown;
 
+function getErrorStatusCode(headers: Metadata): StatusCode | undefined {
+  const value = headers[GRPC_STATUS];
+  if (value == null || !/^\d+$/.test(value)) {
+    return undefined;
+  }
+  const statusCode = Number(value);
+  if (
+    !Number.isInteger(statusCode) ||
+    statusCode <= StatusCode.OK ||
+    statusCode > StatusCode.UNAUTHENTICATED
+  ) {
+    return undefined;
+  }
+  return statusCode;
+}
+
+function decodeStatusMessage(message: string): string {
+  try {
+    return decodeURIComponent(message);
+  } catch (err) {
+    return message;
+  }
+}
+
 /**
  * A stream that the client can read from. Used for calls that are streaming
  * from the server side.
@@ -228,6 +252,7 @@ export class GrpcWebClientReadableStream<RESPONSE>
       // There's an XHR level error
       let xhrStatusCode = -1;
       if (lastErrorCode !== ErrorCode.NO_ERROR) {
+        let errorMetadata: Metadata = {};
         switch (lastErrorCode) {
           case ErrorCode.ABORT:
             grpcStatusCode = StatusCode.ABORTED;
@@ -237,7 +262,11 @@ export class GrpcWebClientReadableStream<RESPONSE>
             break;
           case ErrorCode.HTTP_ERROR:
             xhrStatusCode = this.xhr!.getStatus();
-            grpcStatusCode = fromHttpStatus(xhrStatusCode);
+            grpcStatusCode =
+              getErrorStatusCode(responseHeaders) ??
+              fromHttpStatus(xhrStatusCode);
+            grpcStatusMessage = responseHeaders[GRPC_STATUS_MESSAGE] ?? '';
+            errorMetadata = initialMetadata;
             break;
           default:
             grpcStatusCode = StatusCode.UNAVAILABLE;
@@ -250,7 +279,13 @@ export class GrpcWebClientReadableStream<RESPONSE>
           errorMessage += `, http status code: ${xhrStatusCode}`;
         }
 
-        this.handleError(new RpcError(grpcStatusCode, errorMessage));
+        this.handleError(
+          new RpcError(
+            grpcStatusCode,
+            grpcStatusMessage || errorMessage,
+            errorMetadata,
+          ),
+        );
         return;
       }
 
@@ -415,18 +450,13 @@ export class GrpcWebClientReadableStream<RESPONSE>
    * @param error The error object
    */
   private handleError(error: RpcError) {
+    const message = decodeStatusMessage(error.message || '');
     if (error.code !== StatusCode.OK) {
-      this.sendErrorCallbacks(
-        new RpcError(
-          error.code,
-          decodeURIComponent(error.message || ''),
-          error.metadata,
-        ),
-      );
+      this.sendErrorCallbacks(new RpcError(error.code, message, error.metadata));
     }
     this.sendStatusCallbacks({
       code: error.code,
-      details: decodeURIComponent(error.message || ''),
+      details: message,
       metadata: error.metadata,
     } as Status);
   }

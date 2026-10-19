@@ -283,6 +283,115 @@ describe('grpc web client base test', () => {
     expect(error!.code).toEqual(3);
   });
 
+  it('should preserve metadata and grpc-message on an HTTP error', async () => {
+    const xhr = new MockXhrIo();
+    (xhr as any).getStatus = () => 500;
+    (xhr as any).getLastErrorCode = () => ErrorCode.HTTP_ERROR;
+    const client = new GrpcWebClientBase(/* options= */ {}, xhr);
+    const methodDescriptor = createMethodDescriptor((bytes) => new MockReply());
+    const error = await new Promise<RpcError | null>((resolve) => {
+      client.rpcCall(
+        'urlurl',
+        new MockRequest(),
+        /* metadata= */ {},
+        methodDescriptor,
+        (error: RpcError | null, response: AllowedResponseType | undefined) => {
+          expect(response).toBeUndefined();
+          resolve(error);
+        },
+      );
+      xhr.simulatePartialResponse('', {
+        'Content-Type': 'application/grpc-web-text',
+        'Grpc-Status': '13',
+        'Grpc-Message': 'Internal%20error',
+        'Grpc-Status-Details-Bin': 'Cg5pbnRlcm5hbCBlcnJvcg==',
+        'X-Ratelimit-Reset': '60',
+      });
+      xhr.simulateReadyStateChange(XMLHttpRequest.DONE);
+    });
+    expect(error!.code).toEqual(StatusCode.INTERNAL);
+    expect(error!.message).toEqual('Internal error');
+    expect(error!.metadata).toEqual({
+      'grpc-status-details-bin': 'Cg5pbnRlcm5hbCBlcnJvcg==',
+      'x-ratelimit-reset': '60',
+    });
+  });
+
+  it('should use HTTP status when grpc-status is absent or invalid', async () => {
+    const withoutGrpcStatus = await callWithXhrError(
+      ErrorCode.HTTP_ERROR,
+      429,
+      {'x-ratelimit-reset': '60'},
+    );
+    expect(withoutGrpcStatus.code).toEqual(StatusCode.RESOURCE_EXHAUSTED);
+    expect(withoutGrpcStatus.message).toEqual(
+      'Http response at 400 or 500 level, http status code: 429',
+    );
+    expect(withoutGrpcStatus.metadata).toEqual({'x-ratelimit-reset': '60'});
+
+    for (const invalidStatus of ['abc', '17']) {
+      const error = await callWithXhrError(ErrorCode.HTTP_ERROR, 429, {
+        'grpc-status': invalidStatus,
+        'grpc-message': 'Rate%20limited',
+      });
+      expect(error.code).toEqual(StatusCode.RESOURCE_EXHAUSTED);
+      expect(error.message).toEqual('Rate limited');
+    }
+  });
+
+  it('should use HTTP status when grpc-status is OK', async () => {
+    const error = await callWithXhrError(ErrorCode.HTTP_ERROR, 503, {
+      'grpc-status': '0',
+    });
+    expect(error.code).toEqual(StatusCode.UNAVAILABLE);
+    expect(error.message).toEqual(
+      'Http response at 400 or 500 level, http status code: 503',
+    );
+  });
+
+  it('should use the generic message when grpc-message is missing or empty', async () => {
+    const genericMessage =
+      'Http response at 400 or 500 level, http status code: 429';
+    const headerCases: Array<{[header: string]: string}> = [
+      {'grpc-status': '8'},
+      {'grpc-status': '8', 'grpc-message': ''},
+    ];
+    for (const headers of headerCases) {
+      const error = await callWithXhrError(
+        ErrorCode.HTTP_ERROR,
+        429,
+        headers,
+      );
+      expect(error.code).toEqual(StatusCode.RESOURCE_EXHAUSTED);
+      expect(error.message).toEqual(genericMessage);
+    }
+  });
+
+  it('should not throw for malformed percent-encoding in grpc-message', async () => {
+    const error = await callWithXhrError(ErrorCode.HTTP_ERROR, 429, {
+      'grpc-status': '8',
+      'grpc-message': '50% quota used',
+    });
+    expect(error.code).toEqual(StatusCode.RESOURCE_EXHAUSTED);
+    expect(error.message).toEqual('50% quota used');
+  });
+
+  it('should ignore response headers for abort and timeout errors', async () => {
+    for (const [errorCode, expectedStatus] of [
+      [ErrorCode.ABORT, StatusCode.ABORTED],
+      [ErrorCode.TIMEOUT, StatusCode.DEADLINE_EXCEEDED],
+    ]) {
+      const error = await callWithXhrError(errorCode, 429, {
+        'grpc-status': '8',
+        'grpc-message': 'Rate limited',
+        'x-ratelimit-reset': '60',
+      });
+      expect(error.code).toEqual(expectedStatus);
+      expect(error.message).toEqual(ErrorCode.getDebugMessage(errorCode));
+      expect(error.metadata).toEqual({});
+    }
+  });
+
   it('should return RpcError for deserialization failure', async () => {
     const xhr = new MockXhrIo();
     const client = new GrpcWebClientBase(/* options= */ {}, xhr);
@@ -404,6 +513,35 @@ function createMethodDescriptor(
     (request) => [1, 2, 3],
     responseDeSerializeFn,
   );
+}
+
+function callWithXhrError(
+  lastErrorCode: number,
+  httpStatus: number,
+  responseHeaders: {[header: string]: string},
+): Promise<RpcError> {
+  const xhr = new MockXhrIo();
+  (xhr as any).getStatus = () => httpStatus;
+  (xhr as any).getLastErrorCode = () => lastErrorCode;
+  const client = new GrpcWebClientBase(/* options= */ {}, xhr);
+  const methodDescriptor = createMethodDescriptor((bytes) => new MockReply());
+  return new Promise<RpcError>((resolve) => {
+    client.rpcCall(
+      'urlurl',
+      new MockRequest(),
+      /* metadata= */ {},
+      methodDescriptor,
+      (error: RpcError | null, response: AllowedResponseType | undefined) => {
+        expect(response).toBeUndefined();
+        resolve(error!);
+      },
+    );
+    xhr.simulatePartialResponse('', {
+      'Content-Type': 'application/grpc-web-text',
+      ...responseHeaders,
+    });
+    xhr.simulateReadyStateChange(XMLHttpRequest.DONE);
+  });
 }
 
 class StreamResponseInterceptor implements StreamInterceptor {

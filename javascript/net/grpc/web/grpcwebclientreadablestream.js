@@ -54,6 +54,35 @@ const EXCLUDED_RESPONSE_HEADERS =
     ['content-type', GRPC_STATUS, GRPC_STATUS_MESSAGE];
 
 /**
+ * @param {!Object<string, string>} headers The lower-cased response headers.
+ * @return {!StatusCode|undefined}
+ */
+function getErrorStatusCode(headers) {
+  const value = headers[GRPC_STATUS];
+  if (value == null || !/^\d+$/.test(value)) {
+    return undefined;
+  }
+  const statusCode = Number(value);
+  if (!Number.isInteger(statusCode) || statusCode <= StatusCode.OK ||
+      statusCode > StatusCode.UNAUTHENTICATED) {
+    return undefined;
+  }
+  return /** @type {!StatusCode} */ (statusCode);
+}
+
+/**
+ * @param {string} message The possibly percent-encoded status message.
+ * @return {string}
+ */
+function decodeStatusMessage(message) {
+  try {
+    return decodeURIComponent(message);
+  } catch (err) {
+    return message;
+  }
+}
+
+/**
  * A stream that the client can read from. Used for calls that are streaming
  * from the server side.
  * @template RESPONSE
@@ -249,6 +278,7 @@ class GrpcWebClientReadableStream {
       // There's an XHR level error
       let xhrStatusCode = -1;
       if (lastErrorCode != ErrorCode.NO_ERROR) {
+        let errorMetadata = /** @type {!Metadata} */ ({});
         switch (lastErrorCode) {
           case ErrorCode.ABORT:
             grpcStatusCode = StatusCode.ABORTED;
@@ -258,7 +288,10 @@ class GrpcWebClientReadableStream {
             break;
           case ErrorCode.HTTP_ERROR:
             xhrStatusCode = self.xhr_.getStatus();
-            grpcStatusCode = StatusCode.fromHttpStatus(xhrStatusCode);
+            grpcStatusCode = getErrorStatusCode(responseHeaders) ||
+                StatusCode.fromHttpStatus(xhrStatusCode);
+            grpcStatusMessage = responseHeaders[GRPC_STATUS_MESSAGE] || '';
+            errorMetadata = initialMetadata;
             break;
           default:
             grpcStatusCode = StatusCode.UNAVAILABLE;
@@ -271,7 +304,8 @@ class GrpcWebClientReadableStream {
           errorMessage += ', http status code: ' + xhrStatusCode;
         }
 
-        self.handleError_(new RpcError(grpcStatusCode, errorMessage));
+        self.handleError_(new RpcError(
+            grpcStatusCode, grpcStatusMessage || errorMessage, errorMetadata));
         return;
       }
 
@@ -392,13 +426,14 @@ class GrpcWebClientReadableStream {
    * @param {!RpcError} error The error object
    */
   handleError_(error) {
+    const message = decodeStatusMessage(error.message || '');
     if (error.code != StatusCode.OK) {
       this.sendErrorCallbacks_(new RpcError(
-          error.code, decodeURIComponent(error.message || ''), error.metadata));
+          error.code, message, error.metadata));
     }
     this.sendStatusCallbacks_(/** @type {!Status} */ ({
       code: error.code,
-      details: decodeURIComponent(error.message || ''),
+      details: message,
       metadata: error.metadata
     }));
   }
